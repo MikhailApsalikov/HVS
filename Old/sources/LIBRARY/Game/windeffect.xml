@@ -1,0 +1,24 @@
+<DOMSymbolItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://ns.adobe.com/xfl/2008/" name="Game/windeffect" itemID="4f09cefe-00000287" sourceLibraryItemHRef="Символ 1" symbolType="button" lastModified="1326042878">
+  <timeline>
+    <DOMTimeline name="windeffect">
+      <layers>
+        <DOMLayer name="Слой 1" color="#4FFF4F" current="true" isSelected="true">
+          <frames>
+            <DOMFrame index="0" keyMode="9728">
+              <elements>
+                <DOMSymbolInstance libraryItemName="Растровые изображения/Adobe Photoshop Image 16 - копия.psd" name="" selected="true" symbolType="graphic" loop="loop">
+                  <matrix>
+                    <Matrix a="1.01626586914063" d="0.717208862304688" tx="-250" ty="-350"/>
+                  </matrix>
+                  <transformationPoint>
+                    <Point x="246" y="488"/>
+                  </transformationPoint>
+                </DOMSymbolInstance>
+              </elements>
+            </DOMFrame>
+          </frames>
+        </DOMLayer>
+      </layers>
+    </DOMTimeline>
+  </timeline>
+</DOMSymbolItem>

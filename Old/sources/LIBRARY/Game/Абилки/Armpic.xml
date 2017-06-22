@@ -1,0 +1,21 @@
+<DOMSymbolItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://ns.adobe.com/xfl/2008/" name="Game/Абилки/Armpic" itemID="4f09c23d-00000252" sourceLibraryItemHRef="Символ 1" symbolType="button" lastModified="1326039613">
+  <timeline>
+    <DOMTimeline name="Armpic">
+      <layers>
+        <DOMLayer name="Слой 1" color="#4FFF4F" current="true" isSelected="true">
+          <frames>
+            <DOMFrame index="0" keyMode="9728">
+              <elements>
+                <DOMBitmapInstance name="" referenceID="" selected="true" libraryItemName="Растровые изображения/Adobe Photoshop Image ыфвыфв.jpg">
+                  <matrix>
+                    <Matrix tx="-25" ty="-25"/>
+                  </matrix>
+                </DOMBitmapInstance>
+              </elements>
+            </DOMFrame>
+          </frames>
+        </DOMLayer>
+      </layers>
+    </DOMTimeline>
+  </timeline>
+</DOMSymbolItem>

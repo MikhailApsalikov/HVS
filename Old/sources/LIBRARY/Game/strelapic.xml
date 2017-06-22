@@ -1,0 +1,24 @@
+<DOMSymbolItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://ns.adobe.com/xfl/2008/" name="Game/strelapic" itemID="4ed8ca39-00000239" linkageExportForAS="true" linkageClassName="strelapic" sourceLibraryItemHRef="Символ 1" lastModified="1322839541">
+  <timeline>
+    <DOMTimeline name="strelapic">
+      <layers>
+        <DOMLayer name="Слой 1" color="#4FFF4F" current="true" isSelected="true">
+          <frames>
+            <DOMFrame index="0" keyMode="9728">
+              <elements>
+                <DOMBitmapInstance name="" referenceID="" selected="true" libraryItemName="Растровые изображения/Стрела-1.png">
+                  <matrix>
+                    <Matrix a="0.00018310546875" b="-0.4608154296875" c="1.031005859375" d="0.00018310546875" tx="-15" ty="200"/>
+                  </matrix>
+                  <transformationPoint>
+                    <Point x="217" y="14.3"/>
+                  </transformationPoint>
+                </DOMBitmapInstance>
+              </elements>
+            </DOMFrame>
+          </frames>
+        </DOMLayer>
+      </layers>
+    </DOMTimeline>
+  </timeline>
+</DOMSymbolItem>

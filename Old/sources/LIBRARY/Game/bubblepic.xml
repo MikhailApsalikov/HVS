@@ -1,0 +1,33 @@
+<DOMSymbolItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://ns.adobe.com/xfl/2008/" name="Game/bubblepic" itemID="4ede0f85-0000021c" linkageExportForAS="true" linkageClassName="bubblepic" sourceLibraryItemHRef="Символ 1" symbolType="button" lastModified="1323175813">
+  <timeline>
+    <DOMTimeline name="bubblepic">
+      <layers>
+        <DOMLayer name="Слой 1" color="#4FFF4F" current="true" isSelected="true">
+          <frames>
+            <DOMFrame index="0" keyMode="9728">
+              <elements>
+                <DOMShape>
+                  <strokes>
+                    <StrokeStyle index="1">
+                      <SolidStroke scaleMode="normal" weight="39.25">
+                        <fill>
+                          <SolidColor color="#FFCC00"/>
+                        </fill>
+                      </SolidStroke>
+                    </StrokeStyle>
+                  </strokes>
+                  <edges>
+                    <Edge strokeStyle="1" edges="!-5057 363S4[-4894 310 -4717 259!-4717 259[-2556 -362 500 -362!500 -362[3103 -362 5057 89"/>
+                    <Edge cubics="!-4717 259(;-3276,-155 -1537,-362 500,-362q-4717 259Q-2556 -362q500 -362);"/>
+                    <Edge cubics="!500 -362(;2237,-362 3757,-212 5057,89q500 -362Q3103 -362q5057 89);"/>
+                    <Edge cubics="!-5057 363(;-4948,328 -4835,293 -4717,259q-5057 363 -4717 259);"/>
+                  </edges>
+                </DOMShape>
+              </elements>
+            </DOMFrame>
+          </frames>
+        </DOMLayer>
+      </layers>
+    </DOMTimeline>
+  </timeline>
+</DOMSymbolItem>
