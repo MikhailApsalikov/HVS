@@ -5,6 +5,16 @@ VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Web", "Hvs.Web\Hvs.Web.csproj", "{29562ABB-A217-4008-9A7B-3335E11320B7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Core", "Hvs.Core\Hvs.Core.csproj", "{1C662824-251F-4FC6-8660-EB0E48AA474E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Game Core", "Game Core", "{A3978715-F7F7-4D5B-9267-ABBE2FEA993F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Front-end", "Front-end", "{7398792B-80D2-45C8-A05E-6110A94B213E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Unit-tests", "Unit-tests", "{47C4F5D1-7900-42CB-AFDF-F0F9BF66F249}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Core.Tests", "Hvs.Core.Tests\Hvs.Core.Tests.csproj", "{05D6FD6E-9F10-4D1E-8304-32A19F68DFFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,8 +25,21 @@ Global
 		{29562ABB-A217-4008-9A7B-3335E11320B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29562ABB-A217-4008-9A7B-3335E11320B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29562ABB-A217-4008-9A7B-3335E11320B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C662824-251F-4FC6-8660-EB0E48AA474E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C662824-251F-4FC6-8660-EB0E48AA474E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C662824-251F-4FC6-8660-EB0E48AA474E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C662824-251F-4FC6-8660-EB0E48AA474E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05D6FD6E-9F10-4D1E-8304-32A19F68DFFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05D6FD6E-9F10-4D1E-8304-32A19F68DFFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05D6FD6E-9F10-4D1E-8304-32A19F68DFFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05D6FD6E-9F10-4D1E-8304-32A19F68DFFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{29562ABB-A217-4008-9A7B-3335E11320B7} = {7398792B-80D2-45C8-A05E-6110A94B213E}
+		{1C662824-251F-4FC6-8660-EB0E48AA474E} = {A3978715-F7F7-4D5B-9267-ABBE2FEA993F}
+		{05D6FD6E-9F10-4D1E-8304-32A19F68DFFB} = {47C4F5D1-7900-42CB-AFDF-F0F9BF66F249}
 	EndGlobalSection
 EndGlobal
