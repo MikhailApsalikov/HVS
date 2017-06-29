@@ -1,6 +1,6 @@
 ﻿namespace Hvs.Core.Interfaces
 {
-	public interface IGameKernel
+	public interface IGameKernel : IChangableOverTime
 	{
 	}
 }

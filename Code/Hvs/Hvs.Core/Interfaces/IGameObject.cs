@@ -1,6 +1,6 @@
 ﻿namespace Hvs.Core.Interfaces
 {
-	internal interface IGameObject
+	internal interface IGameObject : IChangableOverTime
 	{
 	}
 }

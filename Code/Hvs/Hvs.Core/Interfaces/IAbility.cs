@@ -1,6 +1,6 @@
 ﻿namespace Hvs.Core.Interfaces
 {
-	internal interface IAbility
+	internal interface IAbility : IChangableOverTime
 	{
 	}
 }
