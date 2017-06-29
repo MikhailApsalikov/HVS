@@ -5,12 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="GameKernel.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Common\" />
-    <Folder Include="GameObjects\" />
+    <None Include="IConfiguration.cs" />
   </ItemGroup>
 
 </Project>
