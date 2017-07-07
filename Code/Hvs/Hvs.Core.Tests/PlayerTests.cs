@@ -3,7 +3,6 @@ using Hvs.Core.Interfaces;
 
 namespace Hvs.Core.Tests
 {
-	using System.Collections.Generic;
 	using Exceptions;
 
 	[TestClass]
