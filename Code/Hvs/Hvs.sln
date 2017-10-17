@@ -1,21 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Web", "Hvs.Web\Hvs.Web.csproj", "{7434B2B2-8D15-4B3F-9B2E-909C49CD0D24}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hvs.Repositories", "Hvs.Repositories\Hvs.Repositories.csproj", "{32AB74C4-58DB-47FD-BF45-819B53CA61ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Repositories", "Hvs.Repositories\Hvs.Repositories.csproj", "{32AB74C4-58DB-47FD-BF45-819B53CA61ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hvs.Interfaces", "Hvs.Interfaces\Hvs.Interfaces.csproj", "{4E3EF48B-18D1-4CEF-9080-8719F94E3D9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Interfaces", "Hvs.Interfaces\Hvs.Interfaces.csproj", "{4E3EF48B-18D1-4CEF-9080-8719F94E3D9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hvs.Models", "Hvs.Models\Hvs.Models.csproj", "{E2EA475C-F866-4A3F-9C9C-9096702E01A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Models", "Hvs.Models\Hvs.Models.csproj", "{E2EA475C-F866-4A3F-9C9C-9096702E01A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hvs.Entities", "Hvs.Entities\Hvs.Entities.csproj", "{56620E2F-EF59-4F7F-92CB-12802FDEF3CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Entities", "Hvs.Entities\Hvs.Entities.csproj", "{56620E2F-EF59-4F7F-92CB-12802FDEF3CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hvs.Validators", "Hvs.Validators\Hvs.Validators.csproj", "{0431DEC3-45B1-4AFE-9ADE-26BE6F4D93D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Validators", "Hvs.Validators\Hvs.Validators.csproj", "{0431DEC3-45B1-4AFE-9ADE-26BE6F4D93D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hvs.Common", "Hvs.Common\Hvs.Common.csproj", "{2C1AEAA6-85AC-4CB9-A3A7-0C4F2E4F8F05}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Common", "Hvs.Common\Hvs.Common.csproj", "{2C1AEAA6-85AC-4CB9-A3A7-0C4F2E4F8F05}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Web", "Hvs.Web\Hvs.Web.csproj", "{38A96CE8-A6A7-4E2E-8EF4-1ABBAFAC0560}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7434B2B2-8D15-4B3F-9B2E-909C49CD0D24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7434B2B2-8D15-4B3F-9B2E-909C49CD0D24}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7434B2B2-8D15-4B3F-9B2E-909C49CD0D24}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7434B2B2-8D15-4B3F-9B2E-909C49CD0D24}.Release|Any CPU.Build.0 = Release|Any CPU
 		{32AB74C4-58DB-47FD-BF45-819B53CA61ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{32AB74C4-58DB-47FD-BF45-819B53CA61ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32AB74C4-58DB-47FD-BF45-819B53CA61ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,8 +47,15 @@ Global
 		{2C1AEAA6-85AC-4CB9-A3A7-0C4F2E4F8F05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C1AEAA6-85AC-4CB9-A3A7-0C4F2E4F8F05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C1AEAA6-85AC-4CB9-A3A7-0C4F2E4F8F05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38A96CE8-A6A7-4E2E-8EF4-1ABBAFAC0560}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38A96CE8-A6A7-4E2E-8EF4-1ABBAFAC0560}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38A96CE8-A6A7-4E2E-8EF4-1ABBAFAC0560}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38A96CE8-A6A7-4E2E-8EF4-1ABBAFAC0560}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CB4D153C-267F-4E38-957F-86B9C76624B4}
 	EndGlobalSection
 EndGlobal
