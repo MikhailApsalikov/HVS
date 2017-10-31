@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
+VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hvs.Repositories", "Hvs.Repositories\Hvs.Repositories.csproj", "{32AB74C4-58DB-47FD-BF45-819B53CA61ED}"
 EndProject
@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hvs.Validators", "Hvs.Valid
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hvs.Common", "Hvs.Common\Hvs.Common.csproj", "{2C1AEAA6-85AC-4CB9-A3A7-0C4F2E4F8F05}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Web", "Hvs.Web\Hvs.Web.csproj", "{38A96CE8-A6A7-4E2E-8EF4-1ABBAFAC0560}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hvs.Web", "Hvs.Web\Hvs.Web.csproj", "{38A96CE8-A6A7-4E2E-8EF4-1ABBAFAC0560}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hvs.Configuration", "Hvs.Configuration\Hvs.Configuration.csproj", "{ED88A2F1-E09C-4380-B058-4C068D758BF8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{38A96CE8-A6A7-4E2E-8EF4-1ABBAFAC0560}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38A96CE8-A6A7-4E2E-8EF4-1ABBAFAC0560}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38A96CE8-A6A7-4E2E-8EF4-1ABBAFAC0560}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED88A2F1-E09C-4380-B058-4C068D758BF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED88A2F1-E09C-4380-B058-4C068D758BF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED88A2F1-E09C-4380-B058-4C068D758BF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED88A2F1-E09C-4380-B058-4C068D758BF8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
