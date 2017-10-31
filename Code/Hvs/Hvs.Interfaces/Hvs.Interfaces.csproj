@@ -1,7 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Hvs.Common\Hvs.Common.csproj" />
+	  <ProjectReference Include="..\Hvs.Entities\Hvs.Entities.csproj" />
+	</ItemGroup>
 
 </Project>
