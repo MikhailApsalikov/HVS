@@ -1,7 +1,9 @@
 ﻿namespace Hvs.Interfaces.Architecture
 {
-	public interface IFilter
-	{
+	using Common.Api;
 
+	public interface IFilter<TEntity> where TEntity : IEntity
+	{
+		ApiDataListResponce<TEntity> Apply();
 	}
 }

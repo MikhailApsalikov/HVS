@@ -2,12 +2,14 @@
 
 namespace Hvs.Interfaces.Architecture
 {
+	using System.Threading.Tasks;
+
 	public interface IRepository<TEntity> where TEntity : IEntity
 	{
-		ApiDataResponce<TEntity> GetById(long id);
-		ApiDataListResponce<TEntity> Get(IFilter filter);
-		ApiDataResponce<TEntity> Create(TEntity entity);
-		ApiDataResponce<TEntity> Update(long id, TEntity entity);
-		ApiResponse Remove(long id);
+		Task<ApiDataResponce<TEntity>> GetById(long id);
+		Task<ApiDataListResponce<TEntity>> Get(IFilter<TEntity> filter);
+		Task<ApiDataResponce<TEntity>> Create(TEntity entity);
+		Task<ApiDataResponce<TEntity>> Update(long id, TEntity entity);
+		Task<ApiResponse> Remove(long id);
 	}
 }
