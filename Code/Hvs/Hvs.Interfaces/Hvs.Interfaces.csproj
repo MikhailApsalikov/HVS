@@ -10,7 +10,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Hvs.Common\Hvs.Common.csproj" />
-	  <ProjectReference Include="..\Hvs.Entities\Hvs.Entities.csproj" />
 	</ItemGroup>
 
 </Project>
