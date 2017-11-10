@@ -7,6 +7,7 @@
 	using Microsoft.EntityFrameworkCore;
 	using EntityState = Microsoft.EntityFrameworkCore.EntityState;
 	using System;
+	using Hvs.Common.Entities;
 
 	public abstract class CrudRepository<TEntity> : ICrudRepository<TEntity> where TEntity : class, IEntity
 	{
@@ -25,14 +26,14 @@
 			return result;
 		}
 
-		public virtual async Task<ApiDataListResponce<TEntity>> Get(IFilter<TEntity> filter)
+		public virtual async Task<ApiDataListResponce<TEntity>> Get(BaseFilter<TEntity> filter)
 		{
 			if (filter == null)
 			{
 				return new ApiDataListResponce<TEntity>(await EntityFrameworkQueryableExtensions.ToListAsync(DbSet),
 					await DbSet.LongCountAsync());
 			}
-			return filter.Apply();
+			return new ApiDataListResponce<TEntity>(await filter.Apply(DbSet), await DbSet.CountAsync());
 		}
 
 		public virtual async Task<ApiDataResponce<TEntity>> Create(TEntity entity)

@@ -2,6 +2,7 @@ using Hvs.Entities.GameObjects;
 using Hvs.Interfaces.Architecture;
 using Hvs.Repositories;
 using Hvs.Repositories.GameObjectRepositories;
+using Hvs.Web.ApplicationStart;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.Webpack;
@@ -14,7 +15,7 @@ namespace Hvs.Web
 	{
 		public Startup(IConfiguration configuration)
 		{
-			var db = DatabaseInititalizer.InitializeDatabaseDropAlways().Result;
+			var db = DatabaseInititalizer.InitializeDatabaseForTests().Result;
 			Configuration = configuration;
 		}
 
@@ -23,9 +24,7 @@ namespace Hvs.Web
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddMvc();
-			services.AddDbContext<HvsDbContext>(ServiceLifetime.Singleton, ServiceLifetime.Singleton);
-			services.AddTransient<ICrudRepository<Spider>, SpiderRepository>();
+			DependencyInjectionConfig.Initialize(services);
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

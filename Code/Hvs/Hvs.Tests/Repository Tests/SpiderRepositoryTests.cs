@@ -15,7 +15,7 @@ namespace Hvs.Tests.Repository_Tests
 		[TestInitialize]
 		public async Task Inititalize()
 		{
-			DbContext = await DatabaseInititalizer.InitializeDatabaseDropAlways();
+			DbContext = await DatabaseInititalizer.InitializeDatabaseForTests();
 			Repository = new SpiderRepository(DbContext);
 		}
 
