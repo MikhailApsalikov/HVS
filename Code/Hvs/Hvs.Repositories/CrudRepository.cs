@@ -8,7 +8,7 @@
 	using EntityState = Microsoft.EntityFrameworkCore.EntityState;
 	using System;
 
-	public abstract class CrudRepository<TEntity> : IRepository<TEntity> where TEntity : class, IEntity
+	public abstract class CrudRepository<TEntity> : ICrudRepository<TEntity> where TEntity : class, IEntity
 	{
 		protected CrudRepository(HvsDbContext dbContext)
 		{

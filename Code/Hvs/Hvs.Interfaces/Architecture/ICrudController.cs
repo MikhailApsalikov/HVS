@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
+using System.Threading.Tasks;
 
 namespace Hvs.Interfaces.Architecture
 {
@@ -9,10 +9,10 @@ namespace Hvs.Interfaces.Architecture
 	{
 		string ControllerName { get; }
 
-		IAsyncResult Get([FromQuery] IFilter<TEntity> query);
-		IAsyncResult Get(long id);
-		IAsyncResult Post([FromBody] TModel value);
-		IAsyncResult Put(long id, [FromBody] TModel value);
-		IAsyncResult Delete(long id);
+		Task<IActionResult> Get([FromQuery] IFilter<TEntity> query);
+		Task<IActionResult> Get(long id);
+		Task<IActionResult> Post([FromBody] TModel value);
+		Task<IActionResult> Put(long id, [FromBody] TModel value);
+		Task<IActionResult> Delete(long id);
 	}
 }

@@ -4,7 +4,7 @@ namespace Hvs.Interfaces.Architecture
 {
 	using System.Threading.Tasks;
 
-	public interface IRepository<TEntity> where TEntity : IEntity
+	public interface ICrudRepository<TEntity> where TEntity : IEntity
 	{
 		Task<ApiDataResponce<TEntity>> GetById(long id);
 		Task<ApiDataListResponce<TEntity>> Get(IFilter<TEntity> filter);

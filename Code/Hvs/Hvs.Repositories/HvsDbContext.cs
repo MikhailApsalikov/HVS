@@ -1,6 +1,6 @@
 ﻿namespace Hvs.Repositories
 {
-	using Entities;
+	using Hvs.Entities.GameObjects;
 	using Microsoft.AspNetCore.Identity;
 	using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 	using Microsoft.EntityFrameworkCore;

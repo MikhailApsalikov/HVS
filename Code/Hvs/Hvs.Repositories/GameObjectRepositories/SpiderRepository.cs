@@ -1,4 +1,4 @@
-﻿using Hvs.Entities;
+﻿using Hvs.Entities.GameObjects;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 

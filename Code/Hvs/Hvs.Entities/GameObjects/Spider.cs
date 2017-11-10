@@ -1,4 +1,4 @@
-﻿namespace Hvs.Entities
+﻿namespace Hvs.Entities.GameObjects
 {
 	using Interfaces.Architecture;
 	public class Spider : IEntity

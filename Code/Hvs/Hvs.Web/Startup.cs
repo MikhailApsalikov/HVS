@@ -1,3 +1,7 @@
+using Hvs.Entities.GameObjects;
+using Hvs.Interfaces.Architecture;
+using Hvs.Repositories;
+using Hvs.Repositories.GameObjectRepositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.Webpack;
@@ -10,6 +14,7 @@ namespace Hvs.Web
 	{
 		public Startup(IConfiguration configuration)
 		{
+			var db = DatabaseInititalizer.InitializeDatabaseDropAlways().Result;
 			Configuration = configuration;
 		}
 
@@ -19,6 +24,8 @@ namespace Hvs.Web
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddMvc();
+			services.AddDbContext<HvsDbContext>(ServiceLifetime.Singleton, ServiceLifetime.Singleton);
+			services.AddTransient<ICrudRepository<Spider>, SpiderRepository>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,11 +45,14 @@ namespace Hvs.Web
 			}
 
 			app.UseStaticFiles();
-
 			app.UseMvc(routes =>
 			{
 				routes.MapRoute(
-					name: "default",
+					name: "api",
+					template: "api/{controller}/{action}/{id?}");
+
+				routes.MapRoute(
+					name: "mvc",
 					template: "{controller=Home}/{action=Index}/{id?}");
 
 				routes.MapSpaFallbackRoute(
