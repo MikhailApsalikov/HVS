@@ -1,13 +1,12 @@
 ﻿namespace Hvs.Repositories
 {
-	using System.Data.Entity;
-	using System.Data.Entity.Validation;
 	using System.Net;
 	using System.Threading.Tasks;
 	using Common.Api;
 	using Interfaces.Architecture;
 	using Microsoft.EntityFrameworkCore;
 	using EntityState = Microsoft.EntityFrameworkCore.EntityState;
+	using System;
 
 	public abstract class CrudRepository<TEntity> : IRepository<TEntity> where TEntity : class, IEntity
 	{
@@ -17,7 +16,7 @@
 		}
 
 		protected HvsDbContext DbContext { get; }
-		public abstract System.Data.Entity.DbSet<TEntity> DbSet { get; }
+		public abstract DbSet<TEntity> DbSet { get; }
 		public abstract string ClassName { get; }
 
 		public virtual async Task<ApiDataResponce<TEntity>> GetById(long id)
@@ -44,17 +43,17 @@
 					$"{ClassName} cannot be created because there are no data provided!");
 			}
 
-			TEntity result = DbSet.Add(entity);
+			var result = DbSet.Add(entity);
 			try
 			{
 				await DbContext.SaveChangesAsync();
 			}
-			catch (DbEntityValidationException ex)
+			catch (Exception ex)
 			{
 				return new ApiDataResponce<TEntity>(HttpStatusCode.InternalServerError, ex.ToString());
 			}
 
-			return new ApiDataResponce<TEntity>(result);
+			return new ApiDataResponce<TEntity>(result.Entity);
 		}
 
 		public virtual async Task<ApiDataResponce<TEntity>> Update(long id, TEntity entity)
@@ -76,7 +75,7 @@
 			{
 				await DbContext.SaveChangesAsync();
 			}
-			catch (DbEntityValidationException ex)
+			catch (Exception ex)
 			{
 				return new ApiDataResponce<TEntity>(HttpStatusCode.InternalServerError, ex.ToString());
 			}
