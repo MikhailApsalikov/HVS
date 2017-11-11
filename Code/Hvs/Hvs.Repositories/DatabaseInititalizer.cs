@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace Hvs.Repositories
 {
+	// TODO: refactor to non-static class
 	public static class DatabaseInititalizer
 	{
 		public static async Task<HvsDbContext> InitializeDatabaseForTests()

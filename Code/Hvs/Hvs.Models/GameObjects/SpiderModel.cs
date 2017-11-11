@@ -12,6 +12,7 @@ namespace Hvs.Models.GameObjects
 		public double SpeedCoefficient { get; set; }
 		public double FrequencyStart { get; set; }
 		public double FrequencyMax { get; set; }
+	    public double FrequencyPerLevel { get; set; }
 		public string Description { get; set; }
 	}
 }

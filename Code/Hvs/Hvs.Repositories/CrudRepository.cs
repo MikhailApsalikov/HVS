@@ -7,7 +7,7 @@
 	using Microsoft.EntityFrameworkCore;
 	using EntityState = Microsoft.EntityFrameworkCore.EntityState;
 	using System;
-	using Hvs.Common.Entities;
+	using Common.Entities;
 
 	public abstract class CrudRepository<TEntity> : ICrudRepository<TEntity> where TEntity : class, IEntity
 	{
@@ -17,8 +17,8 @@
 		}
 
 		protected HvsDbContext DbContext { get; }
-		public abstract DbSet<TEntity> DbSet { get; }
-		public abstract string ClassName { get; }
+		protected abstract DbSet<TEntity> DbSet { get; }
+		protected abstract string ClassName { get; }
 
 		public virtual async Task<ApiDataResponce<TEntity>> GetById(long id)
 		{
