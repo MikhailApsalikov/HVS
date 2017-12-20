@@ -30,6 +30,16 @@
     <ProjectReference Include="..\Hvs.Repositories\Hvs.Repositories.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\hvs\wiki\spiders\components\spider-list.component.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ClientApp\hvs\game\mappers\" />
+    <Folder Include="ClientApp\hvs\talent-tree\" />
+    <Folder Include="ClientApp\hvs\wiki\spiders\services\" />
+  </ItemGroup>
+
   <Target Name="DebugRunWebpack" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('wwwroot\dist') ">
     <!-- Ensure Node.js is installed -->
     <Exec Command="node --version" ContinueOnError="true">

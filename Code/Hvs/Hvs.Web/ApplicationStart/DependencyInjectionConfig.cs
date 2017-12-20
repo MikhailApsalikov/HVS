@@ -13,7 +13,7 @@ namespace Hvs.Web.ApplicationStart
 		{
 			services.AddMvc();
 			services.AddDbContext<HvsDbContext>((optionBuilder) => {
-				optionBuilder.UseSqlServer(@"Data Source=(LocalDB)\MSSQLLocalDB;Database=HvsDatabase;Integrated Security=True;MultipleActiveResultSets=true");
+				optionBuilder.UseSqlServer(@"Data Source=localhost;Database=HvsDatabase;Integrated Security=True;MultipleActiveResultSets=true");
 			}, ServiceLifetime.Singleton, ServiceLifetime.Singleton);
 			AddRepositories(services);
 		}

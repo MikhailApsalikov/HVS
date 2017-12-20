@@ -10,7 +10,7 @@ namespace Hvs.Repositories
 		public static async Task<HvsDbContext> InitializeDatabaseForTests()
 		{
 			var optionBuilder = new DbContextOptionsBuilder<HvsDbContext>();
-			optionBuilder.UseSqlServer(@"Data Source=(LocalDB)\MSSQLLocalDB;Database=HvsDatabase;Integrated Security=True;MultipleActiveResultSets=true");
+			optionBuilder.UseSqlServer(@"Data Source=localhost;Database=HvsDatabase;Integrated Security=True;MultipleActiveResultSets=true");
 			var context = new HvsDbContext(optionBuilder.Options);
 
 			await RecreateDatabase(context);

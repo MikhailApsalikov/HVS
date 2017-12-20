@@ -22,30 +22,30 @@ namespace Hvs.Web.Controllers
 		}
 
 		[HttpDelete("{id}")]
-		public async virtual Task<IActionResult> Delete(long id)
+		public virtual async Task<IActionResult> Delete(long id)
 		{
 			return Ok(await Repository.Remove(id));
 		}
 
 		[HttpGet]
-		public async virtual Task<IActionResult> Get([FromQuery] BaseFilter<TEntity> query)
+		public virtual async Task<IActionResult> Get([FromQuery] BaseFilter<TEntity> query)
 		{
 			return Ok(await Repository.Get(query));
 		}
 
 		[HttpGet("{id}")]
-		public async virtual Task<IActionResult> Get(long id)
+		public virtual async Task<IActionResult> Get(long id)
 		{
 			return Ok(await Repository.GetById(id));
 		}
 
 		[HttpPost]
-		public async virtual Task<IActionResult> Post([FromBody] TModel value)
+		public virtual async Task<IActionResult> Post([FromBody] TModel value)
 		{
 			return Ok(await Repository.Create(default(TEntity)));
 		}
 		[HttpPut("{id}")]
-		public async virtual Task<IActionResult> Put(long id, [FromBody] TModel value)
+		public virtual async Task<IActionResult> Put(long id, [FromBody] TModel value)
 		{
 			return Ok(await Repository.Update(id, default(TEntity)));
 		}
