@@ -3,15 +3,16 @@ import Field from "../field/field";
 import styles from "./game.module.css";
 import { range } from "lodash";
 import Ability, { AbilityEnum } from "../ability/ability";
+import Controller from "../../core/controller";
 
 export interface GameProps {
-
+    controller: Controller;
 }
 
 export default class Game extends Component<GameProps> {
     linesCount = 11;
     private shoot(index: number) {
-
+        this.props.controller.shoot(index);
     }
 
     private getShootHotkey(index: number): string {
@@ -27,7 +28,7 @@ export default class Game extends Component<GameProps> {
     render() {
         return <div className={styles.game}>
             <div className={styles.fieldContainer}>
-                <Field />
+                <Field fieldState={this.props.controller.getFieldState()}/>
                 <div className={styles.arrowContainer}>
                     {range(1, this.linesCount + 1, 1).map(arrowIndex => <Ability hotkey={this.getShootHotkey(arrowIndex)} onClick={() => this.shoot(arrowIndex)} ability={AbilityEnum.Shoot} />)}
                 </div>

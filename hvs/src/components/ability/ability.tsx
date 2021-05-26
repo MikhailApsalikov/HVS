@@ -14,6 +14,6 @@ export interface AbilityProps {
 
 export default class Ability extends Component<AbilityProps> {
     render() {
-        return <div className={classnames(styles.ability, styles[this.props.ability])}><div className={styles.hotkey}>{this.props.hotkey}</div></div>
+        return <div className={classnames(styles.ability, styles[this.props.ability])} onClick={() =>  this.props.onClick()}><div className={styles.hotkey}>{this.props.hotkey}</div></div>
     }
 }
