@@ -1,11 +1,11 @@
 import FieldState from "./field-state";
-import Kernel from "./kernel";
+import Game from "./game";
 
 export default class Controller {
-    private _kernel : Kernel;
+    private _game: Game;
 
-    constructor(kernel : Kernel) {
-        this._kernel = kernel;
+    constructor(game: Game) {
+        this._game = game;
     }
 
     shoot(index: number) {
@@ -13,6 +13,15 @@ export default class Controller {
     }
 
     getFieldState(): FieldState {
-        return {};
+        return {
+            gameObjects: this._game.gameObjects.map(go => {
+                return {
+                    id: go.id,
+                    row: go.getRow(),
+                    y: go.getY(),
+                    type: go.getType()
+                };
+            }),
+        };
     }
 }
