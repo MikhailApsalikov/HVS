@@ -1,0 +1,20 @@
+.ability {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    background-size: contain;
+    position: relative;
+}
+
+.shoot {
+    background-image: url('../../resources/images/shoot.jpg');
+}
+
+.hotkey{
+    color: white;
+    position: absolute;
+    top: -5px;
+    left: 0;
+    font-weight: bold;
+    font-size: 20px;
+}

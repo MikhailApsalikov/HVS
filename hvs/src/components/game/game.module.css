@@ -1,0 +1,21 @@
+.game {
+    background-color: white;
+    border: 1px solid black;
+    width: 1000px;
+    height: 900px;
+    display: flex;
+}
+
+.arrowContainer{
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+}
+
+.arrow {
+    width: 40px;
+    height: 40px;
+    background: url('../../resources/images/shoot.jpg');
+    cursor: pointer;
+    background-size: contain;
+}
