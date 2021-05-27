@@ -1,5 +1,5 @@
 import { configuration } from "../../configuration/configuration";
-import { GameObjectTypeEnum } from "../../enums/game-object-type.enum";
+import { GameObjectTypeEnum } from "../game-object-type.enum";
 import ArrowBase from "./arrow-base";
 import gameObject from "../game-object";
 

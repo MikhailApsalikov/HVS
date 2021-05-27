@@ -1,4 +1,4 @@
-import { GameObjectTypeEnum } from "../../enums/game-object-type.enum";
+import { GameObjectTypeEnum } from "../game-object-type.enum";
 import Enemy from "./enemy";
 import gameObject from "../game-object";
 

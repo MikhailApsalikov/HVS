@@ -2,8 +2,8 @@ import { each } from "lodash";
 import { AbilityEnum } from "../components/ability/ability";
 import { configuration } from "./configuration/configuration";
 import AbilityBase from "./abilities/entities/ability-base";
-import Spider from "./entities/enemies/spider";
-import GameObject from "./entities/game-object";
+import Spider from "./game-objects/enemies/spider";
+import GameObject from "./game-objects/game-object";
 import RandomHelper from "./helpers/random-helper";
 
 export default class Game {

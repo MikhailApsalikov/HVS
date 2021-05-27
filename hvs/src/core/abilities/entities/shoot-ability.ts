@@ -1,6 +1,6 @@
 import { configuration } from "../../configuration/configuration";
 import Game from "../../game";
-import Arrow from "../../entities/arrows/arrow";
+import Arrow from "../../game-objects/arrows/arrow";
 import AbilityBase from "./ability-base";
 
 export default class ShootAbility extends AbilityBase {

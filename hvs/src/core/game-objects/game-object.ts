@@ -1,8 +1,8 @@
-import { GameObjectTypeEnum } from "../enums/game-object-type.enum";
+import { GameObjectTypeEnum } from "./game-object-type.enum";
 import Game from "../game";
 import IdHelper from "../helpers/id-helper";
 
-export default abstract class GameObject {    
+export default abstract class GameObject {
     public velocity: number;
     public readonly id: number;
 

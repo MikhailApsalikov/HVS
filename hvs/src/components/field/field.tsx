@@ -1,6 +1,6 @@
 import { Component } from "react";
 import { configuration } from "../../core/configuration/configuration";
-import { GameObjectTypeEnum } from "../../core/enums/game-object-type.enum";
+import { GameObjectTypeEnum } from "../../core/game-objects/game-object-type.enum";
 import FieldState from "../../core/interfaces/field-state";
 import GameObjectModel from "../../core/interfaces/game-object.model";
 import styles from "./field.module.css";
