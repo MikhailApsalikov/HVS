@@ -1,10 +1,10 @@
-import { configuration } from "./configuration";
+import { configuration } from "./configuration/configuration";
 import Controller from "./controller";
 import Game from "./game";
 
 export default class Kernel {
     private game: Game;
-    
+
     private _controller : Controller;
     public get controller() : Controller {
         return this._controller;

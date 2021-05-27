@@ -1,4 +1,4 @@
-import { GameObjectTypeEnum } from "../enums/game-object-type.enum";
+import { GameObjectTypeEnum } from "../entities/game-object-type.enum";
 
 export default interface GameObjectModel {
     id: number;

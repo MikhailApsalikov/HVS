@@ -1,4 +1,4 @@
-import FieldState from "./field-state";
+import FieldState from "./interfaces/field-state";
 import Game from "./game";
 
 export default class Controller {

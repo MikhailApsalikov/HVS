@@ -4,7 +4,7 @@ import styles from "./game.module.css";
 import { range } from "lodash";
 import Ability, { AbilityEnum } from "../ability/ability";
 import Controller from "../../core/controller";
-import { configuration } from "../../core/configuration";
+import { configuration } from "../../core/configuration/configuration";
 
 export interface GameProps {
     controller: Controller;

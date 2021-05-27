@@ -4,4 +4,5 @@ export const configuration = {
     width: 600,
     height: 840,
     enemyLocationSpawn: -60,
+    arrowLocationSpawn: 60,
 }

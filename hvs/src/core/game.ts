@@ -1,15 +1,14 @@
 import { each } from "lodash";
 import { AbilityEnum } from "../components/ability/ability";
-import { configuration } from "./configuration";
+import { configuration } from "./configuration/configuration";
+import AbilityBase from "./abilities/entities/ability-base";
 import Spider from "./entities/enemies/spider";
 import GameObject from "./entities/game-object";
 import RandomHelper from "./helpers/random-helper";
 
 export default class Game {
     readonly gameObjects: Array<GameObject> = [];
-
-    constructor() {
-    }
+    readonly abilities: Array<AbilityBase> = [];
 
     onTick() {
         if (RandomHelper.withChance(0.36)){
@@ -34,6 +33,6 @@ export default class Game {
     }
 
     private generateEnemy() {
-        this.createGameObject(new Spider(RandomHelper.getRandomRow(), configuration.enemyLocationSpawn, 10));
+        this.createGameObject(new Spider(this,RandomHelper.getRandomRow(), configuration.enemyLocationSpawn, 10));
     }
 }

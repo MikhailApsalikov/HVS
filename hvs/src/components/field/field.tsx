@@ -1,7 +1,7 @@
 import { Component } from "react";
-import { configuration } from "../../core/configuration";
+import { configuration } from "../../core/configuration/configuration";
 import { GameObjectTypeEnum } from "../../core/enums/game-object-type.enum";
-import FieldState from "../../core/field-state";
+import FieldState from "../../core/interfaces/field-state";
 import GameObjectModel from "../../core/interfaces/game-object.model";
 import styles from "./field.module.css";
 import spider from '../../resources/images/spider.svg';
@@ -26,7 +26,7 @@ export default class Field extends Component<FieldProps> {
     private renderObject(gameObject: GameObjectModel): JSX.Element {
         switch (gameObject.type) {
             case GameObjectTypeEnum.Spider:
-                return <img className={styles.spider} src={spider} />;
+                return <img className={styles.spider} src={spider} alt="spider" />;
             default:
                 return <></>;
         }

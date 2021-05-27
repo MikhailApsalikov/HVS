@@ -1,4 +1,4 @@
-import { configuration } from "../configuration";
+import { configuration } from "../configuration/configuration";
 
 export default class RandomHelper {
     public static withChance(percent: number): boolean {
