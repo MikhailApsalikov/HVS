@@ -14,17 +14,17 @@ export default abstract class AbilityBase {
         this.currentCooldown = 0;
     }
 
-    public abstract onUse(): void;
+    protected abstract onUse(): void;
 
     public onTick(): void {
         if (this.isOnCooldown()) {
-            this.currentCooldown-=configuration.tickTime;
+            this.currentCooldown -= configuration.tickTime;
         }
     }
 
 
     public tryUse(): void {
-        if (this.isOnCooldown()){
+        if (this.isOnCooldown()) {
             return;
         }
         this.onUse();

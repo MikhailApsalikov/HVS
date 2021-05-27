@@ -1,3 +1,4 @@
+import { each } from "lodash";
 import Game from "../game";
 import { AbilitiesEnum } from "./abilities.enum";
 import AbilityBase from "./entities/ability-base";
@@ -14,6 +15,10 @@ export default class AbilityManager {
 
     useAbility(ability: AbilitiesEnum) {
         this.abilities[ability].tryUse();
+    }
+
+    onTick() {
+        each(this.abilities, ability => ability.onTick());
     }
 
     private initAbilities(): { [key: string]: AbilityBase } {

@@ -4,13 +4,24 @@
     cursor: pointer;
     background-size: contain;
     position: relative;
+    user-select: none;
 }
 
-.shoot-1, .shoot-2, .shoot-3, .shoot-4, .shoot-5, .shoot-6, .shoot-7, .shoot-8, .shoot-9, .shoot-0, .shoot-dash {
+.shoot-1,
+.shoot-2,
+.shoot-3,
+.shoot-4,
+.shoot-5,
+.shoot-6,
+.shoot-7,
+.shoot-8,
+.shoot-9,
+.shoot-0,
+.shoot-dash {
     background-image: url('../../resources/images/shoot.jpg');
 }
 
-.hotkey{
+.hotkey {
     color: white;
     position: absolute;
     top: -5px;

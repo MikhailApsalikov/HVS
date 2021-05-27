@@ -19,6 +19,7 @@ export default class Game {
             this.generateEnemy();
         }
         each(this.gameObjects, go => go.onTick());
+        this.abilityManager.onTick();
     }
 
     destroy(gameObject: GameObject) {
