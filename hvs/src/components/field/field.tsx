@@ -5,6 +5,7 @@ import FieldState from "../../core/interfaces/field-state";
 import GameObjectModel from "../../core/interfaces/game-object.model";
 import styles from "./field.module.css";
 import spider from '../../resources/images/spider.svg';
+import arrow from '../../resources/images/arrow.svg';
 
 export interface FieldProps {
     fieldState: FieldState;
@@ -27,12 +28,14 @@ export default class Field extends Component<FieldProps> {
         switch (gameObject.type) {
             case GameObjectTypeEnum.Spider:
                 return <img className={styles.spider} src={spider} alt="spider" />;
+            case GameObjectTypeEnum.Arrow:
+                return <img className={styles.arrow} src={arrow} alt="arrow" />;
             default:
                 return <></>;
         }
     }
 
     private getLeftByRow(row: number): number {
-        return (configuration.width / configuration.linesCount - 0.5) * (row - 1);
+        return (configuration.width / configuration.linesCount) * (row - 0.5);
     }
 }

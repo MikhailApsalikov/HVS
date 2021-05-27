@@ -1,3 +1,5 @@
+import { shootConfig } from "./shoot-config";
+
 export const configuration = {
     tickTime: 10,
     linesCount: 11,
@@ -5,4 +7,5 @@ export const configuration = {
     height: 840,
     enemyLocationSpawn: -60,
     arrowLocationSpawn: 60,
+    shootAbilities: shootConfig
 }

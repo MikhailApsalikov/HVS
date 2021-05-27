@@ -8,6 +8,6 @@ export enum AbilitiesEnum {
     Shoot7 = "shoot-7",
     Shoot8 = "shoot-8",
     Shoot9 = "shoot-9",
-    Shoot0 = "shoot-10",
+    Shoot0 = "shoot-0",
     ShootDash = "shoot-dash",
 }

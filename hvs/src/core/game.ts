@@ -1,17 +1,21 @@
 import { each } from "lodash";
-import { AbilityEnum } from "../components/ability/ability";
+import { AbilitiesEnum } from "./abilities/abilities.enum";
+import AbilityManager from "./abilities/ability-manager";
 import { configuration } from "./configuration/configuration";
-import AbilityBase from "./abilities/entities/ability-base";
 import Spider from "./game-objects/enemies/spider";
 import GameObject from "./game-objects/game-object";
 import RandomHelper from "./helpers/random-helper";
 
 export default class Game {
-    readonly gameObjects: Array<GameObject> = [];
-    readonly abilities: Array<AbilityBase> = [];
+    private readonly gameObjects: Array<GameObject> = [];
+    private readonly abilityManager: AbilityManager;
+
+    constructor() {
+        this.abilityManager = new AbilityManager(this);
+    }
 
     onTick() {
-        if (RandomHelper.withChance(0.36)){
+        if (RandomHelper.withChance(0.36)) {
             this.generateEnemy();
         }
         each(this.gameObjects, go => go.onTick());
@@ -28,11 +32,15 @@ export default class Game {
         this.gameObjects.push(gameObject);
     }
 
-    useAbility(ability: AbilityEnum) {
-
+    getGameObjects() {
+        return this.gameObjects;
     }
 
     private generateEnemy() {
-        this.createGameObject(new Spider(this,RandomHelper.getRandomRow(), configuration.enemyLocationSpawn, 10));
+        this.createGameObject(new Spider(this, RandomHelper.getRandomRow(), configuration.enemyLocationSpawn, 10));
+    }
+
+    useAbility(ability: AbilitiesEnum) {
+        this.abilityManager.useAbility(ability);
     }
 }

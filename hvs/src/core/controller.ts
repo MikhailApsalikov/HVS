@@ -1,5 +1,6 @@
 import FieldState from "./interfaces/field-state";
 import Game from "./game";
+import { AbilitiesEnum } from "./abilities/abilities.enum";
 
 export default class Controller {
     private _game: Game;
@@ -8,13 +9,13 @@ export default class Controller {
         this._game = game;
     }
 
-    shoot(index: number) {
-        console.log(index);
+    useAbility(ability: AbilitiesEnum) {
+        this._game.useAbility(ability);
     }
 
     getFieldState(): FieldState {
         return {
-            gameObjects: this._game.gameObjects.map(go => {
+            gameObjects: this._game.getGameObjects().map(go => {
                 return {
                     id: go.id,
                     row: go.getRow(),
