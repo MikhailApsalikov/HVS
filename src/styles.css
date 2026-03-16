@@ -238,8 +238,8 @@ body {
 .arrow {
   top: calc(var(--y, 1) * 100%);
   transform: translate(-50%, -50%);
-  width: 20px;
-  height: 32px;
+  width: 48px;
+  height: 72px;
 }
 
 .arrow svg {
@@ -289,6 +289,10 @@ body {
   background: linear-gradient(90deg, #e65100, #ffb74d);
 }
 
+#timer-bar .resource-bar__fill {
+  background: linear-gradient(90deg, #1565c0, #42a5f5);
+}
+
 .resource-bar__text {
   position: absolute;
   inset: 0;
@@ -301,10 +305,14 @@ body {
 }
 
 .coins-display,
-.level-timer,
 .level-number {
   font-size: 0.95rem;
   color: #e8d5b7;
+  cursor: help;
+}
+
+.resource-bar {
+  cursor: help;
 }
 
 /* === Shoot info section === */

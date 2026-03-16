@@ -22,6 +22,7 @@ export class GameState {
   private _difficulty: Difficulty;
   private _level: number;
   private _levelTimer: number;
+  private _levelTimerMax: number;
   private _hp: number;
   private _maxHp: number;
   private _energy: number;
@@ -52,6 +53,7 @@ export class GameState {
     this._difficulty = difficulty;
     this._level = 1;
     this._levelTimer = config.levelTimerBase + config.levelTimerStep * 1;
+    this._levelTimerMax = this._levelTimer;
     this._hp = config.baseHp;
     this._maxHp = config.baseHp;
     this._energy = config.baseEnergy;
@@ -103,6 +105,10 @@ export class GameState {
 
   public get levelTimer(): number {
     return this._levelTimer;
+  }
+
+  public get levelTimerMax(): number {
+    return this._levelTimerMax;
   }
 
   public get hp(): number {
@@ -211,7 +217,9 @@ export class GameState {
 
   public advanceLevel(): void {
     this._level += 1;
-    this._levelTimer = this._config.levelTimerBase + this._config.levelTimerStep * this._level;
+    const t = this._config.levelTimerBase + this._config.levelTimerStep * this._level;
+    this._levelTimer = t;
+    this._levelTimerMax = t;
   }
 
   public addCoins(amount: number): void {
@@ -295,6 +303,7 @@ export class GameState {
 
   public setLevelTimer(value: number): void {
     this._levelTimer = value;
+    this._levelTimerMax = value;
   }
 
   public setRecord(value: number): void {

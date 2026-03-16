@@ -99,6 +99,8 @@ export class AbilitySystem {
       this.deactivateFreeze(state);
       return true;
     }
+    const levelReq = 4;
+    if (state.level < levelReq) return false;
     const cost = FREEZE_COST;
     if (state.energy < cost) return false;
     state.modifyEnergy(-cost);
