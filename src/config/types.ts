@@ -4,6 +4,13 @@ export type TalentId = 'endurance' | 'spiderArmor' | 'tireless' | 'agility' | 'h
 export type SpiderType = 'normal' | 'fat' | 'fast' | 'ninja' | 'burner';
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'levelUp' | 'gameOver';
 
+export type AbilityResult =
+  | 'activated'
+  | 'deactivated'
+  | 'on_cooldown'
+  | 'not_enough_energy'
+  | 'level_locked';
+
 export interface AbilityConfig {
   readonly cost: number;
   readonly cooldown: number;

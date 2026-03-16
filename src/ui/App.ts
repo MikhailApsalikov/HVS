@@ -115,8 +115,16 @@ export class App {
     this._gameScreen.render(state);
   }
 
+  public getMenuScreen(): MainMenuScreen {
+    return this._menuScreen;
+  }
+
   public getGameScreen(): GameScreen {
     return this._gameScreen;
+  }
+
+  public getGameOverScreen(): GameOverScreen {
+    return this._gameOverScreen;
   }
 
   public getLevelUpScreen(): LevelUpScreen {

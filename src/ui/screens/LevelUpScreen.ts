@@ -168,7 +168,7 @@ export class LevelUpScreen {
 
     if (this._playerLevel < unlocksAtLevel) {
       card.classList.add('talent-card--locked');
-      upgradeBtn.textContent = `Разблокируется на ${unlocksAtLevel} ур.`;
+      upgradeBtn.textContent = `Требуется ${unlocksAtLevel} ур.`;
     }
 
     return card;

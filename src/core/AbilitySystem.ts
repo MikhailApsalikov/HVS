@@ -1,4 +1,4 @@
-import type { AbilityId, DifficultyConfig } from '../config/types.js';
+import type { AbilityId, AbilityResult, DifficultyConfig } from '../config/types.js';
 import type { GameState } from './GameState.js';
 import type { FormulaCalculator } from './FormulaCalculator.js';
 import type { TalentSystem } from './TalentSystem.js';
@@ -94,19 +94,19 @@ export class AbilitySystem {
     }
   }
 
-  public activateFreeze(state: GameState): boolean {
+  public activateFreeze(state: GameState): AbilityResult {
     if (state.freezeActive) {
       this.deactivateFreeze(state);
-      return true;
+      return 'deactivated';
     }
     const levelReq = 4;
-    if (state.level < levelReq) return false;
+    if (state.level < levelReq) return 'level_locked';
     const cost = FREEZE_COST;
-    if (state.energy < cost) return false;
+    if (state.energy < cost) return 'not_enough_energy';
     state.modifyEnergy(-cost);
     state.setPhase('paused');
     state.setFreezeActive(true);
-    return true;
+    return 'activated';
   }
 
   public deactivateFreeze(state: GameState): void {
@@ -114,15 +114,15 @@ export class AbilitySystem {
     state.setPhase('playing');
   }
 
-  public activateBlizzard(state: GameState): boolean {
+  public activateBlizzard(state: GameState): AbilityResult {
     const levelReq = 8;
-    if (state.level < levelReq) return false;
+    if (state.level < levelReq) return 'level_locked';
 
     const ability = state.getAbility('blizzard');
-    if (ability.isOnCooldown) return false;
+    if (ability.isOnCooldown) return 'on_cooldown';
 
     const cost = this._config.abilities.blizzard.cost;
-    if (state.energy < cost) return false;
+    if (state.energy < cost) return 'not_enough_energy';
 
     state.modifyEnergy(-cost);
     ability.activate(this._config.abilities.blizzard.cooldown);
@@ -137,15 +137,15 @@ export class AbilitySystem {
     }
     state.setBlizzard(duration);
 
-    return true;
+    return 'activated';
   }
 
-  public activatePrep(state: GameState): boolean {
+  public activatePrep(state: GameState): AbilityResult {
     const levelReq = 12;
-    if (state.level < levelReq) return false;
+    if (state.level < levelReq) return 'level_locked';
 
     const ability = state.getAbility('prep');
-    if (ability.isOnCooldown) return false;
+    if (ability.isOnCooldown) return 'on_cooldown';
 
     const baseCooldown = this._config.abilities.prep.cooldown;
     const reduction = this._talentSystem.getPrepCooldownReduction();
@@ -154,18 +154,18 @@ export class AbilitySystem {
     ability.activate(cooldown);
     state.modifyEnergy(PREP_ENERGY_RESTORE);
 
-    return true;
+    return 'activated';
   }
 
-  public activateHeal(state: GameState): boolean {
+  public activateHeal(state: GameState): AbilityResult {
     const levelReq = 16;
-    if (state.level < levelReq) return false;
+    if (state.level < levelReq) return 'level_locked';
 
     const ability = state.getAbility('heal');
-    if (ability.isOnCooldown) return false;
+    if (ability.isOnCooldown) return 'on_cooldown';
 
     const cost = this._config.abilities.heal.cost;
-    if (state.energy < cost) return false;
+    if (state.energy < cost) return 'not_enough_energy';
 
     state.modifyEnergy(-cost);
     ability.activate(this._config.abilities.heal.cooldown);
@@ -174,18 +174,18 @@ export class AbilitySystem {
     const amount = HEAL_BASE_AMOUNT + healBonus;
     state.modifyHp(amount);
 
-    return true;
+    return 'activated';
   }
 
-  public activateVolley(state: GameState): boolean {
+  public activateVolley(state: GameState): AbilityResult {
     const levelReq = 20;
-    if (state.level < levelReq) return false;
+    if (state.level < levelReq) return 'level_locked';
 
     const ability = state.getAbility('volley');
-    if (ability.isOnCooldown) return false;
+    if (ability.isOnCooldown) return 'on_cooldown';
 
     const cost = this._config.abilities.volley.cost;
-    if (state.energy < cost) return false;
+    if (state.energy < cost) return 'not_enough_energy';
 
     const baseCooldown = this._config.abilities.volley.cooldown;
     const multiplier = this._talentSystem.getShootCooldownMultiplier();
@@ -208,18 +208,18 @@ export class AbilitySystem {
       state.addArrow(arrow);
     }
 
-    return true;
+    return 'activated';
   }
 
-  public activateStand(state: GameState): boolean {
+  public activateStand(state: GameState): AbilityResult {
     const levelReq = 25;
-    if (state.level < levelReq) return false;
+    if (state.level < levelReq) return 'level_locked';
 
     const ability = state.getAbility('stand');
-    if (ability.isOnCooldown) return false;
+    if (ability.isOnCooldown) return 'on_cooldown';
 
     const cost = this._config.abilities.stand.cost;
-    if (state.energy < cost) return false;
+    if (state.energy < cost) return 'not_enough_energy';
 
     const baseCooldown = this._config.abilities.stand.cooldown;
     const reduction = this._talentSystem.getStandCooldownReduction();
@@ -232,25 +232,25 @@ export class AbilitySystem {
     const duration = STAND_BASE_DURATION + durationBonus;
     state.setInvulnerable(duration);
 
-    return true;
+    return 'activated';
   }
 
-  public activateArmageddon(state: GameState): boolean {
+  public activateArmageddon(state: GameState): AbilityResult {
     const levelReq = 30;
-    if (state.level < levelReq) return false;
+    if (state.level < levelReq) return 'level_locked';
 
     const ability = state.getAbility('armageddon');
-    if (ability.isOnCooldown) return false;
+    if (ability.isOnCooldown) return 'on_cooldown';
 
     const cost = this._config.abilities.armageddon.cost;
-    if (state.energy < cost) return false;
+    if (state.energy < cost) return 'not_enough_energy';
 
     state.modifyEnergy(-cost);
     ability.activate(this._config.abilities.armageddon.cooldown);
 
     state.setArmageddon('charging', ARMAGEDDON_CHARGE_DURATION);
 
-    return true;
+    return 'activated';
   }
 
   private _pickRandomLanes(count: number, totalLanes: number): number[] {

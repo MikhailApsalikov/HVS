@@ -1,4 +1,4 @@
-import type { AbilityId, Difficulty, DifficultyConfig } from '../config/types.js';
+import type { AbilityId, AbilityResult, Difficulty, DifficultyConfig } from '../config/types.js';
 import type { GameState } from './GameState.js';
 import type { Spider } from '../entities/Spider.js';
 import { GameState as GameStateClass } from './GameState.js';
@@ -20,6 +20,7 @@ const COIN_MAX = 3;
 export type PhaseChangeCallback = (phase: string, state: GameState) => void;
 export type CoinDropCallback = (spiderId: string, coins: number) => void;
 export type DamagePopCallback = (spiderId: string, hpDamage: number, energyBurn: number) => void;
+export type AbsorbCallback = () => void;
 
 export class GameEngine {
   private _state: GameState | null = null;
@@ -34,6 +35,7 @@ export class GameEngine {
   private _phaseChangeCallback: PhaseChangeCallback | null = null;
   private _coinDropCallback: CoinDropCallback | null = null;
   private _damagePopCallback: DamagePopCallback | null = null;
+  private _absorbCallback: AbsorbCallback | null = null;
   private _lastTimestamp: number = -1;
   private _animFrameId: number = 0;
   private _reachedCastleSpiderIds: Set<string> = new Set();
@@ -56,6 +58,10 @@ export class GameEngine {
 
   public setDamagePopCallback(cb: DamagePopCallback): void {
     this._damagePopCallback = cb;
+  }
+
+  public setAbsorbCallback(cb: AbsorbCallback): void {
+    this._absorbCallback = cb;
   }
 
   public startNewGame(difficulty: Difficulty): void {
@@ -129,18 +135,18 @@ export class GameEngine {
     return true;
   }
 
-  public shootLane(lane: number): void {
+  public shootLane(lane: number): boolean {
     const state = this._state;
     if (state === null || this._config === null || this._talentSystem === null)
-      return;
-    if (state.phase !== 'playing') return;
+      return false;
+    if (state.phase !== 'playing') return false;
 
     const archer = state.archers[lane];
-    if (archer === undefined || !archer.isReady) return;
+    if (archer === undefined || !archer.isReady) return false;
 
     const shootCost =
       this._config.shootCost - this._talentSystem.getShootCostReduction();
-    if (state.energy < shootCost) return;
+    if (state.energy < shootCost) return false;
 
     state.modifyEnergy(-shootCost);
     const cooldownDuration =
@@ -150,18 +156,19 @@ export class GameEngine {
     const speedMultiplier = this._talentSystem.getArrowSpeedMultiplier();
     const arrow = Arrow.create(lane, this._config, speedMultiplier, false);
     state.addArrow(arrow);
+    return true;
   }
 
-  public activateAbility(abilityId: AbilityId): boolean {
+  public activateAbility(abilityId: AbilityId): AbilityResult {
     const state = this._state;
-    if (state === null || this._abilitySystem === null) return false;
+    if (state === null || this._abilitySystem === null) return 'level_locked';
 
     if (abilityId === 'freeze') {
-      if (state.phase !== 'playing' && state.phase !== 'paused') return false;
+      if (state.phase !== 'playing' && state.phase !== 'paused') return 'level_locked';
       return this._abilitySystem.activateFreeze(state);
     }
 
-    if (state.phase !== 'playing') return false;
+    if (state.phase !== 'playing') return 'level_locked';
 
     switch (abilityId) {
       case 'blizzard':
@@ -177,7 +184,7 @@ export class GameEngine {
       case 'armageddon':
         return this._abilitySystem.activateArmageddon(state);
       default:
-        return false;
+        return 'level_locked';
     }
   }
 
@@ -322,6 +329,8 @@ export class GameEngine {
           state.modifyHp(-effectiveDamage);
           this._damagePopCallback?.(spider.id, effectiveDamage, 0);
         }
+      } else {
+        this._absorbCallback?.();
       }
       spider.startDying();
     }
