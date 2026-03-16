@@ -49,7 +49,7 @@ export const normalConfig: DifficultyConfig = {
     improvedPrep: { maxRanks: 5, unlocksAtLevel: 20 },
     volleyMastery: { maxRanks: 5, unlocksAtLevel: 20 },
     rapidFire: { maxRanks: 7, unlocksAtLevel: 10 },
-    dutyBound: { maxRanks: 5, unlocksAtLevel: 20 },
+    dutyBound: { maxRanks: 5, unlocksAtLevel: 30 },
     blizzardMastery: { maxRanks: 6, unlocksAtLevel: 30 },
   },
 };

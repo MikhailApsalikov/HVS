@@ -212,7 +212,7 @@ export class AbilitySystem {
   }
 
   public activateStand(state: GameState): boolean {
-    const levelReq = 24;
+    const levelReq = 25;
     if (state.level < levelReq) return false;
 
     const ability = state.getAbility('stand');
@@ -236,7 +236,7 @@ export class AbilitySystem {
   }
 
   public activateArmageddon(state: GameState): boolean {
-    const levelReq = 28;
+    const levelReq = 30;
     if (state.level < levelReq) return false;
 
     const ability = state.getAbility('armageddon');

@@ -40,8 +40,8 @@ export const ABILITY_UNLOCK_LEVELS: Record<AbilityId, number> = {
   prep: 12,
   heal: 16,
   volley: 20,
-  stand: 24,
-  armageddon: 28,
+  stand: 25,
+  armageddon: 30,
 };
 
 export const ABILITY_DESCRIPTIONS: Record<AbilityId, string> = {
@@ -73,6 +73,7 @@ export class HUD {
   private _timerFill: HTMLElement | null = null;
   private _timerText: HTMLElement | null = null;
   private _coinsDisplay: HTMLElement | null = null;
+  private _coinsText: HTMLElement | null = null;
   private _levelNumberDisplay: HTMLElement | null = null;
   private _abilityButtons: HTMLElement[] = [];
   private readonly _spriteRegistry: SpriteRegistry;
@@ -133,6 +134,13 @@ export class HUD {
     this._coinsDisplay = document.createElement('div');
     this._coinsDisplay.id = 'coins-display';
     this._coinsDisplay.className = 'coins-display';
+    const coinIcon = document.createElement('span');
+    coinIcon.className = 'coins-display__icon';
+    coinIcon.innerHTML = this._spriteRegistry.get('Coin');
+    this._coinsDisplay.appendChild(coinIcon);
+    this._coinsText = document.createElement('span');
+    this._coinsText.className = 'coins-display__text';
+    this._coinsDisplay.appendChild(this._coinsText);
     this._coinsDisplay.addEventListener('mouseenter', () => {
       const html = this._getCoinsTooltipHtml();
       if (html) this._tooltip.show(this._coinsDisplay!, html);
@@ -149,16 +157,6 @@ export class HUD {
     });
     this._levelNumberDisplay.addEventListener('mouseleave', () => this._tooltip.hide());
     this._container.appendChild(this._levelNumberDisplay);
-
-    const shootSection = document.createElement('div');
-    shootSection.className = 'hud__shoot-info';
-    shootSection.innerHTML = '<span class="hud__shoot-label">Выстрел [1-9]</span>';
-    shootSection.addEventListener('mouseenter', () => {
-      const html = this._getShootTooltipHtml();
-      if (html) this._tooltip.show(shootSection, html);
-    });
-    shootSection.addEventListener('mouseleave', () => this._tooltip.hide());
-    this._container.appendChild(shootSection);
 
     const abilityButtons = document.createElement('div');
     abilityButtons.id = 'ability-buttons';
@@ -490,7 +488,7 @@ export class HUD {
     if (this._timerFill) this._timerFill.style.setProperty('--fill', `${timerPct}%`);
     if (this._timerText) this._timerText.textContent = `${Math.ceil(state.levelTimer)}с / ${Math.ceil(state.levelTimerMax)}с`;
 
-    if (this._coinsDisplay) this._coinsDisplay.textContent = `Монетки: ${Math.floor(state.coins)}`;
+    if (this._coinsText) this._coinsText.textContent = `${Math.floor(state.coins)}`;
     if (this._levelNumberDisplay) this._levelNumberDisplay.textContent = `Уровень ${state.level}`;
 
     for (let i = 0; i < ABILITY_ORDER.length; i++) {

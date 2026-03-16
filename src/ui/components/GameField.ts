@@ -23,6 +23,7 @@ export class GameField {
   private readonly _spriteRegistry: SpriteRegistry;
   private _hud: HUD | null = null;
   private readonly _tooltip = TooltipManager.getInstance();
+  private _lastSpiderPositions: Map<string, { lane: number; y: number }> = new Map();
 
   public constructor(container: HTMLElement, spriteRegistry: SpriteRegistry) {
     this._container = container;
@@ -41,6 +42,15 @@ export class GameField {
     this._container.dataset.component = 'game-field';
 
     this._lanesArea.className = 'game-field__lanes';
+
+    const grassSvg = this._spriteRegistry.get('Grass');
+    if (grassSvg) {
+      const encoded = 'data:image/svg+xml,' + encodeURIComponent(grassSvg);
+      this._lanesArea.style.backgroundImage = `url("${encoded}")`;
+      this._lanesArea.style.backgroundRepeat = 'repeat';
+      this._lanesArea.style.backgroundSize = '64px 64px';
+    }
+
     for (let i = 0; i < 9; i++) {
       const lane = document.createElement('div');
       lane.className = 'lane';
@@ -52,6 +62,9 @@ export class GameField {
 
     this._archersRow.className = 'game-field__archers';
     for (let i = 0; i < 9; i++) {
+      const laneWrapper = document.createElement('div');
+      laneWrapper.className = 'archer-btn-lane';
+
       const btn = document.createElement('button');
       btn.className = 'archer-btn';
       btn.dataset.lane = String(i);
@@ -71,7 +84,8 @@ export class GameField {
       });
       btn.addEventListener('mouseleave', () => this._tooltip.hide());
       this._archerButtons.push(btn);
-      this._archersRow.appendChild(btn);
+      laneWrapper.appendChild(btn);
+      this._archersRow.appendChild(laneWrapper);
     }
     this._container.appendChild(this._archersRow);
   }
@@ -115,6 +129,7 @@ export class GameField {
       el.style.setProperty('--y', String(spider.y));
       el.classList.toggle('spider--slowed', spider.slowFactor < 1);
       el.classList.toggle('spider--dying', spider.dying);
+      this._lastSpiderPositions.set(spider.id, { lane: spider.lane, y: spider.y });
     }
     for (const [id, el] of this._spiderElements) {
       if (!currentIds.has(id)) {
@@ -168,5 +183,50 @@ export class GameField {
 
   public getArchersRow(): HTMLElement {
     return this._archersRow;
+  }
+
+  public showCoinDrop(spiderId: string, coins: number): void {
+    const pos = this._lastSpiderPositions.get(spiderId);
+    if (!pos) return;
+
+    const laneEl = this._lanes[pos.lane];
+    if (!laneEl) return;
+
+    const coinEl = document.createElement('div');
+    coinEl.className = coins >= 3 ? 'coin-drop coin-drop--jackpot' : 'coin-drop';
+    const coinSvg = this._spriteRegistry.get('Coin');
+    coinEl.innerHTML = `+${coins} ${coinSvg}`;
+    coinEl.style.top = `calc(${pos.y} * 100%)`;
+    laneEl.appendChild(coinEl);
+
+    coinEl.addEventListener('animationend', () => coinEl.remove());
+    this._lastSpiderPositions.delete(spiderId);
+  }
+
+  public showDamagePop(spiderId: string, hpDamage: number, energyBurn: number): void {
+    const pos = this._lastSpiderPositions.get(spiderId);
+    if (!pos) return;
+
+    const laneEl = this._lanes[pos.lane];
+    if (!laneEl) return;
+
+    if (hpDamage > 0) {
+      const el = document.createElement('div');
+      el.className = 'damage-pop damage-pop--hp';
+      el.textContent = `-${Math.floor(hpDamage)}`;
+      el.style.top = `calc(${pos.y} * 100%)`;
+      laneEl.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+
+    if (energyBurn > 0) {
+      const el = document.createElement('div');
+      el.className = 'damage-pop damage-pop--energy';
+      el.textContent = `-${Math.floor(energyBurn)}`;
+      el.style.top = `calc(${pos.y} * 100%)`;
+      el.style.left = 'calc(50% + 15px)';
+      laneEl.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
   }
 }

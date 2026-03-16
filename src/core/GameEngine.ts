@@ -18,6 +18,8 @@ const COIN_MIN = 1;
 const COIN_MAX = 3;
 
 export type PhaseChangeCallback = (phase: string, state: GameState) => void;
+export type CoinDropCallback = (spiderId: string, coins: number) => void;
+export type DamagePopCallback = (spiderId: string, hpDamage: number, energyBurn: number) => void;
 
 export class GameEngine {
   private _state: GameState | null = null;
@@ -30,6 +32,8 @@ export class GameEngine {
   private readonly _saveSystem: SaveSystem;
   private readonly _renderCallback: (state: GameState) => void;
   private _phaseChangeCallback: PhaseChangeCallback | null = null;
+  private _coinDropCallback: CoinDropCallback | null = null;
+  private _damagePopCallback: DamagePopCallback | null = null;
   private _lastTimestamp: number = -1;
   private _animFrameId: number = 0;
   private _reachedCastleSpiderIds: Set<string> = new Set();
@@ -43,6 +47,14 @@ export class GameEngine {
 
   public setPhaseChangeCallback(cb: PhaseChangeCallback): void {
     this._phaseChangeCallback = cb;
+  }
+
+  public setCoinDropCallback(cb: CoinDropCallback): void {
+    this._coinDropCallback = cb;
+  }
+
+  public setDamagePopCallback(cb: DamagePopCallback): void {
+    this._damagePopCallback = cb;
   }
 
   public startNewGame(difficulty: Difficulty): void {
@@ -289,10 +301,13 @@ export class GameEngine {
         const effectiveDamage =
           spider.damage * (1 - damageReduction);
         if (spider.type === 'burner') {
-          state.modifyHp(-effectiveDamage * BURNER_HP_DAMAGE_MULTIPLIER);
+          const hpDmg = effectiveDamage * BURNER_HP_DAMAGE_MULTIPLIER;
+          state.modifyHp(-hpDmg);
           state.modifyEnergy(-BURNER_ENERGY_BURN);
+          this._damagePopCallback?.(spider.id, hpDmg, BURNER_ENERGY_BURN);
         } else {
           state.modifyHp(-effectiveDamage);
+          this._damagePopCallback?.(spider.id, effectiveDamage, 0);
         }
       }
       spider.startDying();
@@ -344,6 +359,7 @@ export class GameEngine {
         if (!this._reachedCastleSpiderIds.has(id)) {
           const coins = formula.randomInt(COIN_MIN, COIN_MAX);
           state.addCoins(coins);
+          this._coinDropCallback?.(id, coins);
         }
         this._reachedCastleSpiderIds.delete(id);
       }

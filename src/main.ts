@@ -4,6 +4,7 @@ import { GameEngine } from './core/GameEngine.js';
 import { InputHandler } from './input/InputHandler.js';
 import { FreezeOverlay } from './ui/overlays/FreezeOverlay.js';
 import { ArmageddonOverlay } from './ui/overlays/ArmageddonOverlay.js';
+import { BlizzardOverlay } from './ui/overlays/BlizzardOverlay.js';
 import type { GameState } from './core/GameState.js';
 
 const root = document.getElementById('app');
@@ -16,6 +17,8 @@ const app = new App(root, spriteRegistry);
 
 let freezeOverlay: FreezeOverlay | null = null;
 let armageddonOverlay: ArmageddonOverlay | null = null;
+let blizzardOverlay: BlizzardOverlay | null = null;
+let blizzardTotalDuration = 0;
 
 const engine = new GameEngine((state: GameState) => {
   app.renderGameState(state);
@@ -33,6 +36,18 @@ const engine = new GameEngine((state: GameState) => {
       armageddonOverlay.show();
     } else {
       armageddonOverlay.hide();
+    }
+  }
+
+  if (blizzardOverlay) {
+    if (state.blizzardActive) {
+      if (!blizzardOverlay.isVisible()) {
+        blizzardTotalDuration = state.blizzardTimer;
+      }
+      blizzardOverlay.show();
+      blizzardOverlay.updateTimer(state.blizzardTimer, blizzardTotalDuration);
+    } else {
+      blizzardOverlay.hide();
     }
   }
 });
@@ -89,6 +104,9 @@ function initGame(): void {
   if (!armageddonOverlay) {
     armageddonOverlay = new ArmageddonOverlay(gameFieldContainer);
   }
+  if (!blizzardOverlay) {
+    blizzardOverlay = new BlizzardOverlay(gameFieldContainer);
+  }
 
   const ts = engine.getTalentSystem();
   const hud = app.getGameScreen().getHud();
@@ -96,6 +114,14 @@ function initGame(): void {
     hud.setTalentSystem(ts);
   }
   gameField.setHud(hud);
+
+  engine.setCoinDropCallback((spiderId, coins) => {
+    gameField.showCoinDrop(spiderId, coins);
+  });
+
+  engine.setDamagePopCallback((spiderId, hpDamage, energyBurn) => {
+    gameField.showDamagePop(spiderId, hpDamage, energyBurn);
+  });
 }
 
 const archerBtnsContainer = app.getGameScreen().getGameField().getArchersRow();

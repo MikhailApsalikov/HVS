@@ -11,8 +11,8 @@ const ABILITY_UNLOCK_LEVELS: Readonly<Record<AbilityId, number>> = {
   prep: 12,
   heal: 16,
   volley: 20,
-  stand: 24,
-  armageddon: 28,
+  stand: 25,
+  armageddon: 30,
 };
 
 export type ArmageddonPhase = 'none' | 'charging' | 'firing';
