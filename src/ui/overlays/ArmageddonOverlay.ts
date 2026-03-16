@@ -1,26 +1,26 @@
+import type { SpriteRegistry } from '../SpriteRegistry.js';
+
 export class ArmageddonOverlay {
   private _container: HTMLElement;
   private _visible: boolean = false;
 
-  public constructor(parent: HTMLElement) {
-    this._container = this._createDOM(parent);
+  public constructor(parent: HTMLElement, spriteRegistry: SpriteRegistry) {
+    this._container = this._createDOM(parent, spriteRegistry);
   }
 
-  private _createDOM(parent: HTMLElement): HTMLElement {
+  private _createDOM(parent: HTMLElement, spriteRegistry: SpriteRegistry): HTMLElement {
     const overlay = document.createElement('div');
     overlay.className = 'armageddon-overlay';
 
-    const fire = document.createElement('div');
-    fire.className = 'armageddon-overlay__fire';
+    const fireSvg = spriteRegistry.get('Fire');
+    if (fireSvg) {
+      const encoded = 'data:image/svg+xml,' + encodeURIComponent(fireSvg);
+      overlay.style.backgroundImage = `url("${encoded}")`;
+      overlay.style.backgroundRepeat = 'repeat';
+      overlay.style.backgroundSize = '64px 64px';
+    }
 
-    const text = document.createElement('div');
-    text.className = 'armageddon-overlay__text';
-    text.textContent = 'АРМАГЕДДОН';
-
-    overlay.appendChild(fire);
-    overlay.appendChild(text);
     parent.appendChild(overlay);
-
     return overlay;
   }
 

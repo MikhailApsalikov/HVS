@@ -729,37 +729,21 @@ body {
 .armageddon-overlay {
   display: none;
   position: absolute;
-  inset: 0;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(180deg, rgba(180, 50, 20, 0.5) 0%, rgba(220, 80, 30, 0.6) 100%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 60px;
   pointer-events: none;
   z-index: 100;
-}
-
-.armageddon-overlay.active {
-  display: flex;
-}
-
-.armageddon-overlay__fire {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at center, transparent 30%, rgba(255, 100, 50, 0.3) 70%);
   animation: armageddon-pulse 0.3s ease-in-out infinite alternate;
 }
 
-.armageddon-overlay__text {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #ffcc80;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-  letter-spacing: 0.3em;
-  z-index: 1;
+.armageddon-overlay.active {
+  display: block;
 }
 
 @keyframes armageddon-pulse {
-  from { opacity: 0.8; }
+  from { opacity: 0.7; }
   to { opacity: 1; }
 }
 
@@ -946,6 +930,60 @@ body {
   background: linear-gradient(90deg, #66bbff, #aaddff);
   transition: width 0.1s linear;
   box-shadow: 0 0 6px rgba(100, 180, 255, 0.6);
+}
+
+/* === Stand Shield Overlay === */
+.stand-shield-overlay {
+  display: none;
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+  z-index: 80;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 200, 50, 0) 0%,
+    rgba(255, 200, 50, 0.15) 40%,
+    rgba(255, 200, 50, 0.25) 100%
+  );
+  border-bottom: 2px solid rgba(255, 200, 50, 0.5);
+}
+
+.stand-shield-overlay.active {
+  display: flex;
+}
+
+.stand-shield-overlay__icon {
+  width: 40px;
+  height: 40px;
+  animation: shield-pulse 1.5s ease-in-out infinite alternate;
+}
+
+.stand-shield-overlay__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.stand-shield-overlay__timer {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ffd700;
+  text-shadow:
+    1px 1px 3px rgba(0, 0, 0, 0.8),
+    0 0 12px rgba(255, 200, 50, 0.6);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  min-width: 56px;
+  text-align: center;
+}
+
+@keyframes shield-pulse {
+  0% { filter: drop-shadow(0 0 4px rgba(255, 200, 50, 0.4)); }
+  100% { filter: drop-shadow(0 0 14px rgba(255, 200, 50, 0.9)); }
 }
 
 /* === Spider walk animation === */

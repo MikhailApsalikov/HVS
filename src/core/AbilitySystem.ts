@@ -11,12 +11,13 @@ const PREP_ENERGY_RESTORE = 300;
 const HEAL_BASE_AMOUNT = 150;
 const VOLLEY_BASE_LANES = 4;
 const STAND_BASE_DURATION = 7;
-const ARMAGEDDON_CHARGE_DURATION = 1.7;
+const ARMAGEDDON_CHARGE_DURATION = 2.5;
+const ARMAGEDDON_FIRE_DURATION = 3;
+
 export class AbilitySystem {
   private readonly _config: DifficultyConfig;
   private readonly _formulaCalculator: FormulaCalculator;
   private readonly _talentSystem: TalentSystem;
-  private _armageddonPendingIds: Set<string> = new Set();
 
   public constructor(
     config: DifficultyConfig,
@@ -53,36 +54,20 @@ export class AbilitySystem {
     if (state.armageddonPhase === 'charging') {
       state.tickArmageddon(dt);
       if (state.armageddonTimer <= 0) {
-        state.setArmageddon('firing');
-        this._armageddonPendingIds.clear();
-        for (const spider of state.spiders.values()) {
-          spider.scheduleArmageddon(Math.random() * 2);
-          this._armageddonPendingIds.add(spider.id);
-        }
+        state.setArmageddon('firing', ARMAGEDDON_FIRE_DURATION);
       }
       return;
     }
 
     if (state.armageddonPhase === 'firing') {
       for (const spider of state.spiders.values()) {
-        if (!this._armageddonPendingIds.has(spider.id)) continue;
-        if (spider.tickArmageddon(dt)) {
-          this._armageddonPendingIds.delete(spider.id);
+        if (!spider.dying) {
           spider.startDying();
         }
       }
 
-      const toRemove: string[] = [];
-      for (const id of this._armageddonPendingIds) {
-        if (!state.spiders.has(id)) {
-          toRemove.push(id);
-        }
-      }
-      for (const id of toRemove) {
-        this._armageddonPendingIds.delete(id);
-      }
-
-      if (this._armageddonPendingIds.size === 0) {
+      state.tickArmageddon(dt);
+      if (state.armageddonTimer <= 0) {
         state.setArmageddon('none');
       }
     }

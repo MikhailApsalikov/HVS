@@ -51,7 +51,7 @@ export const ABILITY_DESCRIPTIONS: Record<AbilityId, string> = {
   heal: 'Мгновенно восстанавливает HP.',
   volley: 'Выпускает стрелы из случайных линий.',
   stand: 'Полная неуязвимость на время действия.',
-  armageddon: 'Все пауки на поле постепенно сгорают (задержка 1.7 сек).',
+  armageddon: 'Все пауки на поле сгорают во всесжигающем пламени!',
 };
 
 const ABILITY_SPRITE_MAP: Record<AbilityId, string> = {
@@ -454,7 +454,6 @@ export class HUD {
                 <div class="tooltip__stat">Кулдаун: <b>${totalCd}</b> сек${cdReduction > 0 ? ` <span style="color:#7bc67b">(базовый ${baseCd} − ${cdReduction})</span>` : ''}</div>
                 <div class="tooltip__stat">Длительность: <b>${totalDur}</b> сек${durBonus > 0 ? ` <span style="color:#7bc67b">(базовая ${baseDur} + ${durBonus})</span>` : ''}</div>
                 <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.stand}</b></div>
-                <div class="tooltip__stat" style="margin-top:4px;color:#c9b896">Блокирует урон по HP и сжигание энергии.</div>
                 ${ts.getRank('dutyBound') > 0 ? `<div class="tooltip__talent">Чувство долга (${ts.getRank('dutyBound')}/${ts.getTalent('dutyBound').maxRanks}): +${durBonus} сек длительность, −${cdReduction} сек кулдаун</div>` : ''}`;
       }
       case 'armageddon': {
@@ -462,11 +461,7 @@ export class HUD {
         const baseCd = config?.abilities.armageddon.cooldown ?? 120;
         return `<div class="tooltip__stat">Стоимость: <b>${cost}</b> энергии</div>
                 <div class="tooltip__stat">Кулдаун: <b>${baseCd}</b> сек</div>
-                <div class="tooltip__stat">Задержка: <b>1.7</b> сек</div>
-                <div class="tooltip__stat">Горение: <b>2</b> сек (пауки сгорают постепенно)</div>
-                <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.armageddon}</b></div>
-                <div class="tooltip__stat" style="margin-top:4px;color:#c9b896">За каждого убитого паука начисляются монетки (1–3).</div>
-                <div class="tooltip__stat" style="color:#c9b896">Применяйте заранее — задержка 1.7 сек до начала горения.</div>`;
+                <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.armageddon}</b></div>`;
       }
       default:
         return '';

@@ -6,6 +6,7 @@ import { InputHandler } from './input/InputHandler.js';
 import { FreezeOverlay } from './ui/overlays/FreezeOverlay.js';
 import { ArmageddonOverlay } from './ui/overlays/ArmageddonOverlay.js';
 import { BlizzardOverlay } from './ui/overlays/BlizzardOverlay.js';
+import { StandShieldOverlay } from './ui/overlays/StandShieldOverlay.js';
 import { SoundEffect, MusicTrack } from './config/audio.js';
 import type { AbilityId } from './config/types.js';
 import type { GameState } from './core/GameState.js';
@@ -22,6 +23,7 @@ const audioManager = new AudioManager();
 let freezeOverlay: FreezeOverlay | null = null;
 let armageddonOverlay: ArmageddonOverlay | null = null;
 let blizzardOverlay: BlizzardOverlay | null = null;
+let standShieldOverlay: StandShieldOverlay | null = null;
 let blizzardTotalDuration = 0;
 
 const engine = new GameEngine((state: GameState) => {
@@ -52,6 +54,15 @@ const engine = new GameEngine((state: GameState) => {
       blizzardOverlay.updateTimer(state.blizzardTimer, blizzardTotalDuration);
     } else {
       blizzardOverlay.hide();
+    }
+  }
+
+  if (standShieldOverlay) {
+    if (state.isInvulnerable) {
+      standShieldOverlay.show();
+      standShieldOverlay.updateTimer(state.invulnerableTimer);
+    } else {
+      standShieldOverlay.hide();
     }
   }
 });
@@ -156,10 +167,13 @@ function initGame(): void {
     freezeOverlay = new FreezeOverlay(gameFieldContainer, spriteRegistry);
   }
   if (!armageddonOverlay) {
-    armageddonOverlay = new ArmageddonOverlay(gameFieldContainer);
+    armageddonOverlay = new ArmageddonOverlay(gameFieldContainer, spriteRegistry);
   }
   if (!blizzardOverlay) {
     blizzardOverlay = new BlizzardOverlay(gameFieldContainer);
+  }
+  if (!standShieldOverlay) {
+    standShieldOverlay = new StandShieldOverlay(gameFieldContainer, spriteRegistry);
   }
 
   const ts = engine.getTalentSystem();
