@@ -24,12 +24,12 @@ export class MainMenuScreen {
 
     const title = document.createElement('h1');
     title.className = 'main-menu__title';
-    title.textContent = 'ЗАЩИТА ЗАМКА';
+    title.textContent = 'HUNTERS VERSUS SPIDERS';
     this._container.appendChild(title);
 
     const subtitle = document.createElement('p');
     subtitle.className = 'main-menu__subtitle';
-    subtitle.textContent = 'Лучники против пауков';
+    subtitle.textContent = 'Hunters Versus Spiders';
     this._container.appendChild(subtitle);
 
     const buttons = document.createElement('div');

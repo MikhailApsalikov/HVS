@@ -61,6 +61,7 @@ engine.setPhaseChangeCallback((phase, state) => {
     const talentSystem = engine.getTalentSystem();
     const currentState = engine.getState();
     if (talentSystem && currentState) {
+      const isInitial = engine.isInitialTalentPick;
       app.showLevelUp(
         state.level,
         talentSystem,
@@ -71,7 +72,8 @@ engine.setPhaseChangeCallback((phase, state) => {
         },
         () => {
           currentState.spendTalentPoint();
-        }
+        },
+        isInitial
       );
     }
   }

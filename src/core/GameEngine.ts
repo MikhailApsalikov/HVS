@@ -39,6 +39,7 @@ export class GameEngine {
   private _reachedCastleSpiderIds: Set<string> = new Set();
   private _prevPhase: string = 'menu';
   private _coinAccumulator: number = 0;
+  private _isInitialTalentPick: boolean = false;
 
   public constructor(renderCallback: (state: GameState) => void) {
     this._saveSystem = new SaveSystem();
@@ -74,14 +75,17 @@ export class GameEngine {
 
     this._state = GameStateClass.createNew(difficulty, this._config);
     this._applyTalentBonuses();
-    this._state.setPhase('playing');
     this._state.setLevelTimer(
       this._config.levelTimerBase + this._config.levelTimerStep * this._state.level
     );
     this._lastTimestamp = -1;
     this._coinAccumulator = 0;
     this._reachedCastleSpiderIds.clear();
-    this._prevPhase = 'playing';
+
+    this._isInitialTalentPick = true;
+    this._state.awardTalentPoint();
+    this._state.setPhase('levelUp');
+    this._prevPhase = 'menu';
     this._startLoop();
   }
 
@@ -187,7 +191,12 @@ export class GameEngine {
     )
       return;
 
-    state.advanceLevel();
+    if (this._isInitialTalentPick) {
+      this._isInitialTalentPick = false;
+    } else {
+      state.advanceLevel();
+    }
+
     state.setLevelTimer(
       this._config.levelTimerBase +
         this._config.levelTimerStep * state.level
@@ -199,6 +208,10 @@ export class GameEngine {
 
   public getState(): GameState | null {
     return this._state;
+  }
+
+  public get isInitialTalentPick(): boolean {
+    return this._isInitialTalentPick;
   }
 
   public getTalentSystem(): TalentSystem | null {

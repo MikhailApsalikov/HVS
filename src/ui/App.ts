@@ -105,9 +105,10 @@ export class App {
     talentSystem: TalentSystem,
     pendingPoints: number,
     onConfirm: () => void,
-    onTalentUpgrade?: (id: TalentId) => void
+    onTalentUpgrade?: (id: TalentId) => void,
+    isInitial?: boolean
   ): void {
-    this._levelUpScreen.show(level, talentSystem, pendingPoints, onConfirm, onTalentUpgrade);
+    this._levelUpScreen.show(level, talentSystem, pendingPoints, onConfirm, onTalentUpgrade, isInitial);
   }
 
   public renderGameState(state: GameState): void {

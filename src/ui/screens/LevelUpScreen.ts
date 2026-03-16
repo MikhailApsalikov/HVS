@@ -88,7 +88,8 @@ export class LevelUpScreen {
     talentSystem: TalentSystem,
     pendingPoints: number,
     onConfirm: () => void,
-    onTalentUpgrade?: (id: TalentId) => void
+    onTalentUpgrade?: (id: TalentId) => void,
+    isInitial?: boolean
   ): void {
     this._onTalentUpgrade = onTalentUpgrade ?? null;
     this._playerLevel = level;
@@ -96,7 +97,9 @@ export class LevelUpScreen {
     this._pendingPoints = pendingPoints;
     this._onConfirm = onConfirm;
 
-    this._levelEl.textContent = `Уровень ${level} пройден!`;
+    this._levelEl.textContent = isInitial
+      ? 'Выберите первый талант!'
+      : `Уровень ${level} пройден!`;
     this._renderTalents();
     this._updateConfirmState();
     this._container.classList.add('level-up-screen--visible');

@@ -399,7 +399,6 @@ export class HUD {
                 <div class="tooltip__stat">Длительность: <b>${totalDur}</b> сек${durBonus > 0 ? ` <span style="color:#7bc67b">(базовая ${baseDur} + ${durBonus})</span>` : ''}</div>
                 <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.blizzard}</b></div>
                 <div class="tooltip__stat" style="margin-top:4px;color:#c9b896">Замедляет только пауков, уже находящихся на поле.</div>
-                <div class="tooltip__stat" style="color:#c9b896">Повторное применение — сбрасывает таймер замедления.</div>
                 ${ts.getRank('blizzardMastery') > 0 ? `<div class="tooltip__talent">Беспощадная вьюга (${ts.getRank('blizzardMastery')}/${ts.getTalent('blizzardMastery').maxRanks}): +${slowBonus.toFixed(0)}% замедл., +${durBonus} сек</div>` : ''}`;
       }
       case 'prep': {
