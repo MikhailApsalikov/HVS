@@ -1,0 +1,743 @@
+=============================================================
+  ТЕХНИЧЕСКАЯ СПЕЦИФИКАЦИЯ: ЗАЩИТА ЗАМКА
+  Архитектура и технологии
+=============================================================
+
+-------------------------------------------------------------
+1. ТЕХНОЛОГИЧЕСКИЙ СТЕК
+-------------------------------------------------------------
+
+1.1 Язык и среда выполнения
+  - TypeScript (strict mode) — единственный язык разработки
+  - Целевая среда: браузер (ES2022)
+  - Без фреймворков (React, Vue, Angular и т.д. не используются)
+  - Без игровых движков (Phaser, Pixi, Unity и т.д. не используются)
+
+1.2 Инструментарий сборки
+  - Vite — сборщик и dev-сервер
+  - TypeScript компилятор (tsc) через плагин Vite
+  - Конфигурация: vite.config.ts + tsconfig.json
+  - Целевой бандл: один HTML-файл с инлайновыми или
+    подключёнными JS/CSS-ресурсами
+
+1.3 Рендеринг
+  - Весь UI — HTML div-элементы, позиционируемые через CSS
+  - Все спрайты (пауки, стрелы, иконки способностей,
+    иконки талантов, декоративные элементы) — встроенные SVG
+  - Никаких Canvas/WebGL
+  - Анимации — CSS transitions + CSS animations; JavaScript
+    управляет только классами и CSS-переменными через style
+
+1.4 Хранилище
+  - localStorage браузера (нативный API, без обёрток)
+
+1.5 Тестирование
+  - Vitest — unit-тесты для игровой логики (без UI)
+
+-------------------------------------------------------------
+2. СТРУКТУРА ПРОЕКТА
+-------------------------------------------------------------
+
+hvs/
+├── index.html                  # точка входа
+├── vite.config.ts
+├── tsconfig.json
+├── package.json
+│
+├── src/
+│   ├── main.ts                 # инициализация приложения
+│   │
+│   ├── config/                 # файлы констант (раздел 15 спеки)
+│   │   ├── easy.ts             # лёгкий режим
+│   │   ├── normal.ts           # средний режим
+│   │   ├── hard.ts             # тяжёлый режим
+│   │   └── types.ts            # тип DifficultyConfig
+│   │
+│   ├── core/                   # чистая игровая логика (без DOM)
+│   │   ├── GameEngine.ts       # главный игровой цикл
+│   │   ├── GameState.ts        # полное состояние игры
+│   │   ├── SpiderSpawner.ts    # система спавна пауков
+│   │   ├── ArrowSystem.ts      # система стрел
+│   │   ├── AbilitySystem.ts    # система способностей
+│   │   ├── TalentSystem.ts     # система талантов
+│   │   ├── SaveSystem.ts       # сериализация/десериализация
+│   │   └── FormulaCalculator.ts # расчётные формулы (скорость, урон, спавн)
+│   │
+│   ├── entities/               # игровые сущности
+│   │   ├── Spider.ts           # базовый класс паука + подтипы
+│   │   ├── Arrow.ts            # стрела
+│   │   └── Archer.ts           # лучник (состояние кулдауна)
+│   │
+│   ├── ui/                     # DOM-слой
+│   │   ├── App.ts              # корневой компонент, роутинг между экранами
+│   │   ├── screens/
+│   │   │   ├── MainMenuScreen.ts
+│   │   │   ├── GameScreen.ts
+│   │   │   ├── LevelUpScreen.ts    # межуровневый экран (таланты)
+│   │   │   └── GameOverScreen.ts
+│   │   ├── components/
+│   │   │   ├── GameField.ts        # 9 линий, пауки, стрелы
+│   │   │   ├── HUD.ts              # правая панель
+│   │   │   ├── ResourceBar.ts      # HP-бар / энергобар
+│   │   │   ├── ArcherButton.ts     # кнопка выстрела 1–9
+│   │   │   ├── AbilityButton.ts    # кнопка способности
+│   │   │   └── TalentCard.ts       # карточка таланта
+│   │   └── overlays/
+│   │       ├── FreezeOverlay.ts    # полупрозрачный оверлей «Заморозки времени»
+│   │       └── ArmageddonOverlay.ts # огонь при «Армагеддоне»
+│   │
+│   ├── sprites/                # SVG-спрайты
+│   │   ├── spiders/
+│   │   │   ├── SpiderNormal.svg
+│   │   │   ├── SpiderFat.svg
+│   │   │   ├── SpiderFast.svg
+│   │   │   ├── SpiderNinja.svg
+│   │   │   └── SpiderBurner.svg    # Выжигатель энергии
+│   │   ├── Arrow.svg
+│   │   ├── Archer.svg
+│   │   ├── Castle.svg
+│   │   ├── abilities/
+│   │   │   ├── AbilityFreeze.svg   # снежинка (Заморозка)
+│   │   │   ├── AbilityBlizzard.svg # Вьюга
+│   │   │   ├── AbilityPrep.svg     # Подготовка
+│   │   │   ├── AbilityHeal.svg     # Лечение
+│   │   │   ├── AbilityVolley.svg   # Залп
+│   │   │   ├── AbilityStand.svg    # Ни шагу назад!
+│   │   │   └── AbilityArmageddon.svg
+│   │   ├── talents/
+│   │   │   ├── TalentEndurance.svg
+│   │   │   ├── TalentArmor.svg
+│   │   │   ├── TalentTireless.svg
+│   │   │   ├── TalentAgility.svg
+│   │   │   ├── TalentHealBoost.svg
+│   │   │   ├── TalentHunter.svg
+│   │   │   ├── TalentPrep.svg
+│   │   │   ├── TalentVolleyMastery.svg
+│   │   │   ├── TalentRapidFire.svg
+│   │   │   ├── TalentDuty.svg
+│   │   │   └── TalentBlizzardMastery.svg
+│   │   └── ui/
+│   │       ├── Lock.svg            # иконка замка для заблокированных способностей
+│   │       ├── Shield.svg          # щит над лучниками (Ни шагу назад!)
+│   │       └── Snowflake.svg       # снежинка при Заморозке времени
+│   │
+│   └── input/
+│       └── InputHandler.ts     # обработка клавиш и кликов мыши
+
+-------------------------------------------------------------
+3. АРХИТЕКТУРА
+-------------------------------------------------------------
+
+3.1 Разделение логики и отображения
+  Архитектура состоит из двух полностью независимых слоёв:
+
+  [Игровая логика — core/] ←→ [DOM-слой — ui/]
+        ↕                              ↕
+  GameState (POJO)             Renderer (читает состояние
+  не знает о DOM               и обновляет DOM)
+
+  - core/ не импортирует ничего из ui/ и не трогает DOM
+  - ui/ читает GameState и перерисовывает нужные части
+  - Связь: GameEngine вызывает Renderer.render(state) после
+    каждого тика; Renderer получает диффы и применяет их
+  - Все системы (SpiderSpawner, ArrowSystem и т.д.) являются
+    классами, получают зависимости через конструктор (DI),
+    хранят состояние в приватных полях
+
+3.2 Игровой цикл
+
+  requestAnimationFrame → GameEngine.tick(deltaMs)
+       ↓
+  ┌─────────────────────────────────────────────────────┐
+  │  1. SpiderSpawner.tick(dt, state)   — спавн         │
+  │  2. спауны двигаются: spider.y += spider.speed * dt │
+  │  3. ArrowSystem.tick(dt, state)     — полёт стрел   │
+  │  4. collision detection             — столкновения  │
+  │  5. AbilitySystem.tick(dt, state)   — кулдауны,     │
+  │     эффекты (замедление вьюги и т.д.)               │
+  │  6. ResourceSystem.tick(dt, state)  — HP/энергия    │
+  │  7. SpawnCheck: паук дошёл до конца → урон замку    │
+  │  8. WinCondition: таймер уровня → пауза, LevelUp    │
+  │  9. Renderer.render(state)          — обновление DOM│
+  └─────────────────────────────────────────────────────┘
+
+  Тик игрового цикла работает только если state.phase === 'playing'.
+  При state.phase === 'paused' / 'levelUp' / 'gameOver'
+  requestAnimationFrame не вызывается (или вызывается, но тик пропускается).
+
+  Заморозка времени (Q): реализуется через state.phase === 'paused',
+  как и обычная пауза. В этой фазе InputHandler пропускает все события
+  кроме нажатия Q, которое вызывает GameEngine.deactivateFreeze() и
+  возвращает phase → 'playing'. Повторное Q бесплатно (без затрат энергии).
+
+  Армагеддон (фаза 'firing'): пауки убиваются постепенно в течение 2 секунд.
+  Реализация: в начале фазы 'firing' все пауки на поле помечаются флагом
+  scheduledForArmageddon = true и получают случайный armageddonDelay (0..2 сек).
+  AbilitySystem.tick() уменьшает задержку каждому такому пауку;
+  когда задержка достигает 0 — паук убивается (spider.startDying()),
+  начисляются монетки (1–3). Новые пауки, заспавненные во время фазы 'firing',
+  флаг не получают и живут в обычном режиме.
+
+3.3 GameState — центральный объект состояния
+
+  interface GameState {
+    phase: 'menu' | 'playing' | 'paused' | 'levelUp' | 'gameOver';
+    difficulty: 'easy' | 'normal' | 'hard';
+    level: number;
+    levelTimer: number;          // оставшееся время в сек
+    hp: number;
+    maxHp: number;
+    energy: number;
+    maxEnergy: number;
+    coins: number;
+    pendingTalentPoints: number;
+    talents: TalentState[];
+    archers: ArcherState[];      // массив 9 лучников
+    spiders: SpiderEntity[];     // все пауки на поле
+    arrows: ArrowEntity[];       // все стрелы на поле
+    abilities: AbilityState[];   // состояние каждой из 7 способностей
+    isInvulnerable: boolean;     // активна ли «Ни шагу назад!»
+    invulnerableTimer: number;
+    freezeActive: boolean;       // активна ли Заморозка (Q)
+    blizzardActive: boolean;     // активна ли Вьюга (W)
+    blizzardTimer: number;
+    armageddonPhase: 'none' | 'charging' | 'firing';
+    armageddonTimer: number;
+    record: number;              // рекорд = максимальный уровень гибели
+                                 // (уровень, на котором умер, а не пройденный)
+  }
+
+3.4 Управление экранами
+
+  App.ts управляет тремя div-контейнерами верхнего уровня:
+    #screen-menu, #screen-game, #screen-gameover
+
+  Только один экран имеет display: flex в каждый момент.
+  Переключение — установка CSS-класса .active.
+
+  Модальный оверлей #screen-levelup показывается поверх
+  #screen-game (position: absolute) при state.phase === 'levelUp'.
+
+3.5 Структура главного меню
+
+  Главное меню содержит ровно 4 пункта:
+    1. «Загрузить игру» — видима только если SaveSystem.hasSave() === true
+    2. «Лёгкий»  — startNewGame('easy')
+    3. «Средний» — startNewGame('normal')
+    4. «Сложный» — startNewGame('hard')
+
+  startNewGame() вызывает SaveSystem.clear() и инициализирует
+  GameState с нуля на выбранном режиме.
+
+  Режим сложности сохранённой игры изменить нельзя: единственный способ
+  сменить режим — начать новую игру (пункты 2–4), что удаляет сохранение.
+
+-------------------------------------------------------------
+4. DOM-РЕНДЕРИНГ
+-------------------------------------------------------------
+
+4.1 Структура HTML-дерева (игровой экран)
+
+  <div id="screen-game">
+    <div id="game-field">
+      <div class="lane" data-lane="0"> ... </div>  <!-- 9 штук -->
+      <div class="lane" data-lane="8"> ... </div>
+    </div>
+    <div id="hud">
+      <div id="resource-bars">
+        <div id="hp-bar"> ... </div>
+        <div id="energy-bar"> ... </div>
+      </div>
+      <div id="coins-display"> ... </div>
+      <div id="level-timer"> ... </div>
+      <div id="level-number"> ... </div>
+      <div id="archer-buttons"> 9 × <div class="archer-btn"> </div>
+      <div id="ability-buttons"> 7 × <div class="ability-btn"> </div>
+    </div>
+  </div>
+
+4.2 Позиционирование игровых объектов
+
+  Каждый паук и стрела — отдельный div внутри своей .lane.
+  Позиция по вертикали задаётся CSS-переменной:
+
+    div.spider { top: calc(var(--y) * 100%); }
+
+  GameEngine обновляет --y через element.style.setProperty('--y', value).
+  Это избегает layout thrashing и хорошо работает с CSS transitions.
+
+  Прыжок паука-ниндзя: изменение parentElement (перемещение div из
+  одной .lane в другую) + CSS transition для плавной анимации.
+
+4.3 Диффный рендеринг
+
+  Renderer хранит Map<entityId, HTMLElement>.
+  При каждом тике:
+    - новые сущности (пауки, стрелы) → createElement + appendChild
+    - удалённые сущности → element.remove() + удаление из Map
+    - существующие → обновление только --y и классов
+
+  Полная перерисовка DOM не производится никогда.
+
+4.4 Ресурс-бары (HP, энергия)
+
+  <div class="resource-bar">
+    <div class="resource-bar__fill" style="--fill: 73%"></div>
+    <div class="resource-bar__text">365 / 500</div>
+  </div>
+
+  CSS: .resource-bar__fill { width: var(--fill); }
+  Обновление — одна операция style.setProperty.
+
+-------------------------------------------------------------
+5. SVG-СПРАЙТЫ
+-------------------------------------------------------------
+
+5.1 Подход к спрайтам
+
+  Каждый спрайт — отдельный .svg файл с viewBox, без фиксированных
+  width/height. Спрайт вставляется в DOM через innerHTML (inline SVG),
+  чтобы к нему применялся CSS и им можно было управлять из кода.
+
+  Загрузка спрайтов: при старте приложения все SVG-файлы загружаются
+  через fetch() или импортируются как строки (Vite: ?raw import),
+  сохраняются в SpriteRegistry (Map<string, string>).
+
+  Вставка в DOM:
+    element.innerHTML = SpriteRegistry.get('SpiderNormal');
+
+5.2 Требования к SVG-спрайтам
+
+  - viewBox: '0 0 64 64' — единый стандарт для всех спрайтов 64×64
+    (исключения: иконки способностей/талантов — 48×48)
+  - Цвета — через currentColor там, где требуется управление из CSS
+  - Анимация ног пауков — CSS animation (@keyframes в общем CSS-файле,
+    triggered классом .spider--walk)
+  - Состояния спрайтов управляются CSS-классами:
+    · .spider--slowed   → синеватый оттенок (замедлен Вьюгой)
+    · .spider--dying    → opacity анимация при гибели
+    · .archer-btn--cooldown → затемнение кнопки лучника
+    · .ability-btn--locked  → серый цвет + иконка замка
+
+5.3 Анимации
+
+  Все анимации — CSS, без JS-анимаций:
+
+  | Объект               | Анимация                         | Триггер          |
+  |----------------------|----------------------------------|------------------|
+  | Паук (ходьба)        | @keyframes spider-walk           | класс .walking   |
+  | Паук (гибель)        | @keyframes spider-die (fade+scale)| класс .dying    |
+  | Стрела               | transition: top 0ms linear       | --y CSS-var      |
+  | Заморозка времени    | fade-in overlay + snowflake spin | класс .freeze    |
+  | Армагеддон (огонь)   | @keyframes fire-spread           | класс .armageddon|
+  | Щит (Ни шагу назад!) | pulsing glow вокруг лучников     | класс .shielded  |
+  | Кулдаун кнопки       | conic-gradient sweep             | CSS-var --cd-pct |
+
+-------------------------------------------------------------
+6. СИСТЕМА ВВОДА
+-------------------------------------------------------------
+
+6.1 Клавиатура
+
+  InputHandler слушает window.addEventListener('keydown').
+  Маппинг клавиш → действия:
+
+    '1'–'9'  → GameEngine.shootLane(0–8)
+    'q'      → GameEngine.activateAbility('freeze')
+    'w'      → GameEngine.activateAbility('blizzard')
+    'e'      → GameEngine.activateAbility('prep')
+    'r'      → GameEngine.activateAbility('heal')
+    't'      → GameEngine.activateAbility('volley')
+    'y'      → GameEngine.activateAbility('stand')
+    'u'      → GameEngine.activateAbility('armageddon')
+    'Escape' → GameEngine.togglePause()
+
+  При state.phase !== 'playing' и !== 'paused' клавиши игнорируются
+  (кроме Escape).
+
+6.2 Мышь / тач
+
+  Клики по .archer-btn и .ability-btn делегируются через
+  addEventListener('click') на родительских контейнерах.
+  data-атрибуты (data-lane, data-ability) определяют действие.
+
+-------------------------------------------------------------
+7. СИСТЕМА СОХРАНЕНИЯ
+-------------------------------------------------------------
+
+7.1 Ключи localStorage
+
+  Все данные хранятся под одним ключом:
+    'hvs_save' → JSON-строка объекта SaveData
+
+7.2 Структура SaveData
+
+  interface SaveData {
+    version: number;           // версия схемы сохранения
+    difficulty: string;
+    level: number;
+    hp: number;
+    energy: number;
+    coins: number;
+    pendingTalentPoints: number;
+    talents: { id: number; rank: number }[];
+    record: number;
+  }
+
+7.3 Логика сохранения/загрузки
+
+  SaveSystem.save(state)   — сериализует GameState → SaveData → JSON
+  SaveSystem.load()        — читает JSON → SaveData → частичный GameState
+  SaveSystem.clear()       — удаляет ключ
+
+  Вызов save() происходит в GameEngine строго в одном месте:
+  после завершения межуровневого экрана (LevelUpScreen), перед стартом
+  следующего уровня.
+
+  Несовпадение версии схемы (SaveData.version) → автоматический сброс
+  сохранения (clear() + уведомление пользователю).
+
+-------------------------------------------------------------
+8. ФАЙЛЫ КОНФИГУРАЦИИ
+-------------------------------------------------------------
+
+8.1 Интерфейс DifficultyConfig
+
+  interface DifficultyConfig {
+    // Игрок
+    baseHp: number;
+    baseEnergy: number;
+    hpRegen: number;           // HP/сек
+    energyRegen: number;       // энергия/сек
+    coinsPerSec: number;
+
+    // Выстрел
+    shootCost: number;
+    shootCooldown: number;     // сек
+    arrowTravelTime: number;   // сек
+
+    // Способности: стоимость и кулдауны
+    abilities: Record<AbilityId, { cost: number; cooldown: number }>;
+
+    // Параметры таймера уровней
+    levelTimerBase: number;    // X = 15
+    levelTimerStep: number;    // Y = 2
+
+    // Спавн пауков
+    spawnTickInterval: number; // 0.02 сек
+    spawnP0: number;           // базовая вероятность
+    spawnDP: number;           // прирост за уровень
+
+    // Характеристики пауков
+    spiderSpeedBase: number;   // S₀
+    spiderSpeedStep: number;   // dS
+    spiderDamageBase: number;  // D₀
+    spiderDamageStep: number;  // dD
+    spiderVariance: number;    // 0.30
+
+    // Вероятности видов пауков
+    spiderChanceFat: number;
+    spiderChanceFast: number;
+    spiderChanceNinja: number;
+    spiderChanceBurner: number;
+
+    // Таланты: прирост за ранг
+    talents: Record<TalentId, TalentLevelConfig>;
+  }
+
+8.2 Загрузка конфигурации
+
+  ConfigManager.getConfig(difficulty: Difficulty): DifficultyConfig
+  Возвращает нужный объект из трёх заранее импортированных модулей.
+  Нет динамической загрузки — все три конфига бандлятся вместе.
+
+-------------------------------------------------------------
+9. СИСТЕМА СУЩНОСТЕЙ
+-------------------------------------------------------------
+
+Все игровые сущности — классы с приватными полями и публичными
+геттерами. Мутация состояния — только через методы класса.
+Создание — через статический фабричный метод create().
+
+9.1 Spider (абстрактный базовый класс)
+
+  abstract class Spider {
+    readonly id: string;                      // uuid, задаётся при создании
+    abstract readonly type: SpiderType;
+
+    private _lane: number;                    // 0–8
+    private _y: number;                       // 0.0 (верх) .. 1.0 (низ)
+    private readonly _speed: number;          // доли линии/сек
+    private readonly _damage: number;         // HP-урон при достижении замка
+    private _slowFactor: number;              // 1.0 = нет замедления
+    private _slowTimer: number;               // оставшееся время замедления, сек
+    private _dying: boolean;
+    private _dyingTimer: number;              // сек до удаления из состояния
+
+    get lane(): number { ... }
+    get y(): number { ... }
+    get speed(): number { ... }
+    get damage(): number { ... }
+    get isDying(): boolean { ... }
+    get isAlive(): boolean { ... }            // !dying && dyingTimer <= 0
+    get effectiveSpeed(): number { ... }      // speed * slowFactor
+
+    move(dt: number): void                    // y += effectiveSpeed * dt
+    applySlow(factor: number, duration: number): void
+    tickSlow(dt: number): void
+    startDying(dyingDuration: number): void
+    tickDying(dt: number): void               // уменьшает _dyingTimer
+    changeLane(newLane: number): void         // прыжок ниндзя
+
+    // Армагеддон:
+    private _armageddonDelay: number | null;  // null = не помечен
+    scheduleArmageddon(delay: number): void
+    tickArmageddon(dt: number): boolean       // true = время пришло, убить
+  }
+
+  Конкретные подклассы:
+    class NormalSpider extends Spider { readonly type = 'normal'; }
+    class FatSpider    extends Spider { readonly type = 'fat';    }
+    class FastSpider   extends Spider { readonly type = 'fast';   }
+    class BurnerSpider extends Spider { readonly type = 'burner'; }
+
+    class NinjaSpider extends Spider {
+      readonly type = 'ninja';
+      private _hasJumped: boolean;
+      private readonly _jumpThreshold: number;  // 0.1..0.5
+      get hasJumped(): boolean { ... }
+      get jumpThreshold(): number { ... }
+      markJumped(): void
+    }
+
+  Все конкретные классы создаются через статический метод:
+    static create(lane: number, level: number, config: DifficultyConfig): Spider
+
+9.2 Arrow
+
+  class Arrow {
+    readonly id: string;
+    private _lane: number;
+    private _y: number;                       // 1.0 (низ) → 0.0 (верх)
+    private readonly _speed: number;
+    readonly fromVolley: boolean;
+
+    get lane(): number { ... }
+    get y(): number { ... }
+    get hasLeft(): boolean { ... }            // y < 0
+
+    move(dt: number): void                    // y -= speed * dt
+
+    static create(lane: number, config: DifficultyConfig,
+                  fromVolley?: boolean): Arrow
+  }
+
+9.3 Archer
+
+  class Archer {
+    readonly lane: number;
+    private _cooldown: number;                // сек, 0 = готов
+
+    get isReady(): boolean { ... }            // cooldown <= 0
+    get cooldownFraction(): number { ... }    // для прогресс-бара: 0..1
+
+    startCooldown(duration: number): void
+    tick(dt: number): void
+  }
+
+9.4 Ability
+
+  class Ability {
+    readonly id: AbilityId;
+    readonly unlockedAtLevel: number;
+    private _cooldown: number;
+
+    get isOnCooldown(): boolean { ... }
+    get cooldownFraction(): number { ... }
+    get remainingCooldown(): number { ... }
+
+    activate(cooldownDuration: number): void
+    tick(dt: number): void
+    isAvailableAt(level: number): boolean { ... }
+  }
+
+9.5 GameState
+
+  class GameState {
+    private _phase: GamePhase;
+    private _level: number;
+    private _levelTimer: number;
+    private _hp: number;
+    private _maxHp: number;
+    private _energy: number;
+    private _maxEnergy: number;
+    private _coins: number;
+    private _pendingTalentPoints: number;
+    private readonly _archers: Archer[];
+    private readonly _spiders: Map<string, Spider>;
+    private readonly _arrows: Map<string, Arrow>;
+    private readonly _abilities: Map<AbilityId, Ability>;
+    private readonly _talents: TalentState[];
+    private _record: number;
+
+    // Публичные геттеры для чтения — только read-only срезы:
+    get phase(): GamePhase { ... }
+    get level(): number { ... }
+    get hp(): number { ... }
+    get energy(): number { ... }
+    get spiders(): ReadonlyMap<string, Spider> { ... }
+    get arrows(): ReadonlyMap<string, Arrow> { ... }
+    // ... и т.д.
+
+    // Мутирующие методы — только явно именованные:
+    addSpider(spider: Spider): void
+    removeSpider(id: string): void
+    addArrow(arrow: Arrow): void
+    removeArrow(id: string): void
+    modifyHp(delta: number): void            // clamp(0, maxHp)
+    modifyEnergy(delta: number): void        // clamp(0, maxEnergy)
+    setPhase(phase: GamePhase): void
+    advanceLevel(): void
+    addCoins(amount: number): void
+    awardTalentPoint(): void
+    updateRecord(): void                     // record = max(record, level)
+  }
+
+-------------------------------------------------------------
+10. КОЛЛИЗИИ
+-------------------------------------------------------------
+
+  Коллизия стрела ↔ паук проверяется в ArrowSystem.tick():
+  - Для каждой стрелы находятся все живые пауки на той же lane
+  - Паук считается «поражённым», если:
+      abs(arrow.y - spider.y) < HIT_RADIUS   (HIT_RADIUS = 0.05)
+  - Из подходящих берётся паук с наибольшим y (ближайший к низу,
+    т.е. «первый на пути» стрелы, летящей вверх)
+  - При попадании: spider.dying = true, arrow удаляется
+  - Если паук был dying (уже умирает от другой стрелы) — стрела
+    летит дальше (не считается столкновением)
+
+-------------------------------------------------------------
+11. МАСШТАБИРОВАНИЕ И АДАПТИВНОСТЬ
+-------------------------------------------------------------
+
+  - Игровое поле занимает фиксированную высоту: 100vh
+  - Ширина игрового поля: min(calc(100vh * 0.6), 70vw)
+    (соотношение сторон приблизительно 3:5, вертикальная ориентация)
+  - Правая панель: оставшееся пространство
+  - Все размеры в CSS задаются через em / % / vmin —
+    без пиксельных констант в стилях
+  - SVG-спрайты масштабируются через width/height CSS (не атрибуты SVG)
+  - Минимальная поддерживаемая ширина экрана: 800px
+    (мобильные устройства в портретной ориентации не поддерживаются)
+
+-------------------------------------------------------------
+12. ПРОИЗВОДИТЕЛЬНОСТЬ
+-------------------------------------------------------------
+
+  12.1 Цель
+    - Стабильные 60 FPS при 100+ пауков на экране одновременно
+    - Время одного тика gameLoop < 4 мс
+
+  12.2 Правила
+    - Никаких document.querySelector / getElementById в игровом цикле
+    - Все ссылки на DOM-элементы кешируются при создании сущности
+    - Операции с DOM — только в Renderer, только через
+      style.setProperty и classList (никаких innerHTML в цикле)
+    - Создание/удаление DOM-элементов — только при появлении/гибели
+      сущности (не каждый кадр)
+    - Сортировка пауков по y производится только при collision check,
+      не при рендеринге
+
+  12.3 Измерения
+    - В dev-режиме Vite: счётчик FPS и время тика отображаются
+      в углу экрана (только при ?debug=1 в URL)
+
+-------------------------------------------------------------
+13. КОНВЕНЦИИ КОДА
+-------------------------------------------------------------
+
+13.1 Именование
+  - PascalCase — классы, абстрактные классы, интерфейсы (I-префикс
+    не используется), типы, enum
+  - camelCase — переменные, поля, методы
+  - SCREAMING_SNAKE_CASE — константы модуля (не конфиг)
+  - Имена файлов — PascalCase (каждый файл = один класс)
+
+13.2 Обязательный ООП-стиль
+  Весь код организован в классы. Свободные функции (standalone
+  exported functions) запрещены без исключений.
+
+  13.2.1 Инкапсуляция
+    - Все поля класса — private (или protected для иерархий)
+    - Публичные свойства — только через геттеры
+    - Сеттеры разрешены только там, где семантика чтения/записи
+      явно симметрична; во всех прочих случаях — именованный метод
+      (modifyHp(), startCooldown(), и т.д.)
+    - Модификатор доступа (public / private / protected) обязателен
+      для каждого поля и каждого метода без исключений
+
+  13.2.2 Классы вместо утилитных модулей
+    - FormulaCalculator — класс, все расчёты как публичные методы
+    - SaveSystem — класс с методами save() / load() / clear()
+    - ConfigManager — класс с методом getConfig(difficulty)
+    - SpriteRegistry — класс с методами register() / get()
+    - InputHandler — класс, регистрирует слушатели в конструкторе
+
+  13.2.3 Запрещённые паттерны
+    - Объекты-пакеты функций: export const utils = { fn1, fn2 }
+    - Классы с только статическими методами (static-only class)
+    - Namespace как замена классу
+    - Мутация полей объекта напрямую снаружи класса:
+        state.hp = 200     ← запрещено
+        state.modifyHp(-50) ← правильно
+
+  13.2.4 Иерархии и полиморфизм
+    - Абстрактный класс используется, когда несколько конкретных
+      классов делят реализацию части методов (Spider → подклассы)
+    - Интерфейс (interface) используется для описания контракта
+      между слоями (IRenderer, IInputSource) и для конфигурационных
+      типов-данных (DifficultyConfig, SaveData)
+    - Предпочтение — композиции над наследованием; наследование
+      допустимо при глубине не более 2 уровней
+
+  13.2.5 Внедрение зависимостей (DI)
+    - Зависимости передаются через конструктор, не создаются внутри
+    - Синглтоны (GameEngine, Renderer, InputHandler) создаются
+      единожды в main.ts и передаются вниз
+    - Запрещено обращаться к глобальным объектам (window, document)
+      из core/-классов; DOM-доступ разрешён только в ui/-классах
+
+  13.2.6 Неизменяемость там, где возможно
+    - Параметры конструктора, которые не меняются после создания,
+      помечаются readonly
+    - Возвращаемые коллекции из геттеров — ReadonlyArray<T> или
+      ReadonlyMap<K, V>, чтобы исключить внешнюю мутацию
+    - Конфигурационные объекты (DifficultyConfig) — readonly deep:
+      все вложенные поля также readonly
+
+13.3 Модульность
+  - Каждый файл экспортирует один класс (или абстрактный класс)
+    и опционально связанные с ним типы/интерфейсы
+  - Циклические импорты запрещены
+  - core/ не импортирует из ui/ (проверяется линтером)
+  - Порядок импортов: сначала сторонние (vite), затем core/,
+    затем entities/, затем ui/, затем локальные
+
+13.4 Типизация
+  - Никаких any (tsconfig: "strict": true, "noImplicitAny": true)
+  - Возвращаемый тип метода указывается явно всегда (no implicit return)
+  - Все внешние данные (localStorage, конфиг) валидируются в методе
+    класса перед использованием; сырые данные не утекают наружу
+  - type — для union'ов, алиасов примитивов, mapped types
+  - interface — для контрактов и конфигурационных структур-данных
+  - Enum — только const enum; обычные enum запрещены
+
+13.5 Побочные эффекты
+  - Методы, мутирующие состояние, обязаны отражать это в имени
+    (move, apply, modify, start, reset, tick и т.д.)
+  - Геттеры не имеют побочных эффектов (не мутируют поля)
+  - Math.random() вызывается только внутри FormulaCalculator,
+    что упрощает возможное тестирование с seed
+
+=============================================================
