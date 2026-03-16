@@ -10,6 +10,7 @@ const SPIDER_SPRITE_MAP: Record<string, string> = {
   fast: 'SpiderFast',
   ninja: 'SpiderNinja',
   burner: 'SpiderBurner',
+  tank: 'SpiderTank',
 };
 
 export class GameField {

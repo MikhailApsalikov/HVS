@@ -5,7 +5,7 @@ export const normalConfig: DifficultyConfig = {
   baseEnergy: 100,
   hpRegen: 1,
   energyRegen: 10,
-  coinsPerSec: 2,
+  coinsPerSec: 0.2,
 
   shootCost: 35,
   shootCooldown: 1.5,
@@ -38,6 +38,7 @@ export const normalConfig: DifficultyConfig = {
   spiderChanceFast: 0.03,
   spiderChanceNinja: 0.02,
   spiderChanceBurner: 0.01,
+  spiderChanceTank: 0.02,
 
   talents: {
     endurance: { maxRanks: 7, unlocksAtLevel: 1 },

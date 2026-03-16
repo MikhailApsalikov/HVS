@@ -213,3 +213,15 @@ export class NinjaSpider extends Spider {
     return new NinjaSpider(lane, 0, speed, damage, jumpThreshold);
   }
 }
+
+export class TankSpider extends Spider {
+  public readonly type = 'tank' as const;
+
+  public static create(lane: number, level: number, config: DifficultyConfig): Spider {
+    const baseSpeed = Spider.computeBaseSpeed(config, level);
+    const baseDamage = Spider.computeBaseDamage(config, level);
+    const speed = baseSpeed * 0.6;
+    const damage = baseDamage * 4;
+    return new TankSpider(lane, 0, speed, damage);
+  }
+}

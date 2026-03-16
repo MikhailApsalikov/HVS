@@ -1,7 +1,7 @@
 export type Difficulty = 'easy' | 'normal' | 'hard';
 export type AbilityId = 'freeze' | 'blizzard' | 'prep' | 'heal' | 'volley' | 'stand' | 'armageddon';
 export type TalentId = 'endurance' | 'spiderArmor' | 'tireless' | 'agility' | 'healBoost' | 'hunterMastery' | 'improvedPrep' | 'volleyMastery' | 'rapidFire' | 'dutyBound' | 'blizzardMastery';
-export type SpiderType = 'normal' | 'fat' | 'fast' | 'ninja' | 'burner';
+export type SpiderType = 'normal' | 'fat' | 'fast' | 'ninja' | 'burner' | 'tank';
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'levelUp' | 'gameOver';
 
 export type AbilityResult =
@@ -53,6 +53,7 @@ export interface DifficultyConfig {
   readonly spiderChanceFast: number;
   readonly spiderChanceNinja: number;
   readonly spiderChanceBurner: number;
+  readonly spiderChanceTank: number;
 
   readonly talents: Readonly<Record<TalentId, TalentLevelConfig>>;
 }

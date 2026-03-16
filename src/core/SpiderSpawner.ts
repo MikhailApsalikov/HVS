@@ -8,6 +8,7 @@ import {
   FastSpider,
   BurnerSpider,
   NinjaSpider,
+  TankSpider,
 } from '../entities/Spider.js';
 
 export class SpiderSpawner {
@@ -54,6 +55,9 @@ export class SpiderSpawner {
     }
     if (level >= 20 && Math.random() < 0.03) {
       return FastSpider.create(lane, level, config);
+    }
+    if (level >= 15 && Math.random() < config.spiderChanceTank) {
+      return TankSpider.create(lane, level, config);
     }
     if (level >= 10 && Math.random() < 0.05) {
       return FatSpider.create(lane, level, config);
