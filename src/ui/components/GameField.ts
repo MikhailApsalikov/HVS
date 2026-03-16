@@ -12,32 +12,73 @@ const SPIDER_SPRITE_MAP: Record<string, string> = {
 
 export class GameField {
   private _container: HTMLElement;
+  private _lanesArea: HTMLElement;
+  private _archersRow: HTMLElement;
   private _lanes: HTMLElement[] = [];
   private _spiderElements: Map<string, HTMLElement> = new Map();
   private _arrowElements: Map<string, HTMLElement> = new Map();
+  private _archerButtons: HTMLElement[] = [];
   private readonly _spriteRegistry: SpriteRegistry;
 
   public constructor(container: HTMLElement, spriteRegistry: SpriteRegistry) {
     this._container = container;
     this._spriteRegistry = spriteRegistry;
-    this._buildLanes();
+    this._lanesArea = document.createElement('div');
+    this._archersRow = document.createElement('div');
+    this._build();
   }
 
-  private _buildLanes(): void {
+  private _build(): void {
     this._container.className = 'game-field';
     this._container.dataset.component = 'game-field';
+
+    this._lanesArea.className = 'game-field__lanes';
     for (let i = 0; i < 9; i++) {
       const lane = document.createElement('div');
       lane.className = 'lane';
       lane.dataset.lane = String(i);
-      this._container.appendChild(lane);
+      this._lanesArea.appendChild(lane);
       this._lanes.push(lane);
     }
+    this._container.appendChild(this._lanesArea);
+
+    this._archersRow.className = 'game-field__archers';
+    for (let i = 0; i < 9; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'archer-btn';
+      btn.dataset.lane = String(i);
+      btn.type = 'button';
+      const numLabel = document.createElement('span');
+      numLabel.className = 'archer-btn__number';
+      numLabel.textContent = String(i + 1);
+      btn.appendChild(numLabel);
+      const iconWrap = document.createElement('span');
+      iconWrap.className = 'archer-btn__icon';
+      iconWrap.innerHTML = this._spriteRegistry.get('Archer');
+      btn.appendChild(iconWrap);
+      this._archerButtons.push(btn);
+      this._archersRow.appendChild(btn);
+    }
+    this._container.appendChild(this._archersRow);
   }
 
   public render(state: GameState): void {
     this._renderSpiders(state);
     this._renderArrows(state);
+    this._renderArchers(state);
+  }
+
+  private _renderArchers(state: GameState): void {
+    const archers = state.archers;
+    for (let i = 0; i < this._archerButtons.length; i++) {
+      const archer = archers[i];
+      const btn = this._archerButtons[i];
+      if (archer && btn) {
+        const cdPct = archer.cooldownFraction * 100;
+        btn.style.setProperty('--cd-pct', `${cdPct}%`);
+        btn.classList.toggle('archer-btn--cooldown', !archer.isReady);
+      }
+    }
   }
 
   private _renderSpiders(state: GameState): void {
@@ -109,5 +150,9 @@ export class GameField {
 
   public getContainer(): HTMLElement {
     return this._container;
+  }
+
+  public getArchersRow(): HTMLElement {
+    return this._archersRow;
   }
 }

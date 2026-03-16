@@ -113,7 +113,8 @@ export class LevelUpScreen {
     const system = this._talentSystem;
     if (!system) return;
 
-    for (const talent of system.talents) {
+    const sorted = [...system.talents].sort((a, b) => a.unlocksAtLevel - b.unlocksAtLevel);
+    for (const talent of sorted) {
       const card = this._createTalentCard(talent.id, talent.rank, talent.maxRanks, talent.unlocksAtLevel);
       this._talentsGrid.appendChild(card);
     }

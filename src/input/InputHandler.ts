@@ -21,13 +21,14 @@ export class InputHandler {
     if (!this._enabled) return;
 
     const key = e.key.toLowerCase();
+    const code = e.code;
 
     if (key >= '1' && key <= '9') {
       this._onShoot(parseInt(key, 10) - 1);
       return;
     }
 
-    const abilityMap: Record<string, AbilityId> = {
+    const abilityByKey: Record<string, AbilityId> = {
       q: 'freeze',
       w: 'blizzard',
       e: 'prep',
@@ -35,9 +36,26 @@ export class InputHandler {
       t: 'volley',
       y: 'stand',
       u: 'armageddon',
+      'й': 'freeze',
+      'ц': 'blizzard',
+      'у': 'prep',
+      'к': 'heal',
+      'е': 'volley',
+      'н': 'stand',
+      'г': 'armageddon',
     };
 
-    const abilityId = abilityMap[key];
+    const abilityByCode: Record<string, AbilityId> = {
+      KeyQ: 'freeze',
+      KeyW: 'blizzard',
+      KeyE: 'prep',
+      KeyR: 'heal',
+      KeyT: 'volley',
+      KeyY: 'stand',
+      KeyU: 'armageddon',
+    };
+
+    const abilityId = abilityByKey[key] ?? abilityByCode[code];
     if (abilityId) {
       this._onAbility(abilityId);
     }

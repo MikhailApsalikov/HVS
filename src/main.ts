@@ -65,11 +65,11 @@ engine.setPhaseChangeCallback((phase, state) => {
 app.setEngine({
   startNewGame: (difficulty) => {
     engine.startNewGame(difficulty);
-    initOverlays();
+    initGame();
   },
   loadGame: () => {
     engine.loadGame();
-    initOverlays();
+    initGame();
   },
 });
 app.setSaveSystem(engine.getSaveSystem());
@@ -80,17 +80,23 @@ const inputHandler = new InputHandler(
   (abilityId) => engine.activateAbility(abilityId)
 );
 
-function initOverlays(): void {
-  const gameFieldContainer = app.getGameScreen().getGameField().getContainer();
+function initGame(): void {
+  const gameField = app.getGameScreen().getGameField();
+  const gameFieldContainer = gameField.getContainer();
   if (!freezeOverlay) {
     freezeOverlay = new FreezeOverlay(gameFieldContainer, spriteRegistry);
   }
   if (!armageddonOverlay) {
     armageddonOverlay = new ArmageddonOverlay(gameFieldContainer);
   }
+
+  const ts = engine.getTalentSystem();
+  if (ts) {
+    app.getGameScreen().getHud().setTalentSystem(ts);
+  }
 }
 
-const archerBtnsContainer = app.getGameScreen().getHud().getArcherButtonsContainer();
+const archerBtnsContainer = app.getGameScreen().getGameField().getArchersRow();
 archerBtnsContainer.addEventListener('click', (e: Event) => {
   const target = (e.target as HTMLElement).closest('.archer-btn');
   if (!target) return;
