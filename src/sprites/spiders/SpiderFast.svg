@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="spiderFastBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a6b3a"/>
+      <stop offset="50%" style="stop-color:#2d4a22"/>
+      <stop offset="100%" style="stop-color:#1a3015"/>
+    </linearGradient>
+    <linearGradient id="spiderFastLeg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#5a7a48"/>
+      <stop offset="100%" style="stop-color:#2d4a22"/>
+    </linearGradient>
+    <radialGradient id="spiderFastEye" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#88ff88"/>
+      <stop offset="70%" style="stop-color:#228822"/>
+      <stop offset="100%" style="stop-color:#0d330d"/>
+    </radialGradient>
+  </defs>
+  <!-- Long sleek legs - extended for speed -->
+  <path d="M20 26 Q4 12 -4 0" stroke="url(#spiderFastLeg)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M44 26 Q60 12 68 0" stroke="url(#spiderFastLeg)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M16 30 Q-2 28 -6 20" stroke="url(#spiderFastLeg)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M48 30 Q66 28 70 20" stroke="url(#spiderFastLeg)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M24 38 Q8 50 2 62" stroke="url(#spiderFastLeg)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M40 38 Q56 50 62 62" stroke="url(#spiderFastLeg)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M28 40 Q14 54 10 64" stroke="url(#spiderFastLeg)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M36 40 Q50 54 54 64" stroke="url(#spiderFastLeg)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Streamlined abdomen -->
+  <ellipse cx="32" cy="36" rx="10" ry="14" fill="url(#spiderFastBody)"/>
+  <!-- Sleek cephalothorax -->
+  <ellipse cx="32" cy="22" rx="8" ry="7" fill="url(#spiderFastBody)"/>
+  <!-- Eyes -->
+  <ellipse cx="29" cy="18" rx="3" ry="4" fill="url(#spiderFastEye)"/>
+  <ellipse cx="35" cy="18" rx="3" ry="4" fill="url(#spiderFastEye)"/>
+  <ellipse cx="26" cy="22" rx="1.5" ry="2" fill="#aaffaa"/>
+  <ellipse cx="38" cy="22" rx="1.5" ry="2" fill="#aaffaa"/>
+  <ellipse cx="32" cy="23" rx="1.5" ry="1.5" fill="#aaffaa"/>
+</svg>

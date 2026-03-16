@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="rapidArrow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8b6914"/>
+      <stop offset="100%" style="stop-color:#4a3008"/>
+    </linearGradient>
+    <linearGradient id="rapidHead" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" style="stop-color:#c0c0c0"/>
+      <stop offset="100%" style="stop-color:#808080"/>
+    </linearGradient>
+  </defs>
+  <!-- Main arrow -->
+  <rect x="8" y="22" width="32" height="4" rx="1" fill="url(#rapidArrow)"/>
+  <path d="M40 24 L48 20 L48 28 Z" fill="url(#rapidHead)"/>
+  <!-- Speed lines -->
+  <path d="M4 12 L8 16 M4 18 L10 20 M4 24 L8 24 M4 30 L10 28 M4 36 L8 32" stroke="#ff8800" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+  <path d="M2 14 L6 16 M2 22 L8 22 M2 30 L6 28" stroke="#ffaa00" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+</svg>

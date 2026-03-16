@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="dutyShield" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffdd66"/>
+      <stop offset="50%" style="stop-color:#cc9900"/>
+      <stop offset="100%" style="stop-color:#996600"/>
+    </linearGradient>
+    <linearGradient id="dutyFist" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8c4a0"/>
+      <stop offset="100%" style="stop-color:#c9a67a"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield -->
+  <path d="M24 4 L42 12 L42 24 Q42 36 24 44 Q6 36 6 24 L6 12 Z" fill="url(#dutyShield)"/>
+  <path d="M24 4 L42 12 L42 24 Q42 36 24 44 Q6 36 6 24 L6 12 Z" fill="none" stroke="#996600" stroke-width="1"/>
+  <!-- Fist -->
+  <ellipse cx="24" cy="28" rx="8" ry="10" fill="url(#dutyFist)"/>
+  <path d="M18 24 Q16 20 18 16 Q20 14 22 16" fill="url(#dutyFist)"/>
+  <path d="M24 22 Q24 18 26 16 Q28 14 30 16" fill="url(#dutyFist)"/>
+  <path d="M30 24 Q32 20 30 18 Q28 16 26 18" fill="url(#dutyFist)"/>
+  <path d="M20 30 Q18 34 20 36 Q22 38 24 36" fill="url(#dutyFist)"/>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="blizzardWind" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" style="stop-color:#aaddff;stop-opacity:0.3"/>
+      <stop offset="50%" style="stop-color:#66bbff;stop-opacity:0.7"/>
+      <stop offset="100%" style="stop-color:#2288cc;stop-opacity:0.3"/>
+    </linearGradient>
+    <radialGradient id="blizzardCenter" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#66bbff;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+  <!-- Swirling wind arcs -->
+  <path d="M8 24 Q24 8 40 24 Q24 40 8 24" fill="none" stroke="url(#blizzardWind)" stroke-width="4"/>
+  <path d="M12 24 Q24 12 36 24 Q24 36 12 24" fill="none" stroke="url(#blizzardWind)" stroke-width="3"/>
+  <path d="M16 24 Q24 16 32 24 Q24 32 16 24" fill="none" stroke="#88ccff" stroke-width="2" opacity="0.8"/>
+  <!-- Center glow -->
+  <circle cx="24" cy="24" r="6" fill="url(#blizzardCenter)"/>
+  <!-- Snowflakes -->
+  <path d="M10 12 L10 16 M8 14 L12 14 M9 11 L11 15 M11 11 L9 15" stroke="#ffffff" stroke-width="0.8"/>
+  <path d="M38 14 L38 18 M36 16 L40 16 M37 13 L39 17 M39 13 L37 17" stroke="#ffffff" stroke-width="0.8"/>
+  <path d="M14 36 L14 40 M12 38 L16 38 M13 35 L15 39 M15 35 L13 39" stroke="#ffffff" stroke-width="0.8"/>
+  <path d="M34 38 L34 42 M32 40 L36 40 M33 37 L35 41 M35 37 L33 41" stroke="#ffffff" stroke-width="0.8"/>
+  <path d="M24 6 L24 10 M22 8 L26 8" stroke="#ffffff" stroke-width="0.8"/>
+  <path d="M24 40 L24 44 M22 42 L26 42" stroke="#ffffff" stroke-width="0.8"/>
+</svg>

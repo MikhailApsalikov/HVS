@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="shieldGolden" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffdd66"/>
+      <stop offset="30%" style="stop-color:#ffcc00"/>
+      <stop offset="70%" style="stop-color:#cc9900"/>
+      <stop offset="100%" style="stop-color:#996600"/>
+    </linearGradient>
+    <radialGradient id="shieldGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ffffaa;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#ffcc00;stop-opacity:0"/>
+    </radialGradient>
+    <filter id="shieldGlowFilter">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Glow -->
+  <ellipse cx="24" cy="24" rx="22" ry="22" fill="url(#shieldGlow)"/>
+  <!-- Shield -->
+  <path d="M24 4 L44 12 L44 24 Q44 36 24 44 Q4 36 4 24 L4 12 Z" fill="url(#shieldGolden)" filter="url(#shieldGlowFilter)"/>
+  <path d="M24 4 L44 12 L44 24 Q44 36 24 44 Q4 36 4 24 L4 12 Z" fill="none" stroke="#cc9900" stroke-width="1"/>
+  <!-- Inner highlight -->
+  <path d="M24 8 L38 14 L38 24 Q38 32 24 38 Q10 32 10 24 L10 14 Z" fill="none" stroke="#ffdd66" stroke-width="0.5" opacity="0.5"/>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="snowflakeIce" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="40%" style="stop-color:#aaddff"/>
+      <stop offset="100%" style="stop-color:#66bbff"/>
+    </linearGradient>
+    <linearGradient id="snowflakeCrystal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ddffff"/>
+      <stop offset="100%" style="stop-color:#88ccff"/>
+    </linearGradient>
+  </defs>
+  <!-- Main branches -->
+  <path d="M24 2 L24 18 M24 30 L24 46" stroke="url(#snowflakeIce)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M8 10 L18 18 M30 18 L40 10" stroke="url(#snowflakeIce)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M8 38 L18 30 M30 30 L40 38" stroke="url(#snowflakeIce)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M10 8 L18 18 M18 30 L10 40" stroke="url(#snowflakeIce)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M38 8 L30 18 M30 30 L38 40" stroke="url(#snowflakeIce)" stroke-width="3" stroke-linecap="round"/>
+  <!-- Secondary branches -->
+  <path d="M16 6 L18 10 M30 10 L32 6" stroke="url(#snowflakeCrystal)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M16 42 L18 38 M30 38 L32 42" stroke="url(#snowflakeCrystal)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M6 16 L10 18 M10 30 L6 32" stroke="url(#snowflakeCrystal)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M42 16 L38 18 M38 30 L42 32" stroke="url(#snowflakeCrystal)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Tertiary branches -->
+  <path d="M20 12 L22 14 M26 14 L28 12" stroke="url(#snowflakeCrystal)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M20 36 L22 34 M26 34 L28 36" stroke="url(#snowflakeCrystal)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M12 20 L14 22 M14 26 L12 28" stroke="url(#snowflakeCrystal)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M36 20 L34 22 M34 26 L36 28" stroke="url(#snowflakeCrystal)" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Center -->
+  <circle cx="24" cy="24" r="4" fill="url(#snowflakeCrystal)"/>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="hunterBow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b6914"/>
+      <stop offset="100%" style="stop-color:#4a3008"/>
+    </linearGradient>
+    <linearGradient id="hunterTarget" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff4444"/>
+      <stop offset="50%" style="stop-color:#cc0000"/>
+      <stop offset="100%" style="stop-color:#880000"/>
+    </linearGradient>
+  </defs>
+  <!-- Bow -->
+  <path d="M8 12 Q24 4 40 12 Q24 20 8 12" fill="none" stroke="url(#hunterBow)" stroke-width="4"/>
+  <line x1="8" y1="12" x2="40" y2="12" stroke="#ccc" stroke-width="0.5"/>
+  <!-- Arrow -->
+  <line x1="24" y1="44" x2="24" y2="8" stroke="#8b6914" stroke-width="2"/>
+  <!-- Target/crosshair -->
+  <circle cx="24" cy="24" r="12" fill="none" stroke="url(#hunterTarget)" stroke-width="3"/>
+  <circle cx="24" cy="24" r="8" fill="none" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="24" cy="24" r="4" fill="url(#hunterTarget)"/>
+  <line x1="24" y1="8" x2="24" y2="16" stroke="#ffffff" stroke-width="1"/>
+  <line x1="24" y1="32" x2="24" y2="40" stroke="#ffffff" stroke-width="1"/>
+  <line x1="8" y1="24" x2="16" y2="24" stroke="#ffffff" stroke-width="1"/>
+  <line x1="32" y1="24" x2="40" y2="24" stroke="#ffffff" stroke-width="1"/>
+</svg>

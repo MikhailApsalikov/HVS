@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="blizzardMasterySnow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#aaddff"/>
+      <stop offset="50%" style="stop-color:#66bbff"/>
+      <stop offset="100%" style="stop-color:#2288cc"/>
+    </linearGradient>
+    <linearGradient id="blizzardMasteryPower" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffff88"/>
+      <stop offset="100%" style="stop-color:#ffaa00"/>
+    </linearGradient>
+  </defs>
+  <!-- Snowstorm swirl -->
+  <path d="M8 24 Q24 8 40 24 Q24 40 8 24" fill="none" stroke="url(#blizzardMasterySnow)" stroke-width="3"/>
+  <path d="M12 24 Q24 12 36 24 Q24 36 12 24" fill="none" stroke="url(#blizzardMasterySnow)" stroke-width="2" opacity="0.8"/>
+  <!-- Snowflakes -->
+  <path d="M14 10 L14 14 M12 12 L16 12" stroke="#ffffff" stroke-width="0.8"/>
+  <path d="M34 12 L34 16 M32 14 L36 14" stroke="#ffffff" stroke-width="0.8"/>
+  <path d="M12 34 L12 38 M10 36 L14 36" stroke="#ffffff" stroke-width="0.8"/>
+  <path d="M36 34 L36 38 M34 36 L38 36" stroke="#ffffff" stroke-width="0.8"/>
+  <!-- Power symbol - lightning bolt -->
+  <path d="M28 14 L20 24 L26 24 L18 34 L28 26 L22 26 Z" fill="url(#blizzardMasteryPower)"/>
+</svg>

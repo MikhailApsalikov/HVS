@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <radialGradient id="armageddonCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="30%" style="stop-color:#ffaa00"/>
+      <stop offset="60%" style="stop-color:#ff4400"/>
+      <stop offset="100%" style="stop-color:#880000"/>
+    </radialGradient>
+    <radialGradient id="armageddonFlame" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ff6600;stop-opacity:0.9"/>
+      <stop offset="50%" style="stop-color:#cc3300;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#660000;stop-opacity:0"/>
+    </radialGradient>
+    <linearGradient id="armageddonTrail" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#440000;stop-opacity:0"/>
+      <stop offset="50%" style="stop-color:#ff4400;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#ffaa00;stop-opacity:0.8"/>
+    </linearGradient>
+  </defs>
+  <!-- Meteor trail -->
+  <ellipse cx="24" cy="38" rx="12" ry="6" fill="url(#armageddonTrail)"/>
+  <!-- Fireball body -->
+  <circle cx="24" cy="24" r="18" fill="url(#armageddonCore)"/>
+  <!-- Flame wisps -->
+  <path d="M12 20 Q8 24 14 28 Q10 26 12 20" fill="url(#armageddonFlame)"/>
+  <path d="M36 20 Q40 24 34 28 Q38 26 36 20" fill="url(#armageddonFlame)"/>
+  <path d="M20 10 Q24 6 28 10 Q24 12 20 10" fill="url(#armageddonFlame)"/>
+  <path d="M24 32 Q20 38 26 40 Q24 36 24 32" fill="url(#armageddonFlame)"/>
+  <!-- Inner glow -->
+  <circle cx="24" cy="24" r="8" fill="#ffffff" opacity="0.5"/>
+</svg>

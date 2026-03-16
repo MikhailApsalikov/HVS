@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="prepTalentHourglass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c9a67a"/>
+      <stop offset="50%" style="stop-color:#8b6914"/>
+      <stop offset="100%" style="stop-color:#4a3008"/>
+    </linearGradient>
+    <linearGradient id="prepTalentSand" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffdd88"/>
+      <stop offset="100%" style="stop-color:#ccaa44"/>
+    </linearGradient>
+    <linearGradient id="prepTalentLightning" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffff88"/>
+      <stop offset="100%" style="stop-color:#ffaa00"/>
+    </linearGradient>
+  </defs>
+  <!-- Hourglass frame -->
+  <path d="M14 4 L34 4 L28 22 L34 40 L14 40 L20 22 Z" fill="none" stroke="url(#prepTalentHourglass)" stroke-width="2"/>
+  <!-- Sand -->
+  <polygon points="20,20 28,20 26,24 22,24" fill="url(#prepTalentSand)"/>
+  <polygon points="22,26 26,26 24,36 24,36" fill="url(#prepTalentSand)"/>
+  <!-- Lightning through hourglass -->
+  <path d="M26 8 L22 20 L26 20 L22 40 L28 22 L24 22 Z" fill="url(#prepTalentLightning)" opacity="0.9"/>
+</svg>
