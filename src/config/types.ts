@@ -11,6 +11,8 @@ export type AbilityResult =
   | 'not_enough_energy'
   | 'level_locked';
 
+export type ShootResult = 'shot' | 'not_enough_energy' | 'blocked';
+
 export interface AbilityConfig {
   readonly cost: number;
   readonly cooldown: number;

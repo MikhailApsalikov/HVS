@@ -1,4 +1,4 @@
-import type { AbilityId, AbilityResult, Difficulty, DifficultyConfig } from '../config/types.js';
+import type { AbilityId, AbilityResult, Difficulty, DifficultyConfig, ShootResult } from '../config/types.js';
 import type { GameState } from './GameState.js';
 import type { Spider } from '../entities/Spider.js';
 import { GameState as GameStateClass } from './GameState.js';
@@ -135,18 +135,18 @@ export class GameEngine {
     return true;
   }
 
-  public shootLane(lane: number): boolean {
+  public shootLane(lane: number): ShootResult {
     const state = this._state;
     if (state === null || this._config === null || this._talentSystem === null)
-      return false;
-    if (state.phase !== 'playing') return false;
+      return 'blocked';
+    if (state.phase !== 'playing') return 'blocked';
 
     const archer = state.archers[lane];
-    if (archer === undefined || !archer.isReady) return false;
+    if (archer === undefined || !archer.isReady) return 'blocked';
 
     const shootCost =
       this._config.shootCost - this._talentSystem.getShootCostReduction();
-    if (state.energy < shootCost) return false;
+    if (state.energy < shootCost) return 'not_enough_energy';
 
     state.modifyEnergy(-shootCost);
     const cooldownDuration =
@@ -156,7 +156,7 @@ export class GameEngine {
     const speedMultiplier = this._talentSystem.getArrowSpeedMultiplier();
     const arrow = Arrow.create(lane, this._config, speedMultiplier, false);
     state.addArrow(arrow);
-    return true;
+    return 'shot';
   }
 
   public activateAbility(abilityId: AbilityId): AbilityResult {

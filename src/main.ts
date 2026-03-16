@@ -78,8 +78,11 @@ const ABILITY_SOUND_MAP: Partial<Record<AbilityId, SoundEffect>> = {
 };
 
 function handleShoot(lane: number): void {
-  if (engine.shootLane(lane)) {
+  const result = engine.shootLane(lane);
+  if (result === 'shot') {
     audioManager.playSfx(SoundEffect.SHOOT);
+  } else if (result === 'not_enough_energy') {
+    audioManager.playSfx(SoundEffect.NOT_ENOUGH_ENERGY);
   }
 }
 

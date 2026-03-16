@@ -1,6 +1,7 @@
 import type { GameState } from './GameState.js';
 import type { Spider } from '../entities/Spider.js';
 import type { Arrow } from '../entities/Arrow.js';
+import { NormalSpider } from '../entities/Spider.js';
 
 const HIT_RADIUS = 0.05;
 
@@ -21,7 +22,7 @@ export class ArrowSystem {
 
       const hitSpider = this.findHitSpider(arrow, state);
       if (hitSpider !== null) {
-        hitSpider.startDying();
+        this._applyArrowHit(hitSpider, state);
         arrowsToRemove.push(id);
       }
     }
@@ -41,13 +42,29 @@ export class ArrowSystem {
 
       const hitSpider = this.findHitSpider(arrow, state);
       if (hitSpider !== null) {
-        hitSpider.startDying();
+        this._applyArrowHit(hitSpider, state);
         arrowsToRemove.push(id);
       }
     }
 
     for (const id of arrowsToRemove) {
       state.removeArrow(id);
+    }
+  }
+
+  private _applyArrowHit(spider: Spider, state: GameState): void {
+    if (spider.type === 'fat') {
+      const normal = new NormalSpider(spider.lane, spider.y, spider.speed, spider.damage);
+      if (spider.slowTimer > 0) {
+        normal.applySlow(spider.slowFactor, spider.slowTimer);
+      }
+      if (spider.armageddonDelay !== null) {
+        normal.scheduleArmageddon(spider.armageddonDelay);
+      }
+      state.removeSpider(spider.id);
+      state.addSpider(normal);
+    } else {
+      spider.startDying();
     }
   }
 
