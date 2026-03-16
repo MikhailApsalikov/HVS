@@ -423,32 +423,21 @@ body {
 }
 
 /* === Tooltips === */
-.tooltip {
+.game-tooltip {
   display: none;
-  position: absolute;
-  z-index: 500;
-  background: rgba(20, 20, 30, 0.95);
+  position: fixed;
+  z-index: 9999;
+  background: rgba(20, 20, 30, 0.96);
   border: 1px solid #6b5344;
   border-radius: 6px;
   padding: 10px 12px;
   min-width: 220px;
   max-width: 300px;
   pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
 }
 
-.tooltip--shoot {
-  bottom: calc(100% + 6px);
-  left: 0;
-}
-
-.tooltip--ability {
-  right: calc(100% + 6px);
-  top: 0;
-}
-
-.hud__shoot-info:hover .tooltip,
-.ability-btn-wrapper:hover .tooltip {
+.game-tooltip--visible {
   display: block;
 }
 

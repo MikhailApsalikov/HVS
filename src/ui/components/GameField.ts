@@ -1,6 +1,8 @@
 import type { GameState } from '../../core/GameState.js';
 import type { SpriteRegistry } from '../SpriteRegistry.js';
 import type { Spider } from '../../entities/Spider.js';
+import type { HUD } from './HUD.js';
+import { TooltipManager } from './TooltipManager.js';
 
 const SPIDER_SPRITE_MAP: Record<string, string> = {
   normal: 'SpiderNormal',
@@ -19,6 +21,8 @@ export class GameField {
   private _arrowElements: Map<string, HTMLElement> = new Map();
   private _archerButtons: HTMLElement[] = [];
   private readonly _spriteRegistry: SpriteRegistry;
+  private _hud: HUD | null = null;
+  private readonly _tooltip = TooltipManager.getInstance();
 
   public constructor(container: HTMLElement, spriteRegistry: SpriteRegistry) {
     this._container = container;
@@ -26,6 +30,10 @@ export class GameField {
     this._lanesArea = document.createElement('div');
     this._archersRow = document.createElement('div');
     this._build();
+  }
+
+  public setHud(hud: HUD): void {
+    this._hud = hud;
   }
 
   private _build(): void {
@@ -56,6 +64,12 @@ export class GameField {
       iconWrap.className = 'archer-btn__icon';
       iconWrap.innerHTML = this._spriteRegistry.get('Archer');
       btn.appendChild(iconWrap);
+      const laneNum = i + 1;
+      btn.addEventListener('mouseenter', () => {
+        const html = this._hud?.getShootTooltipHtml(laneNum);
+        if (html) this._tooltip.show(btn, html);
+      });
+      btn.addEventListener('mouseleave', () => this._tooltip.hide());
       this._archerButtons.push(btn);
       this._archersRow.appendChild(btn);
     }

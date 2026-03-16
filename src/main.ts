@@ -91,9 +91,11 @@ function initGame(): void {
   }
 
   const ts = engine.getTalentSystem();
+  const hud = app.getGameScreen().getHud();
   if (ts) {
-    app.getGameScreen().getHud().setTalentSystem(ts);
+    hud.setTalentSystem(ts);
   }
+  gameField.setHud(hud);
 }
 
 const archerBtnsContainer = app.getGameScreen().getGameField().getArchersRow();

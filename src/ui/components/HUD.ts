@@ -2,8 +2,9 @@ import type { GameState } from '../../core/GameState.js';
 import type { SpriteRegistry } from '../SpriteRegistry.js';
 import type { TalentSystem } from '../../core/TalentSystem.js';
 import type { AbilityId } from '../../config/types.js';
+import { TooltipManager } from './TooltipManager.js';
 
-const ABILITY_ORDER: AbilityId[] = [
+export const ABILITY_ORDER: AbilityId[] = [
   'freeze',
   'blizzard',
   'prep',
@@ -13,7 +14,7 @@ const ABILITY_ORDER: AbilityId[] = [
   'armageddon',
 ];
 
-const ABILITY_NAMES: Record<AbilityId, string> = {
+export const ABILITY_NAMES: Record<AbilityId, string> = {
   freeze: 'Заморозка времени',
   blizzard: 'Вьюга',
   prep: 'Подготовка',
@@ -23,7 +24,7 @@ const ABILITY_NAMES: Record<AbilityId, string> = {
   armageddon: 'Армагеддон',
 };
 
-const ABILITY_HOTKEYS: Record<AbilityId, string> = {
+export const ABILITY_HOTKEYS: Record<AbilityId, string> = {
   freeze: 'Q',
   blizzard: 'W',
   prep: 'E',
@@ -33,7 +34,7 @@ const ABILITY_HOTKEYS: Record<AbilityId, string> = {
   armageddon: 'U',
 };
 
-const ABILITY_UNLOCK_LEVELS: Record<AbilityId, number> = {
+export const ABILITY_UNLOCK_LEVELS: Record<AbilityId, number> = {
   freeze: 4,
   blizzard: 8,
   prep: 12,
@@ -43,7 +44,7 @@ const ABILITY_UNLOCK_LEVELS: Record<AbilityId, number> = {
   armageddon: 28,
 };
 
-const ABILITY_DESCRIPTIONS: Record<AbilityId, string> = {
+export const ABILITY_DESCRIPTIONS: Record<AbilityId, string> = {
   freeze: 'Полностью останавливает игру. Повторное нажатие Q — возобновляет бесплатно.',
   blizzard: 'Замедляет всех пауков на поле.',
   prep: 'Мгновенно восстанавливает 300 энергии.',
@@ -73,10 +74,10 @@ export class HUD {
   private _levelTimerDisplay: HTMLElement | null = null;
   private _levelNumberDisplay: HTMLElement | null = null;
   private _abilityButtons: HTMLElement[] = [];
-  private _abilityTooltips: Map<AbilityId, HTMLElement> = new Map();
-  private _shootTooltip: HTMLElement | null = null;
   private readonly _spriteRegistry: SpriteRegistry;
   private _talentSystem: TalentSystem | null = null;
+  private _lastState: GameState | null = null;
+  private readonly _tooltip = TooltipManager.getInstance();
 
   public constructor(container: HTMLElement, spriteRegistry: SpriteRegistry) {
     this._container = container;
@@ -126,10 +127,11 @@ export class HUD {
     const shootSection = document.createElement('div');
     shootSection.className = 'hud__shoot-info';
     shootSection.innerHTML = '<span class="hud__shoot-label">Выстрел [1-9]</span>';
-    this._shootTooltip = document.createElement('div');
-    this._shootTooltip.className = 'tooltip tooltip--shoot';
-    shootSection.appendChild(this._shootTooltip);
-    shootSection.addEventListener('mouseenter', () => this._updateShootTooltip());
+    shootSection.addEventListener('mouseenter', () => {
+      const html = this._getShootTooltipHtml();
+      if (html) this._tooltip.show(shootSection, html);
+    });
+    shootSection.addEventListener('mouseleave', () => this._tooltip.hide());
     this._container.appendChild(shootSection);
 
     const abilityButtons = document.createElement('div');
@@ -180,18 +182,21 @@ export class HUD {
 
     wrapper.appendChild(btn);
 
-    const tooltip = document.createElement('div');
-    tooltip.className = 'tooltip tooltip--ability';
-    wrapper.appendChild(tooltip);
-    this._abilityTooltips.set(id, tooltip);
-
-    wrapper.addEventListener('mouseenter', () => this._updateAbilityTooltip(id));
+    wrapper.addEventListener('mouseenter', () => {
+      const html = this._getAbilityTooltipHtml(id);
+      if (html) this._tooltip.show(wrapper, html);
+    });
+    wrapper.addEventListener('mouseleave', () => this._tooltip.hide());
 
     return wrapper;
   }
 
-  private _updateShootTooltip(): void {
-    if (!this._shootTooltip || !this._talentSystem) return;
+  public getShootTooltipHtml(laneNumber?: number): string | null {
+    return this._getShootTooltipHtml(laneNumber);
+  }
+
+  private _getShootTooltipHtml(laneNumber?: number): string | null {
+    if (!this._talentSystem) return null;
     const ts = this._talentSystem;
     const baseCost = 35;
     const cost = baseCost - ts.getShootCostReduction();
@@ -199,10 +204,11 @@ export class HUD {
     const cd = baseCd * ts.getShootCooldownMultiplier();
     const speedMult = ts.getArrowSpeedMultiplier();
     const travelTime = 1.5 / speedMult;
+    const label = laneNumber != null ? `Выстрел [${laneNumber}]` : 'Выстрел [1-9]';
 
-    this._shootTooltip.innerHTML = `
-      <div class="tooltip__title">Выстрел [1-9]</div>
-      <div class="tooltip__desc">Стреляет стрелой по линии. Убивает первого паука на пути.</div>
+    return `
+      <div class="tooltip__title">${label}</div>
+      <div class="tooltip__desc">Стреляет стрелой по линии.</div>
       <div class="tooltip__stat">Стоимость: <b>${cost}</b> энергии</div>
       <div class="tooltip__stat">Кулдаун: <b>${cd.toFixed(2)}</b> сек</div>
       <div class="tooltip__stat">Время полёта: <b>${travelTime.toFixed(2)}</b> сек</div>
@@ -211,9 +217,7 @@ export class HUD {
     `;
   }
 
-  private _updateAbilityTooltip(id: AbilityId): void {
-    const tooltip = this._abilityTooltips.get(id);
-    if (!tooltip) return;
+  private _getAbilityTooltipHtml(id: AbilityId): string | null {
     const ts = this._talentSystem;
 
     const unlockLevel = ABILITY_UNLOCK_LEVELS[id];
@@ -221,16 +225,29 @@ export class HUD {
     const hotkey = ABILITY_HOTKEYS[id];
     const desc = ABILITY_DESCRIPTIONS[id];
 
+    const isLocked = this._lastState ? !this._lastState.getAbility(id)?.isAvailableAt(this._lastState.level) : true;
+
+    if (isLocked) {
+      return `
+        <div class="tooltip__title">${name} [${hotkey}]</div>
+        <div class="tooltip__desc">${desc}</div>
+        <div class="tooltip__stat" style="color:#ff9800;margin-top:6px">🔒 Открывается на <b>уровне ${unlockLevel}</b></div>
+      `;
+    }
+
     let statsHtml = '';
     if (ts) {
       statsHtml = this._getAbilityStatsHtml(id, ts);
     }
 
-    tooltip.innerHTML = `
+    const ability = this._lastState?.getAbility(id);
+    const cdRemaining = ability && ability.isOnCooldown ? `<div class="tooltip__stat" style="color:#ff6b6b">Перезарядка: <b>${Math.ceil(ability.remainingCooldown)}</b> сек</div>` : '';
+
+    return `
       <div class="tooltip__title">${name} [${hotkey}]</div>
       <div class="tooltip__desc">${desc}</div>
-      <div class="tooltip__stat">Открывается: <b>уровень ${unlockLevel}</b></div>
       ${statsHtml}
+      ${cdRemaining}
     `;
   }
 
@@ -289,6 +306,7 @@ export class HUD {
   }
 
   public render(state: GameState): void {
+    this._lastState = state;
     const hpPct = state.maxHp > 0 ? (state.hp / state.maxHp) * 100 : 0;
     if (this._hpFill) this._hpFill.style.setProperty('--fill', `${hpPct}%`);
     if (this._hpText) this._hpText.textContent = `${Math.floor(state.hp)} / ${Math.floor(state.maxHp)}`;
