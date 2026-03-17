@@ -401,7 +401,13 @@ export class GameEngine {
     const talentSystem = this._talentSystem;
     if (state === null || config === null || talentSystem === null) return;
 
+    const oldMaxHp = state.maxHp;
     state.setMaxHp(config.baseHp + talentSystem.getMaxHpBonus());
+    const hpIncrease = state.maxHp - oldMaxHp;
+    if (hpIncrease > 0) {
+      state.modifyHp(hpIncrease);
+    }
+
     state.setMaxEnergy(config.baseEnergy + talentSystem.getMaxEnergyBonus());
   }
 
