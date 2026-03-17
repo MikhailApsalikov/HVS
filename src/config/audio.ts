@@ -18,6 +18,7 @@ export enum SoundEffect {
   SHOOT = 'shoot',
   VOLLEY_ACTIVATE = 'volleyActivate',
   BURNER_DRAIN = 'burnerDrain',
+  RECHARGE_ACTIVATE = 'rechargeActivate',
 }
 
 export enum MusicTrack {
@@ -46,6 +47,7 @@ export const SOUND_FILES: Record<SoundEffect, string> = {
   [SoundEffect.SHOOT]: 'Shoot.wav',
   [SoundEffect.VOLLEY_ACTIVATE]: 'Shoot.wav',
   [SoundEffect.BURNER_DRAIN]: 'Deepfreeze.wav',
+  [SoundEffect.RECHARGE_ACTIVATE]: 'Refresher_Orb.mp3',
 };
 
 export const MUSIC_FILES: Record<MusicTrack, string> = {

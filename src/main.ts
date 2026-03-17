@@ -75,6 +75,7 @@ const ABILITY_SOUND_MAP: Partial<Record<AbilityId, SoundEffect>> = {
   volley: SoundEffect.VOLLEY_ACTIVATE,
   stand: SoundEffect.STAND_ACTIVATE,
   armageddon: SoundEffect.ARMAGEDDON_ACTIVATE,
+  recharge: SoundEffect.RECHARGE_ACTIVATE,
 };
 
 function handleShoot(lane: number): void {

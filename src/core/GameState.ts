@@ -52,7 +52,7 @@ export class GameState {
   ) {
     this._phase = 'menu';
     this._difficulty = difficulty;
-    this._level = 50;
+    this._level = 1;
     this._levelTimer = config.levelTimerBase + config.levelTimerStep * 1;
     this._levelTimerMax = this._levelTimer;
     this._hp = config.baseHp;
