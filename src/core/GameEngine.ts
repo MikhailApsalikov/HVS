@@ -357,15 +357,16 @@ export class GameEngine {
       archer.tick(dt);
     }
 
-    const damageReductionPct = talentSystem.getDamageReduction() + (itemBonuses?.damageReduction ?? 0) / 100;
+    const talentReduction = talentSystem.getDamageReduction();
+    const itemReduction = (itemBonuses?.damageReduction ?? 0) / 100;
+    const damageMultiplier = (1 - talentReduction) * (1 - itemReduction);
     for (const [, spider] of state.spiders) {
       if (spider.dying || spider.y < 1.0) continue;
 
       this._reachedCastleSpiderIds.add(spider.id);
 
       if (!state.isInvulnerable) {
-        const effectiveDamage =
-          spider.damage * Math.max(0, 1 - damageReductionPct);
+        const effectiveDamage = spider.damage * damageMultiplier;
         if (spider.type === 'burner') {
           const hpDmg = effectiveDamage * BURNER_HP_DAMAGE_MULTIPLIER;
           state.modifyHp(-hpDmg);

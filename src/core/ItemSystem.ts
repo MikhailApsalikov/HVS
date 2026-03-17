@@ -153,7 +153,7 @@ export class ItemSystem {
     let maxEnergy = 0;
     let hpRegen = 0;
     let energyRegen = 0;
-    let damageReduction = 0;
+    let damagePassthrough = 1;
     let coinsPerKill = 0;
     let energyPerKill = 0;
     let energyPerBreach = 0;
@@ -170,7 +170,7 @@ export class ItemSystem {
           case 'maxEnergy': maxEnergy += stat.value; break;
           case 'hpRegen': hpRegen += stat.value; break;
           case 'energyRegen': energyRegen += stat.value; break;
-          case 'damageReduction': damageReduction += stat.value; break;
+          case 'damageReduction': damagePassthrough *= (1 - stat.value / 100); break;
           case 'coinsPerKill': coinsPerKill += stat.value; break;
           case 'energyPerKill': energyPerKill += stat.value; break;
           case 'energyPerBreach': energyPerBreach += stat.value; break;
@@ -195,7 +195,7 @@ export class ItemSystem {
       maxEnergy,
       hpRegen,
       energyRegen,
-      damageReduction,
+      damageReduction: (1 - damagePassthrough) * 100,
       coinsPerKill,
       energyPerKill,
       energyPerBreach,
