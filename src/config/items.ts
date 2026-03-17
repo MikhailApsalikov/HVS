@@ -63,9 +63,9 @@ const STAT_PRICING: Record<StatType, StatPricingRule> = {
 
 const RARITY_MULTIPLIER: Record<ItemRarity, number> = {
   common: 1.0,
-  rare: 1.0,
-  epic: 1.15,
-  legendary: 1.5,
+  rare: 1.15,
+  epic: 1.33,
+  legendary: 1.74,
 };
 
 export function computeItemPrice(item: ItemConfig): number {
