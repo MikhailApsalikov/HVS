@@ -121,13 +121,16 @@ engine.setPhaseChangeCallback((phase, state) => {
     audioManager.playMusic(MusicTrack.TALENT_SCREEN);
 
     const talentSystem = engine.getTalentSystem();
+    const itemSystem = engine.getItemSystem();
     const currentState = engine.getState();
-    if (talentSystem && currentState) {
+    if (talentSystem && currentState && itemSystem) {
       const isInitial = engine.isInitialTalentPick;
       app.showLevelUp(
         state.level,
         talentSystem,
         state.pendingTalentPoints,
+        Math.floor(currentState.coins),
+        itemSystem,
         () => {
           engine.confirmLevelUp();
           app.getLevelUpScreen().hide();
@@ -135,6 +138,20 @@ engine.setPhaseChangeCallback((phase, state) => {
         },
         () => {
           currentState.spendTalentPoint();
+        },
+        (itemId: string) => {
+          const success = engine.buyItem(itemId);
+          if (success) {
+            app.getLevelUpScreen().updateCoins(Math.floor(currentState.coins));
+          }
+          return success;
+        },
+        (slotIndex: number) => {
+          const success = engine.sellItem(slotIndex);
+          if (success) {
+            app.getLevelUpScreen().updateCoins(Math.floor(currentState.coins));
+          }
+          return success;
         },
         isInitial
       );
@@ -181,9 +198,13 @@ function initGame(): void {
   }
 
   const ts = engine.getTalentSystem();
+  const is = engine.getItemSystem();
   const hud = app.getGameScreen().getHud();
   if (ts) {
     hud.setTalentSystem(ts);
+  }
+  if (is) {
+    hud.setItemSystem(is);
   }
   gameField.setHud(hud);
 

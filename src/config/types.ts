@@ -1,6 +1,6 @@
 export type Difficulty = 'easy' | 'normal' | 'hard';
 export type AbilityId = 'freeze' | 'blizzard' | 'prep' | 'heal' | 'volley' | 'stand' | 'armageddon' | 'recharge';
-export type TalentId = 'endurance' | 'spiderArmor' | 'tireless' | 'agility' | 'healBoost' | 'hunterMastery' | 'improvedPrep' | 'volleyMastery' | 'rapidFire' | 'dutyBound' | 'blizzardMastery' | 'hunterReward' | 'quickInstinct';
+export type TalentId = 'endurance' | 'spiderArmor' | 'tireless' | 'agility' | 'healBoost' | 'hunterMastery' | 'improvedPrep' | 'volleyMastery' | 'rapidFire' | 'dutyBound' | 'blizzardMastery' | 'hunterReward' | 'quickInstinct' | 'hunterArsenal';
 export type SpiderType = 'normal' | 'fat' | 'fast' | 'ninja' | 'burner' | 'tank';
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'levelUp' | 'gameOver';
 

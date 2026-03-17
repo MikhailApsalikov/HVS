@@ -26,6 +26,7 @@ export class TalentSystem {
       'blizzardMastery',
       'hunterReward',
       'quickInstinct',
+      'hunterArsenal',
     ];
     for (const id of talentIds) {
       const levelConfig = config.talents[id];
@@ -141,6 +142,10 @@ export class TalentSystem {
 
   public getAbilityCooldownMultiplier(): number {
     return 1 - this.getRank('quickInstinct') * 0.015;
+  }
+
+  public getInventorySlots(): number {
+    return 1 + this.getRank('hunterArsenal');
   }
 
   public loadFromSave(data: { id: string; rank: number }[]): void {

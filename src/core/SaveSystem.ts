@@ -1,8 +1,9 @@
 import type { GameState } from './GameState.js';
 import type { TalentSystem } from './TalentSystem.js';
+import type { ItemSystem } from './ItemSystem.js';
 
 export const SAVE_KEY = 'hvs_save';
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface SaveData {
   readonly version: number;
@@ -14,10 +15,11 @@ export interface SaveData {
   readonly pendingTalentPoints: number;
   readonly talents: readonly { id: string; rank: number }[];
   readonly record: number;
+  readonly inventory?: readonly string[];
 }
 
 export class SaveSystem {
-  public save(state: GameState, talentSystem: TalentSystem): void {
+  public save(state: GameState, talentSystem: TalentSystem, itemSystem?: ItemSystem): void {
     const data: SaveData = {
       version: SAVE_VERSION,
       difficulty: state.difficulty,
@@ -28,6 +30,7 @@ export class SaveSystem {
       pendingTalentPoints: state.pendingTalentPoints,
       talents: talentSystem.toSaveData(),
       record: state.record,
+      inventory: itemSystem?.toSaveData() ?? [],
     };
     const json = JSON.stringify(data);
     localStorage.setItem(SAVE_KEY, json);
@@ -45,7 +48,7 @@ export class SaveSystem {
       return null;
     }
 
-    if (data.version !== SAVE_VERSION) {
+    if (data.version !== SAVE_VERSION && data.version !== 1) {
       this.clear();
       return null;
     }

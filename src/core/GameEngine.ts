@@ -9,8 +9,10 @@ import { ArrowSystem } from './ArrowSystem.js';
 import { AbilitySystem } from './AbilitySystem.js';
 import { TalentSystem } from './TalentSystem.js';
 import { SaveSystem } from './SaveSystem.js';
+import { ItemSystem } from './ItemSystem.js';
 import { NinjaSpider } from '../entities/Spider.js';
 import { Arrow } from '../entities/Arrow.js';
+import { ITEM_MAP } from '../config/items.js';
 
 const BURNER_ENERGY_BURN = 90;
 const BURNER_HP_DAMAGE_MULTIPLIER = 0.1;
@@ -30,6 +32,7 @@ export class GameEngine {
   private _arrowSystem: ArrowSystem | null = null;
   private _abilitySystem: AbilitySystem | null = null;
   private _talentSystem: TalentSystem | null = null;
+  private _itemSystem: ItemSystem | null = null;
   private readonly _saveSystem: SaveSystem;
   private readonly _renderCallback: (state: GameState) => void;
   private _phaseChangeCallback: PhaseChangeCallback | null = null;
@@ -73,14 +76,16 @@ export class GameEngine {
     this._spawner = new SpiderSpawner(this._formula, this._config);
     this._arrowSystem = new ArrowSystem();
     this._talentSystem = new TalentSystem(this._config);
+    this._itemSystem = new ItemSystem();
     this._abilitySystem = new AbilitySystem(
       this._config,
       this._formula,
-      this._talentSystem
+      this._talentSystem,
+      this._itemSystem
     );
 
     this._state = GameStateClass.createNew(difficulty, this._config);
-    this._applyTalentBonuses();
+    this._applyBonuses();
     this._state.setLevelTimer(
       this._config.levelTimerBase + this._config.levelTimerStep * this._state.level
     );
@@ -107,18 +112,23 @@ export class GameEngine {
     this._spawner = new SpiderSpawner(this._formula, this._config);
     this._arrowSystem = new ArrowSystem();
     this._talentSystem = new TalentSystem(this._config);
+    this._itemSystem = new ItemSystem();
     this._abilitySystem = new AbilitySystem(
       this._config,
       this._formula,
-      this._talentSystem
+      this._talentSystem,
+      this._itemSystem
     );
     this._talentSystem.loadFromSave([...saveData.talents]);
+    if (saveData.inventory) {
+      this._itemSystem.loadFromSave([...saveData.inventory]);
+    }
 
     this._state = GameStateClass.createNew(difficulty, this._config);
     for (let i = 0; i < saveData.level - 1; i++) {
       this._state.advanceLevel();
     }
-    this._applyTalentBonuses();
+    this._applyBonuses();
     this._state.modifyHp(saveData.hp - this._state.hp);
     this._state.modifyEnergy(saveData.energy - this._state.energy);
     this._state.addCoins(saveData.coins);
@@ -210,8 +220,8 @@ export class GameEngine {
       this._config.levelTimerBase +
         this._config.levelTimerStep * state.level
     );
-    this._applyTalentBonuses();
-    this._saveSystem.save(state, this._talentSystem);
+    this._applyBonuses();
+    this._saveSystem.save(state, this._talentSystem, this._itemSystem ?? undefined);
     state.setPhase('playing');
   }
 
@@ -227,8 +237,41 @@ export class GameEngine {
     return this._talentSystem;
   }
 
+  public getItemSystem(): ItemSystem | null {
+    return this._itemSystem;
+  }
+
   public getSaveSystem(): SaveSystem {
     return this._saveSystem;
+  }
+
+  public buyItem(itemId: string): boolean {
+    const state = this._state;
+    const itemSystem = this._itemSystem;
+    const talentSystem = this._talentSystem;
+    if (!state || !itemSystem || !talentSystem) return false;
+    if (!itemSystem.canBuy(itemId, state.coins, talentSystem)) return false;
+
+    const item = ITEM_MAP.get(itemId);
+    if (!item) return false;
+
+    state.addCoins(-item.price);
+    itemSystem.buyItem(itemId);
+    this._applyBonuses();
+    return true;
+  }
+
+  public sellItem(slotIndex: number): boolean {
+    const state = this._state;
+    const itemSystem = this._itemSystem;
+    if (!state || !itemSystem) return false;
+
+    const result = itemSystem.sellItem(slotIndex);
+    if (!result) return false;
+
+    state.addCoins(result.refund);
+    this._applyBonuses();
+    return true;
   }
 
   private _gameLoop(timestamp: number): void {
@@ -296,10 +339,11 @@ export class GameEngine {
 
     abilitySystem.tick(dt, state);
 
-    const hpRegen = config.hpRegen + talentSystem.getHpRegenBonus();
+    const itemBonuses = this._itemSystem?.getBonuses();
+    const hpRegen = config.hpRegen + talentSystem.getHpRegenBonus() + (itemBonuses?.hpRegen ?? 0);
     state.modifyHp(hpRegen * dt);
     const energyRegen =
-      config.energyRegen * talentSystem.getEnergyRegenMultiplier();
+      config.energyRegen * talentSystem.getEnergyRegenMultiplier() + (itemBonuses?.energyRegen ?? 0);
     state.modifyEnergy(energyRegen * dt);
 
     this._coinAccumulator += config.coinsPerSec * dt;
@@ -313,7 +357,7 @@ export class GameEngine {
       archer.tick(dt);
     }
 
-    const damageReduction = talentSystem.getDamageReduction();
+    const damageReductionPct = talentSystem.getDamageReduction() + (itemBonuses?.damageReduction ?? 0) / 100;
     for (const [, spider] of state.spiders) {
       if (spider.dying || spider.y < 1.0) continue;
 
@@ -321,7 +365,7 @@ export class GameEngine {
 
       if (!state.isInvulnerable) {
         const effectiveDamage =
-          spider.damage * (1 - damageReduction);
+          spider.damage * Math.max(0, 1 - damageReductionPct);
         if (spider.type === 'burner') {
           const hpDmg = effectiveDamage * BURNER_HP_DAMAGE_MULTIPLIER;
           state.modifyHp(-hpDmg);
@@ -338,6 +382,10 @@ export class GameEngine {
       if (enduranceRestore > 0) {
         state.modifyEnergy(enduranceRestore);
       }
+      const breachEnergy = itemBonuses?.energyPerBreach ?? 0;
+      if (breachEnergy > 0) {
+        state.modifyEnergy(breachEnergy);
+      }
       spider.startDying();
     }
 
@@ -348,7 +396,7 @@ export class GameEngine {
       state.setPhase('levelUp');
       state.awardTalentPoint();
       state.updateRecord();
-      this._saveSystem.save(state, talentSystem);
+      this._saveSystem.save(state, talentSystem, this._itemSystem ?? undefined);
     }
 
     if (state.hp <= 0) {
@@ -385,12 +433,18 @@ export class GameEngine {
       if (spider.dyingTimer <= 0) {
         toRemove.push(id);
         if (!this._reachedCastleSpiderIds.has(id)) {
-          const baseCoins = formula.randomInt(COIN_MIN, COIN_MAX);
+          const itemBon = this._itemSystem?.getBonuses();
+          const baseCoins = formula.randomInt(COIN_MIN, COIN_MAX) + (itemBon?.coinsPerKill ?? 0);
           const tripleChance = this._talentSystem?.getHunterRewardTripleChance() ?? 0;
           const isJackpot = tripleChance > 0 && Math.random() < tripleChance;
           const coins = isJackpot ? baseCoins * 3 : baseCoins;
           state.addCoins(coins);
           this._coinDropCallback?.(id, coins, isJackpot);
+
+          const energyPerKill = itemBon?.energyPerKill ?? 0;
+          if (energyPerKill > 0) {
+            state.modifyEnergy(energyPerKill);
+          }
         }
         this._reachedCastleSpiderIds.delete(id);
       }
@@ -400,20 +454,21 @@ export class GameEngine {
     }
   }
 
-  private _applyTalentBonuses(): void {
+  private _applyBonuses(): void {
     const state = this._state;
     const config = this._config;
     const talentSystem = this._talentSystem;
     if (state === null || config === null || talentSystem === null) return;
 
+    const itemBonuses = this._itemSystem?.getBonuses();
     const oldMaxHp = state.maxHp;
-    state.setMaxHp(config.baseHp + talentSystem.getMaxHpBonus());
+    state.setMaxHp(config.baseHp + talentSystem.getMaxHpBonus() + (itemBonuses?.maxHp ?? 0));
     const hpIncrease = state.maxHp - oldMaxHp;
     if (hpIncrease > 0) {
       state.modifyHp(hpIncrease);
     }
 
-    state.setMaxEnergy(config.baseEnergy + talentSystem.getMaxEnergyBonus());
+    state.setMaxEnergy(config.baseEnergy + talentSystem.getMaxEnergyBonus() + (itemBonuses?.maxEnergy ?? 0));
   }
 
   public stopLoop(): void {

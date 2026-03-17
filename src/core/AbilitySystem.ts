@@ -2,6 +2,7 @@ import type { AbilityId, AbilityResult, DifficultyConfig } from '../config/types
 import type { GameState } from './GameState.js';
 import type { FormulaCalculator } from './FormulaCalculator.js';
 import type { TalentSystem } from './TalentSystem.js';
+import type { ItemSystem } from './ItemSystem.js';
 import { Arrow } from '../entities/Arrow.js';
 
 const FREEZE_COST = 50;
@@ -18,15 +19,18 @@ export class AbilitySystem {
   private readonly _config: DifficultyConfig;
   private readonly _formulaCalculator: FormulaCalculator;
   private readonly _talentSystem: TalentSystem;
+  private readonly _itemSystem: ItemSystem;
 
   public constructor(
     config: DifficultyConfig,
     formulaCalculator: FormulaCalculator,
-    talentSystem: TalentSystem
+    talentSystem: TalentSystem,
+    itemSystem: ItemSystem
   ) {
     this._config = config;
     this._formulaCalculator = formulaCalculator;
     this._talentSystem = talentSystem;
+    this._itemSystem = itemSystem;
   }
 
   public tick(dt: number, state: GameState): void {
@@ -55,7 +59,8 @@ export class AbilitySystem {
     if (state.armageddonPhase === 'charging') {
       state.tickArmageddon(dt);
       if (state.armageddonTimer <= 0) {
-        state.setArmageddon('firing', ARMAGEDDON_FIRE_DURATION);
+        const effectBoost = this._itemSystem.getAbilityMod('armageddon', 'effectBoost')?.value ?? 0;
+        state.setArmageddon('firing', ARMAGEDDON_FIRE_DURATION + effectBoost);
       }
       return;
     }
@@ -87,7 +92,8 @@ export class AbilitySystem {
     }
     const levelReq = 4;
     if (state.level < levelReq) return 'level_locked';
-    const cost = FREEZE_COST;
+    const costReduction = this._itemSystem.getAbilityMod('freeze', 'costReduction')?.value ?? 0;
+    const cost = Math.max(0, FREEZE_COST - costReduction);
     if (state.energy < cost) return 'not_enough_energy';
     state.modifyEnergy(-cost);
     state.setPhase('paused');
@@ -107,16 +113,20 @@ export class AbilitySystem {
     const ability = state.getAbility('blizzard');
     if (ability.isOnCooldown) return 'on_cooldown';
 
-    const cost = this._config.abilities.blizzard.cost;
+    const costReduction = this._itemSystem.getAbilityMod('blizzard', 'costReduction')?.value ?? 0;
+    const cost = Math.max(0, this._config.abilities.blizzard.cost - costReduction);
     if (state.energy < cost) return 'not_enough_energy';
 
     state.modifyEnergy(-cost);
-    ability.activate(this._config.abilities.blizzard.cooldown * this._talentSystem.getAbilityCooldownMultiplier());
+    const cdReduction = this._itemSystem.getAbilityMod('blizzard', 'cooldownReduction')?.value ?? 0;
+    const baseCd = Math.max(0, this._config.abilities.blizzard.cooldown - cdReduction);
+    ability.activate(baseCd * this._talentSystem.getAbilityCooldownMultiplier());
 
     const slowBonus = this._talentSystem.getBlizzardSlowBonus();
     const slowFactor = 1 - BLIZZARD_BASE_SLOW - slowBonus;
     const durationBonus = this._talentSystem.getBlizzardDurationBonus();
-    const duration = BLIZZARD_BASE_DURATION + durationBonus;
+    const effectBoost = this._itemSystem.getAbilityMod('blizzard', 'effectBoost')?.value ?? 0;
+    const duration = BLIZZARD_BASE_DURATION + durationBonus + effectBoost;
 
     for (const spider of state.spiders.values()) {
       spider.applySlow(slowFactor, duration);
@@ -135,10 +145,12 @@ export class AbilitySystem {
 
     const baseCooldown = this._config.abilities.prep.cooldown;
     const reduction = this._talentSystem.getPrepCooldownReduction();
-    const cooldown = Math.max(0, baseCooldown - reduction) * this._talentSystem.getAbilityCooldownMultiplier();
+    const itemCdReduction = this._itemSystem.getAbilityMod('prep', 'cooldownReduction')?.value ?? 0;
+    const cooldown = Math.max(0, baseCooldown - reduction - itemCdReduction) * this._talentSystem.getAbilityCooldownMultiplier();
 
     ability.activate(cooldown);
-    state.modifyEnergy(PREP_ENERGY_RESTORE);
+    const effectBoost = this._itemSystem.getAbilityMod('prep', 'effectBoost')?.value ?? 0;
+    state.modifyEnergy(PREP_ENERGY_RESTORE * (1 + effectBoost));
 
     return 'activated';
   }
@@ -150,14 +162,18 @@ export class AbilitySystem {
     const ability = state.getAbility('heal');
     if (ability.isOnCooldown) return 'on_cooldown';
 
-    const cost = this._config.abilities.heal.cost;
+    const costReduction = this._itemSystem.getAbilityMod('heal', 'costReduction')?.value ?? 0;
+    const cost = Math.max(0, this._config.abilities.heal.cost - costReduction);
     if (state.energy < cost) return 'not_enough_energy';
 
     state.modifyEnergy(-cost);
-    ability.activate(this._config.abilities.heal.cooldown * this._talentSystem.getAbilityCooldownMultiplier());
+    const cdReduction = this._itemSystem.getAbilityMod('heal', 'cooldownReduction')?.value ?? 0;
+    const baseCd = Math.max(0, this._config.abilities.heal.cooldown - cdReduction);
+    ability.activate(baseCd * this._talentSystem.getAbilityCooldownMultiplier());
 
     const healBonus = this._talentSystem.getHealBonus();
-    const amount = HEAL_BASE_AMOUNT + healBonus;
+    const effectBoost = this._itemSystem.getAbilityMod('heal', 'effectBoost')?.value ?? 0;
+    const amount = HEAL_BASE_AMOUNT + healBonus + effectBoost;
     state.modifyHp(amount);
 
     return 'activated';
@@ -170,10 +186,12 @@ export class AbilitySystem {
     const ability = state.getAbility('volley');
     if (ability.isOnCooldown) return 'on_cooldown';
 
-    const cost = this._config.abilities.volley.cost;
+    const costReduction = this._itemSystem.getAbilityMod('volley', 'costReduction')?.value ?? 0;
+    const cost = Math.max(0, this._config.abilities.volley.cost - costReduction);
     if (state.energy < cost) return 'not_enough_energy';
 
-    const baseCooldown = this._config.abilities.volley.cooldown;
+    const cdReduction = this._itemSystem.getAbilityMod('volley', 'cooldownReduction')?.value ?? 0;
+    const baseCooldown = Math.max(0, this._config.abilities.volley.cooldown - cdReduction);
     const multiplier = this._talentSystem.getShootCooldownMultiplier();
     const cooldown = baseCooldown * multiplier * this._talentSystem.getAbilityCooldownMultiplier();
 
@@ -181,7 +199,8 @@ export class AbilitySystem {
     ability.activate(cooldown);
 
     const extraLanes = this._talentSystem.getVolleyExtraLanes();
-    const laneCount = VOLLEY_BASE_LANES + extraLanes;
+    const effectBoost = this._itemSystem.getAbilityMod('volley', 'effectBoost')?.value ?? 0;
+    const laneCount = VOLLEY_BASE_LANES + extraLanes + effectBoost;
     const speedMultiplier = this._talentSystem.getArrowSpeedMultiplier();
 
     const lanes = this._pickRandomLanes(
@@ -204,18 +223,21 @@ export class AbilitySystem {
     const ability = state.getAbility('stand');
     if (ability.isOnCooldown) return 'on_cooldown';
 
-    const cost = this._config.abilities.stand.cost;
+    const costReduction = this._itemSystem.getAbilityMod('stand', 'costReduction')?.value ?? 0;
+    const cost = Math.max(0, this._config.abilities.stand.cost - costReduction);
     if (state.energy < cost) return 'not_enough_energy';
 
     const baseCooldown = this._config.abilities.stand.cooldown;
     const reduction = this._talentSystem.getStandCooldownReduction();
-    const cooldown = Math.max(0, baseCooldown - reduction) * this._talentSystem.getAbilityCooldownMultiplier();
+    const itemCdReduction = this._itemSystem.getAbilityMod('stand', 'cooldownReduction')?.value ?? 0;
+    const cooldown = Math.max(0, baseCooldown - reduction - itemCdReduction) * this._talentSystem.getAbilityCooldownMultiplier();
 
     state.modifyEnergy(-cost);
     ability.activate(cooldown);
 
     const durationBonus = this._talentSystem.getStandDurationBonus();
-    const duration = STAND_BASE_DURATION + durationBonus;
+    const effectBoost = this._itemSystem.getAbilityMod('stand', 'effectBoost')?.value ?? 0;
+    const duration = STAND_BASE_DURATION + durationBonus + effectBoost;
     state.setInvulnerable(duration);
 
     return 'activated';
@@ -228,11 +250,14 @@ export class AbilitySystem {
     const ability = state.getAbility('armageddon');
     if (ability.isOnCooldown) return 'on_cooldown';
 
-    const cost = this._config.abilities.armageddon.cost;
+    const costReduction = this._itemSystem.getAbilityMod('armageddon', 'costReduction')?.value ?? 0;
+    const cost = Math.max(0, this._config.abilities.armageddon.cost - costReduction);
     if (state.energy < cost) return 'not_enough_energy';
 
     state.modifyEnergy(-cost);
-    ability.activate(this._config.abilities.armageddon.cooldown * this._talentSystem.getAbilityCooldownMultiplier());
+    const cdReduction = this._itemSystem.getAbilityMod('armageddon', 'cooldownReduction')?.value ?? 0;
+    const baseCd = Math.max(0, this._config.abilities.armageddon.cooldown - cdReduction);
+    ability.activate(baseCd * this._talentSystem.getAbilityCooldownMultiplier());
 
     state.setArmageddon('charging', ARMAGEDDON_CHARGE_DURATION);
 
@@ -246,11 +271,14 @@ export class AbilitySystem {
     const ability = state.getAbility('recharge');
     if (ability.isOnCooldown) return 'on_cooldown';
 
-    const cost = this._config.abilities.recharge.cost;
+    const costReduction = this._itemSystem.getAbilityMod('recharge', 'costReduction')?.value ?? 0;
+    const cost = Math.max(0, this._config.abilities.recharge.cost - costReduction);
     if (state.energy < cost) return 'not_enough_energy';
 
     state.modifyEnergy(-cost);
-    ability.activate(this._config.abilities.recharge.cooldown * this._talentSystem.getAbilityCooldownMultiplier());
+    const cdReduction = this._itemSystem.getAbilityMod('recharge', 'cooldownReduction')?.value ?? 0;
+    const baseCd = Math.max(0, this._config.abilities.recharge.cooldown - cdReduction);
+    ability.activate(baseCd * this._talentSystem.getAbilityCooldownMultiplier());
 
     const otherAbilityIds: AbilityId[] = ['freeze', 'blizzard', 'prep', 'heal', 'volley', 'stand', 'armageddon'];
     for (const id of otherAbilityIds) {

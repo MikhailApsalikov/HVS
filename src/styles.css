@@ -565,6 +565,7 @@ body {
   position: fixed;
   inset: 0;
   display: none;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.88);
@@ -576,12 +577,27 @@ body {
   display: flex;
 }
 
+.level-up-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  max-height: 85vh;
+  max-width: 95vw;
+  align-items: flex-start;
+}
+
+.level-up-footer {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 0;
+}
+
 /* === Talent Panel (WoW-style window) === */
 .talent-panel {
   display: flex;
   flex-direction: column;
   width: 480px;
-  max-height: 90vh;
+  max-height: 85vh;
   background: linear-gradient(180deg, #1e1a14 0%, #161210 100%);
   border: 2px solid #6b5344;
   border-radius: 8px;
@@ -1173,4 +1189,261 @@ body {
 
 .spider--walk:not(.spider--dying) {
   animation: spider-walk 0.4s ease-in-out infinite;
+}
+
+/* === Shop Panel === */
+.shop-panel {
+  display: flex;
+  flex-direction: column;
+  width: 420px;
+  max-height: 85vh;
+  background: linear-gradient(180deg, #1e1a14 0%, #161210 100%);
+  border: 2px solid #6b5344;
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 1px #3a2a1a,
+    0 0 40px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 220, 100, 0.08);
+  overflow: hidden;
+}
+
+.shop-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, #2e2318 0%, #1e1610 100%);
+  border-bottom: 1px solid #4a3520;
+}
+
+.shop-panel__title {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #e8d5b7;
+  letter-spacing: 0.05em;
+}
+
+.shop-panel__coins {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.shop-coin-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+}
+
+.shop-coin-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.shop-coin-text {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.shop-panel__inventory-section,
+.shop-panel__catalog-section {
+  padding: 8px 12px;
+}
+
+.shop-panel__section-title {
+  font-size: 0.75rem;
+  color: #7a6a50;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #2a2010;
+  padding-bottom: 4px;
+}
+
+.shop-panel__catalog-section {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4a3520 #1a1410;
+}
+
+.shop-panel__catalog-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.shop-panel__catalog-section::-webkit-scrollbar-track {
+  background: #1a1410;
+}
+
+.shop-panel__catalog-section::-webkit-scrollbar-thumb {
+  background: #4a3520;
+  border-radius: 3px;
+}
+
+/* === Inventory Grid === */
+.inventory-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* === Catalog === */
+.catalog-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.catalog-section__header {
+  font-size: 0.72rem;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 3px;
+  margin-bottom: 4px;
+  letter-spacing: 0.06em;
+}
+
+.catalog-section__header--common { color: #57e657; background: rgba(87, 230, 87, 0.08); }
+.catalog-section__header--rare { color: #5599ff; background: rgba(85, 153, 255, 0.08); }
+.catalog-section__header--epic { color: #b855ff; background: rgba(184, 85, 255, 0.08); }
+.catalog-section__header--legendary { color: #ffd700; background: rgba(255, 215, 0, 0.08); }
+
+.catalog-section__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* === Item Button (icon-style, like talents) === */
+.item-btn {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  background: linear-gradient(180deg, #2a2218 0%, #1a1510 100%);
+  border: 2px solid #4a3820;
+  border-radius: 6px;
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.item-btn:hover {
+  border-color: #8a6a40;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.6);
+  transform: translateY(-1px);
+}
+
+.item-btn__icon {
+  width: 36px;
+  height: 36px;
+  pointer-events: none;
+}
+
+.item-btn__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.item-btn__lock {
+  width: 18px;
+  height: 18px;
+  opacity: 0.4;
+}
+
+.item-btn__lock svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Rarity borders */
+.item-btn--common {
+  border-color: #3a7a3a;
+}
+
+.item-btn--common:hover {
+  border-color: #57e657;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 8px rgba(87,230,87,0.3);
+}
+
+.item-btn--rare {
+  border-color: #3a5a9a;
+}
+
+.item-btn--rare:hover {
+  border-color: #5599ff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 8px rgba(85,153,255,0.3);
+}
+
+.item-btn--epic {
+  border-color: #7a3a9a;
+}
+
+.item-btn--epic:hover {
+  border-color: #b855ff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 8px rgba(184,85,255,0.3);
+}
+
+.item-btn--legendary {
+  border-color: #9a8a2a;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 6px rgba(255,215,0,0.2);
+}
+
+.item-btn--legendary:hover {
+  border-color: #ffd700;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 12px rgba(255,215,0,0.4);
+}
+
+/* States */
+.item-btn--empty {
+  border-style: dashed;
+  border-color: #3a3020;
+  opacity: 0.4;
+  cursor: default;
+}
+
+.item-btn--empty:hover {
+  transform: none;
+  border-color: #3a3020;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.item-btn--locked {
+  background: #111;
+  border-color: #2a2020;
+  opacity: 0.3;
+  cursor: default;
+}
+
+.item-btn--locked:hover {
+  transform: none;
+  border-color: #2a2020;
+  box-shadow: none;
+}
+
+.item-btn--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.item-btn--disabled:hover {
+  transform: none;
+}
+
+.item-btn--mod-inactive::after {
+  content: '!';
+  position: absolute;
+  top: 1px;
+  right: 3px;
+  font-size: 0.6rem;
+  font-weight: bold;
+  color: #ff8844;
+  text-shadow: 0 0 3px rgba(0,0,0,0.8);
+  pointer-events: none;
 }

@@ -1,6 +1,7 @@
 import type { Difficulty, TalentId } from '../config/types.js';
 import type { GameState } from '../core/GameState.js';
 import type { TalentSystem } from '../core/TalentSystem.js';
+import type { ItemSystem } from '../core/ItemSystem.js';
 import type { IGameEngine } from './types.js';
 import type { SpriteRegistry } from './SpriteRegistry.js';
 import type { SaveSystem } from '../core/SaveSystem.js';
@@ -104,11 +105,15 @@ export class App {
     level: number,
     talentSystem: TalentSystem,
     pendingPoints: number,
+    coins: number,
+    itemSystem: ItemSystem,
     onConfirm: () => void,
     onTalentUpgrade?: (id: TalentId) => void,
+    onBuyItem?: (itemId: string) => boolean,
+    onSellItem?: (slotIndex: number) => boolean,
     isInitial?: boolean
   ): void {
-    this._levelUpScreen.show(level, talentSystem, pendingPoints, onConfirm, onTalentUpgrade, isInitial);
+    this._levelUpScreen.show(level, talentSystem, pendingPoints, coins, itemSystem, onConfirm, onTalentUpgrade, onBuyItem, onSellItem, isInitial);
   }
 
   public renderGameState(state: GameState): void {

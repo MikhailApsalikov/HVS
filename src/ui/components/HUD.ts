@@ -1,6 +1,7 @@
 import type { GameState } from '../../core/GameState.js';
 import type { SpriteRegistry } from '../SpriteRegistry.js';
 import type { TalentSystem } from '../../core/TalentSystem.js';
+import type { ItemSystem } from '../../core/ItemSystem.js';
 import type { AbilityId } from '../../config/types.js';
 import { TooltipManager } from './TooltipManager.js';
 
@@ -84,6 +85,7 @@ export class HUD {
   private _abilityButtons: HTMLElement[] = [];
   private readonly _spriteRegistry: SpriteRegistry;
   private _talentSystem: TalentSystem | null = null;
+  private _itemSystem: ItemSystem | null = null;
   private _lastState: GameState | null = null;
   private readonly _tooltip = TooltipManager.getInstance();
 
@@ -95,6 +97,10 @@ export class HUD {
 
   public setTalentSystem(ts: TalentSystem): void {
     this._talentSystem = ts;
+  }
+
+  public setItemSystem(is: ItemSystem): void {
+    this._itemSystem = is;
   }
 
   private _build(): void {
@@ -224,15 +230,20 @@ export class HUD {
   private _getHpTooltipHtml(): string | null {
     const state = this._lastState;
     const ts = this._talentSystem;
+    const is = this._itemSystem;
     if (!state) return null;
     const config = state.config;
     const baseMax = config.baseHp;
     const hpBonus = ts ? ts.getMaxHpBonus() : 0;
-    const totalMax = baseMax + hpBonus;
+    const itemBonuses = is?.getBonuses();
+    const itemHpBonus = itemBonuses?.maxHp ?? 0;
+    const totalMax = baseMax + hpBonus + itemHpBonus;
     const baseRegen = config.hpRegen;
     const regenBonus = ts ? ts.getHpRegenBonus() : 0;
-    const totalRegen = baseRegen + regenBonus;
+    const itemRegenBonus = itemBonuses?.hpRegen ?? 0;
+    const totalRegen = baseRegen + regenBonus + itemRegenBonus;
     const damageReduction = ts ? ts.getDamageReduction() : 0;
+    const itemDmgReduction = itemBonuses?.damageReduction ?? 0;
 
     return `
       <div class="tooltip__title">Здоровье (HP)</div>
@@ -243,20 +254,27 @@ export class HUD {
       ${hpBonus > 0 ? `<div class="tooltip__talent">Выносливость: +${hpBonus} макс. HP, +${ts!.getEnduranceEnergyRestore()} энергии за каждого паука, дошедшего до замка</div>` : ''}
       ${regenBonus > 0 ? `<div class="tooltip__talent">Усиленное лечение: +${regenBonus} HP/сек</div>` : ''}
       ${damageReduction > 0 ? `<div class="tooltip__talent">Защита от пауков: −${(damageReduction * 100).toFixed(0)}% входящего урона</div>` : ''}
+      ${itemHpBonus > 0 ? `<div class="tooltip__talent">Предметы: +${itemHpBonus} макс. HP</div>` : ''}
+      ${itemRegenBonus > 0 ? `<div class="tooltip__talent">Предметы: +${itemRegenBonus} HP/сек</div>` : ''}
+      ${itemDmgReduction > 0 ? `<div class="tooltip__talent">Предметы: −${itemDmgReduction}% входящего урона</div>` : ''}
     `;
   }
 
   private _getEnergyTooltipHtml(): string | null {
     const state = this._lastState;
     const ts = this._talentSystem;
+    const is = this._itemSystem;
     if (!state) return null;
     const config = state.config;
     const baseMax = config.baseEnergy;
     const energyBonus = ts ? ts.getMaxEnergyBonus() : 0;
-    const totalMax = baseMax + energyBonus;
+    const itemBonuses = is?.getBonuses();
+    const itemEnergyBonus = itemBonuses?.maxEnergy ?? 0;
+    const totalMax = baseMax + energyBonus + itemEnergyBonus;
     const baseRegen = config.energyRegen;
     const regenMult = ts ? ts.getEnergyRegenMultiplier() : 1;
-    const totalRegen = baseRegen * regenMult;
+    const itemEnergyRegen = itemBonuses?.energyRegen ?? 0;
+    const totalRegen = baseRegen * regenMult + itemEnergyRegen;
 
     return `
       <div class="tooltip__title">Энергия</div>
@@ -267,6 +285,10 @@ export class HUD {
       ${energyBonus > 0 ? `<div class="tooltip__talent">Ловкость: +${energyBonus} макс. энергии</div>` : ''}
       ${regenMult > 1 ? `<div class="tooltip__talent">Неутомимость: +${((regenMult - 1) * 100).toFixed(0)}% регенерации</div>` : ''}
       ${ts && ts.getEnduranceEnergyRestore() > 0 ? `<div class="tooltip__talent">Выносливость: +${ts.getEnduranceEnergyRestore()} энергии за каждого паука у замка</div>` : ''}
+      ${itemEnergyBonus > 0 ? `<div class="tooltip__talent">Предметы: +${itemEnergyBonus} макс. энергии</div>` : ''}
+      ${itemEnergyRegen > 0 ? `<div class="tooltip__talent">Предметы: +${itemEnergyRegen} энергии/сек</div>` : ''}
+      ${(itemBonuses?.energyPerKill ?? 0) > 0 ? `<div class="tooltip__talent">Предметы: +${itemBonuses!.energyPerKill} энергии за убийство</div>` : ''}
+      ${(itemBonuses?.energyPerBreach ?? 0) > 0 ? `<div class="tooltip__talent">Предметы: +${itemBonuses!.energyPerBreach} энергии при прорыве</div>` : ''}
     `;
   }
 
@@ -287,15 +309,17 @@ export class HUD {
 
   private _getCoinsTooltipHtml(): string | null {
     const state = this._lastState;
+    const is = this._itemSystem;
     if (!state) return null;
     const config = state.config;
+    const itemCoins = is?.getBonuses().coinsPerKill ?? 0;
 
     return `
       <div class="tooltip__title">Монетки</div>
-      <div class="tooltip__desc">Валюта для будущих покупок.</div>
+      <div class="tooltip__desc">Валюта для покупок в магазине.</div>
       <div class="tooltip__stat">Накоплено: <b>${Math.floor(state.coins)}</b></div>
       <div class="tooltip__stat">Пассивно: <b>${config.coinsPerSec}</b>/сек</div>
-      <div class="tooltip__stat">За убийство паука: <b>1–3</b> монетки</div>
+      <div class="tooltip__stat">За убийство паука: <b>1–3</b> монетки${itemCoins > 0 ? ` <span style="color:#7bc67b">+ ${itemCoins} от предметов</span>` : ''}</div>
     `;
   }
 

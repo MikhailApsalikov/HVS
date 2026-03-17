@@ -70,6 +70,7 @@ export class AbilityButton {
       volley: 'AbilityVolley',
       stand: 'AbilityStand',
       armageddon: 'AbilityArmageddon',
+      recharge: 'AbilityRecharge',
     };
     return map[id] ?? 'AbilityFreeze';
   }
