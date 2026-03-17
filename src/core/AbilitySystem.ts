@@ -38,6 +38,7 @@ export class AbilitySystem {
       'volley',
       'stand',
       'armageddon',
+      'recharge',
     ];
     for (const id of abilityIds) {
       state.getAbility(id).tick(dt);
@@ -234,6 +235,31 @@ export class AbilitySystem {
     ability.activate(this._config.abilities.armageddon.cooldown);
 
     state.setArmageddon('charging', ARMAGEDDON_CHARGE_DURATION);
+
+    return 'activated';
+  }
+
+  public activateRecharge(state: GameState): AbilityResult {
+    const levelReq = 50;
+    if (state.level < levelReq) return 'level_locked';
+
+    const ability = state.getAbility('recharge');
+    if (ability.isOnCooldown) return 'on_cooldown';
+
+    const cost = this._config.abilities.recharge.cost;
+    if (state.energy < cost) return 'not_enough_energy';
+
+    state.modifyEnergy(-cost);
+    ability.activate(this._config.abilities.recharge.cooldown);
+
+    const otherAbilityIds: AbilityId[] = ['freeze', 'blizzard', 'prep', 'heal', 'volley', 'stand', 'armageddon'];
+    for (const id of otherAbilityIds) {
+      state.getAbility(id).activate(0);
+    }
+
+    for (const archer of state.archers) {
+      archer.startCooldown(0);
+    }
 
     return 'activated';
   }

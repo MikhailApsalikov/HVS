@@ -19,6 +19,7 @@ export const normalConfig: DifficultyConfig = {
     volley: { cost: 100, cooldown: 12 },
     stand: { cost: 15, cooldown: 120 },
     armageddon: { cost: 100, cooldown: 120 },
+    recharge: { cost: 65, cooldown: 300 },
   },
 
   levelTimerBase: 15,

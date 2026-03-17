@@ -183,6 +183,8 @@ export class GameEngine {
         return this._abilitySystem.activateStand(state);
       case 'armageddon':
         return this._abilitySystem.activateArmageddon(state);
+      case 'recharge':
+        return this._abilitySystem.activateRecharge(state);
       default:
         return 'level_locked';
     }

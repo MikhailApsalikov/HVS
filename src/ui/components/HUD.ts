@@ -12,6 +12,7 @@ export const ABILITY_ORDER: AbilityId[] = [
   'volley',
   'stand',
   'armageddon',
+  'recharge',
 ];
 
 export const ABILITY_NAMES: Record<AbilityId, string> = {
@@ -22,6 +23,7 @@ export const ABILITY_NAMES: Record<AbilityId, string> = {
   volley: 'Залп',
   stand: 'Ни шагу назад!',
   armageddon: 'Армагеддон',
+  recharge: 'Перезарядка',
 };
 
 export const ABILITY_HOTKEYS: Record<AbilityId, string> = {
@@ -32,6 +34,7 @@ export const ABILITY_HOTKEYS: Record<AbilityId, string> = {
   volley: 'T',
   stand: 'Y',
   armageddon: 'U',
+  recharge: 'I',
 };
 
 export const ABILITY_UNLOCK_LEVELS: Record<AbilityId, number> = {
@@ -42,6 +45,7 @@ export const ABILITY_UNLOCK_LEVELS: Record<AbilityId, number> = {
   volley: 20,
   stand: 25,
   armageddon: 30,
+  recharge: 50,
 };
 
 export const ABILITY_DESCRIPTIONS: Record<AbilityId, string> = {
@@ -52,6 +56,7 @@ export const ABILITY_DESCRIPTIONS: Record<AbilityId, string> = {
   volley: 'Выпускает стрелы из случайных линий.',
   stand: 'Полная неуязвимость на время действия.',
   armageddon: 'Все пауки на поле сгорают во всесжигающем пламени!',
+  recharge: 'Мгновенно сбрасывает кулдауны всех способностей и лучников.',
 };
 
 const ABILITY_SPRITE_MAP: Record<AbilityId, string> = {
@@ -62,6 +67,7 @@ const ABILITY_SPRITE_MAP: Record<AbilityId, string> = {
   volley: 'AbilityVolley',
   stand: 'AbilityStand',
   armageddon: 'AbilityArmageddon',
+  recharge: 'AbilityRecharge',
 };
 
 export class HUD {
@@ -465,6 +471,14 @@ export class HUD {
         return `<div class="tooltip__stat">Стоимость: <b>${cost}</b> энергии</div>
                 <div class="tooltip__stat">Кулдаун: <b>${baseCd}</b> сек</div>
                 <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.armageddon}</b></div>`;
+      }
+      case 'recharge': {
+        const cost = config?.abilities.recharge.cost ?? 65;
+        const baseCd = config?.abilities.recharge.cooldown ?? 300;
+        return `<div class="tooltip__stat">Стоимость: <b>${cost}</b> энергии</div>
+                <div class="tooltip__stat">Кулдаун: <b>${baseCd}</b> сек</div>
+                <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.recharge}</b></div>
+                <div class="tooltip__stat" style="margin-top:4px;color:#c9b896">Сбрасывает кулдауны всех способностей и лучников.</div>`;
       }
       default:
         return '';

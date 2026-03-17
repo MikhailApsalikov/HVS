@@ -13,6 +13,7 @@ const ABILITY_UNLOCK_LEVELS: Readonly<Record<AbilityId, number>> = {
   volley: 20,
   stand: 25,
   armageddon: 30,
+  recharge: 50,
 };
 
 export type ArmageddonPhase = 'none' | 'charging' | 'firing';
@@ -51,7 +52,7 @@ export class GameState {
   ) {
     this._phase = 'menu';
     this._difficulty = difficulty;
-    this._level = 1;
+    this._level = 50;
     this._levelTimer = config.levelTimerBase + config.levelTimerStep * 1;
     this._levelTimerMax = this._levelTimer;
     this._hp = config.baseHp;
@@ -82,7 +83,7 @@ export class GameState {
     }
 
     const abilities = new Map<AbilityId, Ability>();
-    const abilityIds: AbilityId[] = ['freeze', 'blizzard', 'prep', 'heal', 'volley', 'stand', 'armageddon'];
+    const abilityIds: AbilityId[] = ['freeze', 'blizzard', 'prep', 'heal', 'volley', 'stand', 'armageddon', 'recharge'];
     for (const id of abilityIds) {
       const abilityConfig = config.abilities[id];
       abilities.set(id, new Ability(id, ABILITY_UNLOCK_LEVELS[id], abilityConfig.cooldown));

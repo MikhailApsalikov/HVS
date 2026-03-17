@@ -36,6 +36,7 @@ export class InputHandler {
       t: 'volley',
       y: 'stand',
       u: 'armageddon',
+      i: 'recharge',
       'й': 'freeze',
       'ц': 'blizzard',
       'у': 'prep',
@@ -43,6 +44,7 @@ export class InputHandler {
       'е': 'volley',
       'н': 'stand',
       'г': 'armageddon',
+      'ш': 'recharge',
     };
 
     const abilityByCode: Record<string, AbilityId> = {
@@ -53,6 +55,7 @@ export class InputHandler {
       KeyT: 'volley',
       KeyY: 'stand',
       KeyU: 'armageddon',
+      KeyI: 'recharge',
     };
 
     const abilityId = abilityByKey[key] ?? abilityByCode[code];

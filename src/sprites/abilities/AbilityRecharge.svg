@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <radialGradient id="rechargeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#aaffee;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#00aacc;stop-opacity:0"/>
+    </radialGradient>
+    <linearGradient id="rechargeArc" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#88ffdd"/>
+      <stop offset="50%" style="stop-color:#00ccaa"/>
+      <stop offset="100%" style="stop-color:#0088cc"/>
+    </linearGradient>
+  </defs>
+  <!-- Background glow -->
+  <circle cx="24" cy="24" r="21" fill="url(#rechargeGlow)"/>
+  <!-- Outer arc (clockwise, top-right) -->
+  <path d="M24 7 A17 17 0 1 1 7 24" fill="none" stroke="url(#rechargeArc)" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Arrow head for outer arc -->
+  <polygon points="5,17 7,27 14,21" fill="#00ccaa"/>
+  <!-- Inner arc (counter-clockwise, bottom-left) -->
+  <path d="M24 41 A17 17 0 1 1 41 24" fill="none" stroke="url(#rechargeArc)" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Arrow head for inner arc -->
+  <polygon points="43,31 41,21 34,27" fill="#0088cc"/>
+  <!-- Center dot -->
+  <circle cx="24" cy="24" r="4" fill="#aaffee" opacity="0.9"/>
+</svg>
