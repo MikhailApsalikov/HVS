@@ -29,6 +29,7 @@ export interface DifficultyConfig {
   readonly hpRegen: number;
   readonly energyRegen: number;
   readonly coinsPerSec: number;
+  readonly startingCoins: number;
 
   readonly shootCost: number;
   readonly shootCooldown: number;

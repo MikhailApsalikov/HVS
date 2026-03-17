@@ -51,14 +51,14 @@ interface StatPricingRule {
 const log2 = Math.log2;
 
 const STAT_PRICING: Record<StatType, StatPricingRule> = {
-  maxHp:           { unit: 100, base: 40,  f: (n) => n * log2(n + 1) },
-  hpRegen:         { unit: 1,   base: 30,   f: (n) => n * log2(n + 1) },
-  damageReduction: { unit: 1,   base: 15,   f: (n) => n * n },
-  coinsPerKill:    { unit: 1,   base: 500, f: (n) => n * n },
-  maxEnergy:       { unit: 10,  base: 45,  f: (n) => n * n },
-  energyPerBreach: { unit: 1,   base: 50,  f: (n) => n * n },
-  energyRegen:     { unit: 1,   base: 500,  f: (n) => n * n * n },
-  energyPerKill:   { unit: 1,   base: 500,  f: (n) => n * n * n },
+  maxHp:           { unit: 100, base: 32,  f: (n) => n * log2(n + 1) },
+  hpRegen:         { unit: 1,   base: 24,   f: (n) => n * log2(n + 1) },
+  damageReduction: { unit: 1,   base: 12,   f: (n) => n * n },
+  coinsPerKill:    { unit: 1,   base: 400, f: (n) => n * n },
+  maxEnergy:       { unit: 10,  base: 36,  f: (n) => n * n },
+  energyPerBreach: { unit: 1,   base: 40,  f: (n) => n * n },
+  energyRegen:     { unit: 1,   base: 400,  f: (n) => n * n * n },
+  energyPerKill:   { unit: 1,   base: 400,  f: (n) => n * n * n },
 };
 
 const RARITY_MULTIPLIER: Record<ItemRarity, number> = {

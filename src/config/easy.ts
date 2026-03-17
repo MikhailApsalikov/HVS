@@ -4,6 +4,7 @@ import { normalConfig } from './normal.js';
 export const easyConfig: DifficultyConfig = {
   ...normalConfig,
   coinsPerSec: 0.1,
+  startingCoins: 0,
   spiderSpeedBase: 0.07,
   spiderSpeedStep: 0.003,
   spiderDamageBase: 20,

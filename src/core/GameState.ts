@@ -59,7 +59,7 @@ export class GameState {
     this._maxHp = config.baseHp;
     this._energy = config.baseEnergy;
     this._maxEnergy = config.baseEnergy;
-    this._coins = 0;
+    this._coins = config.startingCoins;
     this._pendingTalentPoints = 0;
     this._archers = archers;
     this._spiders = new Map();
