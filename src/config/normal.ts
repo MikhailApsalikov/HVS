@@ -5,7 +5,7 @@ export const normalConfig: DifficultyConfig = {
   baseEnergy: 100,
   hpRegen: 1,
   energyRegen: 10,
-  coinsPerSec: 0.3,
+  coinsPerSec: 0.4,
 
   shootCost: 35,
   shootCooldown: 1.5,
