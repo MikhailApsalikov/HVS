@@ -51,11 +51,11 @@ interface StatPricingRule {
 const log2 = Math.log2;
 
 const STAT_PRICING: Record<StatType, StatPricingRule> = {
-  maxHp:           { unit: 100, base: 100,  f: (n) => n * log2(n + 1) },
+  maxHp:           { unit: 100, base: 40,  f: (n) => n * log2(n + 1) },
   hpRegen:         { unit: 1,   base: 30,   f: (n) => n * log2(n + 1) },
-  damageReduction: { unit: 1,   base: 30,   f: (n) => n * n },
+  damageReduction: { unit: 1,   base: 15,   f: (n) => n * n },
   coinsPerKill:    { unit: 1,   base: 2000, f: (n) => n * n },
-  maxEnergy:       { unit: 10,  base: 100,  f: (n) => n * n * log2(n + 1) },
+  maxEnergy:       { unit: 10,  base: 45,  f: (n) => n * n },
   energyPerBreach: { unit: 1,   base: 400,  f: (n) => n * n * log2(n + 1) },
   energyRegen:     { unit: 1,   base: 500,  f: (n) => n * n * n },
   energyPerKill:   { unit: 1,   base: 500,  f: (n) => n * n * n },
@@ -293,7 +293,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
   // ── Один стат (8 шт.) — значения выше потолка Rare 1-stat ────────────────
   { id: 'e001', name: 'Монолит здоровья',          rarity: 'epic', stats: [{ type: 'maxHp', value: 3600 }] },
   { id: 'e002', name: 'Стальная твердыня',         rarity: 'epic', stats: [{ type: 'maxHp', value: 4200 }] },
-  { id: 'e003', name: 'Живой источник',            rarity: 'epic', stats: [{ type: 'hpRegen', value: 33 }] },
+  { id: 'e003', name: 'Живой источник',            rarity: 'epic', stats: [{ type: 'hpRegen', value: 50 }] },
   { id: 'e004', name: 'Щит предков',               rarity: 'epic', stats: [{ type: 'damageReduction', value: 33 }] },
   { id: 'e005', name: 'Средоточие энергии',        rarity: 'epic', stats: [{ type: 'maxEnergy', value: 140 }] },
   { id: 'e006', name: 'Руна потока',               rarity: 'epic', stats: [{ type: 'energyRegen', value: 5 }] },
