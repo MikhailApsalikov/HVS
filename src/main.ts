@@ -187,8 +187,8 @@ function initGame(): void {
   }
   gameField.setHud(hud);
 
-  engine.setCoinDropCallback((spiderId, coins) => {
-    gameField.showCoinDrop(spiderId, coins);
+  engine.setCoinDropCallback((spiderId, coins, isJackpot) => {
+    gameField.showCoinDrop(spiderId, coins, isJackpot);
     audioManager.playSfx(SoundEffect.KILL_SPIDER);
   });
 

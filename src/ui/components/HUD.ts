@@ -382,6 +382,12 @@ export class HUD {
 
   private _getAbilityStatsHtml(id: AbilityId, ts: TalentSystem): string {
     const config = this._lastState?.config;
+    const qiRank = ts.getRank('quickInstinct');
+    const qiMult = ts.getAbilityCooldownMultiplier();
+    const qiLine = qiRank > 0
+      ? `<div class="tooltip__talent">Быстрое чутьё (${qiRank}/${ts.getTalent('quickInstinct').maxRanks}): −${(qiRank * 1.5).toFixed(1)}% кулдаун</div>`
+      : '';
+
     switch (id) {
       case 'freeze': {
         const cost = config?.abilities.freeze.cost ?? 50;
@@ -394,60 +400,85 @@ export class HUD {
       case 'blizzard': {
         const cost = config?.abilities.blizzard.cost ?? 40;
         const baseCd = config?.abilities.blizzard.cooldown ?? 15;
+        const effectiveCd = baseCd * qiMult;
         const baseSlow = 40;
         const slowBonus = ts.getBlizzardSlowBonus() * 100;
         const totalSlow = baseSlow + slowBonus;
         const baseDur = 4;
         const durBonus = ts.getBlizzardDurationBonus();
         const totalDur = baseDur + durBonus;
+        const cdHint = qiMult < 1 ? ` <span style="color:#7bc67b">(базовый ${baseCd} × ${qiMult.toFixed(2)})</span>` : '';
         return `<div class="tooltip__stat">Стоимость: <b>${cost}</b> энергии</div>
-                <div class="tooltip__stat">Кулдаун: <b>${baseCd}</b> сек</div>
+                <div class="tooltip__stat">Кулдаун: <b>${effectiveCd.toFixed(1)}</b> сек${cdHint}</div>
                 <div class="tooltip__stat">Замедление: <b>${totalSlow.toFixed(0)}%</b>${slowBonus > 0 ? ` <span style="color:#7bc67b">(базовое ${baseSlow}% + ${slowBonus.toFixed(0)}%)</span>` : ''}</div>
                 <div class="tooltip__stat">Длительность: <b>${totalDur}</b> сек${durBonus > 0 ? ` <span style="color:#7bc67b">(базовая ${baseDur} + ${durBonus})</span>` : ''}</div>
                 <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.blizzard}</b></div>
                 <div class="tooltip__stat" style="margin-top:4px;color:#c9b896">Замедляет только пауков, уже находящихся на поле.</div>
-                ${ts.getRank('blizzardMastery') > 0 ? `<div class="tooltip__talent">Беспощадная вьюга (${ts.getRank('blizzardMastery')}/${ts.getTalent('blizzardMastery').maxRanks}): +${slowBonus.toFixed(0)}% замедл., +${durBonus} сек</div>` : ''}`;
+                ${ts.getRank('blizzardMastery') > 0 ? `<div class="tooltip__talent">Беспощадная вьюга (${ts.getRank('blizzardMastery')}/${ts.getTalent('blizzardMastery').maxRanks}): +${slowBonus.toFixed(0)}% замедл., +${durBonus} сек</div>` : ''}
+                ${qiLine}`;
       }
       case 'prep': {
         const cost = config?.abilities.prep.cost ?? 0;
         const baseCd = config?.abilities.prep.cooldown ?? 60;
         const cdReduction = ts.getPrepCooldownReduction();
-        const totalCd = Math.max(0, baseCd - cdReduction);
+        const reducedCd = Math.max(0, baseCd - cdReduction);
+        const effectiveCd = reducedCd * qiMult;
         const restoreAmount = 300;
+        let cdHint = '';
+        if (cdReduction > 0 && qiMult < 1) {
+          cdHint = ` <span style="color:#7bc67b">((${baseCd} − ${cdReduction}) × ${qiMult.toFixed(2)})</span>`;
+        } else if (cdReduction > 0) {
+          cdHint = ` <span style="color:#7bc67b">(базовый ${baseCd} − ${cdReduction})</span>`;
+        } else if (qiMult < 1) {
+          cdHint = ` <span style="color:#7bc67b">(базовый ${baseCd} × ${qiMult.toFixed(2)})</span>`;
+        }
         return `<div class="tooltip__stat">Стоимость: <b>${cost}</b> энергии</div>
-                <div class="tooltip__stat">Кулдаун: <b>${totalCd}</b> сек${cdReduction > 0 ? ` <span style="color:#7bc67b">(базовый ${baseCd} − ${cdReduction})</span>` : ''}</div>
+                <div class="tooltip__stat">Кулдаун: <b>${effectiveCd.toFixed(1)}</b> сек${cdHint}</div>
                 <div class="tooltip__stat">Восстанавливает: <b>${restoreAmount}</b> энергии</div>
                 <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.prep}</b></div>
-                ${ts.getRank('improvedPrep') > 0 ? `<div class="tooltip__talent">Улучш. подготовка (${ts.getRank('improvedPrep')}/${ts.getTalent('improvedPrep').maxRanks}): −${cdReduction} сек кулдаун</div>` : ''}`;
+                ${ts.getRank('improvedPrep') > 0 ? `<div class="tooltip__talent">Улучш. подготовка (${ts.getRank('improvedPrep')}/${ts.getTalent('improvedPrep').maxRanks}): −${cdReduction} сек кулдаун</div>` : ''}
+                ${qiLine}`;
       }
       case 'heal': {
         const cost = config?.abilities.heal.cost ?? 100;
         const baseCd = config?.abilities.heal.cooldown ?? 10;
+        const effectiveCd = baseCd * qiMult;
         const baseHeal = 150;
         const healBonus = ts.getHealBonus();
         const totalHeal = baseHeal + healBonus;
         const regenBonus = ts.getHpRegenBonus();
+        const cdHint = qiMult < 1 ? ` <span style="color:#7bc67b">(базовый ${baseCd} × ${qiMult.toFixed(2)})</span>` : '';
         return `<div class="tooltip__stat">Стоимость: <b>${cost}</b> энергии</div>
-                <div class="tooltip__stat">Кулдаун: <b>${baseCd}</b> сек</div>
+                <div class="tooltip__stat">Кулдаун: <b>${effectiveCd.toFixed(1)}</b> сек${cdHint}</div>
                 <div class="tooltip__stat">Восстанавливает: <b>${totalHeal}</b> HP${healBonus > 0 ? ` <span style="color:#7bc67b">(базовое ${baseHeal} + ${healBonus})</span>` : ''}</div>
                 <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.heal}</b></div>
-                ${ts.getRank('healBoost') > 0 ? `<div class="tooltip__talent">Усил. лечение (${ts.getRank('healBoost')}/${ts.getTalent('healBoost').maxRanks}): +${healBonus} HP за лечение, +${regenBonus} HP/сек пассивной регенерации</div>` : ''}`;
+                ${ts.getRank('healBoost') > 0 ? `<div class="tooltip__talent">Усил. лечение (${ts.getRank('healBoost')}/${ts.getTalent('healBoost').maxRanks}): +${healBonus} HP за лечение, +${regenBonus} HP/сек пассивной регенерации</div>` : ''}
+                ${qiLine}`;
       }
       case 'volley': {
         const cost = config?.abilities.volley.cost ?? 100;
         const baseCd = config?.abilities.volley.cooldown ?? 12;
         const cdMult = ts.getShootCooldownMultiplier();
-        const totalCd = baseCd * cdMult;
+        const totalCd = baseCd * cdMult * qiMult;
         const baseLanes = 4;
         const extraLanes = ts.getVolleyExtraLanes();
         const totalLanes = baseLanes + extraLanes;
+        let cdHint = '';
+        if (cdMult < 1 && qiMult < 1) {
+          cdHint = ` <span style="color:#7bc67b">(базовый ${baseCd} × ${cdMult.toFixed(2)} × ${qiMult.toFixed(2)})</span>`;
+        } else if (cdMult < 1) {
+          cdHint = ` <span style="color:#7bc67b">(базовый ${baseCd} × ${cdMult.toFixed(2)})</span>`;
+        } else if (qiMult < 1) {
+          cdHint = ` <span style="color:#7bc67b">(базовый ${baseCd} × ${qiMult.toFixed(2)})</span>`;
+        }
         return `<div class="tooltip__stat">Стоимость: <b>${cost}</b> энергии</div>
-                <div class="tooltip__stat">Кулдаун: <b>${totalCd.toFixed(1)}</b> сек${cdMult < 1 ? ` <span style="color:#7bc67b">(базовый ${baseCd} × ${cdMult.toFixed(2)})</span>` : ''}</div>
+                <div class="tooltip__stat">Кулдаун: <b>${totalCd.toFixed(1)}</b> сек${cdHint}</div>
                 <div class="tooltip__stat">Линий: <b>${totalLanes}</b>${extraLanes > 0 ? ` <span style="color:#7bc67b">(базовые ${baseLanes} + ${extraLanes})</span>` : ''}</div>
                 <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.volley}</b></div>
                 <div class="tooltip__stat" style="margin-top:4px;color:#c9b896">Не сбрасывает кулдаун лучников. Линии выбираются случайно.</div>
                 ${ts.getRank('volleyMastery') > 0 ? `<div class="tooltip__talent">Искусный залп (${ts.getRank('volleyMastery')}/${ts.getTalent('volleyMastery').maxRanks}): +${extraLanes} линий</div>` : ''}
-                ${ts.getRank('rapidFire') > 0 ? `<div class="tooltip__talent">Скорострельность (${ts.getRank('rapidFire')}/${ts.getTalent('rapidFire').maxRanks}): −${(ts.getRank('rapidFire') * 10)}% кулдаун</div>` : ''}`;
+                ${ts.getRank('rapidFire') > 0 ? `<div class="tooltip__talent">Скорострельность (${ts.getRank('rapidFire')}/${ts.getTalent('rapidFire').maxRanks}): −${(ts.getRank('rapidFire') * 10)}% кулдаун</div>` : ''}
+                ${qiLine}`;
       }
       case 'stand': {
         const cost = config?.abilities.stand.cost ?? 15;
@@ -456,29 +487,45 @@ export class HUD {
         const durBonus = ts.getStandDurationBonus();
         const totalDur = baseDur + durBonus;
         const cdReduction = ts.getStandCooldownReduction();
-        const totalCd = Math.max(0, baseCd - cdReduction);
+        const reducedCd = Math.max(0, baseCd - cdReduction);
+        const effectiveCd = reducedCd * qiMult;
+        let cdHint = '';
+        if (cdReduction > 0 && qiMult < 1) {
+          cdHint = ` <span style="color:#7bc67b">((${baseCd} − ${cdReduction}) × ${qiMult.toFixed(2)})</span>`;
+        } else if (cdReduction > 0) {
+          cdHint = ` <span style="color:#7bc67b">(базовый ${baseCd} − ${cdReduction})</span>`;
+        } else if (qiMult < 1) {
+          cdHint = ` <span style="color:#7bc67b">(базовый ${baseCd} × ${qiMult.toFixed(2)})</span>`;
+        }
         return `<div class="tooltip__stat">Стоимость: <b>${cost}</b> энергии</div>
-                <div class="tooltip__stat">Кулдаун: <b>${totalCd}</b> сек${cdReduction > 0 ? ` <span style="color:#7bc67b">(базовый ${baseCd} − ${cdReduction})</span>` : ''}</div>
+                <div class="tooltip__stat">Кулдаун: <b>${effectiveCd.toFixed(1)}</b> сек${cdHint}</div>
                 <div class="tooltip__stat">Длительность: <b>${totalDur}</b> сек${durBonus > 0 ? ` <span style="color:#7bc67b">(базовая ${baseDur} + ${durBonus})</span>` : ''}</div>
                 <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.stand}</b></div>
                 <div class="tooltip__stat" style="margin-top:4px;color:#c9b896">Пауки у замка не наносят урон, но всё равно восстанавливают энергию через Выносливость.</div>
                 ${ts.getRank('dutyBound') > 0 ? `<div class="tooltip__talent">Чувство долга (${ts.getRank('dutyBound')}/${ts.getTalent('dutyBound').maxRanks}): +${durBonus} сек длительность, −${cdReduction} сек кулдаун</div>` : ''}
-                ${ts.getEnduranceEnergyRestore() > 0 ? `<div class="tooltip__talent">Выносливость: +${ts.getEnduranceEnergyRestore()} энергии за каждого паука у замка</div>` : ''}`;
+                ${ts.getEnduranceEnergyRestore() > 0 ? `<div class="tooltip__talent">Выносливость: +${ts.getEnduranceEnergyRestore()} энергии за каждого паука у замка</div>` : ''}
+                ${qiLine}`;
       }
       case 'armageddon': {
         const cost = config?.abilities.armageddon.cost ?? 100;
         const baseCd = config?.abilities.armageddon.cooldown ?? 120;
+        const effectiveCd = baseCd * qiMult;
+        const cdHint = qiMult < 1 ? ` <span style="color:#7bc67b">(базовый ${baseCd} × ${qiMult.toFixed(2)})</span>` : '';
         return `<div class="tooltip__stat">Стоимость: <b>${cost}</b> энергии</div>
-                <div class="tooltip__stat">Кулдаун: <b>${baseCd}</b> сек</div>
-                <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.armageddon}</b></div>`;
+                <div class="tooltip__stat">Кулдаун: <b>${effectiveCd.toFixed(1)}</b> сек${cdHint}</div>
+                <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.armageddon}</b></div>
+                ${qiLine}`;
       }
       case 'recharge': {
         const cost = config?.abilities.recharge.cost ?? 65;
         const baseCd = config?.abilities.recharge.cooldown ?? 300;
+        const effectiveCd = baseCd * qiMult;
+        const cdHint = qiMult < 1 ? ` <span style="color:#7bc67b">(базовый ${baseCd} × ${qiMult.toFixed(2)})</span>` : '';
         return `<div class="tooltip__stat">Стоимость: <b>${cost}</b> энергии</div>
-                <div class="tooltip__stat">Кулдаун: <b>${baseCd}</b> сек</div>
+                <div class="tooltip__stat">Кулдаун: <b>${effectiveCd.toFixed(1)}</b> сек${cdHint}</div>
                 <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.recharge}</b></div>
-                <div class="tooltip__stat" style="margin-top:4px;color:#c9b896">Сбрасывает кулдауны всех способностей и лучников.</div>`;
+                <div class="tooltip__stat" style="margin-top:4px;color:#c9b896">Сбрасывает кулдауны всех способностей и лучников.</div>
+                ${qiLine}`;
       }
       default:
         return '';

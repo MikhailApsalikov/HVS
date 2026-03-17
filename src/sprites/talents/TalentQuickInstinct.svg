@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="qiClock" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#b0d8ff"/>
+      <stop offset="100%" style="stop-color:#4a90d9"/>
+    </linearGradient>
+    <linearGradient id="qiBolt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffe566"/>
+      <stop offset="100%" style="stop-color:#f0a800"/>
+    </linearGradient>
+  </defs>
+  <!-- Clock face -->
+  <circle cx="24" cy="26" r="16" fill="url(#qiClock)" stroke="#2a6ab5" stroke-width="2"/>
+  <circle cx="24" cy="26" r="13" fill="none" stroke="#2a6ab5" stroke-width="1" opacity="0.4"/>
+  <!-- Clock tick marks -->
+  <line x1="24" y1="13.5" x2="24" y2="15.5" stroke="#2a6ab5" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="36.5" x2="24" y2="38.5" stroke="#2a6ab5" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="11.5" y1="26" x2="13.5" y2="26" stroke="#2a6ab5" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="34.5" y1="26" x2="36.5" y2="26" stroke="#2a6ab5" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Clock hands -->
+  <line x1="24" y1="26" x2="24" y2="17" stroke="#1a3a6a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="24" y1="26" x2="31" y2="30" stroke="#1a3a6a" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="24" cy="26" r="1.5" fill="#1a3a6a"/>
+  <!-- Lightning bolt overlay -->
+  <polygon points="26,4 18,22 24,22 22,34 30,16 24,16" fill="url(#qiBolt)" stroke="#c07800" stroke-width="1" stroke-linejoin="round"/>
+</svg>

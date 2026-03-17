@@ -65,6 +65,7 @@ export class TalentCard {
       rapidFire: 'TalentRapidFire',
       dutyBound: 'TalentDuty',
       blizzardMastery: 'TalentBlizzardMastery',
+      hunterReward: 'TalentHunterReward',
     };
     return map[id] ?? 'TalentEndurance';
   }

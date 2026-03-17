@@ -111,7 +111,7 @@ export class AbilitySystem {
     if (state.energy < cost) return 'not_enough_energy';
 
     state.modifyEnergy(-cost);
-    ability.activate(this._config.abilities.blizzard.cooldown);
+    ability.activate(this._config.abilities.blizzard.cooldown * this._talentSystem.getAbilityCooldownMultiplier());
 
     const slowBonus = this._talentSystem.getBlizzardSlowBonus();
     const slowFactor = 1 - BLIZZARD_BASE_SLOW - slowBonus;
@@ -135,7 +135,7 @@ export class AbilitySystem {
 
     const baseCooldown = this._config.abilities.prep.cooldown;
     const reduction = this._talentSystem.getPrepCooldownReduction();
-    const cooldown = Math.max(0, baseCooldown - reduction);
+    const cooldown = Math.max(0, baseCooldown - reduction) * this._talentSystem.getAbilityCooldownMultiplier();
 
     ability.activate(cooldown);
     state.modifyEnergy(PREP_ENERGY_RESTORE);
@@ -154,7 +154,7 @@ export class AbilitySystem {
     if (state.energy < cost) return 'not_enough_energy';
 
     state.modifyEnergy(-cost);
-    ability.activate(this._config.abilities.heal.cooldown);
+    ability.activate(this._config.abilities.heal.cooldown * this._talentSystem.getAbilityCooldownMultiplier());
 
     const healBonus = this._talentSystem.getHealBonus();
     const amount = HEAL_BASE_AMOUNT + healBonus;
@@ -175,7 +175,7 @@ export class AbilitySystem {
 
     const baseCooldown = this._config.abilities.volley.cooldown;
     const multiplier = this._talentSystem.getShootCooldownMultiplier();
-    const cooldown = baseCooldown * multiplier;
+    const cooldown = baseCooldown * multiplier * this._talentSystem.getAbilityCooldownMultiplier();
 
     state.modifyEnergy(-cost);
     ability.activate(cooldown);
@@ -209,7 +209,7 @@ export class AbilitySystem {
 
     const baseCooldown = this._config.abilities.stand.cooldown;
     const reduction = this._talentSystem.getStandCooldownReduction();
-    const cooldown = Math.max(0, baseCooldown - reduction);
+    const cooldown = Math.max(0, baseCooldown - reduction) * this._talentSystem.getAbilityCooldownMultiplier();
 
     state.modifyEnergy(-cost);
     ability.activate(cooldown);
@@ -232,7 +232,7 @@ export class AbilitySystem {
     if (state.energy < cost) return 'not_enough_energy';
 
     state.modifyEnergy(-cost);
-    ability.activate(this._config.abilities.armageddon.cooldown);
+    ability.activate(this._config.abilities.armageddon.cooldown * this._talentSystem.getAbilityCooldownMultiplier());
 
     state.setArmageddon('charging', ARMAGEDDON_CHARGE_DURATION);
 
@@ -250,7 +250,7 @@ export class AbilitySystem {
     if (state.energy < cost) return 'not_enough_energy';
 
     state.modifyEnergy(-cost);
-    ability.activate(this._config.abilities.recharge.cooldown);
+    ability.activate(this._config.abilities.recharge.cooldown * this._talentSystem.getAbilityCooldownMultiplier());
 
     const otherAbilityIds: AbilityId[] = ['freeze', 'blizzard', 'prep', 'heal', 'volley', 'stand', 'armageddon'];
     for (const id of otherAbilityIds) {

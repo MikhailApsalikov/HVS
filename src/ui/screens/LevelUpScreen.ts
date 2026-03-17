@@ -14,6 +14,8 @@ const TALENT_NAMES: Record<TalentId, string> = {
   rapidFire: 'Скорострельность',
   dutyBound: 'Чувство долга',
   blizzardMastery: 'Беспощадная вьюга',
+  hunterReward: 'Награда охотника',
+  quickInstinct: 'Быстрое чутьё',
 };
 
 const TALENT_DESCRIPTIONS: Record<TalentId, string> = {
@@ -28,6 +30,8 @@ const TALENT_DESCRIPTIONS: Record<TalentId, string> = {
   rapidFire: '-10% кулдаун выстрела/залпа, +10% скорость стрел',
   dutyBound: '+1с длительность и -12с кулдаун Ни шагу назад!',
   blizzardMastery: '+7% замедление и +1с длительность Вьюги',
+  hunterReward: '+7% шанс утроить награду за убитого паука',
+  quickInstinct: '-1.5% кулдаун всех способностей (кроме выстрелов), мультипликативно',
 };
 
 const TALENT_SPRITE_MAP: Record<TalentId, string> = {
@@ -42,6 +46,8 @@ const TALENT_SPRITE_MAP: Record<TalentId, string> = {
   rapidFire: 'TalentRapidFire',
   dutyBound: 'TalentDuty',
   blizzardMastery: 'TalentBlizzardMastery',
+  hunterReward: 'TalentHunterReward',
+  quickInstinct: 'TalentQuickInstinct',
 };
 
 export class LevelUpScreen {

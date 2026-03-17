@@ -53,5 +53,7 @@ export const normalConfig: DifficultyConfig = {
     rapidFire: { maxRanks: 7, unlocksAtLevel: 10 },
     dutyBound: { maxRanks: 5, unlocksAtLevel: 30 },
     blizzardMastery: { maxRanks: 6, unlocksAtLevel: 30 },
+    hunterReward: { maxRanks: 5, unlocksAtLevel: 20 },
+    quickInstinct: { maxRanks: 10, unlocksAtLevel: 40 },
   },
 };

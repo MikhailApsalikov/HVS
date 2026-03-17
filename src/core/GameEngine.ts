@@ -18,7 +18,7 @@ const COIN_MIN = 1;
 const COIN_MAX = 3;
 
 export type PhaseChangeCallback = (phase: string, state: GameState) => void;
-export type CoinDropCallback = (spiderId: string, coins: number) => void;
+export type CoinDropCallback = (spiderId: string, coins: number, isJackpot: boolean) => void;
 export type DamagePopCallback = (spiderId: string, hpDamage: number, energyBurn: number) => void;
 export type AbsorbCallback = () => void;
 
@@ -385,9 +385,12 @@ export class GameEngine {
       if (spider.dyingTimer <= 0) {
         toRemove.push(id);
         if (!this._reachedCastleSpiderIds.has(id)) {
-          const coins = formula.randomInt(COIN_MIN, COIN_MAX);
+          const baseCoins = formula.randomInt(COIN_MIN, COIN_MAX);
+          const tripleChance = this._talentSystem?.getHunterRewardTripleChance() ?? 0;
+          const isJackpot = tripleChance > 0 && Math.random() < tripleChance;
+          const coins = isJackpot ? baseCoins * 3 : baseCoins;
           state.addCoins(coins);
-          this._coinDropCallback?.(id, coins);
+          this._coinDropCallback?.(id, coins, isJackpot);
         }
         this._reachedCastleSpiderIds.delete(id);
       }

@@ -186,7 +186,7 @@ export class GameField {
     return this._archersRow;
   }
 
-  public showCoinDrop(spiderId: string, coins: number): void {
+  public showCoinDrop(spiderId: string, coins: number, isJackpot: boolean = false): void {
     const pos = this._lastSpiderPositions.get(spiderId);
     if (!pos) return;
 
@@ -194,7 +194,7 @@ export class GameField {
     if (!laneEl) return;
 
     const coinEl = document.createElement('div');
-    coinEl.className = coins >= 3 ? 'coin-drop coin-drop--jackpot' : 'coin-drop';
+    coinEl.className = isJackpot ? 'coin-drop coin-drop--jackpot' : 'coin-drop';
     const coinSvg = this._spriteRegistry.get('Coin');
     coinEl.innerHTML = `+${coins} ${coinSvg}`;
     coinEl.style.top = `calc(${pos.y} * 100%)`;
