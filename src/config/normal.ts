@@ -5,7 +5,7 @@ export const normalConfig: DifficultyConfig = {
   baseEnergy: 100,
   hpRegen: 1,
   energyRegen: 10,
-  coinsPerSec: 0.2,
+  coinsPerSec: 0.3,
 
   shootCost: 35,
   shootCooldown: 1.5,
@@ -30,7 +30,7 @@ export const normalConfig: DifficultyConfig = {
 
   spiderSpeedBase: 0.08,
   spiderSpeedStep: 0.004,
-  spiderDamageBase: 25,
+  spiderDamageBase: 20,
   spiderDamageStep: 7,
   spiderVariance: 0.3,
 

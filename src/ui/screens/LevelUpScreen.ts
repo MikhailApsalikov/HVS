@@ -46,9 +46,11 @@ const TALENT_SPRITE_MAP: Record<TalentId, string> = {
 
 export class LevelUpScreen {
   private _container: HTMLElement;
-  private _levelEl: HTMLElement;
+  private _titleEl: HTMLElement;
+  private _pointsEl: HTMLElement;
   private _talentsGrid: HTMLElement;
   private _confirmBtn: HTMLButtonElement;
+  private _tooltip: HTMLElement;
   private _onConfirm: (() => void) | null = null;
   private _onTalentUpgrade: ((id: TalentId) => void) | null = null;
   private _pendingPoints: number = 0;
@@ -59,9 +61,11 @@ export class LevelUpScreen {
   public constructor(container: HTMLElement, spriteRegistry: SpriteRegistry) {
     this._container = container;
     this._spriteRegistry = spriteRegistry;
-    this._levelEl = document.createElement('h2');
+    this._titleEl = document.createElement('div');
+    this._pointsEl = document.createElement('div');
     this._talentsGrid = document.createElement('div');
     this._confirmBtn = document.createElement('button') as HTMLButtonElement;
+    this._tooltip = document.createElement('div');
     this._build();
   }
 
@@ -69,18 +73,39 @@ export class LevelUpScreen {
     this._container.className = 'level-up-screen';
     this._container.dataset.screen = 'level-up';
 
-    this._levelEl.className = 'level-up__title';
-    this._container.appendChild(this._levelEl);
+    const panel = document.createElement('div');
+    panel.className = 'talent-panel';
 
-    this._talentsGrid.className = 'level-up__talents';
+    const titleBar = document.createElement('div');
+    titleBar.className = 'talent-panel__title-bar';
+
+    this._titleEl.className = 'talent-panel__title';
+    titleBar.appendChild(this._titleEl);
+
+    this._pointsEl.className = 'talent-panel__points';
+    titleBar.appendChild(this._pointsEl);
+
+    panel.appendChild(titleBar);
+
+    this._talentsGrid.className = 'talent-tree';
     this._talentsGrid.dataset.component = 'talents-grid';
-    this._container.appendChild(this._talentsGrid);
+    panel.appendChild(this._talentsGrid);
 
-    this._confirmBtn.className = 'level-up__confirm';
+    const footer = document.createElement('div');
+    footer.className = 'talent-panel__footer';
+
+    this._confirmBtn.className = 'talent-panel__confirm';
     this._confirmBtn.textContent = 'Продолжить';
+    this._confirmBtn.type = 'button';
     this._confirmBtn.dataset.action = 'confirm';
     this._confirmBtn.addEventListener('click', () => this._handleConfirm());
-    this._container.appendChild(this._confirmBtn);
+    footer.appendChild(this._confirmBtn);
+
+    panel.appendChild(footer);
+    this._container.appendChild(panel);
+
+    this._tooltip.className = 'talent-tooltip';
+    document.body.appendChild(this._tooltip);
   }
 
   public show(
@@ -97,16 +122,16 @@ export class LevelUpScreen {
     this._pendingPoints = pendingPoints;
     this._onConfirm = onConfirm;
 
-    this._levelEl.textContent = isInitial
-      ? 'Выберите первый талант!'
-      : `Уровень ${level} пройден!`;
+    this._titleEl.textContent = isInitial ? 'Дерево талантов' : `Дерево талантов — уровень ${level}`;
     this._renderTalents();
+    this._updatePointsDisplay();
     this._updateConfirmState();
     this._container.classList.add('level-up-screen--visible');
   }
 
   public hide(): void {
     this._container.classList.remove('level-up-screen--visible');
+    this._hideTooltip();
     this._onConfirm = null;
     this._talentSystem = null;
   }
@@ -116,62 +141,143 @@ export class LevelUpScreen {
     const system = this._talentSystem;
     if (!system) return;
 
-    const sorted = [...system.talents].sort((a, b) => a.unlocksAtLevel - b.unlocksAtLevel);
-    for (const talent of sorted) {
-      const card = this._createTalentCard(talent.id, talent.rank, talent.maxRanks, talent.unlocksAtLevel);
-      this._talentsGrid.appendChild(card);
+    const tiers = new Map<number, typeof system.talents[number][]>();
+    for (const talent of system.talents) {
+      const tier = talent.unlocksAtLevel;
+      if (!tiers.has(tier)) tiers.set(tier, []);
+      tiers.get(tier)!.push(talent);
+    }
+
+    const sortedTiers = [...tiers.keys()].sort((a, b) => a - b);
+
+    for (const tierLevel of sortedTiers) {
+      const tierTalents = tiers.get(tierLevel)!;
+
+      const tierSection = document.createElement('div');
+      tierSection.className = 'talent-tree__tier';
+
+      const tierLabel = document.createElement('div');
+      tierLabel.className = 'talent-tree__tier-label';
+      tierLabel.textContent = tierLevel <= 1 ? 'Начальные таланты' : `Требуется ${tierLevel} уровень`;
+      tierSection.appendChild(tierLabel);
+
+      const tierRow = document.createElement('div');
+      tierRow.className = 'talent-tree__tier-row';
+
+      for (const talent of tierTalents) {
+        const btn = this._createTalentBtn(
+          talent.id,
+          talent.rank,
+          talent.maxRanks,
+          talent.unlocksAtLevel
+        );
+        tierRow.appendChild(btn);
+      }
+
+      tierSection.appendChild(tierRow);
+      this._talentsGrid.appendChild(tierSection);
     }
   }
 
-  private _createTalentCard(
+  private _createTalentBtn(
     id: TalentId,
     rank: number,
     maxRanks: number,
     unlocksAtLevel: number
   ): HTMLElement {
-    const card = document.createElement('div');
-    card.className = 'talent-card';
-    card.dataset.talentId = id;
-
-    const system = this._talentSystem!;
-    const canUpgrade = system.canUpgrade(id, this._playerLevel);
+    const isLocked = this._playerLevel < unlocksAtLevel;
+    const isMaxed = rank >= maxRanks;
+    const canUpgrade = this._talentSystem!.canUpgrade(id, this._playerLevel);
     const hasPoints = this._pendingPoints > 0;
 
-    const icon = document.createElement('div');
-    icon.className = 'talent-card__icon';
-    icon.innerHTML = this._spriteRegistry.get(TALENT_SPRITE_MAP[id]);
-    card.appendChild(icon);
+    const btn = document.createElement('button');
+    btn.className = 'talent-btn';
+    btn.type = 'button';
+    btn.dataset.talentId = id;
 
-    const name = document.createElement('div');
-    name.className = 'talent-card__name';
-    name.textContent = TALENT_NAMES[id];
-    card.appendChild(name);
-
-    const desc = document.createElement('div');
-    desc.className = 'talent-card__desc';
-    desc.textContent = TALENT_DESCRIPTIONS[id];
-    card.appendChild(desc);
-
-    const rankEl = document.createElement('div');
-    rankEl.className = 'talent-card__rank';
-    rankEl.textContent = `${rank} / ${maxRanks}`;
-    card.appendChild(rankEl);
-
-    const upgradeBtn = document.createElement('button');
-    upgradeBtn.className = 'talent-card__upgrade';
-    upgradeBtn.type = 'button';
-    upgradeBtn.textContent = 'Улучшить';
-    upgradeBtn.dataset.talentId = id;
-    upgradeBtn.disabled = !canUpgrade || !hasPoints;
-    upgradeBtn.addEventListener('click', () => this._handleUpgrade(id));
-    card.appendChild(upgradeBtn);
-
-    if (this._playerLevel < unlocksAtLevel) {
-      card.classList.add('talent-card--locked');
-      upgradeBtn.textContent = `Требуется ${unlocksAtLevel} ур.`;
+    if (isLocked) {
+      btn.classList.add('talent-btn--locked');
+    } else if (isMaxed) {
+      btn.classList.add('talent-btn--maxed');
+    } else if (canUpgrade && hasPoints) {
+      btn.classList.add('talent-btn--available');
     }
 
-    return card;
+    const icon = document.createElement('div');
+    icon.className = 'talent-btn__icon';
+    icon.innerHTML = this._spriteRegistry.get(TALENT_SPRITE_MAP[id]);
+    btn.appendChild(icon);
+
+    const rankBadge = document.createElement('div');
+    rankBadge.className = 'talent-btn__rank';
+    rankBadge.textContent = `${rank}/${maxRanks}`;
+    if (isMaxed) rankBadge.classList.add('talent-btn__rank--maxed');
+    btn.appendChild(rankBadge);
+
+    if (!isLocked && !isMaxed) {
+      btn.addEventListener('click', () => this._handleUpgrade(id));
+    }
+
+    btn.addEventListener('mouseenter', (e) =>
+      this._showTooltip(e, id, rank, maxRanks, unlocksAtLevel)
+    );
+    btn.addEventListener('mousemove', (e) => this._moveTooltip(e));
+    btn.addEventListener('mouseleave', () => this._hideTooltip());
+
+    return btn;
+  }
+
+  private _showTooltip(
+    e: MouseEvent,
+    id: TalentId,
+    rank: number,
+    maxRanks: number,
+    unlocksAtLevel: number
+  ): void {
+    const isLocked = this._playerLevel < unlocksAtLevel;
+    const isMaxed = rank >= maxRanks;
+
+    let html = `<div class="talent-tooltip__name">${TALENT_NAMES[id]}</div>`;
+    html += `<div class="talent-tooltip__desc">${TALENT_DESCRIPTIONS[id]}</div>`;
+    html += `<div class="talent-tooltip__rank">Ранг: <span>${rank} / ${maxRanks}</span></div>`;
+
+    if (isLocked) {
+      html += `<div class="talent-tooltip__locked">Требуется ${unlocksAtLevel} уровень</div>`;
+    } else if (isMaxed) {
+      html += `<div class="talent-tooltip__maxed">Максимальный ранг</div>`;
+    }
+
+    this._tooltip.innerHTML = html;
+    this._tooltip.classList.add('talent-tooltip--visible');
+    this._moveTooltip(e);
+  }
+
+  private _moveTooltip(e: MouseEvent): void {
+    const offset = 18;
+    let x = e.clientX + offset;
+    let y = e.clientY + offset;
+
+    const w = this._tooltip.offsetWidth;
+    const h = this._tooltip.offsetHeight;
+    if (x + w > window.innerWidth - 8) x = e.clientX - w - offset;
+    if (y + h > window.innerHeight - 8) y = e.clientY - h - offset;
+
+    this._tooltip.style.left = `${x}px`;
+    this._tooltip.style.top = `${y}px`;
+  }
+
+  private _hideTooltip(): void {
+    this._tooltip.classList.remove('talent-tooltip--visible');
+  }
+
+  private _updatePointsDisplay(): void {
+    if (this._pendingPoints > 0) {
+      this._pointsEl.textContent = `Очков таланта: ${this._pendingPoints}`;
+      this._pointsEl.className = 'talent-panel__points talent-panel__points--has-points';
+    } else {
+      this._pointsEl.textContent = 'Очков нет';
+      this._pointsEl.className = 'talent-panel__points';
+    }
   }
 
   private _handleUpgrade(id: TalentId): void {
@@ -183,6 +289,7 @@ export class LevelUpScreen {
     this._pendingPoints -= 1;
     this._onTalentUpgrade?.(id);
     this._renderTalents();
+    this._updatePointsDisplay();
     this._updateConfirmState();
   }
 
