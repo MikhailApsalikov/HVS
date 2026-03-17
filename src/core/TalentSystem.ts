@@ -73,6 +73,10 @@ export class TalentSystem {
     return this.getRank('endurance') * 425;
   }
 
+  public getEnduranceEnergyRestore(): number {
+    return this.getRank('endurance') * 3;
+  }
+
   public getDamageReduction(): number {
     return this.getRank('spiderArmor') * 0.07;
   }

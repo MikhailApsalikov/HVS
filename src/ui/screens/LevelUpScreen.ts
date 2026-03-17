@@ -17,7 +17,7 @@ const TALENT_NAMES: Record<TalentId, string> = {
 };
 
 const TALENT_DESCRIPTIONS: Record<TalentId, string> = {
-  endurance: '+425 макс. HP',
+  endurance: '+425 макс. HP, +3 энергии за каждого паука, дошедшего до замка',
   spiderArmor: '-7% получаемого урона',
   tireless: '+10% регенерации энергии',
   agility: '+120 макс. энергии',

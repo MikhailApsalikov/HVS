@@ -332,6 +332,10 @@ export class GameEngine {
       } else {
         this._absorbCallback?.();
       }
+      const enduranceRestore = talentSystem.getEnduranceEnergyRestore();
+      if (enduranceRestore > 0) {
+        state.modifyEnergy(enduranceRestore);
+      }
       spider.startDying();
     }
 

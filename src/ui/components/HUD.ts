@@ -234,7 +234,7 @@ export class HUD {
       <div class="tooltip__stat">Текущее: <b>${Math.floor(state.hp)}</b> / <b>${Math.floor(totalMax)}</b></div>
       <div class="tooltip__stat">Базовый максимум: <b>${baseMax}</b></div>
       <div class="tooltip__stat">Регенерация: <b>${totalRegen.toFixed(1)}</b> HP/сек</div>
-      ${hpBonus > 0 ? `<div class="tooltip__talent">Выносливость: +${hpBonus} макс. HP</div>` : ''}
+      ${hpBonus > 0 ? `<div class="tooltip__talent">Выносливость: +${hpBonus} макс. HP, +${ts!.getEnduranceEnergyRestore()} энергии за каждого паука, дошедшего до замка</div>` : ''}
       ${regenBonus > 0 ? `<div class="tooltip__talent">Усиленное лечение: +${regenBonus} HP/сек</div>` : ''}
       ${damageReduction > 0 ? `<div class="tooltip__talent">Защита от пауков: −${(damageReduction * 100).toFixed(0)}% входящего урона</div>` : ''}
     `;
@@ -260,6 +260,7 @@ export class HUD {
       <div class="tooltip__stat">Регенерация: <b>${totalRegen.toFixed(1)}</b>/сек</div>
       ${energyBonus > 0 ? `<div class="tooltip__talent">Ловкость: +${energyBonus} макс. энергии</div>` : ''}
       ${regenMult > 1 ? `<div class="tooltip__talent">Неутомимость: +${((regenMult - 1) * 100).toFixed(0)}% регенерации</div>` : ''}
+      ${ts && ts.getEnduranceEnergyRestore() > 0 ? `<div class="tooltip__talent">Выносливость: +${ts.getEnduranceEnergyRestore()} энергии за каждого паука у замка</div>` : ''}
     `;
   }
 
@@ -454,7 +455,9 @@ export class HUD {
                 <div class="tooltip__stat">Кулдаун: <b>${totalCd}</b> сек${cdReduction > 0 ? ` <span style="color:#7bc67b">(базовый ${baseCd} − ${cdReduction})</span>` : ''}</div>
                 <div class="tooltip__stat">Длительность: <b>${totalDur}</b> сек${durBonus > 0 ? ` <span style="color:#7bc67b">(базовая ${baseDur} + ${durBonus})</span>` : ''}</div>
                 <div class="tooltip__stat">Открывается: уровень <b>${ABILITY_UNLOCK_LEVELS.stand}</b></div>
-                ${ts.getRank('dutyBound') > 0 ? `<div class="tooltip__talent">Чувство долга (${ts.getRank('dutyBound')}/${ts.getTalent('dutyBound').maxRanks}): +${durBonus} сек длительность, −${cdReduction} сек кулдаун</div>` : ''}`;
+                <div class="tooltip__stat" style="margin-top:4px;color:#c9b896">Пауки у замка не наносят урон, но всё равно восстанавливают энергию через Выносливость.</div>
+                ${ts.getRank('dutyBound') > 0 ? `<div class="tooltip__talent">Чувство долга (${ts.getRank('dutyBound')}/${ts.getTalent('dutyBound').maxRanks}): +${durBonus} сек длительность, −${cdReduction} сек кулдаун</div>` : ''}
+                ${ts.getEnduranceEnergyRestore() > 0 ? `<div class="tooltip__talent">Выносливость: +${ts.getEnduranceEnergyRestore()} энергии за каждого паука у замка</div>` : ''}`;
       }
       case 'armageddon': {
         const cost = config?.abilities.armageddon.cost ?? 100;
