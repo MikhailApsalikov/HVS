@@ -1,7 +1,7 @@
-import type { GameState } from '../../core/GameState.js';
+import type { GameState } from '../../domain/model/GameState.js';
 import type { SpriteRegistry } from '../SpriteRegistry.js';
 import { GameField } from '../components/GameField.js';
-import { HUD } from '../components/HUD.js';
+import { HUD } from '../components/GameHud.js';
 
 export class GameScreen {
   private _container: HTMLElement;
@@ -10,10 +10,7 @@ export class GameScreen {
 
   public constructor(container: HTMLElement, spriteRegistry: SpriteRegistry) {
     this._container = container;
-    this._gameField = new GameField(
-      this._createGameFieldContainer(),
-      spriteRegistry
-    );
+    this._gameField = new GameField(this._createGameFieldContainer(), spriteRegistry);
     this._hud = new HUD(this._createHudContainer(), spriteRegistry);
     this._build();
   }

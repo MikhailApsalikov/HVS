@@ -1,4 +1,4 @@
-import type { Difficulty } from '../../config/types.js';
+import type { Difficulty } from '../../domain/types.js';
 
 export class MainMenuScreen {
   private _container: HTMLElement;
@@ -9,7 +9,7 @@ export class MainMenuScreen {
   public constructor(
     container: HTMLElement,
     onStartGame: (difficulty: Difficulty) => void,
-    onLoadGame: () => void
+    onLoadGame: () => void,
   ) {
     this._container = container;
     this._onStartGame = onStartGame;

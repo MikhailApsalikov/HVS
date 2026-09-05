@@ -1,0 +1,949 @@
+{
+  "items": [
+    {
+      "id": "c001",
+      "name": "Аптечные бинты",
+      "price": 32
+    },
+    {
+      "id": "c003",
+      "name": "Кожаная заплата",
+      "price": 101
+    },
+    {
+      "id": "c005",
+      "name": "Кожаный жилет",
+      "price": 192
+    },
+    {
+      "id": "c009",
+      "name": "Боевая куртка",
+      "price": 414
+    },
+    {
+      "id": "c012",
+      "name": "Наплечники охотника",
+      "price": 672
+    },
+    {
+      "id": "c015",
+      "name": "Стальные наплечники",
+      "price": 1107
+    },
+    {
+      "id": "c020",
+      "name": "Мифриловая пластина",
+      "price": 1920
+    },
+    {
+      "id": "c021",
+      "name": "Травяной компресс",
+      "price": 24
+    },
+    {
+      "id": "c022",
+      "name": "Лечебный настой",
+      "price": 76
+    },
+    {
+      "id": "c023",
+      "name": "Зелье регенерации",
+      "price": 144
+    },
+    {
+      "id": "c025",
+      "name": "Паучий антидот",
+      "price": 310
+    },
+    {
+      "id": "c027",
+      "name": "Эликсир бодрости",
+      "price": 504
+    },
+    {
+      "id": "c030",
+      "name": "Концентрированный бальзам",
+      "price": 830
+    },
+    {
+      "id": "c035",
+      "name": "Священный бальзам",
+      "price": 1440
+    },
+    {
+      "id": "c040",
+      "name": "Кольчужные перчатки",
+      "price": 108
+    },
+    {
+      "id": "c046",
+      "name": "Рунный щит",
+      "price": 432
+    },
+    {
+      "id": "c050",
+      "name": "Укреплённый доспех",
+      "price": 1200
+    },
+    {
+      "id": "c052",
+      "name": "Рыцарские поножи",
+      "price": 1728
+    },
+    {
+      "id": "c055",
+      "name": "Адамантовый щит",
+      "price": 2700
+    },
+    {
+      "id": "c056",
+      "name": "Энергетическая склянка",
+      "price": 36
+    },
+    {
+      "id": "c058",
+      "name": "Синий кристалл",
+      "price": 144
+    },
+    {
+      "id": "c060",
+      "name": "Амулет мудреца",
+      "price": 324
+    },
+    {
+      "id": "c062",
+      "name": "Сапфировый медальон",
+      "price": 576
+    },
+    {
+      "id": "c064",
+      "name": "Лазуритовая сфера",
+      "price": 900
+    },
+    {
+      "id": "c066",
+      "name": "Реликварий знаний",
+      "price": 1296
+    },
+    {
+      "id": "c068",
+      "name": "Стимулятор",
+      "price": 400
+    },
+    {
+      "id": "c076",
+      "name": "Двойной стимулятор",
+      "price": 3200
+    },
+    {
+      "id": "c078",
+      "name": "Адреналин убийцы",
+      "price": 400
+    },
+    {
+      "id": "c086",
+      "name": "Двойной адреналин",
+      "price": 3200
+    },
+    {
+      "id": "c088",
+      "name": "Трофейный щит",
+      "price": 40
+    },
+    {
+      "id": "c094",
+      "name": "Талисман стража",
+      "price": 160
+    },
+    {
+      "id": "c096",
+      "name": "Кошелёк охотника",
+      "price": 400
+    },
+    {
+      "id": "r001",
+      "name": "Грудная пластина бойца",
+      "price": 2814
+    },
+    {
+      "id": "r002",
+      "name": "Нагрудник воина",
+      "price": 3662
+    },
+    {
+      "id": "r003",
+      "name": "Латная куртка",
+      "price": 4777
+    },
+    {
+      "id": "r004",
+      "name": "Панцирь чемпиона",
+      "price": 6178
+    },
+    {
+      "id": "r005",
+      "name": "Ядовитый антидот",
+      "price": 2110
+    },
+    {
+      "id": "r006",
+      "name": "Концентрированное зелье",
+      "price": 2747
+    },
+    {
+      "id": "r007",
+      "name": "Зелье бессмертия",
+      "price": 3754
+    },
+    {
+      "id": "r008",
+      "name": "Защитный панцирь",
+      "price": 4471
+    },
+    {
+      "id": "r009",
+      "name": "Зачарованный щит",
+      "price": 6679
+    },
+    {
+      "id": "r010",
+      "name": "Несокрушимый доспех",
+      "price": 10819
+    },
+    {
+      "id": "r011",
+      "name": "Синий тотем",
+      "price": 2650
+    },
+    {
+      "id": "r012",
+      "name": "Магический топаз",
+      "price": 4140
+    },
+    {
+      "id": "r013",
+      "name": "Лазоревый орб",
+      "price": 5962
+    },
+    {
+      "id": "r014",
+      "name": "Серебряный стимулятор",
+      "price": 12420
+    },
+    {
+      "id": "r015",
+      "name": "Усиленный концентрат",
+      "price": 29440
+    },
+    {
+      "id": "r016",
+      "name": "Серебряный адреналин",
+      "price": 12420
+    },
+    {
+      "id": "r017",
+      "name": "Усиленный адреналин",
+      "price": 29440
+    },
+    {
+      "id": "r018",
+      "name": "Серебряный оберег",
+      "price": 414
+    },
+    {
+      "id": "r019",
+      "name": "Усиленный оберег замка",
+      "price": 736
+    },
+    {
+      "id": "r020",
+      "name": "Великий оберег",
+      "price": 1150
+    },
+    {
+      "id": "r021",
+      "name": "Живая броня",
+      "price": 204
+    },
+    {
+      "id": "r022",
+      "name": "Доспех выносливости",
+      "price": 386
+    },
+    {
+      "id": "r023",
+      "name": "Боевая перевязь",
+      "price": 832
+    },
+    {
+      "id": "r024",
+      "name": "Доспех чемпиона",
+      "price": 1352
+    },
+    {
+      "id": "r025",
+      "name": "Латы долголетия",
+      "price": 2228
+    },
+    {
+      "id": "r026",
+      "name": "Кожаный доспех",
+      "price": 172
+    },
+    {
+      "id": "r027",
+      "name": "Стальная куртка",
+      "price": 563
+    },
+    {
+      "id": "r028",
+      "name": "Закалённый нагрудник",
+      "price": 1117
+    },
+    {
+      "id": "r029",
+      "name": "Непробиваемые латы",
+      "price": 2218
+    },
+    {
+      "id": "r030",
+      "name": "Тактический жилет",
+      "price": 262
+    },
+    {
+      "id": "r031",
+      "name": "Нагрудник мага",
+      "price": 641
+    },
+    {
+      "id": "r032",
+      "name": "Броня волшебника",
+      "price": 1145
+    },
+    {
+      "id": "r033",
+      "name": "Зелье воина",
+      "price": 681
+    },
+    {
+      "id": "r034",
+      "name": "Тоник воина",
+      "price": 1233
+    },
+    {
+      "id": "r035",
+      "name": "Боевая мазь",
+      "price": 681
+    },
+    {
+      "id": "r036",
+      "name": "Кулон убийцы",
+      "price": 1393
+    },
+    {
+      "id": "r037",
+      "name": "Оберег бойца",
+      "price": 267
+    },
+    {
+      "id": "r038",
+      "name": "Страж воина",
+      "price": 819
+    },
+    {
+      "id": "r039",
+      "name": "Трофейный нагрудник",
+      "price": 681
+    },
+    {
+      "id": "r040",
+      "name": "Доспех торговца",
+      "price": 1393
+    },
+    {
+      "id": "r041",
+      "name": "Быстрая регенерация",
+      "price": 179
+    },
+    {
+      "id": "r042",
+      "name": "Рунный жилет",
+      "price": 481
+    },
+    {
+      "id": "r043",
+      "name": "Зелье стойкости",
+      "price": 1045
+    },
+    {
+      "id": "r044",
+      "name": "Зелье легенды",
+      "price": 1631
+    },
+    {
+      "id": "r045",
+      "name": "Тоник мудрости",
+      "price": 331
+    },
+    {
+      "id": "r046",
+      "name": "Зелье концентрата",
+      "price": 1073
+    },
+    {
+      "id": "r047",
+      "name": "Амулет восстановления",
+      "price": 817
+    },
+    {
+      "id": "r048",
+      "name": "Зелье бодрости",
+      "price": 1415
+    },
+    {
+      "id": "r049",
+      "name": "Кровавый настой",
+      "price": 817
+    },
+    {
+      "id": "r050",
+      "name": "Зелье жатвы",
+      "price": 1686
+    },
+    {
+      "id": "r051",
+      "name": "Тоник стражника",
+      "price": 403
+    },
+    {
+      "id": "r052",
+      "name": "Эликсир стражника",
+      "price": 1001
+    },
+    {
+      "id": "r053",
+      "name": "Торговое зелье",
+      "price": 817
+    },
+    {
+      "id": "r054",
+      "name": "Магическая броня",
+      "price": 290
+    },
+    {
+      "id": "r055",
+      "name": "Рунная броня",
+      "price": 869
+    },
+    {
+      "id": "r056",
+      "name": "Кольчужная жилетка",
+      "price": 584
+    },
+    {
+      "id": "r057",
+      "name": "Броня тактика",
+      "price": 1136
+    },
+    {
+      "id": "r058",
+      "name": "Боевой доспех",
+      "price": 584
+    },
+    {
+      "id": "r059",
+      "name": "Доспех убийцы",
+      "price": 1343
+    },
+    {
+      "id": "r060",
+      "name": "Щит стражника",
+      "price": 170
+    },
+    {
+      "id": "r061",
+      "name": "Оберег крепости",
+      "price": 722
+    },
+    {
+      "id": "r062",
+      "name": "Золотая броня",
+      "price": 681
+    },
+    {
+      "id": "r063",
+      "name": "Синий амулет",
+      "price": 626
+    },
+    {
+      "id": "r064",
+      "name": "Реликвия скорости",
+      "price": 833
+    },
+    {
+      "id": "r065",
+      "name": "Кристалл убийцы",
+      "price": 626
+    },
+    {
+      "id": "r066",
+      "name": "Кристалл стражника",
+      "price": 212
+    },
+    {
+      "id": "r067",
+      "name": "Сапфировый кошелёк",
+      "price": 626
+    },
+    {
+      "id": "r068",
+      "name": "Кольцо берсерка",
+      "price": 920
+    },
+    {
+      "id": "r069",
+      "name": "Кольцо стража",
+      "price": 506
+    },
+    {
+      "id": "r070",
+      "name": "Кольцо казначея",
+      "price": 920
+    },
+    {
+      "id": "e001",
+      "name": "Монолит здоровья",
+      "price": 7982
+    },
+    {
+      "id": "e002",
+      "name": "Стальная твердыня",
+      "price": 9700
+    },
+    {
+      "id": "e003",
+      "name": "Живой источник",
+      "price": 9053
+    },
+    {
+      "id": "e004",
+      "name": "Щит предков",
+      "price": 17380
+    },
+    {
+      "id": "e005",
+      "name": "Средоточие энергии",
+      "price": 9384
+    },
+    {
+      "id": "e006",
+      "name": "Руна потока",
+      "price": 66500
+    },
+    {
+      "id": "e007",
+      "name": "Клинок жатвы",
+      "price": 66500
+    },
+    {
+      "id": "e008",
+      "name": "Страж замка",
+      "price": 1915
+    },
+    {
+      "id": "e009",
+      "name": "Доспех воина",
+      "price": 4852
+    },
+    {
+      "id": "e010",
+      "name": "Живая броня воителя",
+      "price": 5342
+    },
+    {
+      "id": "e011",
+      "name": "Тактический жезл",
+      "price": 3320
+    },
+    {
+      "id": "e012",
+      "name": "Реликвия воина",
+      "price": 7510
+    },
+    {
+      "id": "e013",
+      "name": "Клинок охотника",
+      "price": 7510
+    },
+    {
+      "id": "e014",
+      "name": "Трофей удачи",
+      "price": 5867
+    },
+    {
+      "id": "e015",
+      "name": "Рунный доспех",
+      "price": 4386
+    },
+    {
+      "id": "e016",
+      "name": "Доспех тактика",
+      "price": 6344
+    },
+    {
+      "id": "e017",
+      "name": "Магический щит",
+      "price": 3064
+    },
+    {
+      "id": "e018",
+      "name": "Реликвия концентрации",
+      "price": 5022
+    },
+    {
+      "id": "e019",
+      "name": "Посох богатства",
+      "price": 3325
+    },
+    {
+      "id": "e020",
+      "name": "Амулет берсерка",
+      "price": 14843
+    },
+    {
+      "id": "e021",
+      "name": "Парный амулет",
+      "price": 8512
+    },
+    {
+      "id": "e022",
+      "name": "Кошелёк скорости",
+      "price": 6384
+    },
+    {
+      "id": "e023",
+      "name": "Амулет охотника",
+      "price": 14843
+    },
+    {
+      "id": "e024",
+      "name": "Трофейный кошелёк",
+      "price": 2607
+    },
+    {
+      "id": "e025",
+      "name": "Пояс выносливости",
+      "price": 1362
+    },
+    {
+      "id": "e026",
+      "name": "Реликвия мудрости",
+      "price": 1274
+    },
+    {
+      "id": "e027",
+      "name": "Нагрудник воителя",
+      "price": 1705
+    },
+    {
+      "id": "e028",
+      "name": "Талисман охотника",
+      "price": 1154
+    },
+    {
+      "id": "e029",
+      "name": "Дух победителя",
+      "price": 1958
+    },
+    {
+      "id": "e030",
+      "name": "Клинок силы",
+      "price": 1617
+    },
+    {
+      "id": "e031",
+      "name": "Доспех богача",
+      "price": 2282
+    },
+    {
+      "id": "e032",
+      "name": "Боевой жилет",
+      "price": 1601
+    },
+    {
+      "id": "e033",
+      "name": "Зелье героя",
+      "price": 1772
+    },
+    {
+      "id": "e034",
+      "name": "Кулон стратега",
+      "price": 2418
+    },
+    {
+      "id": "e035",
+      "name": "Доспех мага",
+      "price": 1362
+    },
+    {
+      "id": "e036",
+      "name": "Броня казначея",
+      "price": 1745
+    },
+    {
+      "id": "e037",
+      "name": "Амулет авантюриста",
+      "price": 1614
+    },
+    {
+      "id": "e038",
+      "name": "Кольцо стража",
+      "price": 777
+    },
+    {
+      "id": "e039",
+      "name": "Ожерелье берсерка",
+      "price": 5682
+    },
+    {
+      "id": "e040",
+      "name": "Оберег крепости",
+      "price": 1277
+    },
+    {
+      "id": "l001",
+      "name": "Реликвия Армагеддона",
+      "price": 1938
+    },
+    {
+      "id": "l002",
+      "name": "Гримуар Армагеддона",
+      "price": 2900
+    },
+    {
+      "id": "l003",
+      "name": "Доспех Армагеддона",
+      "price": 1782
+    },
+    {
+      "id": "l004",
+      "name": "Клинок Вьюги",
+      "price": 1956
+    },
+    {
+      "id": "l005",
+      "name": "Корона Вьюги",
+      "price": 2387
+    },
+    {
+      "id": "l006",
+      "name": "Мантия Вьюги",
+      "price": 1260
+    },
+    {
+      "id": "l007",
+      "name": "Оберег Залпа",
+      "price": 1955
+    },
+    {
+      "id": "l008",
+      "name": "Перчатки Залпа",
+      "price": 1979
+    },
+    {
+      "id": "l009",
+      "name": "Тетива Залпа",
+      "price": 1782
+    },
+    {
+      "id": "l010",
+      "name": "Щит Ни шагу назад!",
+      "price": 2726
+    },
+    {
+      "id": "l011",
+      "name": "Оберег стойкости",
+      "price": 2471
+    },
+    {
+      "id": "l012",
+      "name": "Амулет Подготовки",
+      "price": 1782
+    },
+    {
+      "id": "l013",
+      "name": "Кулон Подготовки",
+      "price": 2394
+    },
+    {
+      "id": "l015",
+      "name": "Ледяная корона",
+      "price": 1538
+    },
+    {
+      "id": "l016",
+      "name": "Амулет Лечения",
+      "price": 2924
+    },
+    {
+      "id": "l017",
+      "name": "Оберег Лечения",
+      "price": 3559
+    },
+    {
+      "id": "l018",
+      "name": "Кристалл Обновления",
+      "price": 2394
+    },
+    {
+      "id": "l020",
+      "name": "Посох Обновления",
+      "price": 1956
+    }
+  ],
+  "normal": {
+    "baseHp": 500,
+    "baseEnergy": 100,
+    "hpRegen": 1,
+    "energyRegen": 10,
+    "coinsPerSec": 0.4,
+    "startingCoins": 100,
+    "shootCost": 35,
+    "shootCooldown": 1.5,
+    "arrowTravelTime": 1.5,
+    "abilities": {
+      "freeze": {
+        "cost": 50,
+        "cooldown": 0
+      },
+      "blizzard": {
+        "cost": 40,
+        "cooldown": 15
+      },
+      "prep": {
+        "cost": 0,
+        "cooldown": 60
+      },
+      "heal": {
+        "cost": 100,
+        "cooldown": 10
+      },
+      "volley": {
+        "cost": 100,
+        "cooldown": 12
+      },
+      "stand": {
+        "cost": 15,
+        "cooldown": 120
+      },
+      "armageddon": {
+        "cost": 100,
+        "cooldown": 120
+      },
+      "recharge": {
+        "cost": 65,
+        "cooldown": 300
+      }
+    },
+    "levelTimerBase": 15,
+    "levelTimerStep": 2,
+    "spawnTickInterval": 0.02,
+    "spawnP0": 0.0006,
+    "spawnDP": 0.00005,
+    "spiderSpeedBase": 0.08,
+    "spiderSpeedStep": 0.004,
+    "spiderDamageBase": 20,
+    "spiderDamageStep": 7,
+    "spiderVariance": 0.3,
+    "spiderChanceFat": 0.05,
+    "spiderChanceFast": 0.03,
+    "spiderChanceNinja": 0.02,
+    "spiderChanceBurner": 0.01,
+    "spiderChanceTank": 0.02,
+    "talents": {
+      "endurance": {
+        "maxRanks": 7,
+        "unlocksAtLevel": 1
+      },
+      "spiderArmor": {
+        "maxRanks": 10,
+        "unlocksAtLevel": 10
+      },
+      "tireless": {
+        "maxRanks": 5,
+        "unlocksAtLevel": 1
+      },
+      "agility": {
+        "maxRanks": 5,
+        "unlocksAtLevel": 10
+      },
+      "healBoost": {
+        "maxRanks": 15,
+        "unlocksAtLevel": 30
+      },
+      "hunterMastery": {
+        "maxRanks": 10,
+        "unlocksAtLevel": 1
+      },
+      "improvedPrep": {
+        "maxRanks": 5,
+        "unlocksAtLevel": 20
+      },
+      "volleyMastery": {
+        "maxRanks": 5,
+        "unlocksAtLevel": 20
+      },
+      "rapidFire": {
+        "maxRanks": 7,
+        "unlocksAtLevel": 10
+      },
+      "dutyBound": {
+        "maxRanks": 5,
+        "unlocksAtLevel": 30
+      },
+      "blizzardMastery": {
+        "maxRanks": 6,
+        "unlocksAtLevel": 30
+      },
+      "hunterReward": {
+        "maxRanks": 5,
+        "unlocksAtLevel": 20
+      },
+      "quickInstinct": {
+        "maxRanks": 10,
+        "unlocksAtLevel": 40
+      },
+      "hunterArsenal": {
+        "maxRanks": 5,
+        "unlocksAtLevel": 40
+      }
+    }
+  },
+  "sounds": {
+    "gameOver": "4.mp3",
+    "freezeActivate": "Pause.wav",
+    "freezeDeactivate": "Unpause.wav",
+    "standActivate": "Bubble.wav",
+    "notEnoughEnergy": "Notenouthenergy.wav",
+    "prepActivate": "Enrest.wav",
+    "armageddonActivate": "5_thisissparta.mp3",
+    "killSpider": "KillSpider.wav",
+    "blizzardActivate": "Ice_Lance_Impact1.wav",
+    "abilityCooldown": "BloodElfMale_Err_AbilityCooldown01.wav",
+    "heal": "Renew.wav",
+    "playerTakeDamage": "Takedmg.wav",
+    "lowHpWarning": "ShaoKahnLaugh.wav",
+    "levelComplete": "LevelUp.wav",
+    "absorbDamage": "AbsorbGetHitA.wav",
+    "menuSelect": "Select1.wav",
+    "shoot": "Shoot.wav",
+    "volleyActivate": "Shoot.wav",
+    "burnerDrain": "Deepfreeze.wav",
+    "rechargeActivate": "Refresher_Orb.mp3"
+  },
+  "music": {
+    "mainMenu": "1.mp3",
+    "gameplay": "24 Jungle1.wav",
+    "talentScreen": "WoW on Relax.mp3"
+  }
+}

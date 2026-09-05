@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+.pnpm-store
+playwright-report
+test-results
+pnpm-lock.yaml
+src/ui/*_svgs.ts
+src/sprites
+documentation/*.txt

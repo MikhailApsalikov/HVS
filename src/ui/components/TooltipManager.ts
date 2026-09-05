@@ -29,6 +29,7 @@ export class TooltipManager {
     if (left < 4) {
       left = rect.right + 8;
     }
+    left = Math.max(4, Math.min(left, window.innerWidth - tipWidth - 4));
 
     if (top + tipHeight > window.innerHeight - 4) {
       top = window.innerHeight - tipHeight - 4;

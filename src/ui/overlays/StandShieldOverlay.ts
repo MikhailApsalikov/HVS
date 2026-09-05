@@ -39,7 +39,7 @@ export class StandShieldOverlay {
   }
 
   public updateTimer(remaining: number): void {
-    this._timerText.textContent = remaining.toFixed(1);
+    this._timerText.textContent = remaining.toFixed(2);
   }
 
   public isVisible(): boolean {

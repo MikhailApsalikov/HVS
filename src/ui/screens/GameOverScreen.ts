@@ -5,10 +5,7 @@ export class GameOverScreen {
   private _recordEl: HTMLElement;
   private readonly _onReturnToMenu: () => void;
 
-  public constructor(
-    container: HTMLElement,
-    onReturnToMenu: () => void
-  ) {
+  public constructor(container: HTMLElement, onReturnToMenu: () => void) {
     this._container = container;
     this._onReturnToMenu = onReturnToMenu;
     this._titleEl = document.createElement('h1');

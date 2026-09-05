@@ -1,7 +1,8 @@
-import type { GameState } from '../../core/GameState.js';
+import type { GameState } from '../../domain/model/GameState.js';
 import type { SpriteRegistry } from '../SpriteRegistry.js';
-import type { Spider } from '../../entities/Spider.js';
-import type { HUD } from './HUD.js';
+import type { Spider } from '../../domain/model/Spider.js';
+import type { HUD } from './GameHud.js';
+import { WORLD } from '../../domain/rules/world.js';
 import { TooltipManager } from './TooltipManager.js';
 
 const SPIDER_SPRITE_MAP: Record<string, string> = {
@@ -52,7 +53,7 @@ export class GameField {
       this._lanesArea.style.backgroundSize = '64px 64px';
     }
 
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < WORLD.lanes; i++) {
       const lane = document.createElement('div');
       lane.className = 'lane';
       lane.dataset.lane = String(i);
@@ -62,7 +63,7 @@ export class GameField {
     this._container.appendChild(this._lanesArea);
 
     this._archersRow.className = 'game-field__archers';
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < WORLD.lanes; i++) {
       const laneWrapper = document.createElement('div');
       laneWrapper.className = 'archer-btn-lane';
 
@@ -128,6 +129,10 @@ export class GameField {
         if (newLaneEl) newLaneEl.appendChild(el);
       }
       el.style.setProperty('--y', String(spider.y));
+      if (el.dataset.spiderType !== spider.type) {
+        el.innerHTML = this._spriteRegistry.get(SPIDER_SPRITE_MAP[spider.type]);
+        el.dataset.spiderType = spider.type;
+      }
       el.classList.toggle('spider--slowed', spider.slowFactor < 1);
       el.classList.toggle('spider--dying', spider.dying);
       this._lastSpiderPositions.set(spider.id, { lane: spider.lane, y: spider.y });
@@ -136,6 +141,7 @@ export class GameField {
       if (!currentIds.has(id)) {
         el.remove();
         this._spiderElements.delete(id);
+        this._lastSpiderPositions.delete(id);
       }
     }
   }
@@ -180,6 +186,14 @@ export class GameField {
 
   public getContainer(): HTMLElement {
     return this._container;
+  }
+
+  public reset(): void {
+    for (const lane of this._lanes) lane.replaceChildren();
+    this._spiderElements.clear();
+    this._arrowElements.clear();
+    this._lastSpiderPositions.clear();
+    this._tooltip.hide();
   }
 
   public getArchersRow(): HTMLElement {
