@@ -1,6 +1,6 @@
 import { PRIMARY_STATS, STATS, type PrimaryStatId, type StatModifier } from '../rules/stats.js';
 
-/** Primary attributes are deliberately not mapped to combat stats yet. */
+/** First-level bases; level growth and all derived effects are resolved by GameRules. */
 export class Character {
   readonly base: Record<PrimaryStatId, number> = {
     endurance: STATS.endurance.base,

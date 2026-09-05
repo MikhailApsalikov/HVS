@@ -10,6 +10,8 @@ export function game(level = 1): GameSession {
   session.upgradeTalent('hunterMastery');
   session.confirmLevelUp();
   session.state.level = level;
+  session.refreshStats();
+  session.state.levelTimer = session.state.levelTimerMax = session.state.rules.levelDuration(level);
   return session;
 }
 export function advance(session: GameSession, seconds: number): void {

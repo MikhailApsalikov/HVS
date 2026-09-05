@@ -1,12 +1,15 @@
-import type { DifficultyConfig, TalentId } from '../types.js';
-import type { StatModifier } from '../rules/stats.js';
-import { TALENTS, TALENT_ORDER } from '../../content/talents.js';
+import type { DifficultyConfig, TalentId, TalentBranch } from '../types.js';
+import type { StatModifier, ResolvedStats } from '../rules/stats.js';
+import { TALENTS, TALENT_ORDER, TALENT_TIER_RULES } from '../../content/talents.js';
 
 export interface TalentState {
   readonly id: TalentId;
   readonly rank: number;
   readonly maxRanks: number;
   readonly unlocksAtLevel: number;
+  readonly branch: TalentBranch;
+  readonly tier: number;
+  readonly requiredBranchPoints: number;
 }
 
 export class TalentSystem {
@@ -20,14 +23,32 @@ export class TalentSystem {
     return this.ranks.get(id) ?? 0;
   }
   getTalent(id: TalentId): TalentState {
-    return { id, rank: this.getRank(id), ...this.config.talents[id] };
+    const config = this.config.talents[id];
+    const tier = Math.floor(config.unlocksAtLevel / TALENT_TIER_RULES.levelsPerTier) + 1;
+    return {
+      id,
+      rank: this.getRank(id),
+      ...config,
+      branch: TALENTS[id].branch,
+      tier,
+      requiredBranchPoints: (tier - 1) * TALENT_TIER_RULES.pointsPerTier,
+    };
+  }
+  branchPoints(branch: TalentBranch): number {
+    return TALENT_ORDER.reduce(
+      (sum, id) => sum + (TALENTS[id].branch === branch ? this.getRank(id) : 0),
+      0,
+    );
+  }
+  upgradeBlockReason(id: TalentId, level: number): 'level' | 'branch' | 'maxed' | null {
+    const talent = this.getTalent(id);
+    if (level < talent.unlocksAtLevel) return 'level';
+    if (this.branchPoints(talent.branch) < talent.requiredBranchPoints) return 'branch';
+    if (talent.rank >= talent.maxRanks) return 'maxed';
+    return null;
   }
   canUpgrade(id: TalentId, level: number): boolean {
-    return (
-      Object.hasOwn(TALENTS, id) &&
-      level >= this.config.talents[id].unlocksAtLevel &&
-      this.getRank(id) < this.config.talents[id].maxRanks
-    );
+    return Object.hasOwn(TALENTS, id) && this.upgradeBlockReason(id, level) === null;
   }
   hasAvailableUpgrades(level: number): boolean {
     return TALENT_ORDER.some((id) => this.canUpgrade(id, level));
@@ -47,6 +68,21 @@ export class TalentSystem {
             value: effect.value * rank,
           })),
     );
+  }
+  getScalingModifiers(stats: ResolvedStats): StatModifier[] {
+    return this.talents.flatMap(({ id, rank }) => {
+      const scaling = TALENTS[id].scaling;
+      return scaling && rank > 0
+        ? [
+            {
+              ...scaling.effect,
+              source: `talent:${id}`,
+              value:
+                Math.floor(stats[scaling.attribute] / scaling.step) * scaling.effect.value * rank,
+            },
+          ]
+        : [];
+    });
   }
   toSaveData(): { id: TalentId; rank: number }[] {
     return this.talents.map(({ id, rank }) => ({ id, rank }));

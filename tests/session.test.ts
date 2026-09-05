@@ -16,7 +16,7 @@ describe('progression and player commands', () => {
     expect(session.upgradeTalent('agility')).toBe(false);
     expect(session.upgradeTalent('endurance')).toBe(true);
     expect(session.upgradeTalent('endurance')).toBe(false);
-    expect(session.state.hp).toBe(925);
+    expect(session.state.hp).toBe(525);
     expect(session.confirmLevelUp()).toBe(true);
     expect(session.state.level).toBe(1);
     expect(session.confirmLevelUp()).toBe(false);
@@ -33,12 +33,12 @@ describe('progression and player commands', () => {
   });
   it('accumulates fractional regeneration and passive coins without per-frame rounding', () => {
     const session = game();
-    session.state.hp = 100;
+    session.state.hp = 50;
     session.state.energy = 0;
     advance(session, 2.5);
-    expect(session.state.hp).toBeCloseTo(102.5, 8);
-    expect(session.state.energy).toBeCloseTo(25, 8);
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(101, 8);
+    expect(session.state.hp).toBeCloseTo(51.35, 8);
+    expect(session.state.energy).toBeCloseTo(20.4, 8);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(101.5, 8);
   });
   it('rejects invalid timestep and blocks commands outside their phase', () => {
     const session = new GameSession('normal');
@@ -54,17 +54,19 @@ describe('progression and player commands', () => {
   });
   it('enforces money/slots and clamps resources after sale', () => {
     const session = new GameSession('normal');
+    session.state.character.setBase('endurance', 40);
+    session.refreshStats();
     expect(session.buyItem('missing')).toBe(false);
     expect(session.buyItem('c020')).toBe(false);
     expect(session.buyItem('c001')).toBe(true);
-    expect(session.state.maxHp).toBe(600);
-    expect(session.state.hp).toBe(600);
+    expect(session.state.maxHp).toBe(200);
+    expect(session.state.hp).toBe(200);
     expect(session.buyItem('c001')).toBe(false);
     expect(session.sellItem(-1)).toBe(false);
     expect(session.sellItem(0.5)).toBe(false);
     expect(session.sellItem(0)).toBe(true);
-    expect(session.state.hp).toBe(500);
-    expect(session.state.maxHp).toBe(500);
+    expect(session.state.hp).toBe(100);
+    expect(session.state.maxHp).toBe(100);
     expect(session.state.coins).toBe(84);
     expect(session.sellItem(0)).toBe(false);
     session.state.coins = 1000;
@@ -87,7 +89,7 @@ describe('shooting and collision', () => {
     expect(session.shootLane(0.5)).toBe('blocked');
     session.state.energy = 0;
     expect(session.shootLane(2)).toBe('not_enough_energy');
-    advance(session, 1.52);
+    advance(session, 3);
     expect(session.state.archers[0].isReady).toBe(true);
   });
   it('hits the nearest live spider along a swept path even with fast arrows', () => {
@@ -107,12 +109,12 @@ describe('shooting and collision', () => {
     const session = game();
     const spider = addSpider(session, 'fat');
     session.shootLane(0);
-    advance(session, 1);
+    advance(session, 1.8);
     expect(spider.type).toBe('normal');
     expect(spider.dying).toBe(false);
     session.state.archers[0].start(0);
     session.shootLane(0);
-    advance(session, 1);
+    advance(session, 1.8);
     expect(session.state.spiders.size).toBe(0);
     expect(session.drainEvents().filter((event) => event.type === 'coinDrop')).toHaveLength(1);
   });
@@ -121,7 +123,7 @@ describe('shooting and collision', () => {
     addSpider(session).startDying();
     addSpider(session, 'normal', 1);
     session.shootLane(0);
-    advance(session, 1.6);
+    advance(session, 3.1);
     expect(session.state.arrows.size).toBe(0);
     expect([...session.state.spiders.values()][0].lane).toBe(1);
   });
@@ -171,12 +173,12 @@ describe('all eight abilities', () => {
     expect(session.state.energy).toBe(100);
     session.state.hp = 100;
     session.activateAbility('heal');
-    expect(session.state.hp).toBe(250);
+    expect(session.state.hp).toBe(358);
     session.state.getAbility('heal').start(0);
     session.state.energy = 100;
-    session.state.hp = 499;
+    session.state.hp = 539;
     session.activateAbility('heal');
-    expect(session.state.hp).toBe(500);
+    expect(session.state.hp).toBe(540);
   });
   it('fires a volley on four distinct lanes, capped at nine with bonuses', () => {
     const session = game(20);
@@ -189,7 +191,7 @@ describe('all eight abilities', () => {
     session.activateAbility('stand');
     addSpider(session, 'burner', 0, 1);
     advance(session, 1 / 60);
-    expect(session.state.hp).toBe(500);
+    expect(session.state.hp).toBe(690);
     expect(session.drainEvents()).toContainEqual({ type: 'absorb' });
     advance(session, 7);
     expect(session.state.isInvulnerable).toBe(false);
@@ -261,9 +263,9 @@ describe('enemy types and rewards', () => {
     const session = game();
     addSpider(session, 'burner', 0, 1, 2);
     advance(session, 0.5);
-    expect(session.state.energy).toBeCloseTo(15, 8);
+    expect(session.state.energy).toBeCloseTo(14.08, 8);
     expect(session.drainEvents()).toEqual([
-      { type: 'damage', spiderId: 'spider-1', hp: 2, energy: 90 },
+      { type: 'damage', spiderId: 'spider-1', hp: 1, energy: 90 },
     ]);
     expect(session.state.coins).toBe(100);
   });

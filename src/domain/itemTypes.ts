@@ -4,7 +4,6 @@ import type { PrimaryStatId } from './rules/stats.js';
 export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary';
 export type StatType =
   | PrimaryStatId
-  | 'maxHp'
   | 'maxEnergy'
   | 'hpRegen'
   | 'energyRegen'

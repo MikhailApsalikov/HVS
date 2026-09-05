@@ -8,6 +8,7 @@ import { salePrice } from '../../domain/rules/economy.js';
 import { itemModifiers } from '../../domain/rules/itemModifiers.js';
 import { describeModifier, escapeHtml } from '../presenters.js';
 import { TooltipManager } from './TooltipManager.js';
+import { coinAmount } from '../coins.js';
 
 const RARITIES: Record<ItemRarity, string> = {
   common: 'Обычные',
@@ -25,7 +26,7 @@ export class ShopPanel {
   private readonly tooltip = TooltipManager.getInstance();
   render(state: GameState, talents: TalentSystem, items: ItemSystem, actions: ShopActions): void {
     this.container.className = 'shop-panel';
-    this.container.innerHTML = `<div class="shop-panel__header"><div class="shop-panel__title">Магазин</div><div class="shop-panel__coins">${state.coins} монет</div></div>`;
+    this.container.innerHTML = `<div class="shop-panel__header"><div class="shop-panel__title">Магазин</div><div class="shop-panel__coins">${coinAmount(state.coins)}</div></div>`;
     const inventory = document.createElement('div');
     inventory.className = 'shop-panel__inventory-section';
     inventory.innerHTML =
@@ -45,7 +46,7 @@ export class ShopPanel {
                 this.render(state, talents, items, actions);
               }
             },
-            `Продажа: ${salePrice(item.price)} монет`,
+            `Продажа: ${coinAmount(salePrice(item.price))}`,
           )
         : document.createElement('button');
       if (!item) {
@@ -83,7 +84,7 @@ export class ShopPanel {
                 this.render(state, talents, items, actions);
               }
             },
-            `Цена: ${item.price} монет<br>${reason}`,
+            `Цена: ${coinAmount(item.price)}<br><span class="${canBuy ? '' : 'action-unavailable'}">${reason}</span>`,
           ),
         );
       }

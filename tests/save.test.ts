@@ -5,6 +5,63 @@ import { SAVE_KEY, SaveSystem } from '../src/infrastructure/storage/SaveSystem.j
 import { game, advance, addSpider, MemoryStorage } from './helpers.js';
 
 describe('saves and migration', () => {
+  it('migrates version 3 bases, equipment, branch ranks and timer without losing the run', () => {
+    const session = game(10);
+    const previous = {
+      ...snapshot(session),
+      version: 3,
+      character: { endurance: 0, agility: 0, intellect: 0 },
+      talents: [{ id: 'rapidFire', rank: 2 }],
+      inventory: ['c009'],
+      state: {
+        ...snapshot(session).state,
+        hp: 400,
+        energy: 90,
+        coins: 123,
+        levelTimerMax: 35,
+        levelTimer: 17.5,
+      },
+    };
+    const parsed = parseSave(previous)!;
+    expect(parsed.version).toBe(4);
+    const loaded = restore(parsed);
+    expect(loaded.state.stats).toMatchObject({
+      endurance: 104,
+      agility: 32,
+      intellect: 34,
+      maxHp: 740,
+      armor: 208,
+    });
+    expect(loaded.state.hp).toBe(400);
+    expect(loaded.state.coins).toBe(123);
+    expect(loaded.state.energy).toBe(90);
+    expect(loaded.state.levelTimerMax).toBe(34);
+    expect(loaded.state.levelTimer).toBe(17);
+    expect(loaded.talents.getRank('rapidFire')).toBe(2);
+    expect(loaded.talents.canUpgrade('rapidFire', 10)).toBe(false);
+    expect(loaded.items.toSaveData()).toEqual(['c009']);
+    expect(snapshot(restore(parseSave(snapshot(loaded))!))).toEqual(snapshot(loaded));
+  });
+  it('preserves earned version 3 primary bases and handles an exhausted zero-length timer', () => {
+    const previous = {
+      ...snapshot(game()),
+      version: 3,
+      character: { endurance: 10, agility: 4, intellect: 9 },
+      state: { ...snapshot(game()).state, levelTimer: 0, levelTimerMax: 0 },
+    };
+    const loaded = restore(parseSave(previous)!);
+    expect(loaded.state.stats).toMatchObject({ endurance: 37, agility: 27, intellect: 25 });
+    expect(loaded.state.levelTimer).toBe(0);
+  });
+  it('preserves health supported by equipment when restoring current saves', () => {
+    const session = new GameSession('normal');
+    session.state.coins = 10000;
+    session.buyItem('c009');
+    session.state.hp = 400;
+    const loaded = restore(parseSave(snapshot(session))!);
+    expect(loaded.state.hp).toBe(400);
+    expect(loaded.state.maxHp).toBe(470);
+  });
   it('round-trips full running state, actors, cooldowns, resources and modifiers', () => {
     const session = game(50);
     session.state.character.setBase('intellect', 53);
@@ -51,9 +108,9 @@ describe('saves and migration', () => {
     expect(data).not.toBeNull();
     const loaded = restore(data!);
     expect(loaded.state.coins).toBe(123);
-    expect(loaded.state.stats.energyRegen).toBe(12);
+    expect(loaded.state.stats.energyRegen).toBe(10.54);
     expect(loaded.state.phase).toBe('levelUp');
-    expect(loaded.state.maxHp).toBe(600);
+    expect(loaded.state.maxHp).toBe(640);
     loaded.upgradeTalent('tireless');
     loaded.confirmLevelUp();
     expect(loaded.state.level).toBe(21);
@@ -140,7 +197,7 @@ describe('saves and migration', () => {
     data.state.config = 'corrupt';
     data.state.modifyHp = null;
     const loaded = restore(parseSave(data)!);
-    expect(loaded.state.config.baseHp).toBe(500);
+    expect(loaded.state.config.baseHp).toBe(100);
     expect(typeof loaded.state.modifyHp).toBe('function');
   });
 });

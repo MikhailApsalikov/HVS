@@ -3,7 +3,7 @@ import type { AbilityId } from '../../domain/types.js';
 import type { SpriteRegistry } from '../SpriteRegistry.js';
 import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { PRIMARY_STATS, STATS } from '../../domain/rules/stats.js';
-import { abilityDescription, statRows } from '../presenters.js';
+import { abilityDescription, attributeDescription, statRows } from '../presenters.js';
 import { TooltipManager } from './TooltipManager.js';
 
 export class HUD {
@@ -66,7 +66,20 @@ export class HUD {
     this.coins.addEventListener('mouseleave', () => this.tooltip.hide());
     this.level.className = 'level-number';
     this.attributes.className = 'character-attributes';
-    this.attributes.title = 'Основные характеристики. Их влияние на бой будет определено позже.';
+    for (const id of [...PRIMARY_STATS, 'armor'] as const) {
+      const row = document.createElement('div');
+      row.className = 'character-attribute';
+      row.dataset.stat = id;
+      row.tabIndex = 0;
+      const show = () => {
+        if (this.state) this.tooltip.show(row, attributeDescription(this.state, id));
+      };
+      row.addEventListener('mouseenter', show);
+      row.addEventListener('focus', show);
+      row.addEventListener('mouseleave', () => this.tooltip.hide());
+      row.addEventListener('blur', () => this.tooltip.hide());
+      this.attributes.append(row);
+    }
     this.abilities.className = 'ability-buttons';
     this.abilities.id = 'ability-buttons';
     for (const id of ABILITY_ORDER) {
@@ -91,7 +104,7 @@ export class HUD {
   }
   getShootTooltipHtml(lane: number): string {
     return this.state
-      ? `<div class="tooltip__title">Лучник ${lane}</div>${statRows(this.state.stats, ['shootCost', 'shootCooldown', 'arrowSpeed'])}`
+      ? `<div class="tooltip__title">Лучник ${lane}</div>${statRows(this.state.stats, ['shootCost', 'shootCooldown', 'arrowSpeed'])}${this.state.energy < this.state.stats.shootCost ? '<div class="action-unavailable">Недостаточно энергии</div>' : ''}${this.state.archers[lane - 1].isOnCooldown ? '<div class="action-unavailable">Выстрел перезаряжается</div>' : ''}`
       : '';
   }
   render(state: GameState): void {
@@ -110,9 +123,9 @@ export class HUD {
     }
     this.coins.children[1].textContent = String(state.coins);
     this.level.textContent = `Уровень ${state.level}`;
-    this.attributes.textContent = PRIMARY_STATS.map(
-      (id) => `${STATS[id].label}: ${state.stats[id]}`,
-    ).join(' · ');
+    [...PRIMARY_STATS, 'armor' as const].forEach((id, index) => {
+      this.attributes.children[index].textContent = `${STATS[id].label}: ${state.stats[id]}`;
+    });
     for (const [id, button] of this.buttons) {
       const cooldown = state.getAbility(id);
       const locked = state.level < ABILITIES[id].unlockLevel;

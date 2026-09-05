@@ -11,28 +11,48 @@ export type {
 // ─── ОБЫЧНЫЕ (58 шт.) ────────────────────────────────────────────────────────
 
 const COMMON_ITEMS: readonly ItemConfig[] = [
-  // ── +макс. HP (N 1–15) ─────────────────────────────────────────────────
-  { id: 'c001', name: 'Аптечные бинты', rarity: 'common', stats: [{ type: 'maxHp', value: 100 }] },
-  { id: 'c003', name: 'Кожаная заплата', rarity: 'common', stats: [{ type: 'maxHp', value: 200 }] },
-  { id: 'c005', name: 'Кожаный жилет', rarity: 'common', stats: [{ type: 'maxHp', value: 300 }] },
-  { id: 'c009', name: 'Боевая куртка', rarity: 'common', stats: [{ type: 'maxHp', value: 500 }] },
+  // ── +выносливость (N 1–15) ─────────────────────────────────────────────────
+  {
+    id: 'c001',
+    name: 'Аптечные бинты',
+    rarity: 'common',
+    stats: [{ type: 'endurance', value: 10 }],
+  },
+  {
+    id: 'c003',
+    name: 'Кожаная заплата',
+    rarity: 'common',
+    stats: [{ type: 'endurance', value: 20 }],
+  },
+  {
+    id: 'c005',
+    name: 'Кожаный жилет',
+    rarity: 'common',
+    stats: [{ type: 'endurance', value: 30 }],
+  },
+  {
+    id: 'c009',
+    name: 'Боевая куртка',
+    rarity: 'common',
+    stats: [{ type: 'endurance', value: 50 }],
+  },
   {
     id: 'c012',
     name: 'Наплечники охотника',
     rarity: 'common',
-    stats: [{ type: 'maxHp', value: 700 }],
+    stats: [{ type: 'endurance', value: 70 }],
   },
   {
     id: 'c015',
     name: 'Стальные наплечники',
     rarity: 'common',
-    stats: [{ type: 'maxHp', value: 1000 }],
+    stats: [{ type: 'endurance', value: 100 }],
   },
   {
     id: 'c020',
     name: 'Мифриловая пластина',
     rarity: 'common',
-    stats: [{ type: 'maxHp', value: 1500 }],
+    stats: [{ type: 'endurance', value: 150 }],
   },
 
   // ── +реген HP/сек (N 1–15) ─────────────────────────────────────────────
@@ -193,11 +213,21 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     id: 'r001',
     name: 'Грудная пластина бойца',
     rarity: 'rare',
-    stats: [{ type: 'maxHp', value: 1800 }],
+    stats: [{ type: 'endurance', value: 180 }],
   },
-  { id: 'r002', name: 'Нагрудник воина', rarity: 'rare', stats: [{ type: 'maxHp', value: 2200 }] },
-  { id: 'r003', name: 'Латная куртка', rarity: 'rare', stats: [{ type: 'maxHp', value: 2700 }] },
-  { id: 'r004', name: 'Панцирь чемпиона', rarity: 'rare', stats: [{ type: 'maxHp', value: 3300 }] },
+  {
+    id: 'r002',
+    name: 'Нагрудник воина',
+    rarity: 'rare',
+    stats: [{ type: 'endurance', value: 220 }],
+  },
+  { id: 'r003', name: 'Латная куртка', rarity: 'rare', stats: [{ type: 'endurance', value: 270 }] },
+  {
+    id: 'r004',
+    name: 'Панцирь чемпиона',
+    rarity: 'rare',
+    stats: [{ type: 'endurance', value: 330 }],
+  },
   { id: 'r005', name: 'Ядовитый антидот', rarity: 'rare', stats: [{ type: 'hpRegen', value: 18 }] },
   {
     id: 'r006',
@@ -283,7 +313,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Живая броня',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 200 },
+      { type: 'endurance', value: 20 },
       { type: 'hpRegen', value: 2 },
     ],
   },
@@ -292,7 +322,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Доспех выносливости',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 300 },
+      { type: 'endurance', value: 30 },
       { type: 'hpRegen', value: 3 },
     ],
   },
@@ -301,7 +331,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Боевая перевязь',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 500 },
+      { type: 'endurance', value: 50 },
       { type: 'hpRegen', value: 5 },
     ],
   },
@@ -310,7 +340,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Доспех чемпиона',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 700 },
+      { type: 'endurance', value: 70 },
       { type: 'hpRegen', value: 7 },
     ],
   },
@@ -319,7 +349,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Латы долголетия',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 1000 },
+      { type: 'endurance', value: 100 },
       { type: 'hpRegen', value: 10 },
     ],
   },
@@ -330,7 +360,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Кожаный доспех',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 200 },
+      { type: 'endurance', value: 20 },
       { type: 'damageReduction', value: 2 },
     ],
   },
@@ -339,7 +369,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Стальная куртка',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 400 },
+      { type: 'endurance', value: 40 },
       { type: 'damageReduction', value: 4 },
     ],
   },
@@ -348,7 +378,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Закалённый нагрудник',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 600 },
+      { type: 'endurance', value: 60 },
       { type: 'damageReduction', value: 6 },
     ],
   },
@@ -357,7 +387,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Непробиваемые латы',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 900 },
+      { type: 'endurance', value: 90 },
       { type: 'damageReduction', value: 9 },
     ],
   },
@@ -368,7 +398,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Тактический жилет',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 300 },
+      { type: 'endurance', value: 30 },
       { type: 'maxEnergy', value: 10 },
     ],
   },
@@ -377,7 +407,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Нагрудник мага',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 500 },
+      { type: 'endurance', value: 50 },
       { type: 'maxEnergy', value: 20 },
     ],
   },
@@ -386,7 +416,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Броня волшебника',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 700 },
+      { type: 'endurance', value: 70 },
       { type: 'maxEnergy', value: 30 },
     ],
   },
@@ -397,7 +427,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Зелье воина',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 300 },
+      { type: 'endurance', value: 30 },
       { type: 'energyRegen', value: 1 },
     ],
   },
@@ -406,7 +436,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Тоник воина',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 700 },
+      { type: 'endurance', value: 70 },
       { type: 'energyRegen', value: 1 },
     ],
   },
@@ -417,7 +447,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Боевая мазь',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 300 },
+      { type: 'endurance', value: 30 },
       { type: 'energyPerKill', value: 1 },
     ],
   },
@@ -426,7 +456,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Кулон убийцы',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 800 },
+      { type: 'endurance', value: 80 },
       { type: 'energyPerKill', value: 1 },
     ],
   },
@@ -437,7 +467,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Оберег бойца',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 300 },
+      { type: 'endurance', value: 30 },
       { type: 'energyPerBreach', value: 1 },
     ],
   },
@@ -446,7 +476,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Страж воина',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 700 },
+      { type: 'endurance', value: 70 },
       { type: 'energyPerBreach', value: 1 },
     ],
   },
@@ -457,7 +487,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Трофейный нагрудник',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 300 },
+      { type: 'endurance', value: 30 },
       { type: 'coinsPerKill', value: 1 },
     ],
   },
@@ -466,7 +496,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Доспех торговца',
     rarity: 'rare',
     stats: [
-      { type: 'maxHp', value: 800 },
+      { type: 'endurance', value: 80 },
       { type: 'coinsPerKill', value: 1 },
     ],
   },
@@ -782,12 +812,17 @@ const RARE_ITEMS: readonly ItemConfig[] = [
 
 const EPIC_ITEMS: readonly ItemConfig[] = [
   // ── Один стат (8 шт.) — значения выше потолка Rare 1-stat ────────────────
-  { id: 'e001', name: 'Монолит здоровья', rarity: 'epic', stats: [{ type: 'maxHp', value: 3600 }] },
+  {
+    id: 'e001',
+    name: 'Монолит здоровья',
+    rarity: 'epic',
+    stats: [{ type: 'endurance', value: 360 }],
+  },
   {
     id: 'e002',
     name: 'Стальная твердыня',
     rarity: 'epic',
-    stats: [{ type: 'maxHp', value: 4200 }],
+    stats: [{ type: 'endurance', value: 420 }],
   },
   { id: 'e003', name: 'Живой источник', rarity: 'epic', stats: [{ type: 'hpRegen', value: 50 }] },
   {
@@ -822,7 +857,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Доспех воина',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 1500 },
+      { type: 'endurance', value: 150 },
       { type: 'damageReduction', value: 12 },
     ],
   },
@@ -831,7 +866,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Живая броня воителя',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 1800 },
+      { type: 'endurance', value: 180 },
       { type: 'hpRegen', value: 16 },
     ],
   },
@@ -840,7 +875,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Тактический жезл',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 1500 },
+      { type: 'endurance', value: 150 },
       { type: 'maxEnergy', value: 40 },
     ],
   },
@@ -849,7 +884,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Реликвия воина',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 1800 },
+      { type: 'endurance', value: 180 },
       { type: 'energyRegen', value: 2 },
     ],
   },
@@ -858,7 +893,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Клинок охотника',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 1800 },
+      { type: 'endurance', value: 180 },
       { type: 'energyPerKill', value: 2 },
     ],
   },
@@ -867,7 +902,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Трофей удачи',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 2000 },
+      { type: 'endurance', value: 200 },
       { type: 'coinsPerKill', value: 2 },
     ],
   },
@@ -968,7 +1003,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Пояс выносливости',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 500 },
+      { type: 'endurance', value: 50 },
       { type: 'hpRegen', value: 5 },
       { type: 'damageReduction', value: 5 },
     ],
@@ -978,7 +1013,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Реликвия мудрости',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 500 },
+      { type: 'endurance', value: 50 },
       { type: 'maxEnergy', value: 20 },
       { type: 'energyRegen', value: 1 },
     ],
@@ -988,7 +1023,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Нагрудник воителя',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 700 },
+      { type: 'endurance', value: 70 },
       { type: 'hpRegen', value: 5 },
       { type: 'damageReduction', value: 5 },
     ],
@@ -998,7 +1033,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Талисман охотника',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 500 },
+      { type: 'endurance', value: 50 },
       { type: 'hpRegen', value: 5 },
       { type: 'maxEnergy', value: 20 },
     ],
@@ -1008,7 +1043,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Дух победителя',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 700 },
+      { type: 'endurance', value: 70 },
       { type: 'energyRegen', value: 1 },
       { type: 'coinsPerKill', value: 1 },
     ],
@@ -1018,7 +1053,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Клинок силы',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 700 },
+      { type: 'endurance', value: 70 },
       { type: 'energyPerKill', value: 1 },
       { type: 'maxEnergy', value: 20 },
     ],
@@ -1028,7 +1063,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Доспех богача',
     rarity: 'epic',
     stats: [
-      { type: 'maxHp', value: 800 },
+      { type: 'endurance', value: 80 },
       { type: 'hpRegen', value: 7 },
       { type: 'coinsPerKill', value: 1 },
     ],
@@ -1090,7 +1125,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     stats: [
       { type: 'energyRegen', value: 1 },
       { type: 'energyPerKill', value: 1 },
-      { type: 'maxHp', value: 500 },
+      { type: 'endurance', value: 50 },
     ],
   },
   {
@@ -1110,7 +1145,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     stats: [
       { type: 'energyPerKill', value: 2 },
       { type: 'coinsPerKill', value: 1 },
-      { type: 'maxHp', value: 700 },
+      { type: 'endurance', value: 70 },
     ],
   },
   {
@@ -1135,7 +1170,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Реликвия Армагеддона',
     rarity: 'legendary',
     stats: [
-      { type: 'maxHp', value: 500 },
+      { type: 'endurance', value: 50 },
       { type: 'damageReduction', value: 5 },
       { type: 'energyRegen', value: 1 },
     ],
@@ -1151,7 +1186,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Гримуар Армагеддона',
     rarity: 'legendary',
     stats: [
-      { type: 'maxHp', value: 900 },
+      { type: 'endurance', value: 90 },
       { type: 'hpRegen', value: 5 },
       { type: 'coinsPerKill', value: 1 },
     ],
@@ -1201,7 +1236,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Корона Вьюги',
     rarity: 'legendary',
     stats: [
-      { type: 'maxHp', value: 700 },
+      { type: 'endurance', value: 70 },
       { type: 'damageReduction', value: 5 },
       { type: 'energyRegen', value: 1 },
     ],
@@ -1235,7 +1270,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Оберег Залпа',
     rarity: 'legendary',
     stats: [
-      { type: 'maxHp', value: 500 },
+      { type: 'endurance', value: 50 },
       { type: 'hpRegen', value: 5 },
       { type: 'coinsPerKill', value: 1 },
     ],
@@ -1251,7 +1286,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Перчатки Залпа',
     rarity: 'legendary',
     stats: [
-      { type: 'maxHp', value: 500 },
+      { type: 'endurance', value: 50 },
       { type: 'maxEnergy', value: 30 },
       { type: 'energyRegen', value: 1 },
     ],
@@ -1285,7 +1320,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Щит Ни шагу назад!',
     rarity: 'legendary',
     stats: [
-      { type: 'maxHp', value: 900 },
+      { type: 'endurance', value: 90 },
       { type: 'hpRegen', value: 5 },
       { type: 'damageReduction', value: 5 },
     ],
@@ -1301,7 +1336,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Оберег стойкости',
     rarity: 'legendary',
     stats: [
-      { type: 'maxHp', value: 700 },
+      { type: 'endurance', value: 70 },
       { type: 'damageReduction', value: 7 },
       { type: 'energyPerBreach', value: 2 },
     ],
@@ -1371,7 +1406,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Амулет Лечения',
     rarity: 'legendary',
     stats: [
-      { type: 'maxHp', value: 700 },
+      { type: 'endurance', value: 70 },
       { type: 'hpRegen', value: 8 },
       { type: 'energyRegen', value: 1 },
     ],
@@ -1387,7 +1422,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Оберег Лечения',
     rarity: 'legendary',
     stats: [
-      { type: 'maxHp', value: 1000 },
+      { type: 'endurance', value: 100 },
       { type: 'hpRegen', value: 10 },
       { type: 'damageReduction', value: 3 },
     ],

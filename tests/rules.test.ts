@@ -12,13 +12,13 @@ import { itemModifiers } from '../src/domain/rules/itemModifiers.js';
 import { Character } from '../src/domain/model/Character.js';
 
 describe('talent strength and independent sources', () => {
-  it('treats two ranks of a +10% talent as one +20% bonus', () => {
+  it('treats two ranks of a +5% talent as one +10% bonus', () => {
     const session = new GameSession('normal');
-    session.talents.loadFromSave([{ id: 'tireless', rank: 2 }]);
+    session.talents.loadFromSave([{ id: 'improvedEndurance', rank: 2 }]);
     session.refreshStats();
-    expect(session.state.stats.energyRegen).toBe(12);
+    expect(session.state.stats.endurance).toBe(30);
     expect(session.talents.getModifiers()).toEqual([
-      { source: 'talent:tireless', stat: 'energyRegen', kind: 'percent', value: 20 },
+      { source: 'talent:improvedEndurance', stat: 'endurance', kind: 'percent', value: 10 },
     ]);
   });
   it('multiplies different talents, then subtracts flat reductions', () => {
@@ -29,16 +29,16 @@ describe('talent strength and independent sources', () => {
       { id: 'improvedPrep', rank: 1 },
     ]);
     session.refreshStats();
-    expect(session.state.stats['volley.cooldown']).toBe(9.31); // 12 × .8 × .97
+    expect(session.state.stats['volley.cooldown']).toBe(31.11); // 36 × .9 × .97 × .99
     expect(session.state.stats['prep.cooldown']).toBe(52.2); // 60 × .97 − 6
-    expect(session.state.stats.shootCooldown).toBe(1.2);
+    expect(session.state.stats.shootCooldown).toBe(2.67);
   });
-  it('applies flat item regeneration before the talent percentage', () => {
+  it('adds flat item, intellect and tireless regeneration', () => {
     const session = new GameSession('normal');
     session.talents.loadFromSave([{ id: 'tireless', rank: 2 }]);
     session.items.buyItem('c068');
     session.refreshStats();
-    expect(session.state.stats.energyRegen).toBe(13.2);
+    expect(session.state.stats.energyRegen).toBe(11.16);
   });
   it('all modifiers of all equipped items work, including duplicate ability enhancements', () => {
     const session = new GameSession('normal');
@@ -49,7 +49,7 @@ describe('talent strength and independent sources', () => {
     session.items.buyItem(item.id);
     session.refreshStats();
     const percent = item.abilityMod!.value;
-    expect(session.state.stats['prep.restore']).toBe(Math.round(300 * (1 + percent) ** 2));
+    expect(session.state.stats['prep.restore']).toBe(Math.round(282 * (1 + percent) ** 2));
     expect(
       session.items.getModifiers().filter((modifier) => modifier.stat === 'prep.restore'),
     ).toHaveLength(2);
@@ -60,23 +60,29 @@ describe('talent strength and independent sources', () => {
     session.items.buyItem('c050');
     session.items.buyItem('c050');
     session.refreshStats();
-    expect(session.state.rules.value('incomingDamage', 1000)).toBe(697);
+    expect(session.state.rules.value('incomingDamage', 1000)).toBe(452); // 1000 × .86 × .9² / 1.54
   });
   it.each(TALENT_ORDER)('validates rank and unlock constraints: %s', (id) => {
     const session = new GameSession('normal');
     const talent = session.talents.getTalent(id);
     expect(session.talents.canUpgrade(id, talent.unlocksAtLevel - 1)).toBe(false);
-    expect(session.talents.upgrade(id, talent.unlocksAtLevel)).toBe(true);
+    session.talents.loadFromSave(
+      TALENT_ORDER.filter((other) => other !== id && TALENTS[other].branch === talent.branch).map(
+        (id) => ({ id, rank: 999 }),
+      ),
+    );
+    session.state.level = Math.max(1, talent.unlocksAtLevel);
+    expect(session.upgradeTalent(id)).toBe(true);
     session.talents.loadFromSave([{ id, rank: 99999 }]);
     expect(session.talents.getRank(id)).toBe(talent.maxRanks);
     expect(session.talents.upgrade(id, 100)).toBe(false);
     session.talents.loadFromSave([{ id, rank: -1 }]);
     expect(session.talents.getRank(id)).toBe(0);
-    expect(TALENTS[id].effects.length).toBeGreaterThan(0);
+    expect(TALENTS[id].effects.length > 0 || TALENTS[id].scaling !== undefined).toBe(true);
   });
 });
 
-describe('character scaffold', () => {
+describe('primary attribute sources', () => {
   it('stores three primary attributes independently of old same-name talents', () => {
     const session = new GameSession('normal');
     session.state.character.setBase('agility', 53);
@@ -98,14 +104,14 @@ describe('character scaffold', () => {
     expect(character.getModifiers()).toHaveLength(1);
     expect(() => character.setBase('agility', -1)).toThrow();
     character.restoreBase({});
-    expect(character.base).toEqual({ endurance: 0, agility: 0, intellect: 0 });
+    expect(character.base).toEqual({ endurance: 27, agility: 23, intellect: 16 });
   });
 });
 
 describe('content contracts', () => {
   it('retains all difficulties, talents, abilities and unique items', () => {
     expect(Object.keys(DIFFICULTIES)).toHaveLength(3);
-    expect(TALENT_ORDER).toHaveLength(14);
+    expect(TALENT_ORDER).toHaveLength(18);
     expect(ABILITY_ORDER).toHaveLength(8);
     expect(new Set(ITEM_CATALOG.map((item) => item.id)).size).toBe(ITEM_CATALOG.length);
     expect(ITEM_CATALOG.length).toBeGreaterThan(150);
@@ -122,7 +128,7 @@ describe('content contracts', () => {
     expect(rules.levelDuration(1)).toBe(17);
     expect(rules.levelDuration(20)).toBe(55);
     expect(rules.spawnProbability(1)).toBe(config.spawnP0);
-    expect(rules.value('coinsPerSec')).toBe(config.coinsPerSec);
+    expect(rules.value('coinsPerSec')).toBeCloseTo(config.coinsPerSec + 0.2);
     expect(rules.spawnProbability(1_000_000)).toBe(1);
   });
   it('assigns a rounding policy to every tunable value', () => {

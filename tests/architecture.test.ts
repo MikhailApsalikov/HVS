@@ -52,8 +52,26 @@ describe('legacy feature inventory captured before rewrite', () => {
       baseline.items,
     );
   });
-  it('retains original base balance, unlocks and rank limits', () => {
-    expect(normalConfig).toEqual(baseline.normal);
+  it('keeps untouched encounter and ability balance through the attribute update', () => {
+    expect(normalConfig).toEqual({
+      ...baseline.normal,
+      baseHp: 100,
+      hpRegen: 0,
+      energyRegen: 8,
+      shootCooldown: 3,
+      arrowTravelTime: 3,
+      abilities: { ...baseline.normal.abilities, volley: { cost: 100, cooldown: 36 } },
+      talents: {
+        ...baseline.normal.talents,
+        endurance: { maxRanks: 7, unlocksAtLevel: 0 },
+        tireless: { maxRanks: 5, unlocksAtLevel: 0 },
+        hunterMastery: { maxRanks: 10, unlocksAtLevel: 0 },
+        improvedEndurance: { maxRanks: 7, unlocksAtLevel: 0 },
+        improvedAgility: { maxRanks: 7, unlocksAtLevel: 0 },
+        improvedIntellect: { maxRanks: 7, unlocksAtLevel: 0 },
+        magicArmor: { maxRanks: 7, unlocksAtLevel: 20 },
+      },
+    });
   });
   it('retains sound and music catalogs with their assets', () => {
     expect(SOUND_FILES).toEqual(baseline.sounds);

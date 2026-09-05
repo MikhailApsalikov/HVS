@@ -1,6 +1,9 @@
 import type { DifficultyConfig, AbilityId, SpiderType } from '../types.js';
 import {
   STATS,
+  PRIMARY_STATS,
+  PRIMARY_GROWTH,
+  type PrimaryStatId,
   type StatId,
   type StatModifier,
   type StatBases,
@@ -9,23 +12,52 @@ import {
 import { calculate, type Calculation, type Modifier } from './numbers.js';
 import { SPIDERS } from '../../content/spiders.js';
 import { WORLD } from './world.js';
+import { armorReduction, attributeModifiers } from './attributes.js';
 
 /** Single query API shared by simulation and presentation. */
 export class GameRules {
   private readonly modifiers = new Map<StatId, readonly StatModifier[]>();
+  readonly attributeEffects: Readonly<Record<PrimaryStatId, readonly StatModifier[]>>;
   constructor(
     readonly config: DifficultyConfig,
     effects: readonly StatModifier[] = [],
     private readonly bases: StatBases = {},
+    readonly level = 1,
   ) {
+    const allEffects: StatModifier[] = [
+      ...effects,
+      ...PRIMARY_STATS.map((stat): StatModifier => ({
+        source: 'character:level',
+        stat,
+        kind: 'flat',
+        value: Math.max(0, level - 1) * PRIMARY_GROWTH[stat],
+      })),
+    ];
     for (const stat of Object.keys(STATS) as StatId[])
       this.modifiers.set(
         stat,
-        effects.filter((effect) => effect.stat === stat),
+        allEffects.filter((effect) => effect.stat === stat),
       );
+    this.attributeEffects = attributeModifiers({
+      endurance: this.value('endurance'),
+      agility: this.value('agility'),
+      intellect: this.value('intellect'),
+    });
+    for (const modifier of Object.values(this.attributeEffects).flat())
+      this.modifiers.set(modifier.stat, [...this.modifiers.get(modifier.stat)!, modifier]);
+    this.modifiers.set('incomingDamage', [
+      ...this.modifiers.get('incomingDamage')!,
+      {
+        source: 'armor',
+        stat: 'incomingDamage',
+        kind: 'percent',
+        value: -armorReduction(this.value('armor'), level) * 100,
+      },
+    ]);
   }
   private base(id: StatId): number {
     if (this.bases[id] !== undefined) return this.bases[id];
+    if (id === 'armorReduction') return armorReduction(this.value('armor'), this.level);
     const aliases = {
       maxHp: 'baseHp',
       maxEnergy: 'baseEnergy',

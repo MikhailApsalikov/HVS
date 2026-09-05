@@ -3,7 +3,12 @@ import { FrameLoop, type FrameScheduler } from '../src/infrastructure/browser/Fr
 import { GameEngine } from '../src/application/GameEngine.js';
 import { SaveSystem } from '../src/infrastructure/storage/SaveSystem.js';
 import { MemoryStorage } from './helpers.js';
-import { abilityDescription, talentDescription, escapeHtml } from '../src/ui/presenters.js';
+import {
+  abilityDescription,
+  attributeDescription,
+  talentDescription,
+  escapeHtml,
+} from '../src/ui/presenters.js';
 import { game } from './helpers.js';
 import { ABILITY_ORDER } from '../src/content/abilities.js';
 
@@ -99,6 +104,19 @@ describe('application orchestration', () => {
 });
 
 describe('presentation uses the actual resolved stats', () => {
+  it('shows armor as a percentage and includes magical armor in intellect contributions', () => {
+    const session = game();
+    session.state.character.setBase('endurance', 55);
+    session.state.character.setBase('intellect', 54);
+    session.refreshStats();
+    expect(attributeDescription(session.state, 'armor')).toContain('52.381%');
+    expect(attributeDescription(session.state, 'armor')).toContain('75%');
+    session.talents.loadFromSave([{ id: 'magicArmor', rank: 7 }]);
+    session.refreshStats();
+    expect(attributeDescription(session.state, 'intellect')).toContain(
+      'Броня: +70 (Магическая броня)',
+    );
+  });
   it.each(ABILITY_ORDER)('shows live values for %s', (id) => {
     const session = game(50);
     session.talents.loadFromSave([{ id: 'quickInstinct', rank: 3 }]);
@@ -108,7 +126,9 @@ describe('presentation uses the actual resolved stats', () => {
     expect(html).toContain(String(session.state.stats[`${id}.cost`]));
   });
   it('describes talent ranks from their definitions', () => {
-    expect(talentDescription('tireless', 2)).toContain('+20%');
+    expect(talentDescription('tireless', 2)).toContain('+2');
+    expect(talentDescription('improvedEndurance', 2)).toContain('+10%');
+    expect(talentDescription('magicArmor', 7)).toContain('+7 за каждые 5');
     expect(talentDescription('blizzardMastery')).toContain('процентные пункты');
     expect(escapeHtml('<script>"&\'')).toBe('&lt;script&gt;&quot;&amp;&#39;');
   });

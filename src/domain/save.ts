@@ -5,7 +5,7 @@ import type { GameState } from './model/GameState.js';
 import { Spider } from './model/Spider.js';
 import { Arrow } from './model/Arrow.js';
 import { ABILITY_ORDER } from '../content/abilities.js';
-import { STATS } from './rules/stats.js';
+import { PRIMARY_STATS, STATS } from './rules/stats.js';
 import { TALENTS } from '../content/talents.js';
 import { SPIDERS } from '../content/spiders.js';
 import { DIFFICULTIES } from '../content/difficulties.js';
@@ -57,7 +57,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 3;
+  readonly version: 4;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -74,7 +74,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 3,
+    version: 4,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -91,6 +91,7 @@ export function snapshot(session: GameSession): SaveData {
 export function restore(data: SaveData, random?: RandomSource): GameSession {
   const session = new GameSession(data.difficulty, random);
   const state = session.state;
+  state.level = data.state.level;
   session.talents.loadFromSave(data.talents);
   state.character.restoreBase(data.character);
   for (const source of new Set(data.characterModifiers.map((modifier) => modifier.source))) {
@@ -184,7 +185,7 @@ export function parseSave(value: unknown): SaveData | null {
 function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
-  if (value.version !== 3 || !object(value.state)) return null;
+  if ((value.version !== 3 && value.version !== 4) || !object(value.state)) return null;
   const state = value.state;
   const numeric = [
     'level',
@@ -316,6 +317,20 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
+  if (value.version === 3) {
+    const previous = value as unknown as SaveData;
+    const character = Object.fromEntries(
+      PRIMARY_STATS.map((id) => [id, previous.character[id] + STATS[id].base]),
+    ) as Record<PrimaryStatId, number>;
+    const session = restore({ ...previous, version: 4, character });
+    const duration = session.state.rules.levelDuration(session.state.level);
+    session.state.levelTimer =
+      previous.state.levelTimerMax > 0
+        ? (duration * previous.state.levelTimer) / previous.state.levelTimerMax
+        : 0;
+    session.state.levelTimerMax = duration;
+    return snapshot(session);
+  }
   return value as unknown as SaveData;
 }
 
@@ -334,6 +349,7 @@ function migrateLegacy(value: JsonObject): SaveData | null {
   )
     return null;
   const session = new GameSession(value.difficulty as Difficulty);
+  session.state.level = value.level as number;
   session.talents.loadFromSave(value.talents as { id: string; rank: number }[]);
   session.refreshStats(false);
   session.items.loadFromSave(

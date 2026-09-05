@@ -6,6 +6,8 @@ const decimal = { digits: 2, min: 0 } as const;
 const duration = { digits: 2, min: 0 } as const;
 const speed = { digits: 6, min: 0 } as const;
 const probability = { digits: 6, min: 0, max: 1 } as const;
+/** At level 1, 100 armor doubles effective HP; at level 10 this takes 200 armor. */
+export const ARMOR_RULES = { baseScale: 100, scalePerLevel: 100 / 9, cap: 0.75 } as const;
 
 function stat(label: string, base: number, policy: NumberPolicy) {
   return { label, base, policy };
@@ -13,16 +15,18 @@ function stat(label: string, base: number, policy: NumberPolicy) {
 
 /** Policies apply to resolved values, never to per-frame resource/timer increments. */
 export const STATS = {
-  endurance: stat('Выносливость', 0, integer),
-  agility: stat('Ловкость', 0, integer),
-  intellect: stat('Интеллект', 0, integer),
-  maxHp: stat('Максимальное HP', 500, integer),
+  endurance: stat('Выносливость', 27, integer),
+  agility: stat('Ловкость', 23, integer),
+  intellect: stat('Интеллект', 16, integer),
+  armor: stat('Броня', 0, integer),
+  armorReduction: stat('Снижение урона бронёй', 0, { ...probability, max: ARMOR_RULES.cap }),
+  maxHp: stat('Максимальное HP', 100, integer),
   maxEnergy: stat('Максимальная энергия', 100, integer),
-  hpRegen: stat('Восстановление HP/с', 1, decimal),
-  energyRegen: stat('Восстановление энергии/с', 10, decimal),
+  hpRegen: stat('Восстановление HP/с', 0, decimal),
+  energyRegen: stat('Восстановление энергии/с', 8, decimal),
   shootCost: stat('Стоимость выстрела', 35, integer),
-  shootCooldown: stat('Перезарядка выстрела, с', 1.5, duration),
-  arrowSpeed: stat('Скорость стрелы, поля/с', 1 / 1.5, speed),
+  shootCooldown: stat('Перезарядка выстрела, с', 3, duration),
+  arrowSpeed: stat('Скорость стрелы, поля/с', 1 / 3, speed),
   incomingDamage: stat('Получаемый урон', 0, integer),
   damageFactor: stat('Доля получаемого урона', 1, probability),
   coinsPerSec: stat('Монеты/с', 0.4, decimal),
@@ -45,12 +49,12 @@ export const STATS = {
   'blizzard.slow': stat('Замедление: Вьюга', 0.4, probability),
   'prep.cost': stat('Стоимость: Подготовка', 0, integer),
   'prep.cooldown': stat('Перезарядка: Подготовка, с', 60, duration),
-  'prep.restore': stat('Восстановление энергии: Подготовка', 300, integer),
+  'prep.restore': stat('Восстановление энергии: Подготовка', 250, integer),
   'heal.cost': stat('Стоимость: Лечение', 100, integer),
   'heal.cooldown': stat('Перезарядка: Лечение, с', 10, duration),
   'heal.amount': stat('Восстановление HP: Лечение', 150, integer),
   'volley.cost': stat('Стоимость: Залп', 100, integer),
-  'volley.cooldown': stat('Перезарядка: Залп, с', 12, duration),
+  'volley.cooldown': stat('Перезарядка: Залп, с', 36, duration),
   'volley.lanes': stat('Количество стрел: Залп', 4, { ...integer, max: WORLD.lanes }),
   'stand.cost': stat('Стоимость: Ни шагу назад!', 15, integer),
   'stand.cooldown': stat('Перезарядка: Ни шагу назад!, с', 120, duration),
@@ -66,6 +70,26 @@ export const STATS = {
 export type StatId = keyof typeof STATS;
 export type PrimaryStatId = 'endurance' | 'agility' | 'intellect';
 export const PRIMARY_STATS: readonly PrimaryStatId[] = ['endurance', 'agility', 'intellect'];
+export const PRIMARY_GROWTH: Readonly<Record<PrimaryStatId, number>> = {
+  endurance: 3,
+  agility: 1,
+  intellect: 2,
+};
+export const ATTRIBUTE_RULES = {
+  endurance: {
+    healthThreshold: 40,
+    healthPerPoint: 10,
+    regenPerPoint: 0.02,
+    breachStep: 100,
+    durationStep: 80,
+    killCoinsStep: 240,
+    incomeStep: 10,
+    incomePerStep: 0.1,
+    armorPerPoint: 2,
+  },
+  agility: { shotStep: 12, volleyStep: 18, percentCap: 70, killEnergyStep: 240 },
+  intellect: { energyThreshold: 100, energyPerPoint: 2, regenPerPoint: 0.01, abilityPerPoint: 2 },
+} as const;
 export interface StatModifier extends Modifier {
   readonly stat: StatId;
 }

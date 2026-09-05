@@ -15,7 +15,12 @@ export type TalentId =
   | 'blizzardMastery'
   | 'hunterReward'
   | 'quickInstinct'
-  | 'hunterArsenal';
+  | 'hunterArsenal'
+  | 'improvedEndurance'
+  | 'improvedAgility'
+  | 'improvedIntellect'
+  | 'magicArmor';
+export type TalentBranch = 'defense' | 'shooting' | 'magic';
 export type SpiderType = 'normal' | 'fat' | 'fast' | 'ninja' | 'burner' | 'tank';
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'levelUp' | 'gameOver';
 

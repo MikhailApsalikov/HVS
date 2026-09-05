@@ -34,16 +34,17 @@ export class GameSession {
   }
   refreshStats(grantHealthIncrease = true): void {
     const state = this.state;
+    const effects = [
+      ...this.talents.getModifiers(),
+      ...this.items.getModifiers(),
+      ...state.character.getModifiers(),
+    ];
+    const rules = new GameRules(state.config, effects, state.character.base, state.level);
+    const scaling = this.talents.getScalingModifiers(rules.snapshot());
     state.applyRules(
-      new GameRules(
-        state.config,
-        [
-          ...this.talents.getModifiers(),
-          ...this.items.getModifiers(),
-          ...state.character.getModifiers(),
-        ],
-        state.character.base,
-      ),
+      scaling.length
+        ? new GameRules(state.config, [...effects, ...scaling], state.character.base, state.level)
+        : rules,
       grantHealthIncrease,
     );
   }
@@ -86,6 +87,7 @@ export class GameSession {
       return false;
     if (state.initialTalentPick) state.initialTalentPick = false;
     else state.level += 1;
+    this.refreshStats();
     state.record = Math.max(state.record, state.level);
     state.levelTimer = state.levelTimerMax = state.rules.levelDuration(state.level);
     state.phase = 'playing';

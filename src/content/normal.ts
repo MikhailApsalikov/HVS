@@ -44,12 +44,12 @@ export const normalConfig: DifficultyConfig = {
   spiderChanceTank: 0.02,
 
   talents: {
-    endurance: { maxRanks: 7, unlocksAtLevel: 1 },
+    endurance: { maxRanks: 7, unlocksAtLevel: 0 },
     spiderArmor: { maxRanks: 10, unlocksAtLevel: 10 },
-    tireless: { maxRanks: 5, unlocksAtLevel: 1 },
+    tireless: { maxRanks: 5, unlocksAtLevel: 0 },
     agility: { maxRanks: 5, unlocksAtLevel: 10 },
     healBoost: { maxRanks: 15, unlocksAtLevel: 30 },
-    hunterMastery: { maxRanks: 10, unlocksAtLevel: 1 },
+    hunterMastery: { maxRanks: 10, unlocksAtLevel: 0 },
     improvedPrep: { maxRanks: 5, unlocksAtLevel: 20 },
     volleyMastery: { maxRanks: 5, unlocksAtLevel: 20 },
     rapidFire: { maxRanks: 7, unlocksAtLevel: 10 },
@@ -58,5 +58,9 @@ export const normalConfig: DifficultyConfig = {
     hunterReward: { maxRanks: 5, unlocksAtLevel: 20 },
     quickInstinct: { maxRanks: 10, unlocksAtLevel: 40 },
     hunterArsenal: { maxRanks: 5, unlocksAtLevel: 40 },
+    improvedEndurance: { maxRanks: 7, unlocksAtLevel: 0 },
+    improvedAgility: { maxRanks: 7, unlocksAtLevel: 0 },
+    improvedIntellect: { maxRanks: 7, unlocksAtLevel: 0 },
+    magicArmor: { maxRanks: 7, unlocksAtLevel: 20 },
   },
 };
