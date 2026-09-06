@@ -63,13 +63,16 @@ describe('legacy feature inventory captured before rewrite', () => {
       abilities: {
         ...baseline.normal.abilities,
         volley: { cost: 100, cooldown: 36 },
-        lastHope: { cost: 60, cooldown: 65 },
+        stand: { cost: 15, cooldown: 180 },
+        lastHope: { cost: 45, cooldown: 65 },
+        armageddon: { cost: 100, cooldown: 180 },
       },
       talents: {
         ...baseline.normal.talents,
         endurance: { maxRanks: 7, unlocksAtLevel: 0 },
         tireless: { maxRanks: 5, unlocksAtLevel: 0 },
         hunterMastery: { maxRanks: 10, unlocksAtLevel: 0 },
+        hunterArsenal: { maxRanks: 5, unlocksAtLevel: 0 },
         improvedEndurance: { maxRanks: 7, unlocksAtLevel: 0 },
         improvedAgility: { maxRanks: 7, unlocksAtLevel: 0 },
         improvedIntellect: { maxRanks: 7, unlocksAtLevel: 0 },

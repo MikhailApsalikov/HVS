@@ -3,7 +3,15 @@ import type { AbilityId } from '../../domain/types.js';
 import type { SpriteRegistry } from '../SpriteRegistry.js';
 import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { PRIMARY_STATS, STATS } from '../../domain/rules/stats.js';
-import { abilityDescription, attributeDescription, formatStat, statRows } from '../presenters.js';
+import {
+  abilityDescription,
+  attributeDescription,
+  formatStat,
+  formatSeconds,
+  resourceDescription,
+  coinsDescription,
+  shootDescription,
+} from '../presenters.js';
 import { TooltipManager } from './TooltipManager.js';
 
 export class HUD {
@@ -40,16 +48,7 @@ export class HUD {
       });
       bar.addEventListener('mouseenter', () => {
         if (!this.state) return;
-        const stats =
-          id === 'hp'
-            ? (['maxHp', 'hpRegen', 'damageFactor'] as const)
-            : id === 'energy'
-              ? (['maxEnergy', 'energyRegen', 'energyPerKill', 'energyPerBreach'] as const)
-              : [];
-        this.tooltip.show(
-          bar,
-          `<div class="tooltip__title">${label}</div>${id === 'timer' ? `${this.state.levelTimerMax.toFixed(2)} с` : statRows(this.state.stats, stats)}`,
-        );
+        this.tooltip.show(bar, resourceDescription(this.state, id));
       });
       bar.addEventListener('mouseleave', () => this.tooltip.hide());
       resources.append(bar);
@@ -57,16 +56,12 @@ export class HUD {
     this.coins.className = 'coins-display';
     this.coins.innerHTML = `<span class="coins-display__icon">${sprites.get('Coin')}</span><span class="coins-display__text"></span>`;
     this.coins.addEventListener('mouseenter', () => {
-      if (this.state)
-        this.tooltip.show(
-          this.coins,
-          statRows(this.state.stats, ['coinsPerSec', 'coinsPerKill', 'jackpotChance']),
-        );
+      if (this.state) this.tooltip.show(this.coins, coinsDescription(this.state));
     });
     this.coins.addEventListener('mouseleave', () => this.tooltip.hide());
     this.level.className = 'level-number';
     this.attributes.className = 'character-attributes';
-    for (const id of [...PRIMARY_STATS, 'armor', 'blockChance', 'blockPower'] as const) {
+    for (const id of [...PRIMARY_STATS, 'armor'] as const) {
       const row = document.createElement('div');
       row.className = 'character-attribute';
       row.dataset.stat = id;
@@ -103,9 +98,7 @@ export class HUD {
     container.append(resources, this.coins, this.level, this.attributes, this.abilities);
   }
   getShootTooltipHtml(lane: number): string {
-    return this.state
-      ? `<div class="tooltip__title">Лучник ${lane}</div>${statRows(this.state.stats, ['shootCost', 'shootCooldown', 'arrowSpeed'])}${this.state.energy < this.state.stats.shootCost ? '<div class="action-unavailable">Недостаточно энергии</div>' : ''}${this.state.archers[lane - 1].isOnCooldown ? '<div class="action-unavailable">Выстрел перезаряжается</div>' : ''}`
-      : '';
+    return this.state ? shootDescription(this.state, lane) : '';
   }
   render(state: GameState): void {
     this.state = state;
@@ -118,12 +111,12 @@ export class HUD {
       bar.fill.style.setProperty('--fill', `${max > 0 ? (current / max) * 100 : 0}%`);
       bar.text.textContent =
         id === 'timer'
-          ? `${current.toFixed(2)}с / ${max.toFixed(2)}с`
+          ? `${formatSeconds(current)}с / ${formatSeconds(max)}с`
           : `${Math.floor(current)} / ${max}`;
     }
     this.coins.children[1].textContent = String(state.coins);
     this.level.textContent = `Уровень ${state.level}`;
-    ([...PRIMARY_STATS, 'armor', 'blockChance', 'blockPower'] as const).forEach((id, index) => {
+    ([...PRIMARY_STATS, 'armor'] as const).forEach((id, index) => {
       this.attributes.children[index].textContent =
         `${STATS[id].label}: ${formatStat(id, state.stats[id])}`;
     });
@@ -135,14 +128,14 @@ export class HUD {
         id === 'lastHope' ? state.lastHopeTimer : id === 'stand' ? state.invulnerableTimer : 0;
       button.classList.toggle('ability-btn--active', activeTimer > 0);
       button.querySelector('.ability-btn__effect-text')!.textContent =
-        activeTimer > 0 ? `Действует: ${activeTimer.toFixed(2)} с` : '';
+        activeTimer > 0 ? `Действует: ${formatSeconds(activeTimer)} с` : '';
       button.classList.toggle('ability-btn--locked', locked);
       button.classList.toggle('ability-btn--cooldown', cooldown.isOnCooldown);
       button.classList.toggle('ability-btn--no-energy', state.energy < state.stats[`${id}.cost`]);
       button.style.setProperty('--cd-pct', `${cooldown.cooldownFraction * 100}%`);
       (button.querySelector('.ability-btn__lock') as HTMLElement).hidden = !locked;
       button.querySelector('.ability-btn__cd-text')!.textContent = cooldown.isOnCooldown
-        ? `${cooldown.remainingCooldown.toFixed(2)}с`
+        ? `${formatSeconds(cooldown.remainingCooldown)}с`
         : '';
     }
   }

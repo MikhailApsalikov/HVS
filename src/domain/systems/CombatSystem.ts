@@ -103,7 +103,15 @@ export function resolveBreaches(state: GameState, random: RandomSource, emit: Em
       const energy = SPIDERS[spider.type].burnsEnergy ? state.stats.burnerEnergy : 0;
       state.modifyHp(-hp);
       state.modifyEnergy(-energy);
-      emit({ type: 'damage', spiderId: spider.id, hp, energy });
+      emit({
+        type: 'damage',
+        spiderId: spider.id,
+        hp,
+        energy,
+        ...(blocked
+          ? { blockedDamage: state.rules.value('incomingDamage', spider.damage) - hp }
+          : {}),
+      });
       if (blocked) {
         emit({ type: 'absorb' });
         if (state.stats.blockVolleyChance > 0 && random() < state.stats.blockVolleyChance)

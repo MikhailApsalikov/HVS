@@ -33,13 +33,18 @@ export function attributeModifiers(
     intellect: [
       effect('intellect', 'maxEnergy', Math.max(0, i - ir.energyThreshold) * ir.energyPerPoint),
       effect('intellect', 'energyRegen', i * ir.regenPerPoint),
-      effect('intellect', 'heal.amount', i * ir.abilityPerPoint),
-      effect('intellect', 'prep.restore', i * ir.abilityPerPoint),
+      effect('intellect', 'heal.amount', i * ir.healPerPoint),
+      effect('intellect', 'prep.restore', i * ir.prepPerPoint),
     ],
   };
 }
 
 export function armorReduction(armor: number, level: number): number {
-  const scale = ARMOR_RULES.baseScale + Math.max(0, level - 1) * ARMOR_RULES.scalePerLevel;
+  const levelProgress = Math.max(0, level - 1);
+  const inflationProgress = levelProgress / (ARMOR_RULES.inflationReferenceLevel - 1);
+  const scale =
+    ARMOR_RULES.linearScale *
+    (level + ARMOR_RULES.levelOffset) *
+    (1 + ARMOR_RULES.inflationStrength * inflationProgress ** ARMOR_RULES.inflationPower);
   return Math.min(ARMOR_RULES.cap, armor / (armor + scale));
 }

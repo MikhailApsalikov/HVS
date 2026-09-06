@@ -6,6 +6,7 @@
 }
 
 body {
+  --energy-color: #ffb74d;
   margin: 0;
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   background: #1a1a1a;
@@ -369,7 +370,7 @@ body {
 }
 
 #energy-bar .resource-bar__fill {
-  background: linear-gradient(90deg, #e65100, #ffb74d);
+  background: linear-gradient(90deg, #e65100, var(--energy-color));
 }
 
 #timer-bar {
@@ -583,6 +584,45 @@ body {
   color: #e8d5b7;
 }
 
+.tooltip__effect {
+  margin: 0 0 7px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.tooltip__rank {
+  margin-top: 10px;
+}
+
+.tooltip__rank-label {
+  margin-bottom: 7px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tooltip__rank--current .tooltip__rank-label {
+  color: #e8d5b7;
+}
+
+.tooltip__rank--next {
+  padding: 9px 10px 2px;
+  border-left: 2px solid #95d8aa;
+  background: rgba(95, 174, 122, 0.08);
+}
+
+.tooltip__rank--next .tooltip__rank-label {
+  color: #95d8aa;
+}
+
+.tooltip__requirements {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.73rem;
+  line-height: 1.5;
+  color: #b3aa9d;
+}
+
 .tooltip__talent {
   font-size: 0.75rem;
   color: #7bc67b;
@@ -792,10 +832,7 @@ body {
 }
 
 .talent-tree__tier {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 132px;
+  min-height: 100px;
 }
 
 .talent-branch {
@@ -822,48 +859,22 @@ body {
   stroke: #f0c66b;
 }
 
-.talent-tree__tier-label {
-  font-size: 0.7rem;
-  color: #baa78a;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #2a2010;
-}
-
 .talent-tree__tier-row {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
 }
 
 .talent-branch__title {
   font-size: 1rem;
   color: #e8d5b7;
-  margin: 0 0 4px;
-}
-
-.talent-branch__points {
-  color: #d6bd78;
-  font-size: 0.75rem;
-  margin-bottom: 14px;
+  margin: 0 0 20px;
 }
 
 .talent-option {
-  width: calc(50% - 4px);
-  text-align: center;
-}
-
-.talent-option__name {
-  color: #c9b896;
-  font-size: 0.65rem;
-  line-height: 1.2;
-  margin-top: 4px;
-}
-
-.talent-option--linked .talent-option__name {
-  padding-right: 16px;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
 }
 
 @media (max-width: 1000px) {
@@ -883,8 +894,9 @@ body {
 /* === Talent Button === */
 .talent-btn {
   position: relative;
-  width: 72px;
-  height: 72px;
+  width: 100%;
+  max-width: 60px;
+  aspect-ratio: 1;
   padding: 0;
   background: linear-gradient(180deg, #2a2218 0%, #1a1510 100%);
   border: 2px solid #4a3820;
@@ -958,8 +970,8 @@ body {
 }
 
 .talent-btn__icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   pointer-events: none;
 }
 
@@ -1196,10 +1208,18 @@ body {
 }
 
 .damage-pop--energy {
-  color: #ffcc00;
+  color: #64b5ff;
   text-shadow:
     1px 1px 2px rgba(0, 0, 0, 0.9),
-    0 0 8px rgba(255, 200, 0, 0.5);
+    0 0 8px rgba(255, 183, 77, 0.5);
+}
+
+.damage-pop--heavy {
+  font-size: 1.65rem;
+}
+
+.damage-pop__blocked {
+  font-size: 0.75rem;
 }
 
 @keyframes damage-float {
@@ -1329,8 +1349,8 @@ body {
   box-shadow: 0 0 6px rgba(100, 180, 255, 0.6);
 }
 
-/* === Stand Shield Overlay === */
-.stand-shield-overlay {
+/* === Defensive effects === */
+.shield-overlay {
   display: none;
   position: absolute;
   bottom: 60px;
@@ -1351,22 +1371,29 @@ body {
   border-bottom: 2px solid rgba(255, 200, 50, 0.5);
 }
 
-.stand-shield-overlay.active {
+.shield-overlay.active {
   display: flex;
 }
 
-.stand-shield-overlay__icon {
+.shield-overlay__icon {
   width: 40px;
   height: 40px;
   animation: shield-pulse 1.5s ease-in-out infinite alternate;
 }
 
-.stand-shield-overlay__icon svg {
+.shield-overlay__icon svg {
   width: 100%;
   height: 100%;
 }
 
-.stand-shield-overlay__timer {
+.shield-overlay__label {
+  color: #ffe3a1;
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-shadow: 0 2px 4px #17100a;
+}
+
+.shield-overlay__timer {
   font-size: 2rem;
   font-weight: bold;
   color: #ffd700;
@@ -1376,6 +1403,67 @@ body {
   font-family: 'Georgia', 'Times New Roman', serif;
   min-width: 56px;
   text-align: center;
+}
+
+.stand-shield-overlay {
+  height: 88px;
+  isolation: isolate;
+  background: linear-gradient(180deg, #ffe89c00, #ffdb6555 55%, #fff0ad99);
+  border-bottom: 3px solid #fff5c2;
+  box-shadow:
+    0 8px 26px #ffdc7899,
+    inset 0 -12px 26px #fff0b855;
+}
+
+.stand-shield-overlay::before {
+  content: '';
+  position: absolute;
+  inset: -55px 0 0;
+  z-index: -1;
+  background: repeating-conic-gradient(
+    from -20deg at 50% 100%,
+    transparent 0deg 12deg,
+    #fff4c33b 14deg 17deg,
+    transparent 19deg 30deg
+  );
+  mask-image: linear-gradient(transparent, #000);
+  animation: divine-radiance 2s ease-in-out infinite alternate;
+}
+
+.stand-shield-overlay .shield-overlay__icon {
+  width: 56px;
+  height: 56px;
+  filter: brightness(1.6) drop-shadow(0 0 16px #fff1a9);
+  animation: divine-radiance 1.5s ease-in-out infinite alternate;
+}
+
+.stand-shield-overlay .shield-overlay__label,
+.stand-shield-overlay .shield-overlay__timer {
+  color: #fff8d6;
+  text-shadow:
+    0 2px 4px #39220a,
+    0 0 16px #ffcf50;
+}
+
+.game-field:has(.last-hope-overlay.active) .stand-shield-overlay {
+  bottom: 124px;
+}
+
+@keyframes divine-radiance {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shield-overlay__icon,
+  .stand-shield-overlay .shield-overlay__icon,
+  .stand-shield-overlay::before {
+    animation: none;
+  }
 }
 
 @keyframes shield-pulse {

@@ -40,7 +40,7 @@ describe('defense talent abilities through session commands', () => {
     }
   });
 
-  it('adds five percentage points per rank but grants the twenty damage block only once', () => {
+  it('adds five percentage points per rank but grants the sixty damage block only once', () => {
     const session = new GameSession('normal');
     session.state.level = 10;
     session.state.pendingTalentPoints = 30;
@@ -52,11 +52,11 @@ describe('defense talent abilities through session commands', () => {
     for (let rank = 1; rank <= 12; rank++) {
       buy(session, 'shieldBlock');
       expect(session.state.stats.blockChance).toBeCloseTo(rank * 0.05);
-      expect(session.state.stats.blockPower).toBe(20);
+      expect(session.state.stats.blockPower).toBe(60);
     }
     expect(session.upgradeTalent('shieldBlock')).toBe(false);
     expect(session.state.rules.explain('blockPower').modifiers).toEqual([
-      { source: 'talent:shieldBlock', kind: 'flat', stat: 'blockPower', value: 20 },
+      { source: 'talent:shieldBlock', kind: 'flat', stat: 'blockPower', value: 60 },
     ]);
   });
 
@@ -73,16 +73,16 @@ describe('defense talent abilities through session commands', () => {
     for (let rank = 1; rank <= 5; rank++) {
       buy(session, 'improvedLastHope');
       expect(session.state.stats['lastHope.cooldown']).toBe(65 - 10 * rank);
-      expect(session.state.stats['lastHope.cost']).toBe(60 - 4 * rank);
+      expect(session.state.stats['lastHope.cost']).toBe(45 - 4 * rank);
     }
     expect(session.upgradeTalent('improvedLastHope')).toBe(false);
     expect(session.state.isAbilityUnlocked('lastHope')).toBe(true);
     session.state.phase = 'playing';
-    session.state.energy = 39;
+    session.state.energy = 24;
     expect(session.activateAbility('lastHope')).toBe('not_enough_energy');
     session.state.energy = 100;
     expect(session.activateAbility('lastHope')).toBe('activated');
-    expect(session.state.energy).toBe(60);
+    expect(session.state.energy).toBe(75);
     expect(session.state.getAbility('lastHope').remainingCooldown).toBe(15);
     expect(session.activateAbility('lastHope')).toBe('on_cooldown');
   });
@@ -108,7 +108,7 @@ describe('defense talent abilities through session commands', () => {
     session.state.level = 40;
     buy(session, 'dutyBound', 5);
     expect(session.state.stats['stand.duration']).toBe(12);
-    expect(session.state.stats['stand.cooldown']).toBe(60);
+    expect(session.state.stats['stand.cooldown']).toBe(120);
     session.state.phase = 'playing';
     expect(session.activateAbility('stand')).toBe('activated');
     expect(session.state.energy).toBe(85);
@@ -116,6 +116,21 @@ describe('defense talent abilities through session commands', () => {
     session.tick(0.001);
     expect(session.state.hp).toBe(session.state.maxHp);
     expect(session.drainEvents()).toEqual([{ type: 'absorb' }]);
+  });
+
+  it('requires divine shield before its improvement and starts its base cooldown at 180 seconds', () => {
+    const session = defense();
+    const points = session.state.pendingTalentPoints;
+    expect(session.upgradeTalent('dutyBound')).toBe(false);
+    expect(session.state.pendingTalentPoints).toBe(points);
+    buy(session, 'divineShield');
+    expect(session.state.stats['stand.cooldown']).toBe(180);
+    session.state.phase = 'playing';
+    expect(session.activateAbility('stand')).toBe('activated');
+    expect(session.state.getAbility('stand').remainingCooldown).toBe(180);
+    session.state.phase = 'levelUp';
+    buy(session, 'dutyBound');
+    expect(session.state.stats['stand.cooldown']).toBe(168);
   });
 
   it('uses final endurance for a six-second buff and removes it exactly on expiration', () => {
@@ -130,16 +145,16 @@ describe('defense talent abilities through session commands', () => {
     expect(session.state.stats.endurance).toBe(225); // (40 + 39 × 3 + 10) × 1.35
     session.state.phase = 'playing';
     expect(session.activateAbility('lastHope')).toBe('activated');
-    expect(session.state.energy).toBe(40);
+    expect(session.state.energy).toBe(55);
     expect(session.state.getAbility('lastHope').remainingCooldown).toBe(65);
-    expect(session.state.stats).toMatchObject({ blockChance: 0.35, blockPower: 43 });
+    expect(session.state.stats).toMatchObject({ blockChance: 0.35, blockPower: 105 });
     session.refreshStats();
-    expect(session.state.stats.blockPower).toBe(43);
+    expect(session.state.stats.blockPower).toBe(105);
     session.tick(5.999);
-    expect(session.state.stats.blockPower).toBe(43);
+    expect(session.state.stats.blockPower).toBe(105);
     session.tick(0.0011);
     expect(session.state.lastHopeTimer).toBe(0);
-    expect(session.state.stats).toMatchObject({ blockChance: 0.05, blockPower: 20 });
+    expect(session.state.stats).toMatchObject({ blockChance: 0.05, blockPower: 60 });
   });
 
   it('pauses the buff with the simulation, caps chance and resets its cooldown with recharge', () => {
@@ -177,7 +192,7 @@ describe('defense talent abilities through session commands', () => {
     buy(session, 'improvedIntellect', 7);
     buy(session, 'agility', 5);
     buy(session, 'improvedPrep', 5);
-    buy(session, 'healBoost', 6);
+    buy(session, 'magicArmor', 6);
     buy(session, 'quickInstinct', 2);
     expect(session.state.stats['lastHope.cooldown']).toBe(13.05); // 65 × .97 − 50
   });
@@ -197,15 +212,16 @@ describe('damage blocking and counter volleys', () => {
     session.refreshStats();
     session.state.phase = 'playing';
     const before = session.state.hp;
-    const spider = addSpider(session, 'normal', 0, 1, 101);
+    const spider = addSpider(session, 'normal', 0, 1, 201);
     session.tick(0.001);
-    const damage = blocked ? 14 : 34; // 101 × .37 × .9 − (block ? 20 : 0), then round
+    const damage = blocked ? 23 : 83; // 201 × .46 × .9 − (block ? 60 : 0), then round
     expect(session.state.hp).toBe(before - damage);
     expect(session.drainEvents()).toContainEqual({
       type: 'damage',
       spiderId: spider.id,
       hp: damage,
       energy: 0,
+      ...(blocked ? { blockedDamage: 60 } : {}),
     });
   });
 
@@ -213,17 +229,25 @@ describe('damage blocking and counter volleys', () => {
     const session = defense(() => 0);
     buy(session, 'shieldBlock');
     session.state.phase = 'playing';
-    const raw = session.state.rules.explain('incomingDamage', 100).afterPercentPenalties;
+    const raw = session.state.rules.explain('incomingDamage', 200).afterPercentPenalties;
     const before = session.state.hp;
-    addSpider(session, 'tank', 0, 1, 100);
+    addSpider(session, 'tank', 0, 1, 200);
     session.tick(0.001);
-    expect(session.state.hp).toBe(before - Math.round(raw - 20));
-    addSpider(session, 'burner', 1, 1, 2);
+    expect(session.state.hp).toBe(before - Math.round(raw - 60));
+    const burner = addSpider(session, 'burner', 1, 1, 2);
     const hp = session.state.hp;
     session.tick(0.001);
     expect(session.state.hp).toBe(hp);
     expect(session.state.energy).toBe(10);
-    expect(session.drainEvents().filter((event) => event.type === 'absorb')).toHaveLength(2);
+    const events = session.drainEvents();
+    expect(events.filter((event) => event.type === 'absorb')).toHaveLength(2);
+    expect(events).toContainEqual({
+      type: 'damage',
+      spiderId: burner.id,
+      hp: 0,
+      energy: 90,
+      blockedDamage: session.state.rules.value('incomingDamage', 2),
+    });
   });
 
   it.each([
@@ -296,6 +320,7 @@ describe('damage blocking and counter volleys', () => {
 describe('defense save compatibility', () => {
   it('migrates version four without granting the shield and preserves the old cooldown order', () => {
     const session = defense();
+    buy(session, 'divineShield');
     buy(session, 'dutyBound', 2);
     session.state.getAbility('stand').start(41);
     session.state.getAbility('recharge').start(123);
@@ -314,7 +339,7 @@ describe('defense save compatibility', () => {
       ),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(5);
+    expect(parsed.version).toBe(6);
     const loaded = restore(parsed);
     expect(loaded.state.getAbility('stand').remainingCooldown).toBe(41);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(123);
@@ -322,6 +347,7 @@ describe('defense save compatibility', () => {
     expect(loaded.state.lastHopeTimer).toBe(0);
     expect(loaded.state.isAbilityUnlocked('stand')).toBe(false);
     expect(loaded.talents.getRank('dutyBound')).toBe(2);
+    expect(loaded.upgradeTalent('dutyBound')).toBe(false);
     expect(loaded.state.coins).toBe(session.state.coins);
     expect(snapshot(restore(parseSave(snapshot(loaded))!))).toEqual(snapshot(loaded));
   });
@@ -342,7 +368,7 @@ describe('defense save compatibility', () => {
     expect(loaded.state.isAbilityUnlocked('lastHope')).toBe(true);
     loaded.tick(4);
     expect(loaded.state.lastHopeTimer).toBe(0);
-    expect(loaded.state.stats).toMatchObject({ blockChance: 0.1, blockPower: 20 });
+    expect(loaded.state.stats).toMatchObject({ blockChance: 0.1, blockPower: 60 });
     expect(
       parseSave({ ...snapshot(session), state: { ...snapshot(session).state, lastHopeTimer: -1 } }),
     ).toBeNull();

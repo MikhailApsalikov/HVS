@@ -57,7 +57,7 @@ export const normalConfig: DifficultyConfig = {
     blizzardMastery: { maxRanks: 6, unlocksAtLevel: 30 },
     hunterReward: { maxRanks: 5, unlocksAtLevel: 20 },
     quickInstinct: { maxRanks: 10, unlocksAtLevel: 40 },
-    hunterArsenal: { maxRanks: 5, unlocksAtLevel: 40 },
+    hunterArsenal: { maxRanks: 5, unlocksAtLevel: 0 },
     improvedEndurance: { maxRanks: 7, unlocksAtLevel: 0 },
     improvedAgility: { maxRanks: 7, unlocksAtLevel: 0 },
     improvedIntellect: { maxRanks: 7, unlocksAtLevel: 0 },

@@ -1,10 +1,59 @@
 import { describe, expect, it } from 'vitest';
 import { parseSave, restore, snapshot } from '../src/domain/save.js';
 import { GameSession } from '../src/domain/GameSession.js';
+import { ITEM_MAP } from '../src/content/items.js';
 import { SAVE_KEY, SaveSystem } from '../src/infrastructure/storage/SaveSystem.js';
 import { game, advance, addSpider, MemoryStorage } from './helpers.js';
 
 describe('saves and migration', () => {
+  it.each([3, 4, 5, 6])(
+    'normalizes version %s duplicate equipment and refunds each extra copy only once',
+    (version) => {
+      const session = game(30);
+      const data = snapshot(session);
+      const parsed = parseSave({
+        ...data,
+        version,
+        talents: [
+          { id: 'hunterArsenal', rank: 2 },
+          { id: 'healBoost', rank: 2 },
+        ],
+        inventory: ['c001', 'c001', 'missing', 'c003', 'c001', 'c003'],
+        abilities: version < 5 ? data.abilities.slice(0, 8) : data.abilities,
+      })!;
+      expect(parsed.version).toBe(6);
+      const loaded = restore(parsed);
+      expect(loaded.items.inventory).toEqual(['c001', 'c003']);
+      expect(loaded.state.coins).toBe(
+        data.state.coins + ITEM_MAP.get('c001')!.price * 2 + ITEM_MAP.get('c003')!.price,
+      );
+      expect(loaded.talents.getRank('healBoost')).toBe(2);
+      expect(loaded.talents.branchPoints('defense')).toBe(2);
+      loaded.state.phase = 'levelUp';
+      expect(loaded.buyItem('c001')).toBe(false);
+      const saved = snapshot(loaded);
+      expect(snapshot(restore(parseSave(saved)!))).toEqual(saved);
+    },
+  );
+
+  it.each([1, 2])('refunds duplicate items in legacy version %s', (version) => {
+    const data = parseSave({
+      version,
+      difficulty: 'normal',
+      level: 1,
+      hp: 100,
+      energy: 100,
+      coins: 5,
+      pendingTalentPoints: 0,
+      record: 1,
+      talents: [],
+      inventory: ['c001', 'c001'],
+    })!;
+    const loaded = restore(data);
+    expect(loaded.items.inventory).toEqual(['c001']);
+    expect(loaded.state.coins).toBe(5 + ITEM_MAP.get('c001')!.price);
+    expect(snapshot(restore(parseSave(snapshot(loaded))!))).toEqual(snapshot(loaded));
+  });
   it('migrates version 3 bases, equipment, branch ranks and timer without losing the run', () => {
     const session = game(10);
     const previous = {
@@ -24,7 +73,7 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(5);
+    expect(parsed.version).toBe(6);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
       endurance: 104,

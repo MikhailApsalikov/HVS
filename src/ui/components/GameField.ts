@@ -25,7 +25,8 @@ export class GameField {
   private readonly _spriteRegistry: SpriteRegistry;
   private _hud: HUD | null = null;
   private readonly _tooltip = TooltipManager.getInstance();
-  private _lastSpiderPositions: Map<string, { lane: number; y: number }> = new Map();
+  private _lastSpiderPositions: Map<string, { lane: number; y: number; type: Spider['type'] }> =
+    new Map();
 
   public constructor(container: HTMLElement, spriteRegistry: SpriteRegistry) {
     this._container = container;
@@ -135,7 +136,11 @@ export class GameField {
       }
       el.classList.toggle('spider--slowed', spider.slowFactor < 1);
       el.classList.toggle('spider--dying', spider.dying);
-      this._lastSpiderPositions.set(spider.id, { lane: spider.lane, y: spider.y });
+      this._lastSpiderPositions.set(spider.id, {
+        lane: spider.lane,
+        y: spider.y,
+        type: spider.type,
+      });
     }
     for (const [id, el] of this._spiderElements) {
       if (!currentIds.has(id)) {
@@ -218,17 +223,29 @@ export class GameField {
     this._lastSpiderPositions.delete(spiderId);
   }
 
-  public showDamagePop(spiderId: string, hpDamage: number, energyBurn: number): void {
+  public showDamagePop(
+    spiderId: string,
+    hpDamage: number,
+    energyBurn: number,
+    blockedDamage?: number,
+  ): void {
     const pos = this._lastSpiderPositions.get(spiderId);
     if (!pos) return;
 
     const laneEl = this._lanes[pos.lane];
     if (!laneEl) return;
 
-    if (hpDamage > 0) {
+    if (hpDamage > 0 || blockedDamage !== undefined) {
       const el = document.createElement('div');
       el.className = 'damage-pop damage-pop--hp';
-      el.textContent = `-${Math.floor(hpDamage)}`;
+      el.classList.toggle('damage-pop--heavy', pos.type === 'tank');
+      el.textContent = `-${hpDamage}`;
+      if (blockedDamage !== undefined) {
+        const block = document.createElement('span');
+        block.className = 'damage-pop__blocked';
+        block.textContent = ` (блок ${blockedDamage})`;
+        el.append(block);
+      }
       el.style.top = `calc(${pos.y} * 100%)`;
       laneEl.appendChild(el);
       el.addEventListener('animationend', () => el.remove());
@@ -238,8 +255,7 @@ export class GameField {
       const el = document.createElement('div');
       el.className = 'damage-pop damage-pop--energy';
       el.textContent = `-${Math.floor(energyBurn)}`;
-      el.style.top = `calc(${pos.y} * 100%)`;
-      el.style.left = 'calc(50% + 15px)';
+      el.style.top = `calc(${pos.y} * 100% - 28px)`;
       laneEl.appendChild(el);
       el.addEventListener('animationend', () => el.remove());
     }

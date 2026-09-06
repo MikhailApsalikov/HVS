@@ -12,6 +12,22 @@ export interface TalentState {
   readonly requiredBranchPoints: number;
 }
 
+export function talentRankEffects(id: TalentId, rank: number): StatModifier[] {
+  return rank === 0
+    ? []
+    : [
+        ...TALENTS[id].effects.map((effect) => ({
+          ...effect,
+          source: `talent:${id}`,
+          value: effect.value * rank,
+        })),
+        ...(TALENTS[id].fixedEffects ?? []).map((effect) => ({
+          ...effect,
+          source: `talent:${id}`,
+        })),
+      ];
+}
+
 export class TalentSystem {
   private readonly ranks = new Map<TalentId, number>();
   constructor(private readonly config: DifficultyConfig) {}
@@ -64,21 +80,7 @@ export class TalentSystem {
     return true;
   }
   getModifiers(): StatModifier[] {
-    return this.talents.flatMap(({ id, rank }) =>
-      rank === 0
-        ? []
-        : [
-            ...TALENTS[id].effects.map((effect) => ({
-              ...effect,
-              source: `talent:${id}`,
-              value: effect.value * rank,
-            })),
-            ...(TALENTS[id].fixedEffects ?? []).map((effect) => ({
-              ...effect,
-              source: `talent:${id}`,
-            })),
-          ],
-    );
+    return this.talents.flatMap(({ id, rank }) => talentRankEffects(id, rank));
   }
   getScalingModifiers(stats: ResolvedStats): StatModifier[] {
     return this.talents.flatMap(({ id, rank }) => {

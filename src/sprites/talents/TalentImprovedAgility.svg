@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="improvedAgilityFeather" x2="1" y2="1">
+      <stop stop-color="#d7ffc1"/><stop offset="1" stop-color="#3e9c76"/>
+    </linearGradient>
+  </defs>
+  <path d="M12 34Q8 10 40 5Q43 32 16 35Z" fill="url(#improvedAgilityFeather)" stroke="#a0dba1" stroke-width="2"/>
+  <path d="M7 42L34 13M15 33L14 22M21 27L20 15M27 20L38 20M19 29L30 29" fill="none" stroke="#225c4c" stroke-width="2"/>
+  <path d="M4 14H12M2 21H9M33 37H43M30 42H39" stroke="#e5eab3" stroke-width="2" stroke-linecap="round"/>
+</svg>

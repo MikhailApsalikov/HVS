@@ -15,12 +15,15 @@ export class ItemSystem {
   hasFreeSlot(capacity: number): boolean {
     return this.items.length < capacity;
   }
+  owns(id: string): boolean {
+    return this.items.includes(id);
+  }
   canBuy(id: string, coins: number, capacity: number): boolean {
     const item = ITEM_MAP.get(id);
-    return !!item && coins >= item.price && this.hasFreeSlot(capacity);
+    return !!item && !this.owns(id) && coins >= item.price && this.hasFreeSlot(capacity);
   }
   buyItem(id: string): boolean {
-    if (!ITEM_MAP.has(id)) return false;
+    if (!ITEM_MAP.has(id) || this.owns(id)) return false;
     this.items.push(id);
     return true;
   }
@@ -43,7 +46,16 @@ export class ItemSystem {
   toSaveData(): string[] {
     return [...this.items];
   }
-  loadFromSave(ids: readonly string[], slots: number): void {
-    this.items = ids.filter((id) => ITEM_MAP.has(id)).slice(0, slots);
+  loadFromSave(ids: readonly string[], slots: number): number {
+    const unique = new Set<string>();
+    let refund = 0;
+    for (const id of ids) {
+      const item = ITEM_MAP.get(id);
+      if (!item) continue;
+      if (unique.has(id)) refund += item.price;
+      else unique.add(id);
+    }
+    this.items = [...unique].slice(0, slots);
+    return refund;
   }
 }

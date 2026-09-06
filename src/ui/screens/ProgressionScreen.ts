@@ -4,7 +4,7 @@ import type { ItemSystem } from '../../domain/model/ItemSystem.js';
 import type { TalentId, TalentBranch } from '../../domain/types.js';
 import type { SpriteRegistry } from '../SpriteRegistry.js';
 import { TALENTS, TALENT_BRANCHES } from '../../content/talents.js';
-import { talentDescription } from '../presenters.js';
+import { talentDescription, descriptionParagraphs } from '../presenters.js';
 import { ShopPanel, type ShopActions } from '../components/ShopPanel.js';
 import { TooltipManager } from '../components/TooltipManager.js';
 
@@ -39,16 +39,22 @@ export class LevelUpScreen {
       column.className = 'talent-branch';
       column.dataset.branch = branch;
       const invested = talents.branchPoints(branch);
-      column.innerHTML = `<h2 class="talent-branch__title">${TALENT_BRANCHES[branch]}</h2><div class="talent-branch__points">Вложено очков: ${invested}</div>`;
+      column.innerHTML = `<h2 class="talent-branch__title">${TALENT_BRANCHES[branch]}</h2>`;
       const branchTalents = talents.talents.filter((talent) => talent.branch === branch);
-      const tiers = [...new Set(branchTalents.map((talent) => talent.tier))].sort((a, b) => a - b);
+      const tiers = Array.from(
+        { length: Math.max(...branchTalents.map((talent) => talent.tier)) },
+        (_, index) => index + 1,
+      );
       for (const tierNumber of tiers) {
         const tierTalents = branchTalents.filter((talent) => talent.tier === tierNumber);
-        const { unlocksAtLevel: level, requiredBranchPoints } = tierTalents[0];
         const tier = document.createElement('div');
         tier.className = 'talent-tree__tier';
         tier.dataset.tier = String(tierNumber);
-        tier.innerHTML = `<div class="talent-tree__tier-label">Тир ${tierNumber} · <span class="${state.level < level ? 'action-unavailable' : ''}">ур. ${level}</span> · <span class="${invested < requiredBranchPoints ? 'action-unavailable' : ''}">${requiredBranchPoints} очк.</span></div>`;
+        if (tierTalents.length === 0) {
+          column.append(tier);
+          continue;
+        }
+        const { unlocksAtLevel: level, requiredBranchPoints } = tierTalents[0];
         const row = document.createElement('div');
         row.className = 'talent-tree__tier-row';
         for (const talent of tierTalents) {
@@ -75,7 +81,7 @@ export class LevelUpScreen {
           const showTooltip = () =>
             this.tooltip.show(
               button,
-              `<div class="tooltip__title">${definition.name}</div><div>${TALENT_BRANCHES[branch]} · Тир ${tierNumber}</div><p>${talent.maxRanks === 1 ? 'При изучении' : 'За ранг'}:<br>${talentDescription(talent.id, 1, state.stats)}</p>${talent.rank > 0 && talent.maxRanks > 1 ? `<p>Сейчас (ранг ${talent.rank}):<br>${talentDescription(talent.id, talent.rank, state.stats)}</p>` : ''}<div>Ранг ${talent.rank}/${talent.maxRanks}</div><div class="${state.level < level ? 'action-unavailable' : ''}">Требуется уровень ${level}</div><div class="${invested < requiredBranchPoints ? 'action-unavailable' : ''}">Вложено в ветку: ${invested} / ${requiredBranchPoints}</div>${prerequisite ? `<div class="${prerequisiteMet ? '' : 'action-unavailable'}">Требуется талант «${TALENTS[prerequisite].name}»: хотя бы 1 ранг</div>` : ''}${maxed ? '<div class="action-unavailable">Максимальный ранг</div>' : state.pendingTalentPoints === 0 ? '<div class="action-unavailable">Нет очков таланта</div>' : ''}`,
+              `<div class="tooltip__title">${definition.name}</div>${talent.rank > 0 ? `<section class="tooltip__rank tooltip__rank--current"><div class="tooltip__rank-label">Изучено · ранг ${talent.rank}</div>${descriptionParagraphs(talentDescription(talent.id, talent.rank, state.stats))}</section>` : ''}${!maxed ? `<section class="tooltip__rank tooltip__rank--next"><div class="tooltip__rank-label">${talent.rank > 0 ? `После улучшения · ранг ${talent.rank + 1}` : 'При изучении'}</div>${descriptionParagraphs(talentDescription(talent.id, talent.rank + 1, state.stats))}</section>` : ''}<div class="tooltip__requirements"><div class="${state.level < level ? 'action-unavailable' : ''}">Требуется уровень ${level}</div><div class="${invested < requiredBranchPoints ? 'action-unavailable' : ''}">Вложено в ветку "${TALENT_BRANCHES[branch]}": ${invested}/${requiredBranchPoints}</div>${prerequisite ? `<div class="${prerequisiteMet ? '' : 'action-unavailable'}">Требуется талант «${TALENTS[prerequisite].name}»: хотя бы 1 ранг</div>` : ''}${maxed ? '<div>Максимальный ранг</div>' : ''}</div>`,
             );
           button.addEventListener('mouseenter', showTooltip);
           button.addEventListener('focus', showTooltip);
@@ -83,15 +89,9 @@ export class LevelUpScreen {
           button.addEventListener('blur', () => this.tooltip.hide());
           const option = document.createElement('div');
           option.className = 'talent-option';
-          if (
-            prerequisite ||
-            branchTalents.some(({ id }) => TALENTS[id].prerequisite === talent.id)
-          )
-            option.classList.add('talent-option--linked');
-          const name = document.createElement('div');
-          name.className = 'talent-option__name';
-          name.textContent = definition.name;
-          option.append(button, name);
+          option.style.gridColumn = String(definition.column ?? tierTalents.indexOf(talent) + 1);
+          option.style.gridRow = '1';
+          option.append(button);
           row.append(option);
         }
         tier.append(row);
@@ -153,14 +153,14 @@ export class LevelUpScreen {
         const to = column
           .querySelector<HTMLElement>(`[data-talent-id="${path.dataset.to}"]`)!
           .getBoundingClientRect();
-        const startX = from.right - bounds.left + 3;
-        const endX = to.right - bounds.left + 3;
-        const startY = from.top - bounds.top + from.height / 2;
-        const endY = to.top - bounds.top + to.height / 2;
-        const routeX = Math.min(bounds.width - 4, Math.max(startX, endX) + 24);
+        const startX = from.left - bounds.left + from.width / 2;
+        const endX = to.left - bounds.left + to.width / 2;
+        const startY = from.bottom - bounds.top + 3;
+        const endY = to.top - bounds.top - 4;
+        const routeY = (startY + endY) / 2;
         path.setAttribute(
           'd',
-          `M ${startX} ${startY} H ${routeX} V ${endY} H ${endX} M ${endX + 5} ${endY - 4} L ${endX} ${endY} L ${endX + 5} ${endY + 4}`,
+          `M ${startX} ${startY} V ${routeY} H ${endX} V ${endY} M ${endX - 4} ${endY - 5} L ${endX} ${endY} L ${endX + 4} ${endY - 5}`,
         );
       }
     }

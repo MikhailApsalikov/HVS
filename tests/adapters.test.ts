@@ -8,6 +8,8 @@ import {
   attributeDescription,
   talentDescription,
   escapeHtml,
+  describeModifier,
+  formatSeconds,
 } from '../src/ui/presenters.js';
 import { game } from './helpers.js';
 import { ABILITY_ORDER } from '../src/content/abilities.js';
@@ -104,17 +106,23 @@ describe('application orchestration', () => {
 });
 
 describe('presentation uses the actual resolved stats', () => {
+  it('uses whole seconds for timers and retains negative item cooldown bonuses', () => {
+    expect(formatSeconds(5.01)).toBe('6');
+    expect(formatSeconds(0)).toBe('0');
+    expect(describeModifier({ stat: 'prep.cooldown', kind: 'flat', value: -8 })).toContain('-8');
+    expect(describeModifier({ stat: 'stand.duration', kind: 'flat', value: 1.5 })).toContain('+2');
+  });
   it('shows armor as a percentage and includes magical armor in intellect contributions', () => {
     const session = game();
     session.state.character.setBase('endurance', 55);
     session.state.character.setBase('intellect', 54);
     session.refreshStats();
-    expect(attributeDescription(session.state, 'armor')).toContain('52.381%');
+    expect(attributeDescription(session.state, 'armor')).toContain('33.7%');
     expect(attributeDescription(session.state, 'armor')).toContain('75%');
     session.talents.loadFromSave([{ id: 'magicArmor', rank: 7 }]);
     session.refreshStats();
     expect(attributeDescription(session.state, 'intellect')).toContain(
-      'Броня: +70 (Магическая броня)',
+      'Благодаря таланту «Магическая броня» даёт ещё 210 брони.',
     );
   });
   it.each(ABILITY_ORDER)('shows live values for %s', (id) => {
@@ -122,14 +130,25 @@ describe('presentation uses the actual resolved stats', () => {
     session.talents.loadFromSave([{ id: 'quickInstinct', rank: 3 }]);
     session.refreshStats();
     const html = abilityDescription(session.state, id);
-    expect(html).toContain(String(session.state.stats[`${id}.cooldown`]));
-    expect(html).toContain(String(session.state.stats[`${id}.cost`]));
+    for (const field of ['cooldown', 'cost'] as const) {
+      if (session.state.stats[`${id}.${field}`] > 0)
+        expect(html).toContain(
+          String(
+            field === 'cooldown'
+              ? Math.ceil(session.state.stats[`${id}.${field}`])
+              : session.state.stats[`${id}.${field}`],
+          ),
+        );
+    }
   });
   it('describes talent ranks from their definitions', () => {
-    expect(talentDescription('tireless', 2)).toContain('+2');
-    expect(talentDescription('improvedEndurance', 2)).toContain('+10%');
-    expect(talentDescription('magicArmor', 7)).toContain('+7 за каждые 5');
-    expect(talentDescription('blizzardMastery')).toContain('процентные пункты');
+    const { stats } = game().state;
+    expect(talentDescription('tireless', 2, stats)).toContain('дополнительно 2 энергии');
+    expect(talentDescription('improvedEndurance', 2, stats)).toContain('выносливость на 10%');
+    expect(talentDescription('magicArmor', 7, stats)).toContain(
+      'Каждые 5 полных единиц интеллекта дают 21 брони',
+    );
+    expect(talentDescription('blizzardMastery', 1, stats)).toContain('7 процентных пунктов');
     expect(escapeHtml('<script>"&\'')).toBe('&lt;script&gt;&quot;&amp;&#39;');
   });
 });

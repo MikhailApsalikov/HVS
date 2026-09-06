@@ -5,11 +5,30 @@ import { GameRules } from '../src/domain/rules/GameRules.js';
 import { normalConfig } from '../src/content/normal.js';
 import { ABILITIES, ABILITY_ORDER } from '../src/content/abilities.js';
 import { SPIDERS } from '../src/content/spiders.js';
+import { ITEM_CATALOG } from '../src/content/items.js';
 import { spawnSpiders } from '../src/domain/systems/CombatSystem.js';
 import type { SpiderType } from '../src/domain/types.js';
 import { game, advance, addSpider } from './helpers.js';
 
 describe('progression and player commands', () => {
+  it.each(ITEM_CATALOG)(
+    'allows only one $id, spends nothing on a duplicate and permits rebuy after sale',
+    (item) => {
+      const session = new GameSession('normal');
+      session.upgradeTalent('hunterArsenal');
+      session.state.coins = 1000000;
+      expect(session.buyItem(item.id)).toBe(true);
+      const coins = session.state.coins;
+      const stats = session.state.stats;
+      expect(session.buyItem(item.id)).toBe(false);
+      expect(session.state.coins).toBe(coins);
+      expect(session.state.stats).toEqual(stats);
+      expect(session.items.inventory).toEqual([item.id]);
+      expect(session.sellItem(0)).toBe(true);
+      expect(session.buyItem(item.id)).toBe(true);
+      expect(session.items.inventory).toEqual([item.id]);
+    },
+  );
   it('requires initial talent choice, starts at level 1 and advances exactly once', () => {
     const session = new GameSession('normal', () => 0.9999);
     expect(session.confirmLevelUp()).toBe(false);
@@ -205,6 +224,7 @@ describe('all abilities', () => {
     const session = game(30);
     const spider = addSpider(session);
     session.activateAbility('armageddon');
+    expect(session.state.getAbility('armageddon').remainingCooldown).toBe(180);
     advance(session, 2);
     expect(spider.dying).toBe(false);
     advance(session, 0.52);
@@ -270,7 +290,7 @@ describe('enemy types and rewards', () => {
     advance(session, 0.5);
     expect(session.state.energy).toBeCloseTo(14.08, 8);
     expect(session.drainEvents()).toEqual([
-      { type: 'damage', spiderId: 'spider-1', hp: 1, energy: 90 },
+      { type: 'damage', spiderId: 'spider-1', hp: 2, energy: 90 },
     ]);
     expect(session.state.coins).toBe(100);
   });

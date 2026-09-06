@@ -40,27 +40,34 @@ describe('talent strength and independent sources', () => {
     session.refreshStats();
     expect(session.state.stats.energyRegen).toBe(11.16);
   });
-  it('all modifiers of all equipped items work, including duplicate ability enhancements', () => {
+  it('all modifiers of different equipped items work on the same ability', () => {
     const session = new GameSession('normal');
+    session.upgradeTalent('hunterArsenal');
+    session.state.coins = 100000;
     const item = ITEM_CATALOG.find(
       (item) => item.abilityMod?.modType === 'effectBoost' && item.abilityMod.abilityId === 'prep',
     )!;
-    session.items.buyItem(item.id);
-    session.items.buyItem(item.id);
-    session.refreshStats();
+    const cooldownItem = ITEM_CATALOG.find(
+      (item) =>
+        item.abilityMod?.modType === 'cooldownReduction' && item.abilityMod.abilityId === 'prep',
+    )!;
+    expect(session.buyItem(item.id)).toBe(true);
+    expect(session.buyItem(cooldownItem.id)).toBe(true);
     const percent = item.abilityMod!.value;
-    expect(session.state.stats['prep.restore']).toBe(Math.round(282 * (1 + percent) ** 2));
+    expect(session.state.stats['prep.restore']).toBe(Math.round(266 * (1 + percent)));
+    expect(session.state.stats['prep.cooldown']).toBe(60 - cooldownItem.abilityMod!.value);
     expect(
       session.items.getModifiers().filter((modifier) => modifier.stat === 'prep.restore'),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
   });
   it('stacks defenses from a talent and two items independently', () => {
     const session = new GameSession('normal');
     session.talents.loadFromSave([{ id: 'spiderArmor', rank: 2 }]);
-    session.items.buyItem('c050');
-    session.items.buyItem('c050');
-    session.refreshStats();
-    expect(session.state.rules.value('incomingDamage', 1000)).toBe(452); // 1000 × .86 × .9² / 1.54
+    session.state.coins = 100000;
+    expect(session.upgradeTalent('hunterArsenal')).toBe(true);
+    expect(session.buyItem('c050')).toBe(true);
+    expect(session.buyItem('c046')).toBe(true);
+    expect(session.state.rules.value('incomingDamage', 1000)).toBe(596); // 1000 × .8 × .88 × .9 × .94
   });
   it.each(TALENT_ORDER)('validates rank and unlock constraints: %s', (id) => {
     const session = new GameSession('normal');

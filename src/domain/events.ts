@@ -10,6 +10,7 @@ export type GameEvent =
       readonly spiderId: string;
       readonly hp: number;
       readonly energy: number;
+      readonly blockedDamage?: number;
     }
   | { readonly type: 'absorb' };
 export type EmitEvent = (event: GameEvent) => void;

@@ -28,6 +28,7 @@ export class GameApp {
   private readonly armageddon: ArmageddonOverlay;
   private readonly blizzard: BlizzardOverlay;
   private readonly shield: StandShieldOverlay;
+  private readonly lastHope: StandShieldOverlay;
   private readonly saveStatus = document.createElement('div');
 
   constructor(
@@ -61,6 +62,7 @@ export class GameApp {
     this.armageddon = new ArmageddonOverlay(field.getContainer(), sprites);
     this.blizzard = new BlizzardOverlay(field.getContainer());
     this.shield = new StandShieldOverlay(field.getContainer(), sprites);
+    this.lastHope = new StandShieldOverlay(field.getContainer(), sprites, 'lastHope');
     const wrapper = document.createElement('div');
     wrapper.className = 'app__screens';
     wrapper.append(this.menu.getContainer(), this.game.getContainer(), this.over.getContainer());
@@ -108,5 +110,9 @@ export class GameApp {
       this.shield.show();
       this.shield.updateTimer(state.invulnerableTimer);
     } else this.shield.hide();
+    if (state.lastHopeTimer > 0) {
+      this.lastHope.show();
+      this.lastHope.updateTimer(state.lastHopeTimer);
+    } else this.lastHope.hide();
   }
 }

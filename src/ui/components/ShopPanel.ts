@@ -71,9 +71,11 @@ export class ShopPanel {
         const canBuy = items.canBuy(item.id, state.coins, state.stats.inventorySlots);
         const reason = canBuy
           ? '2× клик — купить'
-          : state.coins < item.price
-            ? 'Недостаточно монет'
-            : 'Нет свободных слотов';
+          : items.owns(item.id)
+            ? 'Уже надето'
+            : state.coins < item.price
+              ? 'Недостаточно монет'
+              : 'Нет свободных слотов';
         row.append(
           this.itemButton(
             item,

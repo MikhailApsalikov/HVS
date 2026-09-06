@@ -6,8 +6,15 @@ const decimal = { digits: 2, min: 0 } as const;
 const duration = { digits: 2, min: 0 } as const;
 const speed = { digits: 6, min: 0 } as const;
 const probability = { digits: 6, min: 0, max: 1 } as const;
-/** At level 1, 100 armor doubles effective HP; at level 10 this takes 200 armor. */
-export const ARMOR_RULES = { baseScale: 100, scalePerLevel: 100 / 9, cap: 0.75 } as const;
+/** Armor inflation is negligible through level 10 and accelerates quartically afterwards. */
+export const ARMOR_RULES = {
+  linearScale: 24,
+  levelOffset: 8,
+  inflationStrength: 8.75,
+  inflationReferenceLevel: 50,
+  inflationPower: 4,
+  cap: 0.75,
+} as const;
 
 function stat(label: string, base: number, policy: NumberPolicy) {
   return { label, base, policy };
@@ -60,15 +67,15 @@ export const STATS = {
   'volley.cooldown': stat('Перезарядка: Залп, с', 36, duration),
   'volley.lanes': stat('Количество стрел: Залп', 4, { ...integer, max: WORLD.lanes }),
   'stand.cost': stat('Стоимость: Божественный щит', 15, integer),
-  'stand.cooldown': stat('Перезарядка: Божественный щит, с', 120, duration),
+  'stand.cooldown': stat('Перезарядка: Божественный щит, с', 180, duration),
   'stand.duration': stat('Длительность: Божественный щит, с', 7, duration),
-  'lastHope.cost': stat('Стоимость: Блок последней надежды', 60, integer),
+  'lastHope.cost': stat('Стоимость: Блок последней надежды', 45, integer),
   'lastHope.cooldown': stat('Перезарядка: Блок последней надежды, с', 65, duration),
   'lastHope.duration': stat('Длительность: Блок последней надежды, с', 6, duration),
   'lastHope.blockChance': stat('Прибавка к шансу блока', 0.3, probability),
   'lastHope.blockPower': stat('Прибавка к силе блока от выносливости', 0, integer),
   'armageddon.cost': stat('Стоимость: Армагеддон', 100, integer),
-  'armageddon.cooldown': stat('Перезарядка: Армагеддон, с', 120, duration),
+  'armageddon.cooldown': stat('Перезарядка: Армагеддон, с', 180, duration),
   'armageddon.charge': stat('Подготовка: Армагеддон, с', 2.5, duration),
   'armageddon.duration': stat('Длительность: Армагеддон, с', 3, duration),
   'recharge.cost': stat('Стоимость: Перезарядка', 65, integer),
@@ -94,10 +101,16 @@ export const ATTRIBUTE_RULES = {
     incomeStep: 10,
     incomePerStep: 0.1,
     armorPerPoint: 2,
-    lastHopeBlockPerPoint: 0.1,
+    lastHopeBlockPerPoint: 0.2,
   },
   agility: { shotStep: 12, volleyStep: 18, percentCap: 70, killEnergyStep: 240 },
-  intellect: { energyThreshold: 100, energyPerPoint: 2, regenPerPoint: 0.01, abilityPerPoint: 2 },
+  intellect: {
+    energyThreshold: 100,
+    energyPerPoint: 2,
+    regenPerPoint: 0.01,
+    healPerPoint: 2,
+    prepPerPoint: 1,
+  },
 } as const;
 export interface StatModifier extends Modifier {
   readonly stat: StatId;

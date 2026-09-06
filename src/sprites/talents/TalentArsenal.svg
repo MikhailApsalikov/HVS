@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="arsenalLeather" x2="0.7" y2="1">
+      <stop stop-color="#cf9859"/><stop offset="1" stop-color="#614025"/>
+    </linearGradient>
+  </defs>
+  <path d="M16 19V11Q24 3 32 11V19" fill="none" stroke="#edc98b" stroke-width="4"/>
+  <path d="M9 17H39L42 41H6Z" fill="url(#arsenalLeather)" stroke="#e6b573" stroke-width="2"/>
+  <path d="M9 18L16 28H32L39 18" fill="#8c5a32" stroke="#e6b573" stroke-width="2"/>
+  <rect x="20" y="24" width="8" height="9" rx="1" fill="#f3cf71" stroke="#624a22" stroke-width="2"/>
+  <path d="M12 32V38M36 32V38" stroke="#f2ce98" stroke-width="2"/>
+</svg>

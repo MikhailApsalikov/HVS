@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="magicArmorWard" x2="0.8" y2="1">
+      <stop stop-color="#866fdc"/><stop offset="1" stop-color="#303666"/>
+    </linearGradient>
+  </defs>
+  <circle cx="24" cy="24" r="21" fill="none" stroke="#847de0" stroke-width="1" stroke-dasharray="3 4"/>
+  <path d="M24 5L39 12L36 30Q33 38 24 43Q15 38 12 30L9 12Z" fill="url(#magicArmorWard)" stroke="#b1b4ff" stroke-width="2"/>
+  <path d="M24 12L31 24L24 35L17 24Z" fill="#95dfee" stroke="#e2faff" stroke-width="1.5"/>
+  <path d="M24 17V30M20 24H28M14 15L16 20M34 15L32 20" fill="none" stroke="#454079" stroke-width="2"/>
+  <path d="M5 28H11M37 28H43M24 1V7" stroke="#f6d996" stroke-width="2"/>
+</svg>

@@ -21,7 +21,7 @@ describe('primary attributes through the session API', () => {
       arrowSpeed: 0.336667,
       'volley.cooldown': 35.64,
       'heal.amount': 182,
-      'prep.restore': 282,
+      'prep.restore': 266,
       coinsPerSec: 0.6,
     });
     session.upgradeTalent('hunterMastery');
@@ -113,10 +113,10 @@ describe('primary attributes through the session API', () => {
   });
 
   it.each([
-    [99, 100, 8.99, 348, 448],
-    [100, 100, 9, 350, 450],
-    [101, 102, 9.01, 352, 452],
-    [250, 400, 10.5, 650, 750],
+    [99, 100, 8.99, 348, 349],
+    [100, 100, 9, 350, 350],
+    [101, 102, 9.01, 352, 351],
+    [250, 400, 10.5, 650, 500],
   ])(
     'intellect %s respects the energy threshold and strengthens both abilities',
     (intellect, maxEnergy, energyRegen, heal, prep) => {
@@ -138,14 +138,14 @@ describe('primary attributes through the session API', () => {
       { stat: 'maxEnergy', kind: 'flat', value: 1000 },
       { stat: 'maxHp', kind: 'flat', value: 1000 },
     ]);
-    session.refreshStats(); // Intellect 54: +108 to each ability.
+    session.refreshStats(); // Intellect 54: +108 healing and +54 preparation.
     session.state.hp = 10;
     session.state.energy = 100;
     expect(session.activateAbility('heal')).toBe('activated');
     expect(session.state.hp).toBe(268);
     expect(session.state.energy).toBe(0);
     expect(session.activateAbility('prep')).toBe('activated');
-    expect(session.state.energy).toBe(358);
+    expect(session.state.energy).toBe(304);
   });
 
   it('grants discrete income, breach energy and kill rewards in the simulation', () => {
@@ -234,13 +234,61 @@ describe('primary attributes through the session API', () => {
 });
 
 describe('armor and talent branches', () => {
+  it('spends healing ranks in defense and retains their healing and regeneration bonuses', () => {
+    const session = new GameSession('normal');
+    session.state.level = 30;
+    session.state.pendingTalentPoints = 30;
+    session.talents.loadFromSave([
+      { id: 'tireless', rank: 5 },
+      { id: 'improvedIntellect', rank: 7 },
+      { id: 'agility', rank: 5 },
+      { id: 'improvedPrep', rank: 4 },
+    ]);
+    expect(session.upgradeTalent('healBoost')).toBe(false);
+    for (const [id, ranks] of [
+      ['endurance', 7],
+      ['improvedEndurance', 7],
+      ['spiderArmor', 7],
+    ] as const)
+      for (let rank = 0; rank < ranks; rank++) expect(session.upgradeTalent(id)).toBe(true);
+    const before = session.state.stats;
+    expect(session.upgradeTalent('healBoost')).toBe(true);
+    expect(session.talents.branchPoints('defense')).toBe(22);
+    expect(session.talents.branchPoints('magic')).toBe(21);
+    expect(session.state.stats['heal.amount']).toBe(before['heal.amount'] + 150);
+    expect(session.state.stats.hpRegen).toBeCloseTo(before.hpRegen + 2);
+  });
+
+  it('reduces spider damage by six percent per rank as one talent source', () => {
+    const session = new GameSession('normal', () => 0.999999);
+    session.state.level = 10;
+    session.state.pendingTalentPoints = 20;
+    for (let rank = 0; rank < 7; rank++) session.upgradeTalent('endurance');
+    session.state.character.setModifiers('test:no-armor', [
+      { stat: 'armor', kind: 'percent', value: -100 },
+    ]);
+    session.refreshStats();
+    for (let rank = 1; rank <= 10; rank++) {
+      session.state.phase = 'levelUp';
+      expect(session.upgradeTalent('spiderArmor')).toBe(true);
+      session.state.phase = 'playing';
+      const spider = addSpider(session, 'normal', 0, 1, 100);
+      session.tick(0.001);
+      expect(session.drainEvents()).toContainEqual({
+        type: 'damage',
+        spiderId: spider.id,
+        hp: 100 - 6 * rank,
+        energy: 0,
+      });
+    }
+  });
   it.each([
     [1, 0, 100],
-    [1, 50, 67],
-    [1, 100, 50],
-    [10, 50, 80],
-    [10, 100, 67],
-    [1, 300, 25],
+    [1, 50, 81],
+    [1, 100, 68],
+    [10, 50, 90],
+    [10, 100, 81],
+    [1, 300, 42],
     [1, 100000, 25],
     [10, 100000, 25],
   ])('level %s with %s armor takes %s from a 100 damage breach', (level, armor, expected) => {
@@ -263,6 +311,23 @@ describe('armor and talent branches', () => {
     expect(session.state.stats.armorReduction).toBeLessThanOrEqual(0.75);
   });
 
+  it.each([
+    [1, 54, 0.2],
+    [5, 78, 0.1999],
+    [10, 108, 0.1984],
+    [20, 168, 0.1727],
+    [30, 228, 0.1076],
+    [40, 288, 0.0525],
+    [50, 348, 0.025],
+  ])(
+    'level %s inflates native endurance armor %s to about %s reduction',
+    (level, armor, reduction) => {
+      const session = game(level);
+      expect(session.state.stats.armor).toBe(armor);
+      expect(session.state.stats.armorReduction).toBeCloseTo(reduction, 4);
+    },
+  );
+
   it('caps armor independently of spider protection and item defenses', () => {
     const session = game();
     session.talents.loadFromSave([{ id: 'spiderArmor', rank: 10 }]);
@@ -274,10 +339,10 @@ describe('armor and talent branches', () => {
     expect(session.drainEvents()).toContainEqual({
       type: 'damage',
       spiderId: 'spider-1',
-      hp: 68,
+      hp: 90,
       energy: 0,
     });
-    expect(session.state.stats.damageFactor).toBe(0.0675);
+    expect(session.state.stats.damageFactor).toBe(0.09);
   });
 
   it('requires level and spending in the specific branch for every new rank', () => {
@@ -320,10 +385,14 @@ describe('armor and talent branches', () => {
       expect(talent).toMatchObject({ tier, requiredBranchPoints: points, unlocksAtLevel: level });
       session.state.level = level;
       session.state.pendingTalentPoints = 2;
-      let remaining = points - 1;
-      const ranks: { id: TalentId; rank: number }[] = [];
+      const prerequisite = TALENTS[id].prerequisite;
+      let remaining = points - 1 - (prerequisite ? 1 : 0);
+      const ranks: { id: TalentId; rank: number }[] = prerequisite
+        ? [{ id: prerequisite, rank: 1 }]
+        : [];
       for (const candidate of TALENT_ORDER.filter(
         (candidate) =>
+          candidate !== prerequisite &&
           TALENTS[candidate].branch === talent.branch &&
           session.talents.getTalent(candidate).tier < tier,
       )) {
@@ -341,6 +410,18 @@ describe('armor and talent branches', () => {
     },
   );
 
+  it('offers the hunter arsenal in the first tier', () => {
+    const session = new GameSession('normal');
+    expect(session.talents.getTalent('hunterArsenal')).toMatchObject({
+      tier: 1,
+      requiredBranchPoints: 0,
+      unlocksAtLevel: 0,
+    });
+    expect(session.state.stats.inventorySlots).toBe(1);
+    expect(session.upgradeTalent('hunterArsenal')).toBe(true);
+    expect(session.state.stats.inventorySlots).toBe(2);
+  });
+
   it('magic armor scales with complete groups of five final intellect at every rank', () => {
     const session = new GameSession('normal');
     session.state.level = 20;
@@ -353,20 +434,20 @@ describe('armor and talent branches', () => {
     session.refreshStats(); // 54 intellect, 168 armor from endurance.
     for (let rank = 1; rank <= 7; rank++) {
       expect(session.upgradeTalent('magicArmor')).toBe(true);
-      expect(session.state.stats.armor).toBe(168 + 10 * rank);
+      expect(session.state.stats.armor).toBe(168 + 30 * rank);
     }
     expect(session.upgradeTalent('magicArmor')).toBe(false);
     session.state.character.setModifiers('intellect-item', [
       { stat: 'intellect', kind: 'flat', value: 1 },
     ]);
     session.refreshStats();
-    expect(session.state.stats.armor).toBe(245); // floor(55/5) × 7 + 168.
+    expect(session.state.stats.armor).toBe(399); // floor(55/5) × 3 × 7 + 168.
     session.state.pendingTalentPoints = 1;
     session.upgradeTalent('improvedIntellect');
     expect(session.state.stats.intellect).toBe(58);
-    expect(session.state.stats.armor).toBe(245);
+    expect(session.state.stats.armor).toBe(399);
     session.state.character.removeModifiers('intellect-item');
     session.refreshStats();
-    expect(session.state.stats.armor).toBe(245); // 57 intellect still contains eleven groups.
+    expect(session.state.stats.armor).toBe(399); // 57 intellect still contains eleven groups.
   });
 });
