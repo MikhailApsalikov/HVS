@@ -7,6 +7,12 @@ import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { Arrow } from '../model/Arrow.js';
 
 type Effect = (state: GameState, random: RandomSource) => void;
+export function fireVolley(state: GameState, random: RandomSource): void {
+  for (const lane of pickLanes(random, state.stats['volley.lanes'], WORLD.lanes)) {
+    const arrow = new Arrow(state.newId('arrow'), lane, state.stats.arrowSpeed, true);
+    state.arrows.set(arrow.id, arrow);
+  }
+}
 const EFFECTS: Record<AbilityId, Effect> = {
   freeze: (state) => {
     state.freezeActive = true;
@@ -19,14 +25,12 @@ const EFFECTS: Record<AbilityId, Effect> = {
   },
   prep: (state) => state.modifyEnergy(state.stats['prep.restore']),
   heal: (state) => state.modifyHp(state.stats['heal.amount']),
-  volley: (state, random) => {
-    for (const lane of pickLanes(random, state.stats['volley.lanes'], WORLD.lanes)) {
-      const arrow = new Arrow(state.newId('arrow'), lane, state.stats.arrowSpeed, true);
-      state.arrows.set(arrow.id, arrow);
-    }
-  },
+  volley: fireVolley,
   stand: (state) => {
     state.invulnerableTimer = state.stats['stand.duration'];
+  },
+  lastHope: (state) => {
+    state.lastHopeTimer = state.stats['lastHope.duration'];
   },
   armageddon: (state) => {
     state.armageddonPhase = 'charging';
@@ -49,7 +53,7 @@ export function activateAbility(
     state.phase = 'playing';
     return 'deactivated';
   }
-  if (state.phase !== 'playing' || state.level < ABILITIES[id].unlockLevel) return 'level_locked';
+  if (state.phase !== 'playing' || !state.isAbilityUnlocked(id)) return 'level_locked';
   const ability = state.getAbility(id);
   if (ability.isOnCooldown) return 'on_cooldown';
   const cost = state.stats[`${id}.cost`];
@@ -63,6 +67,7 @@ export function activateAbility(
 export function tickAbilities(state: GameState, dt: number): void {
   for (const cooldown of [...state.abilities.values(), ...state.archers]) cooldown.tick(dt);
   state.invulnerableTimer = Math.max(0, state.invulnerableTimer - dt);
+  state.lastHopeTimer = Math.max(0, state.lastHopeTimer - dt);
   state.blizzardTimer = Math.max(0, state.blizzardTimer - dt);
   for (const spider of state.spiders.values()) spider.tickSlow(dt);
   if (state.armageddonPhase === 'none') return;

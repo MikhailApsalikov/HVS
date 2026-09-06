@@ -22,6 +22,7 @@ export function attributeModifiers(
       effect('endurance', 'coinsPerKill', Math.floor(e / er.killCoinsStep)),
       effect('endurance', 'coinsPerSec', Math.floor(e / er.incomeStep) * er.incomePerStep),
       effect('endurance', 'armor', e * er.armorPerPoint),
+      effect('endurance', 'lastHope.blockPower', e * er.lastHopeBlockPerPoint),
     ],
     agility: [
       effect('agility', 'shootCooldown', -shotPercent, 'percent'),

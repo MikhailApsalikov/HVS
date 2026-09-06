@@ -16,6 +16,7 @@ export interface LevelUpActions extends ShopActions {
 export class LevelUpScreen {
   private readonly shop = new ShopPanel();
   private readonly tooltip = TooltipManager.getInstance();
+  private readonly resizeObserver = new ResizeObserver(() => this.drawDependencies());
   constructor(
     private readonly container: HTMLElement,
     private readonly sprites: SpriteRegistry,
@@ -24,6 +25,7 @@ export class LevelUpScreen {
     container.dataset.screen = 'level-up';
   }
   show(state: GameState, talents: TalentSystem, items: ItemSystem, actions: LevelUpActions): void {
+    this.resizeObserver.disconnect();
     this.container.replaceChildren();
     const layout = document.createElement('div');
     layout.className = 'level-up-layout';
@@ -51,7 +53,9 @@ export class LevelUpScreen {
         row.className = 'talent-tree__tier-row';
         for (const talent of tierTalents) {
           const definition = TALENTS[talent.id];
-          const locked = state.level < level || invested < requiredBranchPoints;
+          const prerequisite = definition.prerequisite;
+          const prerequisiteMet = !prerequisite || talents.getRank(prerequisite) > 0;
+          const locked = state.level < level || invested < requiredBranchPoints || !prerequisiteMet;
           const maxed = talent.rank >= talent.maxRanks;
           const available =
             talents.canUpgrade(talent.id, state.level) && state.pendingTalentPoints > 0;
@@ -71,7 +75,7 @@ export class LevelUpScreen {
           const showTooltip = () =>
             this.tooltip.show(
               button,
-              `<div class="tooltip__title">${definition.name}</div><div>${TALENT_BRANCHES[branch]} · Тир ${tierNumber}</div><p>За ранг:<br>${talentDescription(talent.id)}</p>${talent.rank > 0 ? `<p>Сейчас (ранг ${talent.rank}):<br>${talentDescription(talent.id, talent.rank)}</p>` : ''}<div>Ранг ${talent.rank}/${talent.maxRanks}</div><div class="${state.level < level ? 'action-unavailable' : ''}">Требуется уровень ${level}</div><div class="${invested < requiredBranchPoints ? 'action-unavailable' : ''}">Вложено в ветку: ${invested} / ${requiredBranchPoints}</div>${maxed ? '<div class="action-unavailable">Максимальный ранг</div>' : state.pendingTalentPoints === 0 ? '<div class="action-unavailable">Нет очков таланта</div>' : ''}`,
+              `<div class="tooltip__title">${definition.name}</div><div>${TALENT_BRANCHES[branch]} · Тир ${tierNumber}</div><p>${talent.maxRanks === 1 ? 'При изучении' : 'За ранг'}:<br>${talentDescription(talent.id, 1, state.stats)}</p>${talent.rank > 0 && talent.maxRanks > 1 ? `<p>Сейчас (ранг ${talent.rank}):<br>${talentDescription(talent.id, talent.rank, state.stats)}</p>` : ''}<div>Ранг ${talent.rank}/${talent.maxRanks}</div><div class="${state.level < level ? 'action-unavailable' : ''}">Требуется уровень ${level}</div><div class="${invested < requiredBranchPoints ? 'action-unavailable' : ''}">Вложено в ветку: ${invested} / ${requiredBranchPoints}</div>${prerequisite ? `<div class="${prerequisiteMet ? '' : 'action-unavailable'}">Требуется талант «${TALENTS[prerequisite].name}»: хотя бы 1 ранг</div>` : ''}${maxed ? '<div class="action-unavailable">Максимальный ранг</div>' : state.pendingTalentPoints === 0 ? '<div class="action-unavailable">Нет очков таланта</div>' : ''}`,
             );
           button.addEventListener('mouseenter', showTooltip);
           button.addEventListener('focus', showTooltip);
@@ -79,6 +83,11 @@ export class LevelUpScreen {
           button.addEventListener('blur', () => this.tooltip.hide());
           const option = document.createElement('div');
           option.className = 'talent-option';
+          if (
+            prerequisite ||
+            branchTalents.some(({ id }) => TALENTS[id].prerequisite === talent.id)
+          )
+            option.classList.add('talent-option--linked');
           const name = document.createElement('div');
           name.className = 'talent-option__name';
           name.textContent = definition.name;
@@ -88,6 +97,24 @@ export class LevelUpScreen {
         tier.append(row);
         column.append(tier);
       }
+      const connections = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      connections.classList.add('talent-dependencies');
+      for (const talent of branchTalents) {
+        const prerequisite = TALENTS[talent.id].prerequisite;
+        if (!prerequisite) continue;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.dataset.from = prerequisite;
+        path.dataset.to = talent.id;
+        path.classList.add('talent-dependency');
+        path.classList.toggle('talent-dependency--met', talents.getRank(prerequisite) > 0);
+        path.setAttribute('role', 'img');
+        path.setAttribute(
+          'aria-label',
+          `${TALENTS[prerequisite].name} → ${TALENTS[talent.id].name}`,
+        );
+        connections.append(path);
+      }
+      column.append(connections);
       tree.append(column);
     }
     panel.append(tree);
@@ -113,8 +140,33 @@ export class LevelUpScreen {
     footer.append(confirm);
     this.container.append(layout, footer);
     this.container.classList.add('level-up-screen--visible');
+    this.drawDependencies();
+    this.resizeObserver.observe(tree);
+  }
+  private drawDependencies(): void {
+    for (const column of this.container.querySelectorAll<HTMLElement>('.talent-branch')) {
+      const bounds = column.getBoundingClientRect();
+      for (const path of column.querySelectorAll<SVGPathElement>('.talent-dependency')) {
+        const from = column
+          .querySelector<HTMLElement>(`[data-talent-id="${path.dataset.from}"]`)!
+          .getBoundingClientRect();
+        const to = column
+          .querySelector<HTMLElement>(`[data-talent-id="${path.dataset.to}"]`)!
+          .getBoundingClientRect();
+        const startX = from.right - bounds.left + 3;
+        const endX = to.right - bounds.left + 3;
+        const startY = from.top - bounds.top + from.height / 2;
+        const endY = to.top - bounds.top + to.height / 2;
+        const routeX = Math.min(bounds.width - 4, Math.max(startX, endX) + 24);
+        path.setAttribute(
+          'd',
+          `M ${startX} ${startY} H ${routeX} V ${endY} H ${endX} M ${endX + 5} ${endY - 4} L ${endX} ${endY} L ${endX + 5} ${endY + 4}`,
+        );
+      }
+    }
   }
   hide(): void {
+    this.resizeObserver.disconnect();
     this.container.classList.remove('level-up-screen--visible');
     this.tooltip.hide();
   }

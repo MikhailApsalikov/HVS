@@ -438,9 +438,22 @@ body {
   position: relative;
 }
 
+.ability-btn-wrapper[hidden] {
+  display: none;
+}
+
+.ability-btn--active {
+  outline: 2px solid #e8c56a;
+}
+
+.ability-btn__effect-text {
+  color: #ffe0a0;
+  font-size: 0.65rem;
+}
+
 .ability-btn {
   width: 100%;
-  height: 44px;
+  min-height: 44px;
   padding: 4px 8px;
   background: #4a4a4a;
   border: 2px solid #6b5344;
@@ -477,9 +490,7 @@ body {
 .ability-btn__name {
   font-size: 0.75rem;
   font-weight: bold;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
 }
 
 .ability-btn__hotkey {
@@ -784,7 +795,31 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 126px;
+  min-height: 132px;
+}
+
+.talent-branch {
+  position: relative;
+}
+
+.talent-dependencies {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.talent-dependency {
+  fill: none;
+  stroke: #806b52;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.talent-dependency--met {
+  stroke: #f0c66b;
 }
 
 .talent-tree__tier-label {
@@ -825,6 +860,10 @@ body {
   font-size: 0.65rem;
   line-height: 1.2;
   margin-top: 4px;
+}
+
+.talent-option--linked .talent-option__name {
+  padding-right: 16px;
 }
 
 @media (max-width: 1000px) {

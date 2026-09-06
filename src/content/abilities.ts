@@ -1,4 +1,4 @@
-import type { AbilityId } from '../domain/types.js';
+import type { AbilityId, TalentId } from '../domain/types.js';
 import type { StatId } from '../domain/rules/stats.js';
 
 interface AbilityDefinition {
@@ -6,6 +6,7 @@ interface AbilityDefinition {
   readonly key: string;
   readonly sprite: string;
   readonly unlockLevel: number;
+  readonly talent?: TalentId;
   readonly description: string;
   readonly effectStat?: StatId;
   readonly effectKind?: 'flat' | 'percent';
@@ -56,10 +57,11 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     effectKind: 'flat',
   },
   stand: {
-    name: 'Ни шагу назад!',
+    name: 'Божественный щит',
     key: 'Y',
     sprite: 'AbilityStand',
-    unlockLevel: 25,
+    unlockLevel: 30,
+    talent: 'divineShield',
     description: 'Даёт временную неуязвимость.',
     effectStat: 'stand.duration',
     effectKind: 'flat',
@@ -79,6 +81,17 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     sprite: 'AbilityRecharge',
     unlockLevel: 50,
     description: 'Сбрасывает перезарядку остальных способностей и лучников.',
+  },
+  lastHope: {
+    name: 'Блок последней надежды',
+    key: 'O',
+    sprite: 'AbilityLastHope',
+    unlockLevel: 20,
+    talent: 'lastHope',
+    description:
+      'Временно повышает силу блока на 10% итоговой выносливости и шанс блока на 30 процентных пунктов.',
+    effectStat: 'lastHope.duration',
+    effectKind: 'flat',
   },
 };
 export const ABILITY_ORDER = Object.keys(ABILITIES) as AbilityId[];

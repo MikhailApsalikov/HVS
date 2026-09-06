@@ -10,6 +10,7 @@ describe('saves and migration', () => {
     const previous = {
       ...snapshot(session),
       version: 3,
+      abilities: snapshot(session).abilities.slice(0, 8),
       character: { endurance: 0, agility: 0, intellect: 0 },
       talents: [{ id: 'rapidFire', rank: 2 }],
       inventory: ['c009'],
@@ -23,7 +24,7 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(4);
+    expect(parsed.version).toBe(5);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
       endurance: 104,
@@ -46,6 +47,7 @@ describe('saves and migration', () => {
     const previous = {
       ...snapshot(game()),
       version: 3,
+      abilities: snapshot(game()).abilities.slice(0, 8),
       character: { endurance: 10, agility: 4, intellect: 9 },
       state: { ...snapshot(game()).state, levelTimer: 0, levelTimerMax: 0 },
     };

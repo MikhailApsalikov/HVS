@@ -1,6 +1,14 @@
 export type Difficulty = 'easy' | 'normal' | 'hard';
 export type AbilityId =
-  'freeze' | 'blizzard' | 'prep' | 'heal' | 'volley' | 'stand' | 'armageddon' | 'recharge';
+  | 'freeze'
+  | 'blizzard'
+  | 'prep'
+  | 'heal'
+  | 'volley'
+  | 'stand'
+  | 'armageddon'
+  | 'recharge'
+  | 'lastHope';
 export type TalentId =
   | 'endurance'
   | 'spiderArmor'
@@ -19,7 +27,12 @@ export type TalentId =
   | 'improvedEndurance'
   | 'improvedAgility'
   | 'improvedIntellect'
-  | 'magicArmor';
+  | 'magicArmor'
+  | 'divineShield'
+  | 'shieldBlock'
+  | 'lastHope'
+  | 'improvedLastHope'
+  | 'bestDefense';
 export type TalentBranch = 'defense' | 'shooting' | 'magic';
 export type SpiderType = 'normal' | 'fat' | 'fast' | 'ninja' | 'burner' | 'tank';
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'levelUp' | 'gameOver';

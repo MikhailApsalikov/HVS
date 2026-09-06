@@ -1,7 +1,7 @@
 import type { AbilityId, Difficulty, DifficultyConfig, GamePhase } from '../types.js';
 import type { GameRules } from '../rules/GameRules.js';
 import type { ResolvedStats } from '../rules/stats.js';
-import { ABILITY_ORDER } from '../../content/abilities.js';
+import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { WORLD } from '../rules/world.js';
 import { clamp } from '../rules/numbers.js';
 import { Cooldown } from './Cooldown.js';
@@ -24,6 +24,8 @@ export class GameState {
   initialTalentPick = true;
   freezeActive = false;
   invulnerableTimer = 0;
+  lastHopeTimer = 0;
+  readonly talentAbilities = new Set<AbilityId>();
   blizzardTimer = 0;
   armageddonPhase: ArmageddonPhase = 'none';
   armageddonTimer = 0;
@@ -64,6 +66,11 @@ export class GameState {
   }
   getAbility(id: AbilityId): Cooldown {
     return this.abilities.get(id)!;
+  }
+  isAbilityUnlocked(id: AbilityId): boolean {
+    return ABILITIES[id].talent
+      ? this.talentAbilities.has(id)
+      : this.level >= ABILITIES[id].unlockLevel;
   }
   newId(prefix: string): string {
     return `${prefix}-${this.nextEntityId++}`;

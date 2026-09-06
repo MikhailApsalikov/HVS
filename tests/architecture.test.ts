@@ -60,7 +60,11 @@ describe('legacy feature inventory captured before rewrite', () => {
       energyRegen: 8,
       shootCooldown: 3,
       arrowTravelTime: 3,
-      abilities: { ...baseline.normal.abilities, volley: { cost: 100, cooldown: 36 } },
+      abilities: {
+        ...baseline.normal.abilities,
+        volley: { cost: 100, cooldown: 36 },
+        lastHope: { cost: 60, cooldown: 65 },
+      },
       talents: {
         ...baseline.normal.talents,
         endurance: { maxRanks: 7, unlocksAtLevel: 0 },
@@ -70,6 +74,12 @@ describe('legacy feature inventory captured before rewrite', () => {
         improvedAgility: { maxRanks: 7, unlocksAtLevel: 0 },
         improvedIntellect: { maxRanks: 7, unlocksAtLevel: 0 },
         magicArmor: { maxRanks: 7, unlocksAtLevel: 20 },
+        dutyBound: { maxRanks: 5, unlocksAtLevel: 40 },
+        divineShield: { maxRanks: 1, unlocksAtLevel: 30 },
+        shieldBlock: { maxRanks: 12, unlocksAtLevel: 10 },
+        lastHope: { maxRanks: 1, unlocksAtLevel: 20 },
+        improvedLastHope: { maxRanks: 5, unlocksAtLevel: 30 },
+        bestDefense: { maxRanks: 10, unlocksAtLevel: 40 },
       },
     });
   });

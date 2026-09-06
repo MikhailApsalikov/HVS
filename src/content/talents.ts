@@ -8,6 +8,9 @@ interface TalentDefinition {
   readonly sprite: string;
   readonly branch: TalentBranch;
   readonly effects: readonly Effect[];
+  readonly description?: string;
+  readonly fixedEffects?: readonly Effect[];
+  readonly prerequisite?: TalentId;
   readonly scaling?: {
     readonly attribute: PrimaryStatId;
     readonly step: number;
@@ -19,7 +22,7 @@ export const TALENT_BRANCHES: Readonly<Record<TalentBranch, string>> = {
   shooting: 'Стрельба',
   magic: 'Магия',
 };
-export const TALENT_TIER_RULES = { levelsPerTier: 10, pointsPerTier: 5 } as const;
+export const TALENT_TIER_RULES = { levelsPerTier: 10, pointsPerTier: 7 } as const;
 const flat = (stat: Effect['stat'], value: number): Effect => ({ stat, kind: 'flat', value });
 const percent = (stat: Effect['stat'], value: number): Effect => ({ stat, kind: 'percent', value });
 
@@ -85,7 +88,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   dutyBound: {
     branch: 'defense',
-    name: 'Чувство долга',
+    name: 'Улучшенный божественный щит',
     sprite: 'TalentDuty',
     effects: [flat('stand.duration', 1), flat('stand.cooldown', -12)],
   },
@@ -137,6 +140,41 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     sprite: 'TalentArmor',
     effects: [],
     scaling: { attribute: 'intellect', step: 5, effect: flat('armor', 1) },
+  },
+  divineShield: {
+    name: 'Божественный щит',
+    branch: 'defense',
+    sprite: 'AbilityStand',
+    effects: [],
+  },
+  shieldBlock: {
+    name: 'Блок щитом',
+    branch: 'defense',
+    sprite: 'TalentShieldBlock',
+    effects: [flat('blockChance', 0.05)],
+    fixedEffects: [flat('blockPower', 20)],
+  },
+  lastHope: {
+    name: 'Блок последней надежды',
+    branch: 'defense',
+    sprite: 'AbilityLastHope',
+    prerequisite: 'shieldBlock',
+    effects: [],
+  },
+  improvedLastHope: {
+    name: 'Улучшенный блок последней надежды',
+    branch: 'defense',
+    sprite: 'TalentImprovedLastHope',
+    prerequisite: 'lastHope',
+    effects: [flat('lastHope.cooldown', -10), flat('lastHope.cost', -4)],
+  },
+  bestDefense: {
+    name: 'Лучшая защита - это нападение',
+    branch: 'defense',
+    sprite: 'TalentBestDefense',
+    effects: [flat('blockVolleyChance', 0.02)],
+    description:
+      'При успешном блоке выпускает обычный «Залп» со всеми его улучшениями. Не тратит энергию и не запускает, не сбрасывает и не требует готовности перезарядки.',
   },
 };
 export const TALENT_ORDER = Object.keys(TALENTS) as TalentId[];

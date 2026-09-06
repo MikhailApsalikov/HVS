@@ -40,10 +40,15 @@ export class TalentSystem {
       0,
     );
   }
-  upgradeBlockReason(id: TalentId, level: number): 'level' | 'branch' | 'maxed' | null {
+  upgradeBlockReason(
+    id: TalentId,
+    level: number,
+  ): 'level' | 'branch' | 'prerequisite' | 'maxed' | null {
     const talent = this.getTalent(id);
     if (level < talent.unlocksAtLevel) return 'level';
     if (this.branchPoints(talent.branch) < talent.requiredBranchPoints) return 'branch';
+    const prerequisite = TALENTS[id].prerequisite;
+    if (prerequisite && this.getRank(prerequisite) === 0) return 'prerequisite';
     if (talent.rank >= talent.maxRanks) return 'maxed';
     return null;
   }
@@ -62,11 +67,17 @@ export class TalentSystem {
     return this.talents.flatMap(({ id, rank }) =>
       rank === 0
         ? []
-        : TALENTS[id].effects.map((effect) => ({
-            ...effect,
-            source: `talent:${id}`,
-            value: effect.value * rank,
-          })),
+        : [
+            ...TALENTS[id].effects.map((effect) => ({
+              ...effect,
+              source: `talent:${id}`,
+              value: effect.value * rank,
+            })),
+            ...(TALENTS[id].fixedEffects ?? []).map((effect) => ({
+              ...effect,
+              source: `talent:${id}`,
+            })),
+          ],
     );
   }
   getScalingModifiers(stats: ResolvedStats): StatModifier[] {

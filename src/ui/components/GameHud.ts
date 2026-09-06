@@ -3,7 +3,7 @@ import type { AbilityId } from '../../domain/types.js';
 import type { SpriteRegistry } from '../SpriteRegistry.js';
 import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { PRIMARY_STATS, STATS } from '../../domain/rules/stats.js';
-import { abilityDescription, attributeDescription, statRows } from '../presenters.js';
+import { abilityDescription, attributeDescription, formatStat, statRows } from '../presenters.js';
 import { TooltipManager } from './TooltipManager.js';
 
 export class HUD {
@@ -66,7 +66,7 @@ export class HUD {
     this.coins.addEventListener('mouseleave', () => this.tooltip.hide());
     this.level.className = 'level-number';
     this.attributes.className = 'character-attributes';
-    for (const id of [...PRIMARY_STATS, 'armor'] as const) {
+    for (const id of [...PRIMARY_STATS, 'armor', 'blockChance', 'blockPower'] as const) {
       const row = document.createElement('div');
       row.className = 'character-attribute';
       row.dataset.stat = id;
@@ -91,7 +91,7 @@ export class HUD {
       button.className = 'ability-btn';
       button.dataset.ability = id;
       button.setAttribute('aria-label', definition.name);
-      button.innerHTML = `<span class="ability-btn__icon">${sprites.get(definition.sprite)}</span><span class="ability-btn__info"><span class="ability-btn__name">${definition.name}</span><span class="ability-btn__hotkey">[${definition.key}]</span></span><span class="ability-btn__cd-text"></span><span class="ability-btn__lock">${sprites.get('Lock')}</span>`;
+      button.innerHTML = `<span class="ability-btn__icon">${sprites.get(definition.sprite)}</span><span class="ability-btn__info"><span class="ability-btn__name">${definition.name}</span><span class="ability-btn__hotkey">[${definition.key}]</span><span class="ability-btn__effect-text"></span></span><span class="ability-btn__cd-text"></span><span class="ability-btn__lock">${sprites.get('Lock')}</span>`;
       wrapper.append(button);
       this.buttons.set(id, button);
       wrapper.addEventListener('mouseenter', () => {
@@ -123,12 +123,19 @@ export class HUD {
     }
     this.coins.children[1].textContent = String(state.coins);
     this.level.textContent = `Уровень ${state.level}`;
-    [...PRIMARY_STATS, 'armor' as const].forEach((id, index) => {
-      this.attributes.children[index].textContent = `${STATS[id].label}: ${state.stats[id]}`;
+    ([...PRIMARY_STATS, 'armor', 'blockChance', 'blockPower'] as const).forEach((id, index) => {
+      this.attributes.children[index].textContent =
+        `${STATS[id].label}: ${formatStat(id, state.stats[id])}`;
     });
     for (const [id, button] of this.buttons) {
       const cooldown = state.getAbility(id);
-      const locked = state.level < ABILITIES[id].unlockLevel;
+      const locked = !state.isAbilityUnlocked(id);
+      button.parentElement!.hidden = Boolean(ABILITIES[id].talent) && locked;
+      const activeTimer =
+        id === 'lastHope' ? state.lastHopeTimer : id === 'stand' ? state.invulnerableTimer : 0;
+      button.classList.toggle('ability-btn--active', activeTimer > 0);
+      button.querySelector('.ability-btn__effect-text')!.textContent =
+        activeTimer > 0 ? `Действует: ${activeTimer.toFixed(2)} с` : '';
       button.classList.toggle('ability-btn--locked', locked);
       button.classList.toggle('ability-btn--cooldown', cooldown.isOnCooldown);
       button.classList.toggle('ability-btn--no-energy', state.energy < state.stats[`${id}.cost`]);

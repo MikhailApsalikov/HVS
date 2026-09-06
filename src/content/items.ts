@@ -1328,7 +1328,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
       abilityId: 'stand',
       modType: 'cooldownReduction',
       value: 10,
-      description: '«Ни шагу назад!»: кулдаун −10 сек',
+      description: '«Божественный щит»: кулдаун −10 сек',
     },
   },
   {
@@ -1344,7 +1344,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
       abilityId: 'stand',
       modType: 'effectBoost',
       value: 3,
-      description: '«Ни шагу назад!»: длительность +3 сек',
+      description: '«Божественный щит»: длительность +3 сек',
     },
   },
 

@@ -6,6 +6,7 @@ import { randomInt } from '../rules/random.js';
 import { WORLD } from '../rules/world.js';
 import { SPIDERS, SPECIAL_SPIDER_ORDER } from '../../content/spiders.js';
 import { Spider } from '../model/Spider.js';
+import { fireVolley } from './AbilitySystem.js';
 
 export function spawnSpiders(state: GameState, dt: number, random: RandomSource): void {
   state.spawnAccumulator += dt;
@@ -83,17 +84,31 @@ export function tickArrows(state: GameState, dt: number): void {
   }
 }
 
-export function resolveBreaches(state: GameState, emit: EmitEvent): void {
+export function resolveBreaches(state: GameState, random: RandomSource, emit: EmitEvent): void {
   for (const spider of state.spiders.values()) {
     if (spider.dying || spider.y < 1) continue;
     spider.reachedCastle = true;
     if (state.isInvulnerable) emit({ type: 'absorb' });
     else {
-      const hp = state.rules.value('incomingDamage', spider.damage);
+      const blocked =
+        spider.damage > 0 &&
+        state.stats.blockPower > 0 &&
+        state.stats.blockChance > 0 &&
+        random() < state.stats.blockChance;
+      const hp = state.rules.value(
+        'incomingDamage',
+        spider.damage,
+        blocked ? [{ source: 'block', kind: 'flat', value: -state.stats.blockPower }] : [],
+      );
       const energy = SPIDERS[spider.type].burnsEnergy ? state.stats.burnerEnergy : 0;
       state.modifyHp(-hp);
       state.modifyEnergy(-energy);
       emit({ type: 'damage', spiderId: spider.id, hp, energy });
+      if (blocked) {
+        emit({ type: 'absorb' });
+        if (state.stats.blockVolleyChance > 0 && random() < state.stats.blockVolleyChance)
+          fireVolley(state, random);
+      }
     }
     state.modifyEnergy(state.stats.energyPerBreach);
     spider.startDying();

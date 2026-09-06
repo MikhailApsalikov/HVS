@@ -5,7 +5,7 @@ import { normalConfig } from '../src/content/normal.js';
 import { DIFFICULTIES } from '../src/content/difficulties.js';
 import { ITEM_CATALOG } from '../src/content/items.js';
 import { TALENTS, TALENT_ORDER } from '../src/content/talents.js';
-import { ABILITY_ORDER } from '../src/content/abilities.js';
+import { ABILITIES, ABILITY_ORDER } from '../src/content/abilities.js';
 import { STATS } from '../src/domain/rules/stats.js';
 import { salePrice } from '../src/domain/rules/economy.js';
 import { itemModifiers } from '../src/domain/rules/itemModifiers.js';
@@ -78,7 +78,11 @@ describe('talent strength and independent sources', () => {
     expect(session.talents.upgrade(id, 100)).toBe(false);
     session.talents.loadFromSave([{ id, rank: -1 }]);
     expect(session.talents.getRank(id)).toBe(0);
-    expect(TALENTS[id].effects.length > 0 || TALENTS[id].scaling !== undefined).toBe(true);
+    expect(
+      TALENTS[id].effects.length > 0 ||
+        TALENTS[id].scaling !== undefined ||
+        ABILITY_ORDER.some((ability) => ABILITIES[ability].talent === id),
+    ).toBe(true);
   });
 });
 
@@ -111,8 +115,8 @@ describe('primary attribute sources', () => {
 describe('content contracts', () => {
   it('retains all difficulties, talents, abilities and unique items', () => {
     expect(Object.keys(DIFFICULTIES)).toHaveLength(3);
-    expect(TALENT_ORDER).toHaveLength(18);
-    expect(ABILITY_ORDER).toHaveLength(8);
+    expect(TALENT_ORDER).toHaveLength(23);
+    expect(ABILITY_ORDER).toHaveLength(9);
     expect(new Set(ITEM_CATALOG.map((item) => item.id)).size).toBe(ITEM_CATALOG.length);
     expect(ITEM_CATALOG.length).toBeGreaterThan(150);
   });

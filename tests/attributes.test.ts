@@ -284,27 +284,34 @@ describe('armor and talent branches', () => {
     const session = new GameSession('normal');
     session.state.level = 10;
     session.state.pendingTalentPoints = 20;
-    for (let rank = 0; rank < 5; rank++) session.upgradeTalent('endurance');
+    for (let rank = 0; rank < 7; rank++) expect(session.upgradeTalent('endurance')).toBe(true);
     expect(session.upgradeTalent('rapidFire')).toBe(false);
     expect(session.talents.upgradeBlockReason('rapidFire', 10)).toBe('branch');
-    for (let rank = 0; rank < 4; rank++) session.upgradeTalent('hunterMastery');
-    expect(session.upgradeTalent('rapidFire')).toBe(false);
-    session.upgradeTalent('improvedAgility');
+    for (let rank = 0; rank < 5; rank++) expect(session.upgradeTalent('hunterMastery')).toBe(true);
+    for (const points of [5, 6]) {
+      const pending = session.state.pendingTalentPoints;
+      expect(session.talents.branchPoints('shooting')).toBe(points);
+      expect(session.upgradeTalent('rapidFire')).toBe(false);
+      expect(session.talents.getRank('rapidFire')).toBe(0);
+      expect(session.state.pendingTalentPoints).toBe(pending);
+      expect(session.upgradeTalent('improvedAgility')).toBe(true);
+    }
     session.state.level = 9;
     expect(session.upgradeTalent('rapidFire')).toBe(false);
     session.state.level = 10;
     expect(session.upgradeTalent('rapidFire')).toBe(true);
     expect(session.upgradeTalent('rapidFire')).toBe(true);
-    expect(session.talents.branchPoints('shooting')).toBe(7);
-    expect(session.talents.branchPoints('defense')).toBe(5);
+    expect(session.talents.branchPoints('shooting')).toBe(9);
+    expect(session.talents.branchPoints('defense')).toBe(7);
     expect(session.talents.branchPoints('magic')).toBe(0);
   });
 
   it.each([
-    ['spiderArmor', 2, 5, 10],
-    ['volleyMastery', 3, 10, 20],
-    ['dutyBound', 4, 15, 30],
-    ['quickInstinct', 5, 20, 40],
+    ['spiderArmor', 2, 7, 10],
+    ['volleyMastery', 3, 14, 20],
+    ['blizzardMastery', 4, 21, 30],
+    ['dutyBound', 5, 28, 40],
+    ['quickInstinct', 5, 28, 40],
   ] as const)(
     '%s requires tier %s with %s branch points and level %s',
     (id, tier, points, level) => {
@@ -341,6 +348,7 @@ describe('armor and talent branches', () => {
     session.talents.loadFromSave([
       { id: 'tireless', rank: 5 },
       { id: 'agility', rank: 5 },
+      { id: 'improvedPrep', rank: 4 },
     ]);
     session.refreshStats(); // 54 intellect, 168 armor from endurance.
     for (let rank = 1; rank <= 7; rank++) {

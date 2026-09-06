@@ -25,6 +25,7 @@ const STATE_FIELDS = [
   'levelTimerMax',
   'freezeActive',
   'invulnerableTimer',
+  'lastHopeTimer',
   'blizzardTimer',
   'armageddonPhase',
   'armageddonTimer',
@@ -57,7 +58,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 4;
+  readonly version: 5;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -74,7 +75,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 4,
+    version: 5,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -92,6 +93,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   const session = new GameSession(data.difficulty, random);
   const state = session.state;
   state.level = data.state.level;
+  state.lastHopeTimer = data.state.lastHopeTimer;
   session.talents.loadFromSave(data.talents);
   state.character.restoreBase(data.character);
   for (const source of new Set(data.characterModifiers.map((modifier) => modifier.source))) {
@@ -185,7 +187,8 @@ export function parseSave(value: unknown): SaveData | null {
 function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
-  if ((value.version !== 3 && value.version !== 4) || !object(value.state)) return null;
+  if ((value.version !== 3 && value.version !== 4 && value.version !== 5) || !object(value.state))
+    return null;
   const state = value.state;
   const numeric = [
     'level',
@@ -204,6 +207,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     'nextEntityId',
   ];
   if (!numeric.every((key) => number(state[key]))) return null;
+  if (value.version === 5 && !number(state.lastHopeTimer)) return null;
   if (
     !['level', 'coins', 'pendingTalentPoints', 'record', 'nextEntityId'].every((key) =>
       integer(state[key]),
@@ -264,7 +268,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     !arrayOf(value.archers, cooldown) ||
     value.archers.length !== WORLD.lanes ||
     !arrayOf(value.abilities, cooldown) ||
-    value.abilities.length !== ABILITY_ORDER.length
+    value.abilities.length !== (value.version === 5 ? ABILITY_ORDER.length : 8)
   )
     return null;
   if (
@@ -317,12 +321,18 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
-  if (value.version === 3) {
-    const previous = value as unknown as SaveData;
+  if (value.version === 3 || value.version === 4) {
+    const previous = {
+      ...value,
+      version: 5,
+      state: { ...state, lastHopeTimer: 0 },
+      abilities: [...value.abilities, { duration: 0, remainingCooldown: 0 }],
+    } as unknown as SaveData;
+    if (value.version === 4) return snapshot(restore(previous));
     const character = Object.fromEntries(
       PRIMARY_STATS.map((id) => [id, previous.character[id] + STATS[id].base]),
     ) as Record<PrimaryStatId, number>;
-    const session = restore({ ...previous, version: 4, character });
+    const session = restore({ ...previous, character });
     const duration = session.state.rules.levelDuration(session.state.level);
     session.state.levelTimer =
       previous.state.levelTimerMax > 0

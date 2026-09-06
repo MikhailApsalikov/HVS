@@ -3,6 +3,7 @@ import type { GameEvent } from './events.js';
 import type { RandomSource } from './rules/random.js';
 import { DIFFICULTIES } from '../content/difficulties.js';
 import { ITEM_MAP } from '../content/items.js';
+import { ABILITIES, ABILITY_ORDER } from '../content/abilities.js';
 import { GameRules } from './rules/GameRules.js';
 import { GameState } from './model/GameState.js';
 import { TalentSystem } from './model/TalentSystem.js';
@@ -34,6 +35,11 @@ export class GameSession {
   }
   refreshStats(grantHealthIncrease = true): void {
     const state = this.state;
+    state.talentAbilities.clear();
+    for (const id of ABILITY_ORDER) {
+      const talent = ABILITIES[id].talent;
+      if (talent && this.talents.getRank(talent) > 0) state.talentAbilities.add(id);
+    }
     const effects = [
       ...this.talents.getModifiers(),
       ...this.items.getModifiers(),
@@ -41,10 +47,25 @@ export class GameSession {
     ];
     const rules = new GameRules(state.config, effects, state.character.base, state.level);
     const scaling = this.talents.getScalingModifiers(rules.snapshot());
+    effects.push(...scaling);
+    if (state.lastHopeTimer > 0) {
+      effects.push(
+        {
+          source: 'ability:lastHope',
+          stat: 'blockChance',
+          kind: 'flat',
+          value: rules.value('lastHope.blockChance'),
+        },
+        {
+          source: 'ability:lastHope',
+          stat: 'blockPower',
+          kind: 'flat',
+          value: rules.value('lastHope.blockPower'),
+        },
+      );
+    }
     state.applyRules(
-      scaling.length
-        ? new GameRules(state.config, [...effects, ...scaling], state.character.base, state.level)
-        : rules,
+      new GameRules(state.config, effects, state.character.base, state.level),
       grantHealthIncrease,
     );
   }
@@ -105,7 +126,9 @@ export class GameSession {
     return 'shot';
   }
   activateAbility(id: AbilityId): AbilityResult {
-    return activateAbility(this.state, id, this.random);
+    const result = activateAbility(this.state, id, this.random);
+    if (id === 'lastHope' && result === 'activated') this.refreshStats(false);
+    return result;
   }
   drainEvents(): GameEvent[] {
     const events = this.events;
@@ -118,10 +141,12 @@ export class GameSession {
     if (state.phase !== 'playing' || dt === 0) return;
     const emit = (event: GameEvent) => this.events.push(event);
     spawnSpiders(state, dt, this.random);
+    const lastHopeWasActive = state.lastHopeTimer > 0;
     tickAbilities(state, dt);
+    if (lastHopeWasActive && state.lastHopeTimer === 0) this.refreshStats(false);
     moveSpiders(state, dt, this.random);
     tickArrows(state, dt);
-    resolveBreaches(state, emit);
+    resolveBreaches(state, this.random, emit);
     collectDeadSpiders(state, dt, this.random, emit);
     // Death wins over regeneration and simultaneous completion of a level.
     if (state.hp <= 0) {

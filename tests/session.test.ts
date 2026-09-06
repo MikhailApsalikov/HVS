@@ -129,11 +129,14 @@ describe('shooting and collision', () => {
   });
 });
 
-describe('all eight abilities', () => {
+describe('all abilities', () => {
   it.each(ABILITY_ORDER)('enforces unlock, cost and cooldown for %s', (id) => {
     const session = game(ABILITIES[id].unlockLevel - 1);
     expect(session.activateAbility(id)).toBe('level_locked');
     session.state.level += 1;
+    const talent = ABILITIES[id].talent;
+    if (talent) session.talents.loadFromSave([{ id: talent, rank: 1 }]);
+    session.refreshStats();
     session.state.energy = 0;
     if (session.state.stats[`${id}.cost`] > 0)
       expect(session.activateAbility(id)).toBe('not_enough_energy');
@@ -187,11 +190,13 @@ describe('all eight abilities', () => {
     expect([...session.state.arrows.values()].every((arrow) => arrow.fromVolley)).toBe(true);
   });
   it('stand absorbs breaches and expires', () => {
-    const session = game(25);
+    const session = game(30);
+    session.talents.loadFromSave([{ id: 'divineShield', rank: 1 }]);
+    session.refreshStats();
     session.activateAbility('stand');
     addSpider(session, 'burner', 0, 1);
     advance(session, 1 / 60);
-    expect(session.state.hp).toBe(690);
+    expect(session.state.hp).toBe(840);
     expect(session.drainEvents()).toContainEqual({ type: 'absorb' });
     advance(session, 7);
     expect(session.state.isInvulnerable).toBe(false);

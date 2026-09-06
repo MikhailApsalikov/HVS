@@ -154,11 +154,11 @@ test('three branches unlock a tier only after enough points are spent in that br
 }) => {
   const session = new GameSession('normal');
   session.state.level = 10;
-  session.state.pendingTalentPoints = 2;
+  session.state.pendingTalentPoints = 3;
   session.state.initialTalentPick = false;
   session.talents.loadFromSave([
-    { id: 'hunterMastery', rank: 4 },
-    { id: 'endurance', rank: 3 },
+    { id: 'hunterMastery', rank: 5 },
+    { id: 'endurance', rank: 7 },
   ]);
   session.refreshStats();
   await page.addInitScript((data) => {
@@ -171,21 +171,36 @@ test('three branches unlock a tier only after enough points are spent in that br
   await expect(page.locator('[data-branch="shooting"]')).toContainText('Стрельба');
   await expect(page.locator('[data-branch="magic"]')).toContainText('Магия');
   const rapidFire = page.locator('[data-talent-id="rapidFire"]');
+  await expect(
+    page.locator('[data-branch="shooting"] [data-tier="2"] .talent-tree__tier-label'),
+  ).toHaveText('Тир 2 · ур. 10 · 7 очк.');
   await expect(rapidFire).toHaveAttribute('aria-disabled', 'true');
   await rapidFire.hover();
   await expect(page.locator('.game-tooltip .action-unavailable')).toHaveText(
-    'Вложено в ветку: 4 / 5',
+    'Вложено в ветку: 5 / 7',
   );
   await expect(page.locator('.game-tooltip .action-unavailable')).toHaveCSS(
     'color',
     'rgb(255, 115, 115)',
   );
+  await rapidFire.dispatchEvent('click');
+  await expect(rapidFire).toContainText('0/7');
+  await expect(page.locator('.talent-panel__points')).toHaveText('Очков таланта: 3');
+  await page.locator('[data-talent-id="improvedAgility"]').click();
+  await expect(rapidFire).toHaveAttribute('aria-disabled', 'true');
+  await rapidFire.hover();
+  await expect(page.locator('.game-tooltip .action-unavailable')).toHaveText(
+    'Вложено в ветку: 6 / 7',
+  );
+  await rapidFire.dispatchEvent('click');
+  await expect(rapidFire).toContainText('0/7');
+  await expect(page.locator('.talent-panel__points')).toHaveText('Очков таланта: 2');
   await page.locator('[data-talent-id="improvedAgility"]').click();
   await expect(rapidFire).toHaveAttribute('aria-disabled', 'false');
   await rapidFire.click();
   await expect(rapidFire).toContainText('1/7');
   await expect(page.locator('[data-branch="shooting"] .talent-branch__points')).toHaveText(
-    'Вложено очков: 6',
+    'Вложено очков: 8',
   );
   await page.reload();
   await page.getByRole('button', { name: 'Загрузить игру' }).click();
@@ -218,6 +233,8 @@ test('attributes are vertical and their hover and keyboard tooltips show current
     'Ловкость: 24',
     'Интеллект: 105',
     'Броня: 110',
+    'Шанс блока: 0%',
+    'Сила блока: 0',
   ]);
   const bounds = await rows.evaluateAll((elements) =>
     elements.map((el) => ({
@@ -246,4 +263,98 @@ test('attributes are vertical and their hover and keyboard tooltips show current
   await page.locator('[data-ability="volley"]').hover();
   await expect(tooltip.locator('.action-unavailable')).toHaveText('Требуется уровень 20');
   await expect(tooltip.locator('.action-unavailable')).toHaveCSS('color', 'rgb(255, 115, 115)');
+});
+
+test('defense prerequisites, talent abilities and an active block survive reload through the UI', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  const session = new GameSession('normal');
+  session.state.level = 40;
+  session.state.initialTalentPick = false;
+  session.state.pendingTalentPoints = 4;
+  session.talents.loadFromSave([
+    { id: 'endurance', rank: 7 },
+    { id: 'improvedEndurance', rank: 7 },
+    { id: 'spiderArmor', rank: 6 },
+  ]);
+  session.state.character.setModifiers('test:quiet', [
+    { stat: 'spawnProbability', kind: 'percent', value: -100 },
+    { stat: 'energyRegen', kind: 'percent', value: -100 },
+  ]);
+  session.refreshStats();
+  await page.addInitScript((data) => {
+    if (!localStorage.getItem('hvs_save')) localStorage.setItem('hvs_save', JSON.stringify(data));
+  }, snapshot(session));
+  const time = new Date('2026-09-06T12:00:00Z');
+  await page.clock.install({ time });
+  await page.clock.pauseAt(time);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Загрузить игру' }).click();
+  await page.clock.runFor(20);
+  const talent = (id: string) => page.locator(`[data-talent-id="${id}"]`);
+  const arrow = (to: string) => page.locator(`.talent-dependency[data-to="${to}"]`);
+  const tooltip = page.locator('.game-tooltip');
+  await expect(page.locator('[data-ability="stand"]')).toBeHidden();
+  await expect(page.locator('[data-ability="lastHope"]')).toBeHidden();
+  await expect(
+    page.locator('[data-branch="defense"] [data-tier="4"] [data-talent-id="divineShield"]'),
+  ).toBeVisible();
+  await expect(
+    page.locator('[data-branch="defense"] [data-tier="5"] [data-talent-id="dutyBound"]'),
+  ).toHaveCount(1);
+  await expect(talent('lastHope')).toHaveAttribute('aria-disabled', 'true');
+  await expect(talent('improvedLastHope')).toHaveAttribute('aria-disabled', 'true');
+  await talent('lastHope').hover();
+  await expect(tooltip.locator('.action-unavailable')).toHaveText(
+    'Требуется талант «Блок щитом»: хотя бы 1 ранг',
+  );
+  await expect(tooltip).toContainText('65');
+  await talent('lastHope').dispatchEvent('click');
+  await expect(talent('lastHope')).toContainText('0/1');
+  await expect(arrow('lastHope')).toHaveAttribute('data-from', 'shieldBlock');
+  await expect(arrow('lastHope')).toHaveAttribute('d', /^M /);
+  await expect(arrow('lastHope')).not.toHaveClass(/--met/);
+  await talent('shieldBlock').click();
+  await expect(talent('shieldBlock')).toContainText('1/12');
+  await expect(arrow('lastHope')).toHaveClass(/--met/);
+  await expect(talent('lastHope')).toHaveAttribute('aria-disabled', 'false');
+  await talent('lastHope').click();
+  await expect(arrow('improvedLastHope')).toHaveAttribute('data-from', 'lastHope');
+  await expect(arrow('improvedLastHope')).toHaveClass(/--met/);
+  await talent('improvedLastHope').click();
+  await talent('divineShield').click();
+  await page.mouse.move(0, 0);
+  await page.screenshot({ path: 'test-results/defense-talent-dependencies.png' });
+  await page.getByRole('button', { name: 'Продолжить' }).click();
+  await page.clock.runFor(20);
+  await expect(page.locator('[data-ability="stand"]')).toBeVisible();
+  await expect(page.locator('[data-ability="lastHope"]')).toBeVisible();
+  await expect(page.locator('[data-stat="blockChance"]')).toHaveText('Шанс блока: 5%');
+  await expect(page.locator('[data-stat="blockPower"]')).toHaveText('Сила блока: 20');
+  await page.keyboard.press('o');
+  await page.clock.runFor(20);
+  await expect(page.locator('[data-ability="lastHope"]')).toHaveClass(/--active/);
+  await expect(page.locator('[data-stat="blockChance"]')).toHaveText('Шанс блока: 35%');
+  await expect(page.locator('[data-stat="blockPower"]')).toHaveText('Сила блока: 40');
+  await expect(page.locator('#energy-bar')).toContainText('44 / 100');
+  await page.clock.runFor(2000);
+  await page.reload();
+  await page.getByRole('button', { name: 'Загрузить игру' }).click();
+  await page.clock.runFor(20);
+  await expect(page.locator('[data-ability="lastHope"]')).toHaveClass(/--active/);
+  await expect(page.locator('[data-stat="blockChance"]')).toHaveText('Шанс блока: 35%');
+  await page.locator('[data-ability="lastHope"]').hover();
+  await expect(tooltip).toContainText('Действует ещё');
+  await expect(tooltip).toContainText('55');
+  await page.screenshot({ path: 'test-results/last-hope-active.png' });
+  await page.clock.runFor(4100);
+  await expect(page.locator('[data-ability="lastHope"]')).not.toHaveClass(/--active/);
+  await expect(page.locator('[data-stat="blockChance"]')).toHaveText('Шанс блока: 5%');
+  await expect(page.locator('[data-stat="blockPower"]')).toHaveText('Сила блока: 20');
+  await page.locator('[data-ability="stand"]').click();
+  await page.clock.runFor(20);
+  await expect(page.locator('.stand-shield-overlay')).toHaveClass(/active/);
+  expect(errors).toEqual([]);
 });
