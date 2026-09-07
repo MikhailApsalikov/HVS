@@ -129,13 +129,18 @@ export class GameRules {
       ),
     };
   }
-  killReward(base: number, jackpot: boolean): number {
-    return this.value(
-      'coinsPerKill',
-      base,
-      jackpot
-        ? [{ source: 'jackpot', kind: 'percent', value: (WORLD.jackpotMultiplier - 1) * 100 }]
-        : [],
-    );
+  killReward(base: number, jackpot: boolean, share = 1): number {
+    return this.value('coinsPerKill', base, [
+      ...(jackpot
+        ? [
+            {
+              source: 'jackpot',
+              kind: 'percent' as const,
+              value: (WORLD.jackpotMultiplier - 1) * 100,
+            },
+          ]
+        : []),
+      { source: 'reward:share', kind: 'percent', value: (share - 1) * 100 },
+    ]);
   }
 }

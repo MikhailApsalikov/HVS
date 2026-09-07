@@ -49,7 +49,7 @@ export const normalConfig: DifficultyConfig = {
     spiderArmor: { maxRanks: 10, unlocksAtLevel: 10 },
     tireless: { maxRanks: 5, unlocksAtLevel: 0 },
     agility: { maxRanks: 5, unlocksAtLevel: 10 },
-    healBoost: { maxRanks: 15, unlocksAtLevel: 40 },
+    healBoost: { maxRanks: 5, unlocksAtLevel: 40 },
     hunterMastery: { maxRanks: 10, unlocksAtLevel: 0 },
     improvedPrep: { maxRanks: 5, unlocksAtLevel: 20 },
     volleyMastery: { maxRanks: 5, unlocksAtLevel: 20 },
@@ -71,5 +71,8 @@ export const normalConfig: DifficultyConfig = {
     lastHope: { maxRanks: 1, unlocksAtLevel: 20 },
     improvedLastHope: { maxRanks: 5, unlocksAtLevel: 30 },
     bestDefense: { maxRanks: 10, unlocksAtLevel: 40 },
+    willToWin: { maxRanks: 5, unlocksAtLevel: 50 },
+    adrenaline: { maxRanks: 1, unlocksAtLevel: 60 },
+    marauder: { maxRanks: 3, unlocksAtLevel: 30 },
   },
 };

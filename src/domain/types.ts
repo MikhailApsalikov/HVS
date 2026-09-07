@@ -8,7 +8,8 @@ export type AbilityId =
   | 'stand'
   | 'armageddon'
   | 'recharge'
-  | 'lastHope';
+  | 'lastHope'
+  | 'adrenaline';
 export type TalentId =
   | 'endurance'
   | 'spiderArmor'
@@ -35,7 +36,10 @@ export type TalentId =
   | 'shieldBlock'
   | 'lastHope'
   | 'improvedLastHope'
-  | 'bestDefense';
+  | 'bestDefense'
+  | 'willToWin'
+  | 'adrenaline'
+  | 'marauder';
 export type TalentBranch = 'defense' | 'shooting' | 'magic';
 export type SpiderType = 'normal' | 'fat' | 'fast' | 'ninja' | 'burner' | 'tank';
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'levelUp' | 'gameOver';

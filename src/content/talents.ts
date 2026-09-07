@@ -63,7 +63,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 3,
     name: 'Усиленное лечение',
     sprite: 'TalentHealBoost',
-    effects: [flat('heal.amount', 150), flat('hpRegen', 2)],
+    effects: [flat('heal.amount', 350), flat('hpRegen', 2)],
     description:
       '«Лечение» восстанавливает на {heal.amount} здоровья больше.\nТакже вы восстанавливаете дополнительно {hpRegen} здоровья каждую секунду.',
   },
@@ -238,6 +238,32 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     sprite: 'TalentTitanArmor',
     effects: [percent('armor', 25)],
     description: 'Увеличивает броню на {armor}.',
+  },
+  willToWin: {
+    name: 'Воля к победе',
+    branch: 'defense',
+    column: 3,
+    sprite: 'TalentWillToWin',
+    effects: [flat('levelDuration', -10)],
+    description: 'Сокращает длительность уровня на {levelDuration} с.',
+  },
+  adrenaline: {
+    name: 'Адреналин',
+    branch: 'defense',
+    column: 2,
+    sprite: 'AbilityAdrenaline',
+    prerequisite: { id: 'bestDefense', rank: 10 },
+    effects: [],
+  },
+  marauder: {
+    name: 'Мародер',
+    branch: 'defense',
+    column: 3,
+    sprite: 'TalentMarauder',
+    prerequisite: { id: 'hunterReward', rank: 5 },
+    effects: [flat('breachRewardFraction', 0.15)],
+    description:
+      'Когда паук доходит до вас, вы получаете {breachRewardFraction} золота, которое он оставил бы при убийстве, с учётом всех прибавок и шанса тройной награды.',
   },
 };
 export const TALENT_ORDER = Object.keys(TALENTS) as TalentId[];

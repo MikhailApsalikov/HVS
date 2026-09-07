@@ -11,6 +11,7 @@ import { FreezeOverlay } from './overlays/FreezeOverlay.js';
 import { ArmageddonOverlay } from './overlays/ArmageddonOverlay.js';
 import { BlizzardOverlay } from './overlays/BlizzardOverlay.js';
 import { StandShieldOverlay } from './overlays/StandShieldOverlay.js';
+import { AdrenalineOverlay } from './overlays/AdrenalineOverlay.js';
 
 export interface MenuActions {
   start(difficulty: Difficulty): void;
@@ -29,6 +30,7 @@ export class GameApp {
   private readonly blizzard: BlizzardOverlay;
   private readonly shield: StandShieldOverlay;
   private readonly lastHope: StandShieldOverlay;
+  private readonly adrenaline: AdrenalineOverlay;
   private readonly saveStatus = document.createElement('div');
 
   constructor(
@@ -63,6 +65,7 @@ export class GameApp {
     this.blizzard = new BlizzardOverlay(field.getContainer());
     this.shield = new StandShieldOverlay(field.getContainer(), sprites);
     this.lastHope = new StandShieldOverlay(field.getContainer(), sprites, 'lastHope');
+    this.adrenaline = new AdrenalineOverlay(field.getContainer(), sprites);
     const wrapper = document.createElement('div');
     wrapper.className = 'app__screens';
     wrapper.append(this.menu.getContainer(), this.game.getContainer(), this.over.getContainer());
@@ -96,6 +99,7 @@ export class GameApp {
   }
   render(state: GameState, saveError: string | null): void {
     this.game.render(state);
+    this.adrenaline.render(state);
     this.saveStatus.textContent = saveError ?? '';
     this.saveStatus.hidden = !saveError;
     if (state.freezeActive) this.freeze.show();

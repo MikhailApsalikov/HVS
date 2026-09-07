@@ -122,8 +122,8 @@ describe('primary attribute sources', () => {
 describe('content contracts', () => {
   it('retains all difficulties, talents, abilities and unique items', () => {
     expect(Object.keys(DIFFICULTIES)).toHaveLength(3);
-    expect(TALENT_ORDER).toHaveLength(26);
-    expect(ABILITY_ORDER).toHaveLength(9);
+    expect(TALENT_ORDER).toHaveLength(29);
+    expect(ABILITY_ORDER).toHaveLength(10);
     expect(new Set(ITEM_CATALOG.map((item) => item.id)).size).toBe(ITEM_CATALOG.length);
     expect(ITEM_CATALOG.length).toBeGreaterThan(150);
   });
@@ -136,8 +136,8 @@ describe('content contracts', () => {
   });
   it.each(Object.entries(DIFFICULTIES))('uses difficulty config for %s', (_name, config) => {
     const rules = new GameRules(config);
-    expect(rules.levelDuration(1)).toBe(17);
-    expect(rules.levelDuration(20)).toBe(55);
+    expect(rules.levelDuration(1)).toBe(16);
+    expect(rules.levelDuration(20)).toBe(54);
     expect(rules.spawnProbability(1)).toBe(config.spawnP0);
     expect(rules.value('coinsPerSec')).toBeCloseTo(config.coinsPerSec + 0.2);
     expect(rules.spawnProbability(1_000_000)).toBe(1);

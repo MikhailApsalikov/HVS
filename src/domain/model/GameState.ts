@@ -25,6 +25,8 @@ export class GameState {
   freezeActive = false;
   invulnerableTimer = 0;
   lastHopeTimer = 0;
+  adrenalineTimer = 0;
+  adrenalineShots = 0;
   readonly talentAbilities = new Set<AbilityId>();
   blizzardTimer = 0;
   armageddonPhase: ArmageddonPhase = 'none';
@@ -63,6 +65,18 @@ export class GameState {
   }
   get blizzardActive(): boolean {
     return this.blizzardTimer > 0;
+  }
+  get adrenalineActive(): boolean {
+    return this.adrenalineTimer > 0 && this.adrenalineShots > 0;
+  }
+  get currentShootCost(): number {
+    return this.adrenalineActive ? 0 : this.stats.shootCost;
+  }
+  abilityActiveTimer(id: AbilityId): number {
+    if (id === 'lastHope') return this.lastHopeTimer;
+    if (id === 'stand') return this.invulnerableTimer;
+    if (id === 'adrenaline') return this.adrenalineTimer;
+    return 0;
   }
   getAbility(id: AbilityId): Cooldown {
     return this.abilities.get(id)!;

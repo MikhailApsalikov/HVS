@@ -11,6 +11,7 @@ describe('saves and migration', () => {
     const previous = {
       ...snapshot(session),
       version,
+      abilities: snapshot(session).abilities.slice(0, 9),
       talents: [
         { id: 'shieldBlock', rank: 12 },
         { id: 'lastHope', rank: 1 },
@@ -43,9 +44,9 @@ describe('saves and migration', () => {
           { id: 'healBoost', rank: 2 },
         ],
         inventory: ['c001', 'c001', 'missing', 'c003', 'c001', 'c003'],
-        abilities: version < 5 ? data.abilities.slice(0, 8) : data.abilities,
+        abilities: data.abilities.slice(0, version < 5 ? 8 : 9),
       })!;
-      expect(parsed.version).toBe(6);
+      expect(parsed.version).toBe(7);
       const loaded = restore(parsed);
       expect(loaded.items.inventory).toEqual(['c001', 'c003']);
       expect(loaded.state.coins).toBe(
@@ -97,7 +98,7 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(6);
+    expect(parsed.version).toBe(7);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
       endurance: 104,
@@ -109,8 +110,8 @@ describe('saves and migration', () => {
     expect(loaded.state.hp).toBe(400);
     expect(loaded.state.coins).toBe(123);
     expect(loaded.state.energy).toBe(90);
-    expect(loaded.state.levelTimerMax).toBe(32);
-    expect(loaded.state.levelTimer).toBe(16);
+    expect(loaded.state.levelTimerMax).toBe(31);
+    expect(loaded.state.levelTimer).toBe(15.5);
     expect(loaded.talents.getRank('rapidFire')).toBe(2);
     expect(loaded.talents.canUpgrade('rapidFire', 10)).toBe(false);
     expect(loaded.items.toSaveData()).toEqual(['c009']);

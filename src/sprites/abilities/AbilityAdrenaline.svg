@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs><radialGradient id="adrenalineGlow"><stop stop-color="#b93320"/><stop offset="1" stop-color="#271017"/></radialGradient><linearGradient id="adrenalineBolt" x2="0.4" y2="1"><stop stop-color="#fff4bb"/><stop offset="1" stop-color="#ff7733"/></linearGradient></defs>
+  <rect x="2" y="2" width="44" height="44" rx="11" fill="url(#adrenalineGlow)" stroke="#df6732" stroke-width="2"/>
+  <path d="M6 27h9l4-10 7 19 5-11h11" fill="none" stroke="#fa6246" stroke-width="2" opacity=".7"/>
+  <path d="M29 5 14 26h10l-5 17 17-24H25Z" fill="url(#adrenalineBolt)" stroke="#ffe2a2" stroke-linejoin="round"/>
+</svg>

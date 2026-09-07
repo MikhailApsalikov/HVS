@@ -124,11 +124,12 @@ export class HUD {
       const cooldown = state.getAbility(id);
       const locked = !state.isAbilityUnlocked(id);
       button.parentElement!.hidden = Boolean(ABILITIES[id].talent) && locked;
-      const activeTimer =
-        id === 'lastHope' ? state.lastHopeTimer : id === 'stand' ? state.invulnerableTimer : 0;
+      const activeTimer = state.abilityActiveTimer(id);
       button.classList.toggle('ability-btn--active', activeTimer > 0);
       button.querySelector('.ability-btn__effect-text')!.textContent =
-        activeTimer > 0 ? `Действует: ${formatSeconds(activeTimer)} с` : '';
+        activeTimer > 0
+          ? `${id === 'adrenaline' ? `Выстрелов: ${state.adrenalineShots} · ` : ''}Действует: ${formatSeconds(activeTimer)} с`
+          : '';
       button.classList.toggle('ability-btn--locked', locked);
       button.classList.toggle('ability-btn--cooldown', cooldown.isOnCooldown);
       button.classList.toggle('ability-btn--no-energy', state.energy < state.stats[`${id}.cost`]);

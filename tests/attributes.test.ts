@@ -22,7 +22,7 @@ describe('primary attributes through the session API', () => {
       'volley.cooldown': 35.64,
       'heal.amount': 182,
       'prep.restore': 266,
-      coinsPerSec: 0.6,
+      coinsPerSec: 4.2,
     });
     session.upgradeTalent('hunterMastery');
     session.confirmLevelUp();
@@ -46,9 +46,15 @@ describe('primary attributes through the session API', () => {
     [40, 'maxHp', 100],
     [41, 'maxHp', 110],
     [55, 'maxHp', 250],
-    [79, 'levelDuration', 17],
+    [24, 'levelDuration', 17],
+    [25, 'levelDuration', 16],
+    [49, 'levelDuration', 16],
+    [50, 'levelDuration', 15],
+    [74, 'levelDuration', 15],
+    [75, 'levelDuration', 14],
+    [79, 'levelDuration', 14],
     [80, 'levelDuration', 14],
-    [159, 'levelDuration', 14],
+    [159, 'levelDuration', 11],
     [160, 'levelDuration', 11],
     [240, 'levelDuration', 10],
     [100000, 'levelDuration', 10],
@@ -58,10 +64,10 @@ describe('primary attributes through the session API', () => {
     [239, 'coinsPerKill', 0],
     [240, 'coinsPerKill', 1],
     [480, 'coinsPerKill', 2],
-    [9, 'coinsPerSec', 0.4],
-    [10, 'coinsPerSec', 0.5],
-    [19, 'coinsPerSec', 0.5],
-    [20, 'coinsPerSec', 0.6],
+    [9, 'coinsPerSec', 4],
+    [10, 'coinsPerSec', 4.1],
+    [19, 'coinsPerSec', 4.1],
+    [20, 'coinsPerSec', 4.2],
     [1, 'hpRegen', 0.04],
     [55, 'hpRegen', 2.2],
     [55, 'armor', 110],
@@ -172,12 +178,12 @@ describe('primary attributes through the session API', () => {
       coins: 4,
       jackpot: false,
     });
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(104 + 2.8 * 0.31);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(104 + 6.4 * 0.31);
     session.state.levelTimer = 0;
     session.tick(0.01);
     session.upgradeTalent('hunterMastery');
     session.confirmLevelUp();
-    expect(session.state.levelTimerMax).toBe(10); // Level 2: 19 − floor(243 / 80) × 3.
+    expect(session.state.levelTimerMax).toBe(10); // Level 2: 19 − floor(243 / 25).
   });
 
   it('converts all HP items to endurance, retains prices, and removes all derived effects on sale', () => {
@@ -192,7 +198,7 @@ describe('primary attributes through the session API', () => {
       maxHp: 470,
       hpRegen: 3.08,
       armor: 154,
-      coinsPerSec: 1.1,
+      coinsPerSec: 4.7,
     });
     expect(session.sellItem(0)).toBe(true);
     expect(session.state.stats).toMatchObject({
@@ -200,7 +206,7 @@ describe('primary attributes through the session API', () => {
       maxHp: 100,
       hpRegen: 1.08,
       armor: 54,
-      coinsPerSec: 0.6,
+      coinsPerSec: 4.2,
     });
     expect(session.state.hp).toBe(100);
   });
@@ -262,7 +268,7 @@ describe('armor and talent branches', () => {
     expect(session.upgradeTalent('healBoost')).toBe(true);
     expect(session.talents.branchPoints('defense')).toBe(29);
     expect(session.talents.branchPoints('magic')).toBe(21);
-    expect(session.state.stats['heal.amount']).toBe(before['heal.amount'] + 150);
+    expect(session.state.stats['heal.amount']).toBe(before['heal.amount'] + 350);
     expect(session.state.stats.hpRegen).toBeCloseTo(before.hpRegen + 2);
   });
 

@@ -46,7 +46,7 @@ describe('progression and player commands', () => {
     const health = session.state.hp;
     session.confirmLevelUp();
     expect(session.state.level).toBe(2);
-    expect(session.state.levelTimer).toBe(19);
+    expect(session.state.levelTimer).toBe(18);
     expect(session.state.hp).toBe(health);
     expect(session.state.record).toBe(2);
   });
@@ -57,7 +57,7 @@ describe('progression and player commands', () => {
     advance(session, 2.5);
     expect(session.state.hp).toBeCloseTo(52.7, 8);
     expect(session.state.energy).toBeCloseTo(20.4, 8);
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(101.5, 8);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(110.5, 8);
   });
   it('rejects invalid timestep and blocks commands outside their phase', () => {
     const session = new GameSession('normal');
@@ -284,7 +284,7 @@ describe('enemy types and rewards', () => {
     advance(session, 1);
     expect(spider.lane).toBe(newLane);
   });
-  it('burner drains energy, breaches never award kill rewards', () => {
+  it('burner drains energy, breaches without marauder only receive passive income', () => {
     const session = game();
     addSpider(session, 'burner', 0, 1, 2);
     advance(session, 0.5);
@@ -292,7 +292,7 @@ describe('enemy types and rewards', () => {
     expect(session.drainEvents()).toEqual([
       { type: 'damage', spiderId: 'spider-1', hp: 1, energy: 90 },
     ]);
-    expect(session.state.coins).toBe(100);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(102.1);
   });
   it('lethal damage takes priority over regeneration and wave completion', () => {
     const session = game();

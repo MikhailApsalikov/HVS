@@ -135,12 +135,16 @@ export function collectDeadSpiders(
     if (!spider.dying) continue;
     spider.dyingTimer -= dt;
     if (spider.dyingTimer > 0) continue;
-    if (!spider.reachedCastle) {
+    if (!spider.reachedCastle || state.stats.breachRewardFraction > 0) {
       const base = randomInt(random, WORLD.coinMin, WORLD.coinMax);
       const jackpot = random() < state.stats.jackpotChance;
-      const coins = state.rules.killReward(base, jackpot);
+      const coins = state.rules.killReward(
+        base,
+        jackpot,
+        spider.reachedCastle ? state.stats.breachRewardFraction : 1,
+      );
       state.coins += coins;
-      state.modifyEnergy(state.stats.energyPerKill);
+      if (!spider.reachedCastle) state.modifyEnergy(state.stats.energyPerKill);
       emit({ type: 'coinDrop', spiderId: id, coins, jackpot });
     }
     state.spiders.delete(id);

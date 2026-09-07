@@ -118,8 +118,12 @@ export class GameSession {
     const state = this.state;
     const archer = state.archers[lane];
     if (!Number.isInteger(lane) || state.phase !== 'playing' || !archer?.isReady) return 'blocked';
-    if (state.energy < state.stats.shootCost) return 'not_enough_energy';
-    state.modifyEnergy(-state.stats.shootCost);
+    if (state.energy < state.currentShootCost) return 'not_enough_energy';
+    state.modifyEnergy(-state.currentShootCost);
+    if (state.adrenalineActive) {
+      state.adrenalineShots -= 1;
+      if (state.adrenalineShots === 0) state.adrenalineTimer = 0;
+    }
     archer.start(state.stats.shootCooldown);
     const arrow = new Arrow(state.newId('arrow'), lane, state.stats.arrowSpeed);
     state.arrows.set(arrow.id, arrow);

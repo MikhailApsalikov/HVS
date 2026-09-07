@@ -117,6 +117,7 @@ describe('combat balance through session commands', () => {
         parseSave({
           ...data,
           version,
+          abilities: data.abilities.slice(0, 9),
           talents: [{ id: 'healBoost', rank: 2 }],
           state: { ...data.state, levelTimerMax: 4, levelTimer: 1 },
         })!,

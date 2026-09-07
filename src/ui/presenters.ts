@@ -32,6 +32,7 @@ export function formatStat(id: StatId, value: number): string {
     id === 'lastHope.blockChance' ||
     id === 'blizzard.slow' ||
     id === 'jackpotChance' ||
+    id === 'breachRewardFraction' ||
     id === 'spawnProbability'
   )
     return `${Number((value * 100).toFixed(4))}%`;
@@ -170,9 +171,8 @@ export function abilityDescription(state: GameState, id: AbilityId): string {
       ? ['Недостаточно энергии']
       : []),
   ];
-  const activeTimer =
-    id === 'lastHope' ? state.lastHopeTimer : id === 'stand' ? state.invulnerableTimer : 0;
-  return `<div class="tooltip__title">${ability.name} [${ability.key}]</div>${descriptionParagraphs(abilityEffectDescription(id, state.stats))}${descriptionParagraphs(abilityUsageDescription(id, state.stats))}${activeTimer > 0 ? `<div>Действует ещё ${formatSeconds(activeTimer)} с</div>` : ''}${reasons.map((reason) => `<div class="action-unavailable">${reason}</div>`).join('')}`;
+  const activeTimer = state.abilityActiveTimer(id);
+  return `<div class="tooltip__title">${ability.name} [${ability.key}]</div>${descriptionParagraphs(abilityEffectDescription(id, state.stats))}${descriptionParagraphs(abilityUsageDescription(id, state.stats))}${activeTimer > 0 ? `<div>Действует ещё ${formatSeconds(activeTimer)} с</div>${id === 'adrenaline' ? `<div>Бесплатных выстрелов: ${state.adrenalineShots}</div>` : ''}` : ''}${reasons.map((reason) => `<div class="action-unavailable">${reason}</div>`).join('')}`;
 }
 export function resourceDescription(state: GameState, id: string): string {
   const value = (stat: StatId) => formatStat(stat, state.stats[stat]);
@@ -210,6 +210,9 @@ export function coinsDescription(state: GameState): string {
       state.stats.jackpotChance > 0
         ? `Вероятность тройной награды — ${value('jackpotChance')}.`
         : '',
+      state.stats.breachRewardFraction > 0
+        ? `Дошедший паук приносит ${value('breachRewardFraction')} награды за его убийство.`
+        : '',
     ].join('\n'),
   )}`;
 }
@@ -217,12 +220,15 @@ export function shootDescription(state: GameState, lane: number): string {
   return `<div class="tooltip__title">Лучник ${lane}</div>${descriptionParagraphs(
     [
       'Выпускает стрелу, которая поражает первого паука на этой линии.',
-      state.stats.shootCost > 0
-        ? `Выстрел расходует ${formatStat('shootCost', state.stats.shootCost)} энергии.`
+      state.currentShootCost > 0
+        ? `Выстрел расходует ${formatStat('shootCost', state.currentShootCost)} энергии.`
+        : '',
+      state.adrenalineActive
+        ? `«Адреналин»: осталось ${state.adrenalineShots} бесплатных выстрелов.`
         : '',
       state.stats.shootCooldown > 0
         ? `Перезарядка выстрела — ${formatStat('shootCooldown', state.stats.shootCooldown)} с.`
         : '',
     ].join('\n'),
-  )}${state.energy < state.stats.shootCost ? '<div class="action-unavailable">Недостаточно энергии</div>' : ''}${state.archers[lane - 1].isOnCooldown ? '<div class="action-unavailable">Выстрел перезаряжается</div>' : ''}`;
+  )}${state.energy < state.currentShootCost ? '<div class="action-unavailable">Недостаточно энергии</div>' : ''}${state.archers[lane - 1].isOnCooldown ? '<div class="action-unavailable">Выстрел перезаряжается</div>' : ''}`;
 }

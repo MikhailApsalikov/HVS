@@ -26,6 +26,8 @@ const STATE_FIELDS = [
   'freezeActive',
   'invulnerableTimer',
   'lastHopeTimer',
+  'adrenalineTimer',
+  'adrenalineShots',
   'blizzardTimer',
   'armageddonPhase',
   'armageddonTimer',
@@ -58,7 +60,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 6;
+  readonly version: 7;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -75,7 +77,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 6,
+    version: 7,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -194,11 +196,7 @@ export function parseSave(value: unknown): SaveData | null {
 function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
-  if (
-    (value.version !== 3 && value.version !== 4 && value.version !== 5 && value.version !== 6) ||
-    !object(value.state)
-  )
-    return null;
+  if (![3, 4, 5, 6, 7].includes(value.version as number) || !object(value.state)) return null;
   const state = value.state;
   const numeric = [
     'level',
@@ -217,7 +215,17 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     'nextEntityId',
   ];
   if (!numeric.every((key) => number(state[key]))) return null;
-  if ((value.version === 5 || value.version === 6) && !number(state.lastHopeTimer)) return null;
+  if ((value.version as number) >= 5 && !number(state.lastHopeTimer)) return null;
+  if (value.version === 7) {
+    if (
+      !number(state.adrenalineTimer) ||
+      state.adrenalineTimer > STATS['adrenaline.duration'].policy.max! ||
+      !integer(state.adrenalineShots) ||
+      state.adrenalineShots > STATS['adrenaline.shots'].policy.max! ||
+      state.adrenalineTimer > 0 !== state.adrenalineShots > 0
+    )
+      return null;
+  }
   if (
     !['level', 'coins', 'pendingTalentPoints', 'record', 'nextEntityId'].every((key) =>
       integer(state[key]),
@@ -279,7 +287,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     value.archers.length !== WORLD.lanes ||
     !arrayOf(value.abilities, cooldown) ||
     value.abilities.length !==
-      (value.version === 5 || value.version === 6 ? ABILITY_ORDER.length : 8)
+      (value.version === 7 ? ABILITY_ORDER.length : (value.version as number) >= 5 ? 9 : 8)
   )
     return null;
   if (
@@ -332,14 +340,25 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
-  if (value.version === 3 || value.version === 4) {
+  if (value.version !== 7) {
     const previous = {
       ...value,
-      version: 6,
-      state: { ...state, lastHopeTimer: 0 },
-      abilities: [...value.abilities, { duration: 0, remainingCooldown: 0 }],
+      version: 7,
+      state: {
+        ...state,
+        lastHopeTimer: (value.version as number) >= 5 ? state.lastHopeTimer : 0,
+        adrenalineTimer: 0,
+        adrenalineShots: 0,
+      },
+      abilities: [
+        ...value.abilities,
+        ...ABILITY_ORDER.slice(value.abilities.length).map(() => ({
+          duration: 0,
+          remainingCooldown: 0,
+        })),
+      ],
     } as unknown as SaveData;
-    if (value.version === 4) return snapshot(restore(previous));
+    if (value.version !== 3) return snapshot(restore(previous));
     const character = Object.fromEntries(
       PRIMARY_STATS.map((id) => [id, previous.character[id] + STATS[id].base]),
     ) as Record<PrimaryStatId, number>;
@@ -352,8 +371,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     session.state.levelTimerMax = duration;
     return snapshot(session);
   }
-  const current = value as unknown as SaveData;
-  return value.version === 5 ? snapshot(restore(current)) : current;
+  return value as unknown as SaveData;
 }
 
 function migrateLegacy(value: JsonObject): SaveData | null {
