@@ -206,14 +206,14 @@ describe('new defense talents through session commands', () => {
     [2, false, 3],
     [3, false, 5],
     [1, true, 5],
-    [2, true, 9],
-    [3, true, 14],
+    [2, true, 10],
+    [3, true, 15],
   ] as const)(
     'marauder rank %s awards %s jackpot share as %s coins exactly once per breach',
     (rank, jackpot, expected) => {
       let roll = jackpot ? 0 : 0.999999;
       const session = defense(30, () => roll);
-      // Base roll is 1 (jackpot) or 3 (normal); flat reward becomes 10 in either case.
+      // Base roll is 1 (jackpot) or 3 (normal); endurance adds one, so flat reward becomes 11.
       session.state.character.setModifiers('reward', [
         { stat: 'coinsPerKill', kind: 'flat', value: jackpot ? 4 : 2 },
         { stat: 'energyPerKill', kind: 'flat', value: 50 },
@@ -243,7 +243,7 @@ describe('new defense talents through session commands', () => {
       expect(session.drainEvents()).toContainEqual({
         type: 'coinDrop',
         spiderId: killed.id,
-        coins: jackpot ? 12 : 10,
+        coins: jackpot ? 13 : 11,
         jackpot: false,
       });
     },

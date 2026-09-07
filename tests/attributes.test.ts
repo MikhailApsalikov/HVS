@@ -502,10 +502,10 @@ describe('armor and talent branches', () => {
     expect(session.state.stats.armor).toBe(399); // floor(55/5) × 3 × 7 + 168.
     session.state.pendingTalentPoints = 1;
     session.upgradeTalent('improvedIntellect');
-    expect(session.state.stats.intellect).toBe(58);
-    expect(session.state.stats.armor).toBe(399);
+    expect(session.state.stats.intellect).toBe(78);
+    expect(session.state.stats.armor).toBe(483); // floor(78/5) × 3 × 7 + 168.
     session.state.character.removeModifiers('intellect-item');
     session.refreshStats();
-    expect(session.state.stats.armor).toBe(399); // 57 intellect still contains eleven groups.
+    expect(session.state.stats.armor).toBe(483); // 77 intellect still contains fifteen groups.
   });
 });

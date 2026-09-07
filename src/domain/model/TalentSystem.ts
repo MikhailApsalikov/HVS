@@ -12,7 +12,7 @@ export interface TalentState {
   readonly requiredBranchPoints: number;
 }
 
-export function talentRankEffects(id: TalentId, rank: number): StatModifier[] {
+export function talentRankEffects(id: TalentId, rank: number, level = 1): StatModifier[] {
   return rank === 0
     ? []
     : [
@@ -25,6 +25,16 @@ export function talentRankEffects(id: TalentId, rank: number): StatModifier[] {
           ...effect,
           source: `talent:${id}`,
         })),
+        ...(TALENTS[id].growth && level > 1
+          ? [
+              {
+                source: `talent:${id}`,
+                stat: TALENTS[id].growth.stat,
+                kind: 'flat' as const,
+                value: TALENTS[id].growth.value * rank * Math.max(0, level - 1),
+              },
+            ]
+          : []),
       ];
 }
 
@@ -82,8 +92,8 @@ export class TalentSystem {
     this.ranks.set(id, this.getRank(id) + 1);
     return true;
   }
-  getModifiers(): StatModifier[] {
-    return this.talents.flatMap(({ id, rank }) => talentRankEffects(id, rank));
+  getModifiers(level = 1): StatModifier[] {
+    return this.talents.flatMap(({ id, rank }) => talentRankEffects(id, rank, level));
   }
   getScalingModifiers(stats: ResolvedStats): StatModifier[] {
     return this.talents.flatMap(({ id, rank }) => {

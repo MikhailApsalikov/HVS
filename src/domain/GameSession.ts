@@ -41,7 +41,7 @@ export class GameSession {
       if (talent && this.talents.getRank(talent) > 0) state.talentAbilities.add(id);
     }
     const effects = [
-      ...this.talents.getModifiers(),
+      ...this.talents.getModifiers(state.level),
       ...this.items.getModifiers(),
       ...state.character.getModifiers(),
     ];

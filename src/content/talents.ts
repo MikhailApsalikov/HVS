@@ -10,6 +10,8 @@ interface TalentDefinition {
   readonly effects: readonly Effect[];
   readonly description?: string;
   readonly fixedEffects?: readonly Effect[];
+  /** Added to the attribute's per-level growth for every talent rank. */
+  readonly growth?: { readonly stat: PrimaryStatId; readonly value: number };
   readonly prerequisite?: { readonly id: TalentId; readonly rank: number };
   readonly column?: 1 | 2 | 3;
   readonly scaling?: {
@@ -155,21 +157,27 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 2,
     sprite: 'TalentImprovedEndurance',
     effects: [percent('endurance', 5)],
-    description: 'Увеличивает выносливость на {endurance}.',
+    growth: { stat: 'endurance', value: 1 },
+    description:
+      'Увеличивает выносливость на {endurance}.\nУвеличивает её прирост за уровень на 1 за ранг, включая уже полученные уровни.',
   },
   improvedAgility: {
     name: 'Улучшенная ловкость',
     branch: 'shooting',
     sprite: 'TalentImprovedAgility',
     effects: [percent('agility', 5)],
-    description: 'Увеличивает ловкость на {agility}.',
+    growth: { stat: 'agility', value: 1 },
+    description:
+      'Увеличивает ловкость на {agility}.\nУвеличивает её прирост за уровень на 1 за ранг, включая уже полученные уровни.',
   },
   improvedIntellect: {
     name: 'Улучшенный интеллект',
     branch: 'magic',
     sprite: 'TalentImprovedIntellect',
     effects: [percent('intellect', 5)],
-    description: 'Увеличивает интеллект на {intellect}.',
+    growth: { stat: 'intellect', value: 1 },
+    description:
+      'Увеличивает интеллект на {intellect}.\nУвеличивает его прирост за уровень на 1 за ранг, включая уже полученные уровни.',
   },
   magicArmor: {
     name: 'Магическая броня',

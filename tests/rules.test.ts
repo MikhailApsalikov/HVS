@@ -21,6 +21,19 @@ describe('talent strength and independent sources', () => {
       { source: 'talent:improvedEndurance', stat: 'endurance', kind: 'percent', value: 10 },
     ]);
   });
+  it('applies improved attribute growth retroactively for every rank', () => {
+    const session = new GameSession('normal');
+    session.state.level = 10;
+    session.state.pendingTalentPoints = 6;
+    for (const talent of ['improvedEndurance', 'improvedAgility', 'improvedIntellect'] as const)
+      for (let rank = 0; rank < 2; rank++) expect(session.upgradeTalent(talent)).toBe(true);
+
+    expect(session.state.stats).toMatchObject({
+      endurance: 79, // (27 + (3 + 2) × 9) × 1.1
+      agility: 55, // (23 + (1 + 2) × 9) × 1.1
+      intellect: 57, // (16 + (2 + 2) × 9) × 1.1
+    });
+  });
   it('multiplies different talents, then subtracts flat reductions', () => {
     const session = new GameSession('normal');
     session.talents.loadFromSave([

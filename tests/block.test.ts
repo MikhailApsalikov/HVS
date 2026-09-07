@@ -148,16 +148,16 @@ describe('defense talent abilities through session commands', () => {
       { stat: 'endurance', kind: 'flat', value: 10 },
     ]);
     session.refreshStats();
-    expect(session.state.stats.endurance).toBe(225); // (40 + 39 × 3 + 10) × 1.35
+    expect(session.state.stats.endurance).toBe(594); // (40 + 39 × (3 + 7) + 10) × 1.35
     session.state.phase = 'playing';
     expect(session.activateAbility('lastHope')).toBe('activated');
     expect(session.state.energy).toBe(55);
     expect(session.state.getAbility('lastHope').remainingCooldown).toBe(65);
-    expect(session.state.stats).toMatchObject({ blockChance: 0.94, blockPower: 95 });
+    expect(session.state.stats).toMatchObject({ blockChance: 0.94, blockPower: 169 });
     session.refreshStats();
-    expect(session.state.stats.blockPower).toBe(95);
+    expect(session.state.stats.blockPower).toBe(169);
     session.tick(5.999);
-    expect(session.state.stats.blockPower).toBe(95);
+    expect(session.state.stats.blockPower).toBe(169);
     session.tick(0.0011);
     expect(session.state.lastHopeTimer).toBe(0);
     expect(session.state.stats).toMatchObject({ blockChance: 0.64, blockPower: 50 });
