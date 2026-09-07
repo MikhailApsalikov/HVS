@@ -3,6 +3,121 @@ import { GameSession } from '../../src/domain/GameSession.js';
 import { Spider } from '../../src/domain/model/Spider.js';
 import { snapshot } from '../../src/domain/save.js';
 
+test('archer tooltip shows two-decimal cooldown with agility and rapid fire', async ({ page }) => {
+  const session = new GameSession('normal');
+  session.state.character.setBase('agility', 24);
+  session.state.character.setModifiers('test:quiet', [
+    { stat: 'spawnProbability', kind: 'percent', value: -100 },
+  ]);
+  session.talents.loadFromSave([{ id: 'rapidFire', rank: 2 }]);
+  session.state.pendingTalentPoints = 0;
+  session.confirmLevelUp();
+  await page.addInitScript(
+    (data) => localStorage.setItem('hvs_save', JSON.stringify(data)),
+    snapshot(session),
+  );
+  const time = new Date('2026-09-07T12:00:00Z');
+  await page.clock.install({ time });
+  await page.clock.pauseAt(time);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Загрузить игру' }).click();
+  await page.clock.runFor(20);
+  const archer = page.locator('.archer-btn[data-lane="0"]');
+  await archer.hover();
+  await expect(page.locator('.game-tooltip')).toContainText('Лучник 1');
+  await expect(page.locator('.game-tooltip')).toContainText('Перезарядка выстрела — 2.65 с.');
+  await archer.click();
+  await page.clock.runFor(2600);
+  await expect(archer).toHaveClass(/--cooldown/);
+  await page.clock.runFor(100);
+  await expect(archer).not.toHaveClass(/--cooldown/);
+});
+
+test('new armor talents and tier-five healing can be learned and survive reload', async ({
+  page,
+}) => {
+  test.slow(); // Eleven purchases, both layouts and a persisted game reload.
+  const session = new GameSession('normal');
+  session.state.level = 50;
+  session.state.initialTalentPick = false;
+  session.state.pendingTalentPoints = 11;
+  session.talents.loadFromSave([
+    { id: 'endurance', rank: 7 },
+    { id: 'improvedEndurance', rank: 7 },
+    { id: 'spiderArmor', rank: 10 },
+    { id: 'shieldBlock', rank: 8 },
+    { id: 'greed', rank: 3 },
+  ]);
+  session.state.character.setModifiers('test:quiet', [
+    { stat: 'spawnProbability', kind: 'percent', value: -100 },
+  ]);
+  session.refreshStats();
+  await page.addInitScript((data) => {
+    if (!localStorage.getItem('hvs_save')) localStorage.setItem('hvs_save', JSON.stringify(data));
+  }, snapshot(session));
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Загрузить игру' }).click();
+  const tooltip = page.locator('.game-tooltip');
+  for (const [id, tier, name, amount, suffix] of [
+    ['warriorArmor', 3, 'Броня воина', 80, ' единиц'],
+    ['titanArmor', 6, 'Броня титана', 25, '%'],
+  ] as const) {
+    const button = page.locator(
+      `[data-branch="defense"] [data-tier="${tier}"] [data-talent-id="${id}"]`,
+    );
+    await expect(button).toHaveAccessibleName(name);
+    await expect(button.locator('svg')).toHaveCount(1);
+    for (let rank = 1; rank <= 5; rank++) {
+      await button.hover();
+      await expect(tooltip.locator('.tooltip__rank--next')).toContainText(
+        `Увеличивает броню на ${amount * rank}${suffix}.`,
+      );
+      await button.click();
+      expect(session.upgradeTalent(id)).toBe(true);
+      await expect(button).toContainText(`${rank}/5`);
+    }
+    await button.hover();
+    await expect(tooltip.locator('.tooltip__rank--next')).toHaveCount(0);
+    await expect(button).toHaveAttribute('aria-disabled', 'true');
+  }
+  const healing = page.locator(
+    '[data-branch="defense"] [data-tier="5"] [data-talent-id="healBoost"]',
+  );
+  await healing.click();
+  expect(session.upgradeTalent('healBoost')).toBe(true);
+  await expect(healing).toContainText('1/15');
+  for (const width of [1440, 960]) {
+    await page.setViewportSize({ width, height: 900 });
+    const positions = await page
+      .locator('[data-branch="defense"] [data-tier="5"] [data-talent-id]')
+      .evaluateAll((buttons) =>
+        buttons.map((button) => ({
+          id: button.getAttribute('data-talent-id'),
+          x: button.getBoundingClientRect().x,
+          y: button.getBoundingClientRect().y,
+        })),
+      );
+    expect(new Set(positions.map(({ y }) => y)).size).toBe(1);
+    expect(positions.sort((a, b) => a.x - b.x).map(({ id }) => id)).toEqual([
+      'dutyBound',
+      'bestDefense',
+      'healBoost',
+    ]);
+  }
+  await page.mouse.move(0, 0);
+  await page.screenshot({ path: 'test-results/armor-talents.png' });
+  await page.locator('[data-action="confirm"]').click();
+  session.confirmLevelUp();
+  await expect(page.locator('[data-stat="armor"]')).toHaveText(
+    `Броня: ${session.state.stats.armor}`,
+  );
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: 'Загрузить игру' }).click();
+  await expect(page.locator('[data-stat="armor"]')).toHaveText(
+    `Броня: ${session.state.stats.armor}`,
+  );
+});
+
 test('shop rejects duplicates with spare slots and permits buying again after sale', async ({
   page,
 }) => {
@@ -70,6 +185,9 @@ test('both shield timers follow pause, reload and independent expiration without
   const stand = page.locator('.stand-shield-overlay');
   await expect(lastHope.locator('.shield-overlay__timer')).toHaveText('6 с');
   await expect(stand.locator('.shield-overlay__timer')).toHaveText('7 с');
+  await expect(lastHope).toHaveText('6 с');
+  await expect(stand).toHaveText('7 с');
+  await expect(page.locator('.shield-overlay__label')).toHaveCount(0);
   const firstBounds = (await stand.boundingBox())!;
   const secondBounds = (await lastHope.boundingBox())!;
   expect(firstBounds.y + firstBounds.height).toBeLessThanOrEqual(secondBounds.y);
@@ -342,7 +460,7 @@ test('attributes are vertical and their hover and keyboard tooltips show current
   const tooltip = page.locator('.game-tooltip');
   await page.locator('[data-stat="endurance"]').hover();
   await expect(tooltip).toContainText('Увеличивает максимальное здоровье на 150 единиц');
-  await expect(tooltip).toContainText('Восстанавливает дополнительно 1.1 здоровья каждую секунду');
+  await expect(tooltip).toContainText('Восстанавливает дополнительно 2.2 здоровья каждую секунду');
   await expect(tooltip).toContainText('Увеличивает броню на 110 единиц');
   await expect(tooltip).not.toContainText('силы блока');
   await expect(tooltip.locator('.tooltip__effect')).toHaveCount(4);
@@ -358,12 +476,11 @@ test('attributes are vertical and their hover and keyboard tooltips show current
   await expect(tooltip).toContainText('«Лечение» восстанавливает на 210 здоровья больше');
   await expect(tooltip).toContainText('«Подготовка» восстанавливает на 105 энергии больше');
   await page.locator('[data-stat="armor"]').hover();
-  await expect(tooltip).toContainText('Броня снижает урон от атак пауков на 33.7%');
-  await expect(tooltip).toContainText('Максимальное снижение от брони — 75%');
+  await expect(tooltip).toHaveText('Снижает урон от пауков на 43.3%');
   await page.locator('#hp-bar').hover();
-  await expect(tooltip).toContainText('Восстанавливается 1.1 в секунду');
+  await expect(tooltip).toContainText('Восстанавливается 2.2 в секунду');
   await expect(tooltip).not.toContainText('При успешном блоке');
-  await expect(tooltip).toContainText('Общее снижение урона - 33.7%');
+  await expect(tooltip).toContainText('Общее снижение урона - 43.3%');
   await expect(tooltip).not.toContainText('Максимальное');
   await expect(tooltip).not.toContainText('Доля получаемого урона');
   await page.locator('#energy-bar').hover();
@@ -381,7 +498,7 @@ test('attributes are vertical and their hover and keyboard tooltips show current
     'Выпускает стрелу, которая поражает первого паука на этой линии.',
   );
   await expect(tooltip).toContainText('Выстрел расходует 35 энергии.');
-  await expect(tooltip).toContainText('Перезарядка выстрела — 3 с.');
+  await expect(tooltip).toContainText('Перезарядка выстрела — 2.94 с.');
   await expect(tooltip).not.toContainText(/скорост|длины поля/);
   await page.locator('[data-stat="armor"]').hover();
   await page.screenshot({ path: 'test-results/attributes-armor.png' });
@@ -399,7 +516,7 @@ test('defense prerequisites, talent abilities and an active block survive reload
   const session = new GameSession('normal');
   session.state.level = 40;
   session.state.initialTalentPick = false;
-  session.state.pendingTalentPoints = 4;
+  session.state.pendingTalentPoints = 17;
   session.talents.loadFromSave([
     { id: 'endurance', rank: 7 },
     { id: 'improvedEndurance', rank: 7 },
@@ -434,7 +551,7 @@ test('defense prerequisites, talent abilities and an active block survive reload
   await expect(talent('improvedLastHope')).toHaveAttribute('aria-disabled', 'true');
   await talent('lastHope').hover();
   await expect(tooltip.locator('.action-unavailable')).toHaveText(
-    'Требуется талант «Блок щитом»: хотя бы 1 ранг',
+    'Требуется талант «Блок щитом»: ранг 8',
   );
   await expect(tooltip).toContainText('65');
   await talent('lastHope').dispatchEvent('click');
@@ -444,9 +561,21 @@ test('defense prerequisites, talent abilities and an active block survive reload
   await expect(arrow('lastHope')).not.toHaveClass(/--met/);
   await talent('shieldBlock').click();
   await talent('shieldBlock').hover();
-  await expect(tooltip).toContainText('При блоке поглощает до 60 урона.');
+  await expect(tooltip).toContainText('При блоке поглощает до 50 урона.');
   await expect(tooltip).not.toContainText(/Сжигание|после действия брони|не растёт с рангом/);
-  await expect(talent('shieldBlock')).toContainText('1/12');
+  await expect(talent('shieldBlock')).toContainText('1/8');
+  await expect(tooltip).toContainText('с вероятностью 8%');
+  await expect(arrow('lastHope')).not.toHaveClass(/--met/);
+  for (let rank = 2; rank <= 7; rank++) await talent('shieldBlock').click();
+  await expect(talent('shieldBlock')).toContainText('7/8');
+  await expect(talent('lastHope')).toHaveAttribute('aria-disabled', 'true');
+  await expect(arrow('lastHope')).not.toHaveClass(/--met/);
+  await talent('lastHope').dispatchEvent('click');
+  await expect(talent('lastHope')).toContainText('0/1');
+  await talent('shieldBlock').click();
+  await talent('shieldBlock').hover();
+  await expect(tooltip).toContainText('с вероятностью 64%');
+  await expect(talent('shieldBlock')).toContainText('8/8');
   await expect(arrow('lastHope')).toHaveClass(/--met/);
   await expect(talent('lastHope')).toHaveAttribute('aria-disabled', 'false');
   await talent('lastHope').click();
@@ -454,6 +583,29 @@ test('defense prerequisites, talent abilities and an active block survive reload
   await expect(arrow('improvedLastHope')).toHaveClass(/--met/);
   await talent('improvedLastHope').click();
   await talent('divineShield').click();
+  await expect(
+    page.locator('[data-branch="defense"] [data-tier="1"] [data-talent-id="greed"]'),
+  ).toBeVisible();
+  await talent('hunterReward').hover();
+  await expect(tooltip.locator('.action-unavailable')).toHaveText(
+    'Требуется талант «Алчность»: ранг 5',
+  );
+  await expect(arrow('hunterReward')).toHaveAttribute('data-from', 'greed');
+  await expect(arrow('hunterReward')).not.toHaveClass(/--met/);
+  for (let rank = 1; rank <= 4; rank++) {
+    await talent('hunterReward').dispatchEvent('click');
+    await expect(talent('hunterReward')).toContainText('0/5');
+    await talent('greed').click();
+  }
+  await expect(arrow('hunterReward')).not.toHaveClass(/--met/);
+  await expect(talent('hunterReward')).toHaveAttribute('aria-disabled', 'true');
+  await talent('greed').click();
+  await talent('greed').hover();
+  await expect(tooltip).toContainText('Увеличивает награду за убийство паука на 5 золота.');
+  await expect(talent('greed')).toContainText('5/5');
+  await expect(arrow('hunterReward')).toHaveClass(/--met/);
+  await expect(talent('hunterReward')).toHaveAttribute('aria-disabled', 'false');
+  await talent('hunterReward').click();
   await page.mouse.move(0, 0);
   await page.screenshot({ path: 'test-results/defense-talent-dependencies.png' });
   await page.getByRole('button', { name: 'Продолжить' }).click();
@@ -607,13 +759,13 @@ test('divine shield gates its improvement and every dependency points down betwe
   await page.getByRole('button', { name: 'Загрузить игру' }).click();
   const improved = page.locator('[data-talent-id="dutyBound"]');
   const healing = page.locator(
-    '[data-branch="defense"] [data-tier="4"] [data-talent-id="healBoost"]',
+    '[data-branch="defense"] [data-tier="5"] [data-talent-id="healBoost"]',
   );
   await expect(healing).toBeVisible();
   await expect(page.locator('[data-branch="magic"] [data-talent-id="healBoost"]')).toHaveCount(0);
   await improved.hover();
   await expect(page.locator('.game-tooltip .action-unavailable')).toHaveText(
-    'Требуется талант «Божественный щит»: хотя бы 1 ранг',
+    'Требуется талант «Божественный щит»: ранг 1',
   );
   await improved.dispatchEvent('click');
   await expect(improved).toContainText('0/5');
@@ -639,7 +791,6 @@ test('divine shield gates its improvement and every dependency points down betwe
     expect(bounds.sort((a, b) => a.x - b.x).map((rect) => rect.id)).toEqual([
       'divineShield',
       'improvedLastHope',
-      'healBoost',
     ]);
     await expect
       .poll(async () =>
@@ -657,7 +808,20 @@ test('divine shield gates its improvement and every dependency points down betwe
               .getAttribute('d')!
               .match(/-?\d+(?:\.\d+)?/g)!
               .map(Number);
+            const crossesTalent = [...branch.querySelectorAll('[data-talent-id]')].some(
+              (button) => {
+                const id = button.getAttribute('data-talent-id');
+                if (id === path.getAttribute('data-from') || id === path.getAttribute('data-to'))
+                  return false;
+                const rect = button.getBoundingClientRect();
+                const x = from.x + from.width / 2;
+                return (
+                  x > rect.left && x < rect.right && rect.bottom > from.bottom && rect.top < to.top
+                );
+              },
+            );
             return (
+              !crossesTalent &&
               Math.abs(from.x - to.x) < 1 &&
               values[1] > from.bottom - bounds.top &&
               values[4] < to.top - bounds.top &&
@@ -689,10 +853,11 @@ test('breaches display blocked damage, blue energy loss and larger tank damage',
     { stat: 'energyRegen', kind: 'percent', value: -100 },
   ]);
   session.refreshStats();
+  session.state.energy = 50;
   for (const [lane, type, damage] of [
     [0, 'normal', 39],
     [1, 'burner', 1],
-    [2, 'tank', 156],
+    [2, 'tank', 390],
     [3, 'normal', 10],
   ] as const) {
     const spider = new Spider(session.state.newId('spider'), type, lane, 0.1, damage, 1, 0.2);
@@ -716,10 +881,10 @@ test('breaches display blocked damage, blue energy loss and larger tank damage',
   const normal = page.locator('.lane[data-lane="0"] .damage-pop--hp');
   const tank = page.locator('.lane[data-lane="2"] .damage-pop--hp');
   await expect(normal).toHaveText('-19 (блок 20)');
-  await expect(tank).toHaveText('-136 (блок 20)');
-  await expect(page.locator('.lane[data-lane="3"] .damage-pop--hp')).toHaveText('-0 (блок 10)');
+  await expect(tank).toHaveText('-370 (блок 20)');
+  await expect(page.locator('.lane[data-lane="3"] .damage-pop--hp')).toHaveText('Блок');
   const energy = page.locator('.damage-pop--energy');
-  await expect(energy).toHaveText('-90');
+  await expect(energy).toHaveText('-50');
   await expect(energy).toHaveCSS('color', 'rgb(100, 181, 255)');
   await expect(page.locator('#energy-bar .resource-bar__fill')).toHaveCSS(
     'background-image',

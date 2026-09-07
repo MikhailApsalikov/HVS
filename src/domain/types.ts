@@ -22,12 +22,15 @@ export type TalentId =
   | 'dutyBound'
   | 'blizzardMastery'
   | 'hunterReward'
+  | 'greed'
   | 'quickInstinct'
   | 'hunterArsenal'
   | 'improvedEndurance'
   | 'improvedAgility'
   | 'improvedIntellect'
   | 'magicArmor'
+  | 'warriorArmor'
+  | 'titanArmor'
   | 'divineShield'
   | 'shieldBlock'
   | 'lastHope'
@@ -53,6 +56,7 @@ export interface TalentLevelConfig {
 }
 
 export interface DifficultyConfig {
+  readonly armorEffectiveness: number;
   readonly baseHp: number;
   readonly baseEnergy: number;
   readonly hpRegen: number;

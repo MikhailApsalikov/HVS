@@ -29,7 +29,7 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
   fast: {
     unlockLevel: 20,
     chanceKey: 'spiderChanceFast',
-    speedPercent: 100,
+    speedPercent: 200,
     damagePercent: -50,
     hits: 1,
   },
@@ -54,7 +54,7 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
     unlockLevel: 15,
     chanceKey: 'spiderChanceTank',
     speedPercent: -40,
-    damagePercent: 300,
+    damagePercent: 900,
     hits: 1,
   },
 };

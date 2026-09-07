@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="greedBag" x2="0.8" y2="1">
+      <stop stop-color="#9b6932"/>
+      <stop offset="1" stop-color="#43250e"/>
+    </linearGradient>
+    <linearGradient id="greedGold" x2="0.7" y2="1">
+      <stop stop-color="#fff0a0"/>
+      <stop offset="1" stop-color="#d28b13"/>
+    </linearGradient>
+  </defs>
+  <path d="M15 5 23 8 32 4 29 14C32 19 40 26 39 34Q39 43 24 44 8 43 8 34C7 27 16 19 18 14Z" fill="url(#greedBag)" stroke="#d4a355" stroke-width="2"/>
+  <path d="M17 14Q23 17 30 13M18 18Q23 20 29 17" fill="none" stroke="#f1d18a" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="24" cy="31" r="9" fill="url(#greedGold)" stroke="#a86710" stroke-width="2"/>
+  <path d="m24 25 4 6-4 6-4-6Z" fill="#ac7019"/>
+  <ellipse cx="38" cy="41" rx="8" ry="4" fill="url(#greedGold)" stroke="#a86710" stroke-width="1.5"/>
+  <path d="m40 8 1.4 3.6L45 13l-3.6 1.4L40 18l-1.4-3.6L35 13l3.6-1.4Z" fill="#ffe8a0"/>
+</svg>

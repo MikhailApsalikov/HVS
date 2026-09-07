@@ -1,7 +1,7 @@
 import type { AbilityId, TalentId } from '../domain/types.js';
 import type { GameState } from '../domain/model/GameState.js';
 import type { ResolvedStats, StatId, StatModifier, PrimaryStatId } from '../domain/rules/stats.js';
-import { ARMOR_RULES, ATTRIBUTE_RULES, STATS } from '../domain/rules/stats.js';
+import { ATTRIBUTE_RULES, STATS } from '../domain/rules/stats.js';
 import { ABILITIES, ABILITY_ORDER } from '../content/abilities.js';
 import { TALENTS, TALENT_ORDER } from '../content/talents.js';
 import { talentRankEffects } from '../domain/model/TalentSystem.js';
@@ -20,7 +20,6 @@ export function formatStat(id: StatId, value: number): string {
     id.endsWith('.cooldown') ||
     id.endsWith('.duration') ||
     id === 'armageddon.charge' ||
-    id === 'shootCooldown' ||
     id === 'levelDuration' ||
     id === 'spawnInterval'
   )
@@ -108,7 +107,9 @@ function attributeEffectDescription(effect: StatModifier): string {
 export function attributeDescription(state: GameState, id: PrimaryStatId | 'armor'): string {
   const title = `<div class="tooltip__title">${STATS[id].label}: ${formatStat(id, state.stats[id])}</div>`;
   if (id === 'armor')
-    return `${title}${descriptionParagraphs(`${state.stats.armorReduction > 0 ? `Броня снижает урон от атак пауков на ${formatStat('armorReduction', state.stats.armorReduction)} на вашем уровне.\n` : ''}Максимальное снижение от брони — ${formatStat('armorReduction', ARMOR_RULES.cap)}. От сжигания энергии броня не защищает.`)}`;
+    return descriptionParagraphs(
+      `Снижает урон от пауков на ${formatStat('armorReduction', state.stats.armorReduction)}`,
+    );
   const contributions = state.rules.attributeEffects[id]
     .filter(
       (effect) =>

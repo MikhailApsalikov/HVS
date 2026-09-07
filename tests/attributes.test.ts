@@ -15,7 +15,7 @@ describe('primary attributes through the session API', () => {
       armor: 54,
       maxHp: 100,
       maxEnergy: 100,
-      hpRegen: 0.54,
+      hpRegen: 1.08,
       energyRegen: 8.16,
       shootCooldown: 2.97,
       arrowSpeed: 0.336667,
@@ -47,8 +47,11 @@ describe('primary attributes through the session API', () => {
     [41, 'maxHp', 110],
     [55, 'maxHp', 250],
     [79, 'levelDuration', 17],
-    [80, 'levelDuration', 16],
-    [160, 'levelDuration', 15],
+    [80, 'levelDuration', 14],
+    [159, 'levelDuration', 14],
+    [160, 'levelDuration', 11],
+    [240, 'levelDuration', 10],
+    [100000, 'levelDuration', 10],
     [99, 'energyPerBreach', 0],
     [100, 'energyPerBreach', 1],
     [200, 'energyPerBreach', 2],
@@ -59,8 +62,8 @@ describe('primary attributes through the session API', () => {
     [10, 'coinsPerSec', 0.5],
     [19, 'coinsPerSec', 0.5],
     [20, 'coinsPerSec', 0.6],
-    [1, 'hpRegen', 0.02],
-    [55, 'hpRegen', 1.1],
+    [1, 'hpRegen', 0.04],
+    [55, 'hpRegen', 2.2],
     [55, 'armor', 110],
   ] as const)('endurance %s resolves %s to %s at its threshold', (value, stat, expected) => {
     const session = new GameSession('normal');
@@ -174,7 +177,7 @@ describe('primary attributes through the session API', () => {
     session.tick(0.01);
     session.upgradeTalent('hunterMastery');
     session.confirmLevelUp();
-    expect(session.state.levelTimerMax).toBe(16); // Level 2: 19 − floor(243 / 80).
+    expect(session.state.levelTimerMax).toBe(10); // Level 2: 19 − floor(243 / 80) × 3.
   });
 
   it('converts all HP items to endurance, retains prices, and removes all derived effects on sale', () => {
@@ -187,7 +190,7 @@ describe('primary attributes through the session API', () => {
     expect(session.state.stats).toMatchObject({
       endurance: 77,
       maxHp: 470,
-      hpRegen: 1.54,
+      hpRegen: 3.08,
       armor: 154,
       coinsPerSec: 1.1,
     });
@@ -195,7 +198,7 @@ describe('primary attributes through the session API', () => {
     expect(session.state.stats).toMatchObject({
       endurance: 27,
       maxHp: 100,
-      hpRegen: 0.54,
+      hpRegen: 1.08,
       armor: 54,
       coinsPerSec: 0.6,
     });
@@ -228,7 +231,7 @@ describe('primary attributes through the session API', () => {
       endurance: 41,
       maxHp: 110,
       armor: 82,
-      hpRegen: 0.82,
+      hpRegen: 1.64,
     });
   });
 });
@@ -237,7 +240,7 @@ describe('armor and talent branches', () => {
   it('spends healing ranks in defense and retains their healing and regeneration bonuses', () => {
     const session = new GameSession('normal');
     session.state.level = 30;
-    session.state.pendingTalentPoints = 30;
+    session.state.pendingTalentPoints = 40;
     session.talents.loadFromSave([
       { id: 'tireless', rank: 5 },
       { id: 'improvedIntellect', rank: 7 },
@@ -248,12 +251,16 @@ describe('armor and talent branches', () => {
     for (const [id, ranks] of [
       ['endurance', 7],
       ['improvedEndurance', 7],
-      ['spiderArmor', 7],
+      ['spiderArmor', 10],
+      ['shieldBlock', 4],
     ] as const)
       for (let rank = 0; rank < ranks; rank++) expect(session.upgradeTalent(id)).toBe(true);
+    expect(session.upgradeTalent('healBoost')).toBe(false); // Tier 5 requires level 40.
+    session.state.level = 40;
+    session.refreshStats();
     const before = session.state.stats;
     expect(session.upgradeTalent('healBoost')).toBe(true);
-    expect(session.talents.branchPoints('defense')).toBe(22);
+    expect(session.talents.branchPoints('defense')).toBe(29);
     expect(session.talents.branchPoints('magic')).toBe(21);
     expect(session.state.stats['heal.amount']).toBe(before['heal.amount'] + 150);
     expect(session.state.stats.hpRegen).toBeCloseTo(before.hpRegen + 2);
@@ -284,11 +291,11 @@ describe('armor and talent branches', () => {
   });
   it.each([
     [1, 0, 100],
-    [1, 50, 81],
-    [1, 100, 68],
-    [10, 50, 90],
-    [10, 100, 81],
-    [1, 300, 42],
+    [1, 50, 74],
+    [1, 100, 59],
+    [10, 50, 85],
+    [10, 100, 74],
+    [1, 300, 32],
     [1, 100000, 25],
     [10, 100000, 25],
   ])('level %s with %s armor takes %s from a 100 damage breach', (level, armor, expected) => {
@@ -312,19 +319,63 @@ describe('armor and talent branches', () => {
   });
 
   it.each([
-    [1, 54, 0.2],
-    [5, 78, 0.1999],
-    [10, 108, 0.1984],
-    [20, 168, 0.1727],
-    [30, 228, 0.1076],
-    [40, 288, 0.0525],
-    [50, 348, 0.025],
+    [1, 54, 0.333333, 0.272727, 0.2],
+    [5, 78, 0.333247, 0.27265, 0.199938],
+    [10, 108, 0.331135, 0.270766, 0.198419],
+    [20, 168, 0.294498, 0.238427, 0.172675],
+    [30, 228, 0.194285, 0.153153, 0.107595],
+    [40, 288, 0.099772, 0.076743, 0.052505],
+    [50, 348, 0.04878, 0.037037, 0.025],
   ])(
-    'level %s inflates native endurance armor %s to about %s reduction',
-    (level, armor, reduction) => {
-      const session = game(level);
-      expect(session.state.stats.armor).toBe(armor);
-      expect(session.state.stats.armorReduction).toBeCloseTo(reduction, 4);
+    'level %s scales native armor %s inside the formula for each difficulty',
+    (level, armor, easy, normal, hard) => {
+      for (const [difficulty, reduction] of [
+        ['easy', easy],
+        ['normal', normal],
+        ['hard', hard],
+      ] as const) {
+        const session = new GameSession(difficulty, () => 0.999999);
+        session.state.level = level;
+        session.state.phase = 'playing';
+        session.refreshStats();
+        expect(session.state.stats.armor).toBe(armor);
+        expect(session.state.stats.armorReduction).toBeCloseTo(reduction, 6);
+        const spider = addSpider(session, 'normal', 0, 1, 1000);
+        session.tick(0.001);
+        expect(session.drainEvents()).toContainEqual({
+          type: 'damage',
+          spiderId: spider.id,
+          hp: Math.round(1000 * (1 - reduction)),
+          energy: 0,
+        });
+      }
+    },
+  );
+
+  it.each(['easy', 'normal', 'hard'] as const)(
+    '%s retains zero armor and the reduction cap',
+    (difficulty) => {
+      for (const [armor, reduction, damage] of [
+        [0, 0, 100],
+        [100000, 0.75, 25],
+      ]) {
+        const session = new GameSession(difficulty, () => 0.999999);
+        session.state.character.setBase('endurance', 0);
+        session.state.character.setModifiers('test:armor', [
+          { stat: 'armor', kind: 'flat', value: armor },
+        ]);
+        session.refreshStats();
+        session.state.phase = 'playing';
+        const spider = addSpider(session, 'normal', 0, 1, 100);
+        session.tick(0.001);
+        expect(session.state.stats.armorReduction).toBe(reduction);
+        expect(session.drainEvents()).toContainEqual({
+          type: 'damage',
+          spiderId: spider.id,
+          hp: damage,
+          energy: 0,
+        });
+      }
     },
   );
 
@@ -376,6 +427,9 @@ describe('armor and talent branches', () => {
     ['volleyMastery', 3, 14, 20],
     ['blizzardMastery', 4, 21, 30],
     ['dutyBound', 5, 28, 40],
+    ['healBoost', 5, 28, 40],
+    ['warriorArmor', 3, 14, 20],
+    ['titanArmor', 6, 35, 50],
     ['quickInstinct', 5, 28, 40],
   ] as const)(
     '%s requires tier %s with %s branch points and level %s',
@@ -386,13 +440,13 @@ describe('armor and talent branches', () => {
       session.state.level = level;
       session.state.pendingTalentPoints = 2;
       const prerequisite = TALENTS[id].prerequisite;
-      let remaining = points - 1 - (prerequisite ? 1 : 0);
+      let remaining = points - 1 - (prerequisite?.rank ?? 0);
       const ranks: { id: TalentId; rank: number }[] = prerequisite
-        ? [{ id: prerequisite, rank: 1 }]
+        ? [{ id: prerequisite.id, rank: prerequisite.rank }]
         : [];
       for (const candidate of TALENT_ORDER.filter(
         (candidate) =>
-          candidate !== prerequisite &&
+          candidate !== prerequisite?.id &&
           TALENTS[candidate].branch === talent.branch &&
           session.talents.getTalent(candidate).tier < tier,
       )) {
@@ -402,9 +456,7 @@ describe('armor and talent branches', () => {
       }
       session.talents.loadFromSave(ranks);
       expect(session.upgradeTalent(id)).toBe(false);
-      const available = ranks.find(
-        (entry) => entry.rank < session.talents.getTalent(entry.id).maxRanks,
-      )!;
+      const available = ranks.find((entry) => session.talents.canUpgrade(entry.id, level))!;
       expect(session.upgradeTalent(available.id)).toBe(true);
       expect(session.upgradeTalent(id)).toBe(true);
     },

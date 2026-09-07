@@ -239,8 +239,8 @@ export class GameField {
       const el = document.createElement('div');
       el.className = 'damage-pop damage-pop--hp';
       el.classList.toggle('damage-pop--heavy', pos.type === 'tank');
-      el.textContent = `-${hpDamage}`;
-      if (blockedDamage !== undefined) {
+      el.textContent = hpDamage === 0 ? 'Блок' : `-${hpDamage}`;
+      if (blockedDamage !== undefined && hpDamage > 0) {
         const block = document.createElement('span');
         block.className = 'damage-pop__blocked';
         block.textContent = ` (блок ${blockedDamage})`;

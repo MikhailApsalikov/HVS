@@ -117,12 +117,20 @@ describe('presentation uses the actual resolved stats', () => {
     session.state.character.setBase('endurance', 55);
     session.state.character.setBase('intellect', 54);
     session.refreshStats();
-    expect(attributeDescription(session.state, 'armor')).toContain('33.7%');
-    expect(attributeDescription(session.state, 'armor')).toContain('75%');
+    expect(attributeDescription(session.state, 'armor')).toBe(
+      '<p class="tooltip__effect">Снижает урон от пауков на 43.3%</p>',
+    );
     session.talents.loadFromSave([{ id: 'magicArmor', rank: 7 }]);
     session.refreshStats();
     expect(attributeDescription(session.state, 'intellect')).toContain(
       'Благодаря таланту «Магическая броня» даёт ещё 210 брони.',
+    );
+    session.state.character.setModifiers('test:no-armor', [
+      { stat: 'armor', kind: 'percent', value: -100 },
+    ]);
+    session.refreshStats();
+    expect(attributeDescription(session.state, 'armor')).toBe(
+      '<p class="tooltip__effect">Снижает урон от пауков на 0%</p>',
     );
   });
   it.each(ABILITY_ORDER)('shows live values for %s', (id) => {

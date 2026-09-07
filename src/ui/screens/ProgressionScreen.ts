@@ -60,7 +60,7 @@ export class LevelUpScreen {
         for (const talent of tierTalents) {
           const definition = TALENTS[talent.id];
           const prerequisite = definition.prerequisite;
-          const prerequisiteMet = !prerequisite || talents.getRank(prerequisite) > 0;
+          const prerequisiteMet = talents.hasPrerequisite(talent.id);
           const locked = state.level < level || invested < requiredBranchPoints || !prerequisiteMet;
           const maxed = talent.rank >= talent.maxRanks;
           const available =
@@ -81,7 +81,7 @@ export class LevelUpScreen {
           const showTooltip = () =>
             this.tooltip.show(
               button,
-              `<div class="tooltip__title">${definition.name}</div>${talent.rank > 0 ? `<section class="tooltip__rank tooltip__rank--current"><div class="tooltip__rank-label">Изучено · ранг ${talent.rank}</div>${descriptionParagraphs(talentDescription(talent.id, talent.rank, state.stats))}</section>` : ''}${!maxed ? `<section class="tooltip__rank tooltip__rank--next"><div class="tooltip__rank-label">${talent.rank > 0 ? `После улучшения · ранг ${talent.rank + 1}` : 'При изучении'}</div>${descriptionParagraphs(talentDescription(talent.id, talent.rank + 1, state.stats))}</section>` : ''}<div class="tooltip__requirements"><div class="${state.level < level ? 'action-unavailable' : ''}">Требуется уровень ${level}</div><div class="${invested < requiredBranchPoints ? 'action-unavailable' : ''}">Вложено в ветку "${TALENT_BRANCHES[branch]}": ${invested}/${requiredBranchPoints}</div>${prerequisite ? `<div class="${prerequisiteMet ? '' : 'action-unavailable'}">Требуется талант «${TALENTS[prerequisite].name}»: хотя бы 1 ранг</div>` : ''}${maxed ? '<div>Максимальный ранг</div>' : ''}</div>`,
+              `<div class="tooltip__title">${definition.name}</div>${talent.rank > 0 ? `<section class="tooltip__rank tooltip__rank--current"><div class="tooltip__rank-label">Изучено · ранг ${talent.rank}</div>${descriptionParagraphs(talentDescription(talent.id, talent.rank, state.stats))}</section>` : ''}${!maxed ? `<section class="tooltip__rank tooltip__rank--next"><div class="tooltip__rank-label">${talent.rank > 0 ? `После улучшения · ранг ${talent.rank + 1}` : 'При изучении'}</div>${descriptionParagraphs(talentDescription(talent.id, talent.rank + 1, state.stats))}</section>` : ''}<div class="tooltip__requirements"><div class="${state.level < level ? 'action-unavailable' : ''}">Требуется уровень ${level}</div><div class="${invested < requiredBranchPoints ? 'action-unavailable' : ''}">Вложено в ветку "${TALENT_BRANCHES[branch]}": ${invested}/${requiredBranchPoints}</div>${prerequisite ? `<div class="${prerequisiteMet ? '' : 'action-unavailable'}">Требуется талант «${TALENTS[prerequisite.id].name}»: ранг ${prerequisite.rank}</div>` : ''}${maxed ? '<div>Максимальный ранг</div>' : ''}</div>`,
             );
           button.addEventListener('mouseenter', showTooltip);
           button.addEventListener('focus', showTooltip);
@@ -103,14 +103,14 @@ export class LevelUpScreen {
         const prerequisite = TALENTS[talent.id].prerequisite;
         if (!prerequisite) continue;
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.dataset.from = prerequisite;
+        path.dataset.from = prerequisite.id;
         path.dataset.to = talent.id;
         path.classList.add('talent-dependency');
-        path.classList.toggle('talent-dependency--met', talents.getRank(prerequisite) > 0);
+        path.classList.toggle('talent-dependency--met', talents.hasPrerequisite(talent.id));
         path.setAttribute('role', 'img');
         path.setAttribute(
           'aria-label',
-          `${TALENTS[prerequisite].name} → ${TALENTS[talent.id].name}`,
+          `${TALENTS[prerequisite.id].name} → ${TALENTS[talent.id].name}`,
         );
         connections.append(path);
       }

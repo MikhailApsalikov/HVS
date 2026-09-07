@@ -1386,13 +1386,6 @@ body {
   height: 100%;
 }
 
-.shield-overlay__label {
-  color: #ffe3a1;
-  font-size: 0.85rem;
-  font-weight: bold;
-  text-shadow: 0 2px 4px #17100a;
-}
-
 .shield-overlay__timer {
   font-size: 2rem;
   font-weight: bold;
@@ -1437,7 +1430,6 @@ body {
   animation: divine-radiance 1.5s ease-in-out infinite alternate;
 }
 
-.stand-shield-overlay .shield-overlay__label,
 .stand-shield-overlay .shield-overlay__timer {
   color: #fff8d6;
   text-shadow:

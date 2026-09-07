@@ -51,13 +51,14 @@ export class GameRules {
         source: 'armor',
         stat: 'incomingDamage',
         kind: 'percent',
-        value: -armorReduction(this.value('armor'), level) * 100,
+        value: -armorReduction(this.value('armor'), level, config.armorEffectiveness) * 100,
       },
     ]);
   }
   private base(id: StatId): number {
     if (this.bases[id] !== undefined) return this.bases[id];
-    if (id === 'armorReduction') return armorReduction(this.value('armor'), this.level);
+    if (id === 'armorReduction')
+      return armorReduction(this.value('armor'), this.level, this.config.armorEffectiveness);
     const aliases = {
       maxHp: 'baseHp',
       maxEnergy: 'baseEnergy',

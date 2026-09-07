@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="titanPlate" x2="0.8" y2="1">
+      <stop stop-color="#efd698"/><stop offset="0.5" stop-color="#ad8347"/><stop offset="1" stop-color="#584333"/>
+    </linearGradient>
+  </defs>
+  <path d="M4 10L15 4L20 11H28L33 4L44 10L46 22L35 20L39 40L24 46L9 40L13 20L2 22Z" fill="url(#titanPlate)" stroke="#ffedbe" stroke-width="1.5"/>
+  <path d="M4 10L14 15L8 20M44 10L34 15L40 20M13 28L24 33L35 28M11 37L24 42L37 37" fill="none" stroke="#59412b" stroke-width="2"/>
+  <path d="M24 13L31 23L24 33L17 23Z" fill="#66c5df" stroke="#e0fbff" stroke-width="1.5"/>
+  <path d="M24 17V29M20 23H28" stroke="#e9ffff" stroke-width="2"/>
+  <path d="M2 4L6 6M46 4L42 6M24 1V7" stroke="#f6d996" stroke-width="2"/>
+</svg>

@@ -55,7 +55,7 @@ describe('progression and player commands', () => {
     session.state.hp = 50;
     session.state.energy = 0;
     advance(session, 2.5);
-    expect(session.state.hp).toBeCloseTo(51.35, 8);
+    expect(session.state.hp).toBeCloseTo(52.7, 8);
     expect(session.state.energy).toBeCloseTo(20.4, 8);
     expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(101.5, 8);
   });
@@ -255,10 +255,10 @@ describe('enemy types and rewards', () => {
       const expected = {
         normal: [0.08, 20],
         fat: [0.08, 20],
-        fast: [0.16, 10],
+        fast: [0.24, 10],
         ninja: [0.08, 20],
         burner: [0.08, 0],
-        tank: [0.048, 80],
+        tank: [0.048, 200],
       }[type];
       expect([stats.speed, stats.damage]).toEqual(expected);
     },
@@ -290,7 +290,7 @@ describe('enemy types and rewards', () => {
     advance(session, 0.5);
     expect(session.state.energy).toBeCloseTo(14.08, 8);
     expect(session.drainEvents()).toEqual([
-      { type: 'damage', spiderId: 'spider-1', hp: 2, energy: 90 },
+      { type: 'damage', spiderId: 'spider-1', hp: 1, energy: 90 },
     ]);
     expect(session.state.coins).toBe(100);
   });

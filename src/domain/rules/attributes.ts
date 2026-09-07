@@ -18,7 +18,7 @@ export function attributeModifiers(
       effect('endurance', 'maxHp', Math.max(0, e - er.healthThreshold) * er.healthPerPoint),
       effect('endurance', 'hpRegen', e * er.regenPerPoint),
       effect('endurance', 'energyPerBreach', Math.floor(e / er.breachStep)),
-      effect('endurance', 'levelDuration', -Math.floor(e / er.durationStep)),
+      effect('endurance', 'levelDuration', -Math.floor(e / er.durationStep) * er.durationPerStep),
       effect('endurance', 'coinsPerKill', Math.floor(e / er.killCoinsStep)),
       effect('endurance', 'coinsPerSec', Math.floor(e / er.incomeStep) * er.incomePerStep),
       effect('endurance', 'armor', e * er.armorPerPoint),
@@ -39,12 +39,12 @@ export function attributeModifiers(
   };
 }
 
-export function armorReduction(armor: number, level: number): number {
+export function armorReduction(armor: number, level: number, effectiveness: number): number {
   const levelProgress = Math.max(0, level - 1);
   const inflationProgress = levelProgress / (ARMOR_RULES.inflationReferenceLevel - 1);
   const scale =
     ARMOR_RULES.linearScale *
     (level + ARMOR_RULES.levelOffset) *
     (1 + ARMOR_RULES.inflationStrength * inflationProgress ** ARMOR_RULES.inflationPower);
-  return Math.min(ARMOR_RULES.cap, armor / (armor + scale));
+  return Math.min(ARMOR_RULES.cap, armor / (armor + scale / effectiveness));
 }

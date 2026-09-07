@@ -67,7 +67,7 @@ describe('talent strength and independent sources', () => {
     expect(session.upgradeTalent('hunterArsenal')).toBe(true);
     expect(session.buyItem('c050')).toBe(true);
     expect(session.buyItem('c046')).toBe(true);
-    expect(session.state.rules.value('incomingDamage', 1000)).toBe(596); // 1000 × .8 × .88 × .9 × .94
+    expect(session.state.rules.value('incomingDamage', 1000)).toBe(541); // 1000 × (1 − 54 / (54 + 216 / 1.5)) × .88 × .9 × .94
   });
   it.each(TALENT_ORDER)('validates rank and unlock constraints: %s', (id) => {
     const session = new GameSession('normal');
@@ -122,7 +122,7 @@ describe('primary attribute sources', () => {
 describe('content contracts', () => {
   it('retains all difficulties, talents, abilities and unique items', () => {
     expect(Object.keys(DIFFICULTIES)).toHaveLength(3);
-    expect(TALENT_ORDER).toHaveLength(23);
+    expect(TALENT_ORDER).toHaveLength(26);
     expect(ABILITY_ORDER).toHaveLength(9);
     expect(new Set(ITEM_CATALOG.map((item) => item.id)).size).toBe(ITEM_CATALOG.length);
     expect(ITEM_CATALOG.length).toBeGreaterThan(150);

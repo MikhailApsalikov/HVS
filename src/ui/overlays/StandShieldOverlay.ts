@@ -16,23 +16,14 @@ export class StandShieldOverlay {
     this._container.className = `shield-overlay ${ability === 'stand' ? 'stand-shield-overlay' : 'last-hope-overlay'}`;
     this._container.setAttribute('aria-label', ABILITIES[ability].name);
     this._timerText = document.createElement('div');
-    this._createDOM(parent, spriteRegistry, ability);
+    this._createDOM(parent, spriteRegistry);
   }
 
-  private _createDOM(
-    parent: HTMLElement,
-    spriteRegistry: SpriteRegistry,
-    ability: 'stand' | 'lastHope',
-  ): void {
+  private _createDOM(parent: HTMLElement, spriteRegistry: SpriteRegistry): void {
     const shieldIcon = document.createElement('div');
     shieldIcon.className = 'shield-overlay__icon';
     shieldIcon.innerHTML = spriteRegistry.get('Shield');
     this._container.appendChild(shieldIcon);
-
-    const label = document.createElement('div');
-    label.className = 'shield-overlay__label';
-    label.textContent = ABILITIES[ability].name;
-    this._container.appendChild(label);
 
     this._timerText = document.createElement('div');
     this._timerText.className = 'shield-overlay__timer';

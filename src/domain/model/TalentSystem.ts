@@ -56,6 +56,10 @@ export class TalentSystem {
       0,
     );
   }
+  hasPrerequisite(id: TalentId): boolean {
+    const prerequisite = TALENTS[id].prerequisite;
+    return !prerequisite || this.getRank(prerequisite.id) >= prerequisite.rank;
+  }
   upgradeBlockReason(
     id: TalentId,
     level: number,
@@ -63,8 +67,7 @@ export class TalentSystem {
     const talent = this.getTalent(id);
     if (level < talent.unlocksAtLevel) return 'level';
     if (this.branchPoints(talent.branch) < talent.requiredBranchPoints) return 'branch';
-    const prerequisite = TALENTS[id].prerequisite;
-    if (prerequisite && this.getRank(prerequisite) === 0) return 'prerequisite';
+    if (!this.hasPrerequisite(id)) return 'prerequisite';
     if (talent.rank >= talent.maxRanks) return 'maxed';
     return null;
   }
@@ -100,12 +103,19 @@ export class TalentSystem {
   toSaveData(): { id: TalentId; rank: number }[] {
     return this.talents.map(({ id, rank }) => ({ id, rank }));
   }
-  loadFromSave(data: readonly { id: string; rank: number }[]): void {
+  loadFromSave(data: readonly { id: string; rank: number }[]): number {
     this.ranks.clear();
     for (const entry of data) {
       if (!Object.hasOwn(TALENTS, entry.id) || !Number.isInteger(entry.rank)) continue;
       const id = entry.id as TalentId;
-      this.ranks.set(id, Math.max(0, Math.min(entry.rank, this.config.talents[id].maxRanks)));
+      this.ranks.set(id, Math.max(0, entry.rank));
     }
+    let refundedPoints = 0;
+    for (const [id, rank] of this.ranks) {
+      const capped = Math.min(rank, this.config.talents[id].maxRanks);
+      refundedPoints += rank - capped;
+      this.ranks.set(id, capped);
+    }
+    return refundedPoints;
   }
 }

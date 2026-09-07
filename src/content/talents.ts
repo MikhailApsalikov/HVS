@@ -10,7 +10,7 @@ interface TalentDefinition {
   readonly effects: readonly Effect[];
   readonly description?: string;
   readonly fixedEffects?: readonly Effect[];
-  readonly prerequisite?: TalentId;
+  readonly prerequisite?: { readonly id: TalentId; readonly rank: number };
   readonly column?: 1 | 2 | 3;
   readonly scaling?: {
     readonly attribute: PrimaryStatId;
@@ -104,7 +104,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'defense',
     name: 'Улучшенный божественный щит',
     sprite: 'TalentDuty',
-    prerequisite: 'divineShield',
+    prerequisite: { id: 'divineShield', rank: 1 },
     column: 1,
     effects: [flat('stand.duration', 1), flat('stand.cooldown', -12)],
     description:
@@ -122,8 +122,18 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'defense',
     name: 'Награда охотника',
     sprite: 'TalentHunterReward',
+    prerequisite: { id: 'greed', rank: 5 },
+    column: 3,
     effects: [flat('jackpotChance', 0.07)],
     description: 'С вероятностью {jackpotChance} вы получаете тройную награду за убитого паука.',
+  },
+  greed: {
+    branch: 'defense',
+    name: 'Алчность',
+    sprite: 'TalentGreed',
+    column: 3,
+    effects: [flat('coinsPerKill', 1)],
+    description: 'Увеличивает награду за убийство паука на {coinsPerKill} золота.',
   },
   quickInstinct: {
     branch: 'magic',
@@ -142,6 +152,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   improvedEndurance: {
     name: 'Улучшенная выносливость',
     branch: 'defense',
+    column: 2,
     sprite: 'TalentImprovedEndurance',
     effects: [percent('endurance', 5)],
     description: 'Увеличивает выносливость на {endurance}.',
@@ -180,8 +191,8 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'defense',
     sprite: 'TalentShieldBlock',
     column: 2,
-    effects: [flat('blockChance', 0.05)],
-    fixedEffects: [flat('blockPower', 60)],
+    effects: [flat('blockChance', 0.08)],
+    fixedEffects: [flat('blockPower', 50)],
     description:
       'Позволяет заблокировать атаку паука с вероятностью {blockChance}.\nПри блоке поглощает до {blockPower} урона.',
   },
@@ -189,7 +200,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Блок последней надежды',
     branch: 'defense',
     sprite: 'AbilityLastHope',
-    prerequisite: 'shieldBlock',
+    prerequisite: { id: 'shieldBlock', rank: 8 },
     column: 2,
     effects: [],
   },
@@ -197,7 +208,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Улучшенный блок последней надежды',
     branch: 'defense',
     sprite: 'TalentImprovedLastHope',
-    prerequisite: 'lastHope',
+    prerequisite: { id: 'lastHope', rank: 1 },
     column: 2,
     effects: [flat('lastHope.cooldown', -10), flat('lastHope.cost', -4)],
     description:
@@ -206,10 +217,27 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   bestDefense: {
     name: 'Лучшая защита - это нападение',
     branch: 'defense',
+    column: 2,
     sprite: 'TalentBestDefense',
     effects: [flat('blockVolleyChance', 0.02)],
     description:
       'При успешном блоке с вероятностью {blockVolleyChance} выпускает «Залп» со всеми его улучшениями.\nЭтот залп не расходует энергию и может сработать во время перезарядки. Перезарядка «Залпа» и лучников при этом не меняется.',
+  },
+  warriorArmor: {
+    name: 'Броня воина',
+    branch: 'defense',
+    column: 1,
+    sprite: 'TalentWarriorArmor',
+    effects: [flat('armor', 80)],
+    description: 'Увеличивает броню на {armor} единиц.',
+  },
+  titanArmor: {
+    name: 'Броня титана',
+    branch: 'defense',
+    column: 1,
+    sprite: 'TalentTitanArmor',
+    effects: [percent('armor', 25)],
+    description: 'Увеличивает броню на {armor}.',
   },
 };
 export const TALENT_ORDER = Object.keys(TALENTS) as TalentId[];

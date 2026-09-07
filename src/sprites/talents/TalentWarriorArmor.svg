@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="warriorPlate" x2="0.8" y2="1">
+      <stop stop-color="#d3e0e6"/><stop offset="0.5" stop-color="#758b9a"/><stop offset="1" stop-color="#354351"/>
+    </linearGradient>
+  </defs>
+  <path d="M15 5L19 9H29L33 5L43 11L40 21L34 19L37 41L24 45L11 41L14 19L8 21L5 11Z" fill="url(#warriorPlate)" stroke="#e4d0a0" stroke-width="1.5"/>
+  <path d="M19 9Q24 17 29 9M24 16V40M14 21L24 25L34 21M12 34L24 38L36 34" fill="none" stroke="#273341" stroke-width="2"/>
+  <path d="M8 12L14 9M34 9L40 12M17 18L21 20M27 20L31 18" stroke="#f1f7ff" stroke-width="2"/>
+  <path d="M18 29H30" stroke="#ba9654" stroke-width="3"/>
+</svg>

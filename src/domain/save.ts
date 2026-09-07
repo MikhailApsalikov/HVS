@@ -94,7 +94,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   const state = session.state;
   state.level = data.state.level;
   state.lastHopeTimer = data.state.lastHopeTimer;
-  session.talents.loadFromSave(data.talents);
+  const talentRefund = session.talents.loadFromSave(data.talents);
   state.character.restoreBase(data.character);
   for (const source of new Set(data.characterModifiers.map((modifier) => modifier.source))) {
     state.character.setModifiers(
@@ -106,7 +106,13 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   const duplicateRefund = session.items.loadFromSave(data.inventory, state.stats.inventorySlots);
   session.refreshStats(false);
   Object.assign(state, Object.fromEntries(STATE_FIELDS.map((key) => [key, data.state[key]])));
+  const minimumDuration = STATS.levelDuration.policy.min!;
+  if (state.levelTimerMax < minimumDuration) {
+    if (state.levelTimer > 0) state.levelTimer += minimumDuration - state.levelTimerMax;
+    state.levelTimerMax = minimumDuration;
+  }
   state.coins += duplicateRefund;
+  state.pendingTalentPoints += talentRefund;
   state.modifyHp(0);
   state.modifyEnergy(0);
   for (const entry of data.spiders) {
@@ -366,7 +372,9 @@ function migrateLegacy(value: JsonObject): SaveData | null {
     return null;
   const session = new GameSession(value.difficulty as Difficulty);
   session.state.level = value.level as number;
-  session.talents.loadFromSave(value.talents as { id: string; rank: number }[]);
+  const talentRefund = session.talents.loadFromSave(
+    value.talents as { id: string; rank: number }[],
+  );
   session.refreshStats(false);
   const duplicateRefund = session.items.loadFromSave(
     (value.inventory ?? []) as string[],
@@ -378,7 +386,7 @@ function migrateLegacy(value: JsonObject): SaveData | null {
   state.coins = (value.coins as number) + duplicateRefund;
   state.hp = Math.min(value.hp, state.maxHp);
   state.energy = Math.min(value.energy, state.maxEnergy);
-  state.pendingTalentPoints = value.pendingTalentPoints as number;
+  state.pendingTalentPoints = (value.pendingTalentPoints as number) + talentRefund;
   state.record = Math.max(value.record as number, state.level);
   state.initialTalentPick = false;
   state.phase = state.pendingTalentPoints > 0 ? 'levelUp' : 'playing';

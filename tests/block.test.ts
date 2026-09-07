@@ -16,6 +16,7 @@ function defense(random = () => 0.999999): GameSession {
   buy(session, 'endurance', 7);
   buy(session, 'improvedEndurance', 7);
   buy(session, 'spiderArmor', 9);
+  buy(session, 'greed', 5);
   buy(session, 'hunterReward', 5);
   session.state.character.setModifiers('test:quiet', [
     { stat: 'spawnProbability', kind: 'percent', value: -100 },
@@ -40,7 +41,7 @@ describe('defense talent abilities through session commands', () => {
     }
   });
 
-  it('adds five percentage points per rank but grants the sixty damage block only once', () => {
+  it('adds eight percentage points per rank but grants the fifty damage block only once', () => {
     const session = new GameSession('normal');
     session.state.level = 10;
     session.state.pendingTalentPoints = 30;
@@ -49,14 +50,14 @@ describe('defense talent abilities through session commands', () => {
     session.state.level = 9;
     expect(session.upgradeTalent('shieldBlock')).toBe(false);
     session.state.level = 10;
-    for (let rank = 1; rank <= 12; rank++) {
+    for (let rank = 1; rank <= 8; rank++) {
       buy(session, 'shieldBlock');
-      expect(session.state.stats.blockChance).toBeCloseTo(rank * 0.05);
-      expect(session.state.stats.blockPower).toBe(60);
+      expect(session.state.stats.blockChance).toBeCloseTo(rank * 0.08);
+      expect(session.state.stats.blockPower).toBe(50);
     }
     expect(session.upgradeTalent('shieldBlock')).toBe(false);
     expect(session.state.rules.explain('blockPower').modifiers).toEqual([
-      { source: 'talent:shieldBlock', kind: 'flat', stat: 'blockPower', value: 60 },
+      { source: 'talent:shieldBlock', kind: 'flat', stat: 'blockPower', value: 50 },
     ]);
   });
 
@@ -67,6 +68,11 @@ describe('defense talent abilities through session commands', () => {
     expect(session.upgradeTalent('lastHope')).toBe(false);
     expect(session.upgradeTalent('improvedLastHope')).toBe(false);
     expect(session.state.pendingTalentPoints).toBe(points);
+    for (let rank = 1; rank < 8; rank++) {
+      buy(session, 'shieldBlock');
+      expect(session.upgradeTalent('lastHope')).toBe(false);
+      expect(session.state.pendingTalentPoints).toBe(points - rank);
+    }
     buy(session, 'shieldBlock');
     buy(session, 'lastHope');
     expect(session.upgradeTalent('lastHope')).toBe(false);
@@ -135,7 +141,7 @@ describe('defense talent abilities through session commands', () => {
 
   it('uses final endurance for a six-second buff and removes it exactly on expiration', () => {
     const session = defense();
-    buy(session, 'shieldBlock');
+    buy(session, 'shieldBlock', 8);
     buy(session, 'lastHope');
     session.state.character.setBase('endurance', 40);
     session.state.character.setModifiers('test:item', [
@@ -147,19 +153,19 @@ describe('defense talent abilities through session commands', () => {
     expect(session.activateAbility('lastHope')).toBe('activated');
     expect(session.state.energy).toBe(55);
     expect(session.state.getAbility('lastHope').remainingCooldown).toBe(65);
-    expect(session.state.stats).toMatchObject({ blockChance: 0.35, blockPower: 105 });
+    expect(session.state.stats).toMatchObject({ blockChance: 0.94, blockPower: 95 });
     session.refreshStats();
-    expect(session.state.stats.blockPower).toBe(105);
+    expect(session.state.stats.blockPower).toBe(95);
     session.tick(5.999);
-    expect(session.state.stats.blockPower).toBe(105);
+    expect(session.state.stats.blockPower).toBe(95);
     session.tick(0.0011);
     expect(session.state.lastHopeTimer).toBe(0);
-    expect(session.state.stats).toMatchObject({ blockChance: 0.05, blockPower: 60 });
+    expect(session.state.stats).toMatchObject({ blockChance: 0.64, blockPower: 50 });
   });
 
   it('pauses the buff with the simulation, caps chance and resets its cooldown with recharge', () => {
     const session = defense();
-    buy(session, 'shieldBlock', 12);
+    buy(session, 'shieldBlock', 8);
     buy(session, 'lastHope');
     session.state.level = 50;
     session.state.character.setModifiers('test:block', [
@@ -185,7 +191,7 @@ describe('defense talent abilities through session commands', () => {
 
   it('combines independent cooldown percentages before flat improvements', () => {
     const session = defense();
-    buy(session, 'shieldBlock');
+    buy(session, 'shieldBlock', 8);
     buy(session, 'lastHope');
     buy(session, 'improvedLastHope', 5);
     buy(session, 'tireless', 5);
@@ -200,8 +206,8 @@ describe('defense talent abilities through session commands', () => {
 
 describe('damage blocking and counter volleys', () => {
   it.each([
-    [0.049999, true],
-    [0.05, false],
+    [0.079999, true],
+    [0.08, false],
   ] as const)('roll %s blocks: %s', (roll, blocked) => {
     const session = defense(() => roll);
     buy(session, 'shieldBlock');
@@ -214,14 +220,14 @@ describe('damage blocking and counter volleys', () => {
     const before = session.state.hp;
     const spider = addSpider(session, 'normal', 0, 1, 201);
     session.tick(0.001);
-    const damage = blocked ? 23 : 83; // 201 × .46 × .9 − (block ? 60 : 0), then round
+    const damage = blocked ? 33 : 83; // 201 × .46 × .9 − (block ? 50 : 0), then round
     expect(session.state.hp).toBe(before - damage);
     expect(session.drainEvents()).toContainEqual({
       type: 'damage',
       spiderId: spider.id,
       hp: damage,
       energy: 0,
-      ...(blocked ? { blockedDamage: 60 } : {}),
+      ...(blocked ? { blockedDamage: 50 } : {}),
     });
   });
 
@@ -233,7 +239,7 @@ describe('damage blocking and counter volleys', () => {
     const before = session.state.hp;
     addSpider(session, 'tank', 0, 1, 200);
     session.tick(0.001);
-    expect(session.state.hp).toBe(before - Math.round(raw - 60));
+    expect(session.state.hp).toBe(before - Math.round(raw - 50));
     const burner = addSpider(session, 'burner', 1, 1, 2);
     const hp = session.state.hp;
     session.tick(0.001);
@@ -354,7 +360,7 @@ describe('defense save compatibility', () => {
 
   it('round-trips learned abilities and a partially elapsed buff without doubling bonuses', () => {
     const session = defense();
-    buy(session, 'shieldBlock', 2);
+    buy(session, 'shieldBlock', 8);
     buy(session, 'lastHope');
     buy(session, 'divineShield');
     session.state.phase = 'playing';
@@ -363,12 +369,12 @@ describe('defense save compatibility', () => {
     const loaded = restore(parseSave(snapshot(session))!, () => 0.999999);
     expect(snapshot(loaded)).toEqual(snapshot(session));
     expect(loaded.state.stats).toEqual(session.state.stats);
-    expect(loaded.state.stats.blockChance).toBe(0.4);
+    expect(loaded.state.stats.blockChance).toBe(0.94);
     expect(loaded.state.isAbilityUnlocked('stand')).toBe(true);
     expect(loaded.state.isAbilityUnlocked('lastHope')).toBe(true);
     loaded.tick(4);
     expect(loaded.state.lastHopeTimer).toBe(0);
-    expect(loaded.state.stats).toMatchObject({ blockChance: 0.1, blockPower: 60 });
+    expect(loaded.state.stats).toMatchObject({ blockChance: 0.64, blockPower: 50 });
     expect(
       parseSave({ ...snapshot(session), state: { ...snapshot(session).state, lastHopeTimer: -1 } }),
     ).toBeNull();

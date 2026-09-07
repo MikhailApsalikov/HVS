@@ -55,6 +55,7 @@ describe('legacy feature inventory captured before rewrite', () => {
   it('keeps untouched encounter and ability balance through the attribute update', () => {
     expect(normalConfig).toEqual({
       ...baseline.normal,
+      armorEffectiveness: 1.5,
       baseHp: 100,
       hpRegen: 0,
       energyRegen: 8,
@@ -69,6 +70,10 @@ describe('legacy feature inventory captured before rewrite', () => {
       },
       talents: {
         ...baseline.normal.talents,
+        greed: { maxRanks: 5, unlocksAtLevel: 0 },
+        healBoost: { maxRanks: 15, unlocksAtLevel: 40 },
+        warriorArmor: { maxRanks: 5, unlocksAtLevel: 20 },
+        titanArmor: { maxRanks: 5, unlocksAtLevel: 50 },
         endurance: { maxRanks: 7, unlocksAtLevel: 0 },
         tireless: { maxRanks: 5, unlocksAtLevel: 0 },
         hunterMastery: { maxRanks: 10, unlocksAtLevel: 0 },
@@ -79,7 +84,7 @@ describe('legacy feature inventory captured before rewrite', () => {
         magicArmor: { maxRanks: 7, unlocksAtLevel: 20 },
         dutyBound: { maxRanks: 5, unlocksAtLevel: 40 },
         divineShield: { maxRanks: 1, unlocksAtLevel: 30 },
-        shieldBlock: { maxRanks: 12, unlocksAtLevel: 10 },
+        shieldBlock: { maxRanks: 8, unlocksAtLevel: 10 },
         lastHope: { maxRanks: 1, unlocksAtLevel: 20 },
         improvedLastHope: { maxRanks: 5, unlocksAtLevel: 30 },
         bestDefense: { maxRanks: 10, unlocksAtLevel: 40 },
