@@ -7,11 +7,12 @@ export function itemModifiers(
   source: string,
   includeAbility = true,
 ): StatModifier[] {
-  const modifiers: StatModifier[] = item.stats.map((stat) =>
-    stat.type === 'damageReduction'
-      ? { source, stat: 'incomingDamage', kind: 'percent', value: -stat.value }
-      : { source, stat: stat.type, kind: stat.kind ?? 'flat', value: stat.value },
-  );
+  const modifiers: StatModifier[] = item.stats.map((stat) => ({
+    source,
+    stat: stat.type,
+    kind: stat.kind ?? 'flat',
+    value: stat.value,
+  }));
   const mod = item.abilityMod;
   if (!mod || !includeAbility) return modifiers;
   if (mod.modType === 'costReduction' || mod.modType === 'cooldownReduction') {

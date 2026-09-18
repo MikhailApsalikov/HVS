@@ -80,7 +80,7 @@ describe('talent strength and independent sources', () => {
     expect(session.upgradeTalent('hunterArsenal')).toBe(true);
     expect(session.buyItem('c050')).toBe(true);
     expect(session.buyItem('c046')).toBe(true);
-    expect(session.state.rules.value('incomingDamage', 1000)).toBe(541); // 1000 × (1 − 54 / (54 + 216 / 1.5)) × .88 × .9 × .94
+    expect(session.state.rules.value('incomingDamage', 1000)).toBe(220); // Armor reaches the 75% cap, then spider protection applies: 1000 × .25 × .88
   });
   it.each(TALENT_ORDER)('validates rank and unlock constraints: %s', (id) => {
     const session = new GameSession('normal');

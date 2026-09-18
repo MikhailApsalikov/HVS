@@ -7,7 +7,7 @@ export type StatType =
   | 'maxEnergy'
   | 'hpRegen'
   | 'energyRegen'
-  | 'damageReduction'
+  | 'armor'
   | 'coinsPerKill'
   | 'energyPerKill'
   | 'energyPerBreach';

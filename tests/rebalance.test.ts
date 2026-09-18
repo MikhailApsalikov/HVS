@@ -10,32 +10,26 @@ import { addSpider, game } from './helpers.js';
 const beforeItems = JSON.parse(
   readFileSync('tests/fixtures/items-before-rebalance.json', 'utf8'),
 ) as Record<string, Partial<Record<StatType, number>>>;
-const oldPrices = JSON.parse(readFileSync('tests/fixtures/legacy-content.json', 'utf8')).items as {
-  id: string;
-  price: number;
-}[];
 
 describe('item rebalance through purchases', () => {
   it.each(Object.entries(beforeItems))(
-    'halves endurance and regeneration of %s and retains its price',
+    'applies current endurance and regeneration of %s and charges its catalog price',
     (id, previous) => {
       const session = new GameSession('normal');
       session.state.coins = 1000000;
       const before = session.state.stats;
       const coins = session.state.coins;
-      const endurance = id === 'l007' ? 200 : (previous.endurance ?? 0) / 2;
-      const regeneration = id === 'l007' ? 20 : (previous.hpRegen ?? 0) / 2;
+      const endurance = id === 'l010' ? 80 : id === 'l007' ? 200 : (previous.endurance ?? 0) / 2;
+      const regeneration = id === 'l010' ? 5 : id === 'l007' ? 20 : (previous.hpRegen ?? 0) / 2;
       expect(session.buyItem(id)).toBe(true);
       expect(session.state.stats.endurance).toBe(before.endurance + endurance);
       expect(session.state.stats.hpRegen).toBeCloseTo(
         before.hpRegen + regeneration + endurance * 0.04,
       );
-      expect(session.state.coins).toBe(coins - oldPrices.find((item) => item.id === id)!.price);
+      expect(session.state.coins).toBe(coins - ITEM_MAP.get(id)!.price);
       expect(session.sellItem(0)).toBe(true);
       expect(session.state.stats).toEqual(before);
-      expect(session.state.coins).toBe(
-        coins - Math.ceil(oldPrices.find((item) => item.id === id)!.price / 2),
-      );
+      expect(session.state.coins).toBe(coins - Math.ceil(ITEM_MAP.get(id)!.price / 2));
     },
   );
 

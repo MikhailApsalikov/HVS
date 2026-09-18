@@ -1,4 +1,5 @@
 export const COMMON_SVGS: Record<string, string> = {
+  'c-shield': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M24 4L8 10v17c0 9 16 17 16 17s16-8 16-17V10z" fill="#8B5E34" stroke="#C0B095" stroke-width="3"/><path d="M18 9v26m12-26v26" stroke="#51351D" stroke-width="2"/><circle cx="24" cy="23" r="6" fill="#9EA5A8"/></svg>',
 
   // ═══ +макс. HP (armor/protection — reds, browns, grays) ═══
 

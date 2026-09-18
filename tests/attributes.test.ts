@@ -389,7 +389,7 @@ describe('armor and talent branches', () => {
     },
   );
 
-  it('caps armor independently of spider protection and item defenses', () => {
+  it('caps combined item armor independently of spider protection', () => {
     const session = game();
     session.talents.loadFromSave([{ id: 'spiderArmor', rank: 10 }]);
     session.items.buyItem('c050');
@@ -400,10 +400,10 @@ describe('armor and talent branches', () => {
     expect(session.drainEvents()).toContainEqual({
       type: 'damage',
       spiderId: 'spider-1',
-      hp: 90,
+      hp: 100,
       energy: 0,
     });
-    expect(session.state.stats.damageFactor).toBe(0.09);
+    expect(session.state.stats.damageFactor).toBe(0.1);
   });
 
   it('requires level and spending in the specific branch for every new rank', () => {

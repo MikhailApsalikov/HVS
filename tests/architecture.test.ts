@@ -47,12 +47,20 @@ describe('architecture boundaries', () => {
 
 describe('legacy feature inventory captured before rewrite', () => {
   const baseline = JSON.parse(readFileSync('tests/fixtures/legacy-content.json', 'utf8'));
-  it('retains every item name, ID and base price', () => {
-    expect(
-      ITEM_CATALOG.filter(({ id }) =>
-        baseline.items.some((item: { id: string }) => item.id === id),
-      ).map(({ id, name, price }) => ({ id, name, price })),
-    ).toEqual(baseline.items);
+  it('retains every item name and ID, and prices outside the armor rebalance', () => {
+    const legacyItems = ITEM_CATALOG.filter(({ id }) =>
+      baseline.items.some((item: { id: string }) => item.id === id),
+    );
+    expect(legacyItems.map(({ id, name }) => ({ id, name }))).toEqual(
+      baseline.items.map(({ id, name }: { id: string; name: string }) => ({ id, name })),
+    );
+    for (const item of legacyItems) {
+      if (!item.stats.some((stat) => stat.type === 'armor')) {
+        expect(item.price).toBe(
+          baseline.items.find((old: { id: string }) => old.id === item.id).price,
+        );
+      }
+    }
   });
   it('keeps untouched encounter and ability balance through the attribute update', () => {
     expect(normalConfig).toEqual({

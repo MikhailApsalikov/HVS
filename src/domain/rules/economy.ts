@@ -15,7 +15,7 @@ const PRICES: Record<StatType, PriceRule> = {
   agility: { unit: 5, base: 32, curve: logarithmic },
   intellect: { unit: 5, base: 32, curve: logarithmic },
   hpRegen: { unit: 0.5, base: 24, curve: logarithmic },
-  damageReduction: { unit: 1, base: 12, curve: quadratic },
+  armor: { unit: 3, base: 1, curve: (n) => n },
   coinsPerKill: { unit: 1, base: 400, curve: quadratic },
   maxEnergy: { unit: 10, base: 36, curve: quadratic },
   energyPerBreach: { unit: 1, base: 40, curve: quadratic },
@@ -25,15 +25,22 @@ const PRICES: Record<StatType, PriceRule> = {
 const RARITY_PERCENT: Record<ItemRarity, number> = { common: 0, rare: 15, epic: 33, legendary: 74 };
 
 export function computeItemPrice(item: ItemConfig): number {
+  let armorPrice = 0;
   const base = item.stats.reduce((sum, stat) => {
     const rule = PRICES[stat.type];
-    return sum + rule.base * rule.curve(Math.abs(stat.value) / rule.unit);
+    const value = rule.base * rule.curve(Math.abs(stat.value) / rule.unit);
+    if (stat.type === 'armor') {
+      armorPrice += value;
+      return sum;
+    }
+    return sum + value;
   }, 0);
-  return calculate(
+  const adjusted = calculate(
     base,
     [{ source: `rarity:${item.rarity}`, kind: 'percent', value: RARITY_PERCENT[item.rarity] }],
     { digits: 0, min: 0 },
-  ).value;
+  ).afterPercentBonuses;
+  return calculate(adjusted + armorPrice, [], { digits: 0, min: 0 }).value;
 }
 export function salePrice(price: number): number {
   return calculate(
