@@ -15,6 +15,7 @@ function defense(random = () => 0.999999): GameSession {
   session.state.pendingTalentPoints = 100;
   buy(session, 'endurance', 7);
   buy(session, 'improvedEndurance', 7);
+  buy(session, 'warriorArmor', 5);
   buy(session, 'spiderArmor', 9);
   buy(session, 'greed', 5);
   buy(session, 'hunterReward', 5);
@@ -41,7 +42,7 @@ describe('defense talent abilities through session commands', () => {
     }
   });
 
-  it('adds eight percentage points per rank but grants the fifty damage block only once', () => {
+  it('adds five percentage points per rank but grants the fifty damage block only once', () => {
     const session = new GameSession('normal');
     session.state.level = 10;
     session.state.pendingTalentPoints = 30;
@@ -52,7 +53,7 @@ describe('defense talent abilities through session commands', () => {
     session.state.level = 10;
     for (let rank = 1; rank <= 8; rank++) {
       buy(session, 'shieldBlock');
-      expect(session.state.stats.blockChance).toBeCloseTo(rank * 0.08);
+      expect(session.state.stats.blockChance).toBeCloseTo(rank * 0.05);
       expect(session.state.stats.blockPower).toBe(50);
     }
     expect(session.upgradeTalent('shieldBlock')).toBe(false);
@@ -153,14 +154,14 @@ describe('defense talent abilities through session commands', () => {
     expect(session.activateAbility('lastHope')).toBe('activated');
     expect(session.state.energy).toBe(55);
     expect(session.state.getAbility('lastHope').remainingCooldown).toBe(65);
-    expect(session.state.stats).toMatchObject({ blockChance: 0.94, blockPower: 169 });
+    expect(session.state.stats).toMatchObject({ blockChance: 0.9, blockPower: 169 });
     session.refreshStats();
     expect(session.state.stats.blockPower).toBe(169);
     session.tick(5.999);
     expect(session.state.stats.blockPower).toBe(169);
     session.tick(0.0011);
     expect(session.state.lastHopeTimer).toBe(0);
-    expect(session.state.stats).toMatchObject({ blockChance: 0.64, blockPower: 50 });
+    expect(session.state.stats).toMatchObject({ blockChance: 0.4, blockPower: 50 });
   });
 
   it('pauses the buff with the simulation, caps chance and resets its cooldown with recharge', () => {
@@ -206,8 +207,8 @@ describe('defense talent abilities through session commands', () => {
 
 describe('damage blocking and counter volleys', () => {
   it.each([
-    [0.079999, true],
-    [0.08, false],
+    [0.049999, true],
+    [0.05, false],
   ] as const)('roll %s blocks: %s', (roll, blocked) => {
     const session = defense(() => roll);
     buy(session, 'shieldBlock');
@@ -235,9 +236,9 @@ describe('damage blocking and counter volleys', () => {
     const session = defense(() => 0);
     buy(session, 'shieldBlock');
     session.state.phase = 'playing';
-    const raw = session.state.rules.explain('incomingDamage', 200).afterPercentPenalties;
+    const raw = session.state.rules.explain('incomingDamage', 1000).afterPercentPenalties;
     const before = session.state.hp;
-    addSpider(session, 'tank', 0, 1, 200);
+    addSpider(session, 'tank', 0, 1, 1000);
     session.tick(0.001);
     expect(session.state.hp).toBe(before - Math.round(raw - 50));
     const burner = addSpider(session, 'burner', 1, 1, 2);
@@ -257,10 +258,10 @@ describe('damage blocking and counter volleys', () => {
   });
 
   it.each([
-    [1, 0.019999, true],
-    [1, 0.02, false],
-    [10, 0.199999, true],
-    [10, 0.2, false],
+    [1, 0.009999, true],
+    [1, 0.01, false],
+    [10, 0.099999, true],
+    [10, 0.1, false],
   ] as const)(
     'counter volley rank %s, roll %s, triggers %s without touching energy or cooldowns',
     (rank, procRoll, triggered) => {
@@ -292,34 +293,74 @@ describe('damage blocking and counter volleys', () => {
     },
   );
 
-  it('keeps a ready volley ready, rolls separately for each hit and never procs on invulnerability', () => {
+  it.each([
+    ['no block talent', 0, 100, false, 0],
+    ['failed block', 1, 100, false, 0.9],
+    ['partial block', 1, 1000, false, 0],
+    ['full block', 1, 1, false, 0],
+    ['zero damage', 1, 0, false, 0],
+    ['invulnerability', 1, 100, true, 0],
+  ] as const)(
+    'triggers on a breach with %s',
+    (_case, blockRanks, damage, invulnerable, blockRoll) => {
+      const rolls = blockRanks && damage > 0 && !invulnerable ? [blockRoll, 0] : [0];
+      const session = defense(() => rolls.shift() ?? 0);
+      if (blockRanks) buy(session, 'shieldBlock', blockRanks);
+      buy(session, 'bestDefense');
+      buy(session, 'divineShield');
+      session.state.phase = 'playing';
+      if (invulnerable) expect(session.activateAbility('stand')).toBe('activated');
+      addSpider(session, 'burner', 0, 1, damage);
+      session.tick(0.001);
+      expect(session.state.arrows.size).toBe(4);
+      expect(session.state.bestDefenseCooldown).toBe(3);
+      expect(session.state.getAbility('volley').isReady).toBe(true);
+    },
+  );
+
+  it('limits simultaneous and later breaches to one volley per three playing seconds, including after loading', () => {
     const session = defense(() => 0);
-    buy(session, 'shieldBlock');
     buy(session, 'bestDefense');
-    buy(session, 'divineShield');
     session.state.phase = 'playing';
     addSpider(session, 'normal', 0, 1);
     addSpider(session, 'normal', 1, 1);
     session.tick(0.001);
-    expect(session.state.arrows.size).toBe(8);
-    expect(session.state.getAbility('volley').isReady).toBe(true);
+    expect(session.state.arrows.size).toBe(4);
     session.state.arrows.clear();
-    session.activateAbility('stand');
-    addSpider(session, 'normal', 2, 1);
-    session.tick(0.001);
-    expect(session.state.arrows.size).toBe(0);
+    session.tick(1);
+    session.state.energy = session.state.maxEnergy;
+    expect(session.activateAbility('freeze')).toBe('activated');
+    session.tick(10);
+    expect(session.state.bestDefenseCooldown).toBe(2);
+    session.activateAbility('freeze');
+    session.state.phase = 'levelUp';
+    session.tick(10);
+    expect(session.state.bestDefenseCooldown).toBe(2);
+    session.state.phase = 'playing';
+    const loaded = restore(parseSave(snapshot(session))!, () => 0);
+    expect(loaded.state.bestDefenseCooldown).toBe(2);
+    addSpider(loaded, 'normal', 2, 1);
+    loaded.tick(1.999);
+    expect(loaded.state.arrows.size).toBe(0);
+    addSpider(loaded, 'normal', 3, 1);
+    loaded.tick(0.0011);
+    expect(loaded.state.arrows.size).toBe(4);
+    expect(loaded.state.bestDefenseCooldown).toBe(3);
   });
 
-  it('does not trigger on a failed block or a hit with no health damage', () => {
-    const session = defense(() => 0.5);
-    buy(session, 'shieldBlock');
-    buy(session, 'bestDefense', 10);
+  it('rolls for each eligible breach and starts the cooldown only on success', () => {
+    const rolls = [0.5, 0];
+    const session = defense(() => rolls.shift() ?? 0);
+    buy(session, 'bestDefense');
     session.state.phase = 'playing';
     addSpider(session, 'normal', 0, 1);
-    addSpider(session, 'burner', 1, 1, 0);
     session.tick(0.001);
+    expect(session.state.bestDefenseCooldown).toBe(0);
     expect(session.state.arrows.size).toBe(0);
-    expect(session.drainEvents().filter((event) => event.type === 'absorb')).toHaveLength(0);
+    addSpider(session, 'normal', 1, 1);
+    session.tick(0.001);
+    expect(session.state.arrows.size).toBe(4);
+    expect(session.state.bestDefenseCooldown).toBe(3);
   });
 });
 
@@ -345,7 +386,7 @@ describe('defense save compatibility', () => {
       ),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(7);
+    expect(parsed.version).toBe(8);
     const loaded = restore(parsed);
     expect(loaded.state.getAbility('stand').remainingCooldown).toBe(41);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(123);
@@ -369,12 +410,12 @@ describe('defense save compatibility', () => {
     const loaded = restore(parseSave(snapshot(session))!, () => 0.999999);
     expect(snapshot(loaded)).toEqual(snapshot(session));
     expect(loaded.state.stats).toEqual(session.state.stats);
-    expect(loaded.state.stats.blockChance).toBe(0.94);
+    expect(loaded.state.stats.blockChance).toBe(0.9);
     expect(loaded.state.isAbilityUnlocked('stand')).toBe(true);
     expect(loaded.state.isAbilityUnlocked('lastHope')).toBe(true);
     loaded.tick(4);
     expect(loaded.state.lastHopeTimer).toBe(0);
-    expect(loaded.state.stats).toMatchObject({ blockChance: 0.64, blockPower: 50 });
+    expect(loaded.state.stats).toMatchObject({ blockChance: 0.4, blockPower: 50 });
     expect(
       parseSave({ ...snapshot(session), state: { ...snapshot(session).state, lastHopeTimer: -1 } }),
     ).toBeNull();

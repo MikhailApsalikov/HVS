@@ -102,7 +102,7 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     unlockLevel: 60,
     talent: 'adrenaline',
     description:
-      'Даёт {adrenaline.shots} выстрелов без расхода энергии с обычной перезарядкой лучников.\nДействует не более {adrenaline.duration} с и заканчивается при расходовании всех выстрелов.',
+      'Даёт {adrenaline.shots} выстрелов без расхода энергии и снижает перезарядку лучников на {adrenaline.shootCooldownReduction}%.\nДействует не более {adrenaline.duration} с и заканчивается при расходовании всех выстрелов.',
     effectStat: 'adrenaline.shots',
     effectKind: 'flat',
   },

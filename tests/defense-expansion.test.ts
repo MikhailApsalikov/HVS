@@ -27,6 +27,7 @@ function defense(level = 60, random = () => 0.999999): GameSession {
   buy(session, 'endurance', 7);
   buy(session, 'improvedEndurance', 7);
   buy(session, 'greed', 5);
+  buy(session, 'warriorArmor', 5);
   buy(session, 'spiderArmor', 10);
   buy(session, 'shieldBlock', 8);
   session.state.levelTimer = session.state.levelTimerMax = session.state.rules.levelDuration(level);
@@ -43,14 +44,14 @@ function adrenaline(): GameSession {
 }
 
 describe('new defense talents through session commands', () => {
-  it('adds 350 healing and 2 regeneration at each of exactly five ranks', () => {
+  it('adds 350 healing and 5 regeneration at each of exactly five ranks', () => {
     const session = defense(40);
     const baseHeal = session.state.stats['heal.amount'];
     const baseRegen = session.state.stats.hpRegen;
     for (let rank = 1; rank <= 5; rank++) {
       buy(session, 'healBoost');
       expect(session.state.stats['heal.amount']).toBe(baseHeal + rank * 350);
-      expect(session.state.stats.hpRegen).toBeCloseTo(baseRegen + rank * 2);
+      expect(session.state.stats.hpRegen).toBeCloseTo(baseRegen + rank * 5);
       session.state.phase = 'playing';
       session.state.hp = 1;
       session.state.energy = 100;
@@ -123,28 +124,34 @@ describe('new defense talents through session commands', () => {
     expect(session.activateAbility('adrenaline')).toBe('level_locked');
   });
 
-  it('allows exactly twenty successful zero-energy shots while keeping normal archer cooldowns', () => {
+  it('allows exactly twenty immediate zero-energy shots and restores normal cooldowns', () => {
     const session = adrenaline();
+    const cooldown = session.state.stats.shootCooldown;
     expect(session.shootLane(0)).toBe('not_enough_energy');
+    session.state.archers[0].start(cooldown);
     expect(session.activateAbility('adrenaline')).toBe('activated');
+    expect(session.state.stats.shootCooldown).toBe(0);
+    expect(session.state.archers.every((archer) => archer.isReady)).toBe(true);
     expect(session.state.getAbility('adrenaline').remainingCooldown).toBe(120);
     expect(session.activateAbility('adrenaline')).toBe('on_cooldown');
     expect(session.shootLane(-1)).toBe('blocked');
     expect(session.activateAbility('volley')).toBe('not_enough_energy');
     expect(session.state.adrenalineShots).toBe(20);
     for (let shot = 0; shot < 20; shot++) {
-      if (shot > 0 && shot % 9 === 0) session.tick(session.state.stats.shootCooldown);
-      expect(session.shootLane(shot % 9)).toBe('shot');
+      expect(session.shootLane(0)).toBe('shot');
       expect(session.state.energy).toBe(0);
-      expect(session.state.archers[shot % 9].duration).toBe(session.state.stats.shootCooldown);
-      expect(session.shootLane(shot % 9)).toBe('blocked');
+      expect(session.state.archers[0].isReady).toBe(true);
       expect(session.state.adrenalineShots).toBe(19 - shot);
     }
+    expect(session.state.arrows.size).toBe(20);
     expect(session.state.adrenalineTimer).toBe(0);
-    expect(session.shootLane(2)).toBe('not_enough_energy');
+    expect(session.state.stats.shootCooldown).toBe(cooldown);
+    expect(session.shootLane(0)).toBe('not_enough_energy');
     session.state.energy = session.state.stats.shootCost;
-    expect(session.shootLane(2)).toBe('shot');
+    expect(session.shootLane(0)).toBe('shot');
     expect(session.state.energy).toBe(0);
+    expect(session.state.archers[0].remainingCooldown).toBe(cooldown);
+    expect(session.shootLane(0)).toBe('blocked');
   });
 
   it('expires at twenty seconds, freezes with the game and recharges without replenishing shots', () => {
@@ -328,7 +335,7 @@ describe('new defense talents through session commands', () => {
     expect(loaded.state.adrenalineShots).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(0);
     const current = snapshot(loaded);
-    expect(current.version).toBe(7);
+    expect(current.version).toBe(8);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 

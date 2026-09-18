@@ -86,10 +86,10 @@ describe('combat balance through session commands', () => {
       const baseArmor = session.state.stats.armor;
       for (let rank = 1; rank <= 5; rank++) {
         expect(session.upgradeTalent('warriorArmor')).toBe(true);
-        expect(session.state.stats.armor).toBe(baseArmor + 80 * rank);
+        expect(session.state.stats.armor).toBe(baseArmor + 250 * rank);
       }
       expect(session.upgradeTalent('warriorArmor')).toBe(false);
-      const flatArmor = baseArmor + 400;
+      const flatArmor = baseArmor + 1250;
       for (let rank = 1; rank <= 5; rank++) {
         expect(session.upgradeTalent('titanArmor')).toBe(true);
         expect(session.state.stats.armor).toBe(Math.round(flatArmor * (1 + 0.25 * rank)));

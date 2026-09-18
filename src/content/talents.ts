@@ -1,5 +1,6 @@
 import type { TalentId, TalentBranch } from '../domain/types.js';
 import type { StatModifier, PrimaryStatId } from '../domain/rules/stats.js';
+import { BEST_DEFENSE_COOLDOWN } from '../domain/rules/stats.js';
 import { ABILITY_ORDER } from './abilities.js';
 
 type Effect = Omit<StatModifier, 'source'>;
@@ -41,6 +42,8 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   spiderArmor: {
     branch: 'defense',
+    column: 1,
+    prerequisite: { id: 'warriorArmor', rank: 5 },
     name: 'Защита от пауков',
     sprite: 'TalentArmor',
     effects: [percent('incomingDamage', -6)],
@@ -65,7 +68,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 3,
     name: 'Усиленное лечение',
     sprite: 'TalentHealBoost',
-    effects: [flat('heal.amount', 350), flat('hpRegen', 2)],
+    effects: [flat('heal.amount', 350), flat('hpRegen', 5)],
     description:
       '«Лечение» восстанавливает на {heal.amount} здоровья больше.\nТакже вы восстанавливаете дополнительно {hpRegen} здоровья каждую секунду.',
   },
@@ -199,7 +202,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'defense',
     sprite: 'TalentShieldBlock',
     column: 2,
-    effects: [flat('blockChance', 0.08)],
+    effects: [flat('blockChance', 0.05)],
     fixedEffects: [flat('blockPower', 50)],
     description:
       'Позволяет заблокировать атаку паука с вероятностью {blockChance}.\nПри блоке поглощает до {blockPower} урона.',
@@ -227,16 +230,15 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'defense',
     column: 2,
     sprite: 'TalentBestDefense',
-    effects: [flat('blockVolleyChance', 0.02)],
-    description:
-      'При успешном блоке с вероятностью {blockVolleyChance} выпускает «Залп» со всеми его улучшениями.\nЭтот залп не расходует энергию и может сработать во время перезарядки. Перезарядка «Залпа» и лучников при этом не меняется.',
+    effects: [flat('blockVolleyChance', 0.01)],
+    description: `Когда паук доходит до вас, с вероятностью {blockVolleyChance} выпускает «Залп» со всеми его улучшениями, даже без урона, при блоке или неуязвимости.\nСрабатывает не чаще одного раза в ${BEST_DEFENSE_COOLDOWN} с. Этот залп не расходует энергию и может сработать во время перезарядки. Перезарядка «Залпа» и лучников при этом не меняется.`,
   },
   warriorArmor: {
     name: 'Броня воина',
     branch: 'defense',
     column: 1,
     sprite: 'TalentWarriorArmor',
-    effects: [flat('armor', 80)],
+    effects: [flat('armor', 250)],
     description: 'Увеличивает броню на {armor} единиц.',
   },
   titanArmor: {

@@ -25,6 +25,7 @@ export class GameState {
   freezeActive = false;
   invulnerableTimer = 0;
   lastHopeTimer = 0;
+  bestDefenseCooldown = 0;
   adrenalineTimer = 0;
   adrenalineShots = 0;
   readonly talentAbilities = new Set<AbilityId>();

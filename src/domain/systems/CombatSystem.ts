@@ -4,6 +4,7 @@ import type { RandomSource } from '../rules/random.js';
 import type { SpiderType } from '../types.js';
 import { randomInt } from '../rules/random.js';
 import { WORLD } from '../rules/world.js';
+import { BEST_DEFENSE_COOLDOWN } from '../rules/stats.js';
 import { SPIDERS, SPECIAL_SPIDER_ORDER } from '../../content/spiders.js';
 import { Spider } from '../model/Spider.js';
 import { fireVolley } from './AbilitySystem.js';
@@ -114,11 +115,15 @@ export function resolveBreaches(state: GameState, random: RandomSource, emit: Em
           ? { blockedDamage: state.rules.value('incomingDamage', spider.damage) - hp }
           : {}),
       });
-      if (blocked) {
-        emit({ type: 'absorb' });
-        if (state.stats.blockVolleyChance > 0 && random() < state.stats.blockVolleyChance)
-          fireVolley(state, random);
-      }
+      if (blocked) emit({ type: 'absorb' });
+    }
+    if (
+      state.bestDefenseCooldown === 0 &&
+      state.stats.blockVolleyChance > 0 &&
+      random() < state.stats.blockVolleyChance
+    ) {
+      fireVolley(state, random);
+      state.bestDefenseCooldown = BEST_DEFENSE_COOLDOWN;
     }
     state.modifyEnergy(state.stats.energyPerBreach);
     spider.startDying();

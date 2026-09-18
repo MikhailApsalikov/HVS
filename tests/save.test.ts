@@ -20,7 +20,7 @@ describe('saves and migration', () => {
     };
     const loaded = restore(parseSave(previous)!);
     expect(loaded.talents.getRank('shieldBlock')).toBe(8);
-    expect(loaded.state.stats).toMatchObject({ blockChance: 0.64, blockPower: 50 });
+    expect(loaded.state.stats).toMatchObject({ blockChance: 0.4, blockPower: 50 });
     expect(loaded.state.pendingTalentPoints).toBe(session.state.pendingTalentPoints + 4);
     expect(loaded.state.isAbilityUnlocked('lastHope')).toBe(true);
     expect(loaded.talents.getRank('hunterReward')).toBe(2);
@@ -46,7 +46,7 @@ describe('saves and migration', () => {
         inventory: ['c001', 'c001', 'missing', 'c003', 'c001', 'c003'],
         abilities: data.abilities.slice(0, version < 5 ? 8 : 9),
       })!;
-      expect(parsed.version).toBe(7);
+      expect(parsed.version).toBe(8);
       const loaded = restore(parsed);
       expect(loaded.items.inventory).toEqual(['c001', 'c003']);
       expect(loaded.state.coins).toBe(
@@ -98,20 +98,20 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(7);
+    expect(parsed.version).toBe(8);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
-      endurance: 104,
+      endurance: 79,
       agility: 32,
       intellect: 34,
-      maxHp: 740,
-      armor: 208,
+      maxHp: 490,
+      armor: 158,
     });
     expect(loaded.state.hp).toBe(400);
     expect(loaded.state.coins).toBe(123);
     expect(loaded.state.energy).toBe(90);
-    expect(loaded.state.levelTimerMax).toBe(31);
-    expect(loaded.state.levelTimer).toBe(15.5);
+    expect(loaded.state.levelTimerMax).toBe(32);
+    expect(loaded.state.levelTimer).toBe(16);
     expect(loaded.talents.getRank('rapidFire')).toBe(2);
     expect(loaded.talents.canUpgrade('rapidFire', 10)).toBe(false);
     expect(loaded.items.toSaveData()).toEqual(['c009']);
@@ -133,10 +133,10 @@ describe('saves and migration', () => {
     const session = new GameSession('normal');
     session.state.coins = 10000;
     session.buyItem('c009');
-    session.state.hp = 400;
+    session.state.hp = 200;
     const loaded = restore(parseSave(snapshot(session))!);
-    expect(loaded.state.hp).toBe(400);
-    expect(loaded.state.maxHp).toBe(470);
+    expect(loaded.state.hp).toBe(200);
+    expect(loaded.state.maxHp).toBe(220);
   });
   it('round-trips full running state, actors, cooldowns, resources and modifiers', () => {
     const session = game(50);
@@ -186,7 +186,7 @@ describe('saves and migration', () => {
     expect(loaded.state.coins).toBe(123);
     expect(loaded.state.stats.energyRegen).toBe(10.54);
     expect(loaded.state.phase).toBe('levelUp');
-    expect(loaded.state.maxHp).toBe(640);
+    expect(loaded.state.maxHp).toBe(590);
     loaded.upgradeTalent('tireless');
     loaded.confirmLevelUp();
     expect(loaded.state.level).toBe(21);

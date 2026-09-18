@@ -48,9 +48,11 @@ describe('architecture boundaries', () => {
 describe('legacy feature inventory captured before rewrite', () => {
   const baseline = JSON.parse(readFileSync('tests/fixtures/legacy-content.json', 'utf8'));
   it('retains every item name, ID and base price', () => {
-    expect(ITEM_CATALOG.map(({ id, name, price }) => ({ id, name, price }))).toEqual(
-      baseline.items,
-    );
+    expect(
+      ITEM_CATALOG.filter(({ id }) =>
+        baseline.items.some((item: { id: string }) => item.id === id),
+      ).map(({ id, name, price }) => ({ id, name, price })),
+    ).toEqual(baseline.items);
   });
   it('keeps untouched encounter and ability balance through the attribute update', () => {
     expect(normalConfig).toEqual({
@@ -77,7 +79,8 @@ describe('legacy feature inventory captured before rewrite', () => {
         willToWin: { maxRanks: 5, unlocksAtLevel: 50 },
         adrenaline: { maxRanks: 1, unlocksAtLevel: 60 },
         marauder: { maxRanks: 3, unlocksAtLevel: 30 },
-        warriorArmor: { maxRanks: 5, unlocksAtLevel: 20 },
+        warriorArmor: { maxRanks: 5, unlocksAtLevel: 10 },
+        spiderArmor: { maxRanks: 10, unlocksAtLevel: 20 },
         titanArmor: { maxRanks: 5, unlocksAtLevel: 50 },
         endurance: { maxRanks: 7, unlocksAtLevel: 0 },
         tireless: { maxRanks: 5, unlocksAtLevel: 0 },

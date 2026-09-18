@@ -192,13 +192,13 @@ describe('primary attributes through the session API', () => {
     ).toBe(false);
     const session = new GameSession('normal');
     session.state.coins = 10000;
-    expect(session.buyItem('c009')).toBe(true); // Previously +500 HP, now +50 endurance.
+    expect(session.buyItem('c009')).toBe(true); // Now +25 endurance at the original price.
     expect(session.state.stats).toMatchObject({
-      endurance: 77,
-      maxHp: 470,
-      hpRegen: 3.08,
-      armor: 154,
-      coinsPerSec: 4.7,
+      endurance: 52,
+      maxHp: 220,
+      hpRegen: 2.08,
+      armor: 104,
+      coinsPerSec: 4.5,
     });
     expect(session.sellItem(0)).toBe(true);
     expect(session.state.stats).toMatchObject({
@@ -234,10 +234,10 @@ describe('primary attributes through the session API', () => {
     session.upgradeTalent('improvedEndurance');
     session.buyItem('c001');
     expect(session.state.stats).toMatchObject({
-      endurance: 41,
-      maxHp: 110,
-      armor: 82,
-      hpRegen: 1.64,
+      endurance: 35,
+      maxHp: 100,
+      armor: 70,
+      hpRegen: 1.4,
     });
   });
 });
@@ -257,6 +257,7 @@ describe('armor and talent branches', () => {
     for (const [id, ranks] of [
       ['endurance', 7],
       ['improvedEndurance', 7],
+      ['warriorArmor', 5],
       ['spiderArmor', 10],
       ['shieldBlock', 4],
     ] as const)
@@ -266,17 +267,20 @@ describe('armor and talent branches', () => {
     session.refreshStats();
     const before = session.state.stats;
     expect(session.upgradeTalent('healBoost')).toBe(true);
-    expect(session.talents.branchPoints('defense')).toBe(29);
+    expect(session.talents.branchPoints('defense')).toBe(34);
     expect(session.talents.branchPoints('magic')).toBe(21);
     expect(session.state.stats['heal.amount']).toBe(before['heal.amount'] + 350);
-    expect(session.state.stats.hpRegen).toBeCloseTo(before.hpRegen + 2);
+    expect(session.state.stats.hpRegen).toBeCloseTo(before.hpRegen + 5);
   });
 
   it('reduces spider damage by six percent per rank as one talent source', () => {
     const session = new GameSession('normal', () => 0.999999);
     session.state.level = 10;
-    session.state.pendingTalentPoints = 20;
+    session.state.level = 20;
+    session.state.pendingTalentPoints = 30;
     for (let rank = 0; rank < 7; rank++) session.upgradeTalent('endurance');
+    for (let rank = 0; rank < 5; rank++) session.upgradeTalent('warriorArmor');
+    for (let rank = 0; rank < 2; rank++) session.upgradeTalent('improvedEndurance');
     session.state.character.setModifiers('test:no-armor', [
       { stat: 'armor', kind: 'percent', value: -100 },
     ]);
@@ -429,12 +433,12 @@ describe('armor and talent branches', () => {
   });
 
   it.each([
-    ['spiderArmor', 2, 7, 10],
+    ['spiderArmor', 3, 14, 20],
     ['volleyMastery', 3, 14, 20],
     ['blizzardMastery', 4, 21, 30],
     ['dutyBound', 5, 28, 40],
     ['healBoost', 5, 28, 40],
-    ['warriorArmor', 3, 14, 20],
+    ['warriorArmor', 2, 7, 10],
     ['titanArmor', 6, 35, 50],
     ['quickInstinct', 5, 28, 40],
   ] as const)(

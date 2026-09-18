@@ -5,7 +5,7 @@ import type { GameState } from './model/GameState.js';
 import { Spider } from './model/Spider.js';
 import { Arrow } from './model/Arrow.js';
 import { ABILITY_ORDER } from '../content/abilities.js';
-import { PRIMARY_STATS, STATS } from './rules/stats.js';
+import { BEST_DEFENSE_COOLDOWN, PRIMARY_STATS, STATS } from './rules/stats.js';
 import { TALENTS } from '../content/talents.js';
 import { SPIDERS } from '../content/spiders.js';
 import { DIFFICULTIES } from '../content/difficulties.js';
@@ -26,6 +26,7 @@ const STATE_FIELDS = [
   'freezeActive',
   'invulnerableTimer',
   'lastHopeTimer',
+  'bestDefenseCooldown',
   'adrenalineTimer',
   'adrenalineShots',
   'blizzardTimer',
@@ -60,7 +61,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 7;
+  readonly version: 8;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -77,7 +78,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 7,
+    version: 8,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -96,6 +97,8 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   const state = session.state;
   state.level = data.state.level;
   state.lastHopeTimer = data.state.lastHopeTimer;
+  state.adrenalineTimer = data.state.adrenalineTimer;
+  state.adrenalineShots = data.state.adrenalineShots;
   const talentRefund = session.talents.loadFromSave(data.talents);
   state.character.restoreBase(data.character);
   for (const source of new Set(data.characterModifiers.map((modifier) => modifier.source))) {
@@ -159,6 +162,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
       remainingCooldown: entry.remainingCooldown,
     }),
   );
+  if (state.adrenalineActive) for (const archer of state.archers) archer.start(0);
   return session;
 }
 
@@ -196,7 +200,7 @@ export function parseSave(value: unknown): SaveData | null {
 function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
-  if (![3, 4, 5, 6, 7].includes(value.version as number) || !object(value.state)) return null;
+  if (![3, 4, 5, 6, 7, 8].includes(value.version as number) || !object(value.state)) return null;
   const state = value.state;
   const numeric = [
     'level',
@@ -216,7 +220,12 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   ];
   if (!numeric.every((key) => number(state[key]))) return null;
   if ((value.version as number) >= 5 && !number(state.lastHopeTimer)) return null;
-  if (value.version === 7) {
+  if (
+    value.version === 8 &&
+    (!number(state.bestDefenseCooldown) || state.bestDefenseCooldown > BEST_DEFENSE_COOLDOWN)
+  )
+    return null;
+  if ((value.version as number) >= 7) {
     if (
       !number(state.adrenalineTimer) ||
       state.adrenalineTimer > STATS['adrenaline.duration'].policy.max! ||
@@ -287,7 +296,11 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     value.archers.length !== WORLD.lanes ||
     !arrayOf(value.abilities, cooldown) ||
     value.abilities.length !==
-      (value.version === 7 ? ABILITY_ORDER.length : (value.version as number) >= 5 ? 9 : 8)
+      ((value.version as number) >= 7
+        ? ABILITY_ORDER.length
+        : (value.version as number) >= 5
+          ? 9
+          : 8)
   )
     return null;
   if (
@@ -340,15 +353,16 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
-  if (value.version !== 7) {
+  if (value.version !== 8) {
     const previous = {
       ...value,
-      version: 7,
+      version: 8,
       state: {
         ...state,
         lastHopeTimer: (value.version as number) >= 5 ? state.lastHopeTimer : 0,
-        adrenalineTimer: 0,
-        adrenalineShots: 0,
+        bestDefenseCooldown: 0,
+        adrenalineTimer: value.version === 7 ? state.adrenalineTimer : 0,
+        adrenalineShots: value.version === 7 ? state.adrenalineShots : 0,
       },
       abilities: [
         ...value.abilities,

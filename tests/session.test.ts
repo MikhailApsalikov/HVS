@@ -78,8 +78,8 @@ describe('progression and player commands', () => {
     expect(session.buyItem('missing')).toBe(false);
     expect(session.buyItem('c020')).toBe(false);
     expect(session.buyItem('c001')).toBe(true);
-    expect(session.state.maxHp).toBe(200);
-    expect(session.state.hp).toBe(200);
+    expect(session.state.maxHp).toBe(150);
+    expect(session.state.hp).toBe(150);
     expect(session.buyItem('c001')).toBe(false);
     expect(session.sellItem(-1)).toBe(false);
     expect(session.sellItem(0.5)).toBe(false);

@@ -6,6 +6,7 @@ const decimal = { digits: 2, min: 0 } as const;
 const duration = { digits: 2, min: 0 } as const;
 const speed = { digits: 6, min: 0 } as const;
 const probability = { digits: 6, min: 0, max: 1 } as const;
+export const BEST_DEFENSE_COOLDOWN = 3;
 /** Armor inflation is negligible through level 10 and accelerates quartically afterwards. */
 export const ARMOR_RULES = {
   linearScale: 24,
@@ -28,7 +29,7 @@ export const STATS = {
   armor: stat('Броня', 0, integer),
   blockChance: stat('Шанс блока', 0, probability),
   blockPower: stat('Сила блока', 0, integer),
-  blockVolleyChance: stat('Шанс бесплатного «Залпа» при блокировании', 0, probability),
+  blockVolleyChance: stat('Шанс бесплатного «Залпа» при прорыве паука', 0, probability),
   armorReduction: stat('Снижение урона бронёй', 0, { ...probability, max: ARMOR_RULES.cap }),
   maxHp: stat('Максимальное HP', 100, integer),
   maxEnergy: stat('Максимальная энергия', 100, integer),
@@ -73,7 +74,7 @@ export const STATS = {
   'lastHope.cost': stat('Стоимость: Блок последней надежды', 45, integer),
   'lastHope.cooldown': stat('Перезарядка: Блок последней надежды, с', 65, duration),
   'lastHope.duration': stat('Длительность: Блок последней надежды, с', 6, duration),
-  'lastHope.blockChance': stat('Прибавка к шансу блока', 0.3, probability),
+  'lastHope.blockChance': stat('Прибавка к шансу блока', 0.5, probability),
   'lastHope.blockPower': stat('Прибавка к силе блока от выносливости', 0, integer),
   'armageddon.cost': stat('Стоимость: Армагеддон', 100, integer),
   'armageddon.cooldown': stat('Перезарядка: Армагеддон, с', 180, duration),
@@ -85,6 +86,10 @@ export const STATS = {
   'adrenaline.cooldown': stat('Перезарядка: Адреналин, с', 120, duration),
   'adrenaline.duration': stat('Длительность: Адреналин, с', 20, { ...duration, max: 20 }),
   'adrenaline.shots': stat('Бесплатные выстрелы: Адреналин', 20, { ...integer, max: 20 }),
+  'adrenaline.shootCooldownReduction': stat('Сокращение перезарядки выстрела: Адреналин, %', 100, {
+    ...integer,
+    max: 100,
+  }),
 } as const;
 
 export type StatId = keyof typeof STATS;

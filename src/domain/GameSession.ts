@@ -48,6 +48,14 @@ export class GameSession {
     const rules = new GameRules(state.config, effects, state.character.base, state.level);
     const scaling = this.talents.getScalingModifiers(rules.snapshot());
     effects.push(...scaling);
+    if (state.adrenalineActive) {
+      effects.push({
+        source: 'ability:adrenaline',
+        stat: 'shootCooldown',
+        kind: 'percent',
+        value: -rules.value('adrenaline.shootCooldownReduction'),
+      });
+    }
     if (state.lastHopeTimer > 0) {
       effects.push(
         {
@@ -120,18 +128,22 @@ export class GameSession {
     if (!Number.isInteger(lane) || state.phase !== 'playing' || !archer?.isReady) return 'blocked';
     if (state.energy < state.currentShootCost) return 'not_enough_energy';
     state.modifyEnergy(-state.currentShootCost);
+    archer.start(state.stats.shootCooldown);
     if (state.adrenalineActive) {
       state.adrenalineShots -= 1;
-      if (state.adrenalineShots === 0) state.adrenalineTimer = 0;
+      if (state.adrenalineShots === 0) {
+        state.adrenalineTimer = 0;
+        this.refreshStats(false);
+      }
     }
-    archer.start(state.stats.shootCooldown);
     const arrow = new Arrow(state.newId('arrow'), lane, state.stats.arrowSpeed);
     state.arrows.set(arrow.id, arrow);
     return 'shot';
   }
   activateAbility(id: AbilityId): AbilityResult {
     const result = activateAbility(this.state, id, this.random);
-    if (id === 'lastHope' && result === 'activated') this.refreshStats(false);
+    if ((id === 'lastHope' || id === 'adrenaline') && result === 'activated')
+      this.refreshStats(false);
     return result;
   }
   drainEvents(): GameEvent[] {
@@ -146,8 +158,13 @@ export class GameSession {
     const emit = (event: GameEvent) => this.events.push(event);
     spawnSpiders(state, dt, this.random);
     const lastHopeWasActive = state.lastHopeTimer > 0;
+    const adrenalineWasActive = state.adrenalineActive;
     tickAbilities(state, dt);
-    if (lastHopeWasActive && state.lastHopeTimer === 0) this.refreshStats(false);
+    if (
+      (lastHopeWasActive && state.lastHopeTimer === 0) ||
+      (adrenalineWasActive && !state.adrenalineActive)
+    )
+      this.refreshStats(false);
     moveSpiders(state, dt, this.random);
     tickArrows(state, dt);
     resolveBreaches(state, this.random, emit);

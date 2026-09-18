@@ -11,10 +11,10 @@ const quadratic = (n: number) => n * n;
 const cubic = (n: number) => n * n * n;
 const logarithmic = (n: number) => n * Math.log2(n + 1);
 const PRICES: Record<StatType, PriceRule> = {
-  endurance: { unit: 10, base: 32, curve: logarithmic },
-  agility: { unit: 1, base: 32, curve: quadratic },
-  intellect: { unit: 1, base: 32, curve: quadratic },
-  hpRegen: { unit: 1, base: 24, curve: logarithmic },
+  endurance: { unit: 5, base: 32, curve: logarithmic },
+  agility: { unit: 5, base: 32, curve: logarithmic },
+  intellect: { unit: 5, base: 32, curve: logarithmic },
+  hpRegen: { unit: 0.5, base: 24, curve: logarithmic },
   damageReduction: { unit: 1, base: 12, curve: quadratic },
   coinsPerKill: { unit: 1, base: 400, curve: quadratic },
   maxEnergy: { unit: 10, base: 36, curve: quadratic },

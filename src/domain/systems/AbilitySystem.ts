@@ -35,6 +35,7 @@ const EFFECTS: Record<AbilityId, Effect> = {
   adrenaline: (state) => {
     state.adrenalineTimer = state.stats['adrenaline.duration'];
     state.adrenalineShots = state.stats['adrenaline.shots'];
+    for (const archer of state.archers) archer.start(0);
   },
   armageddon: (state) => {
     state.armageddonPhase = 'charging';
@@ -72,6 +73,7 @@ export function tickAbilities(state: GameState, dt: number): void {
   for (const cooldown of [...state.abilities.values(), ...state.archers]) cooldown.tick(dt);
   state.invulnerableTimer = Math.max(0, state.invulnerableTimer - dt);
   state.lastHopeTimer = Math.max(0, state.lastHopeTimer - dt);
+  state.bestDefenseCooldown = Math.max(0, state.bestDefenseCooldown - dt);
   state.adrenalineTimer = Math.max(0, state.adrenalineTimer - dt);
   if (state.adrenalineTimer === 0) state.adrenalineShots = 0;
   state.blizzardTimer = Math.max(0, state.blizzardTimer - dt);
