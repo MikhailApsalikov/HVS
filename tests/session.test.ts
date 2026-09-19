@@ -6,7 +6,6 @@ import { normalConfig } from '../src/content/normal.js';
 import { ABILITIES, ABILITY_ORDER } from '../src/content/abilities.js';
 import { SPIDERS } from '../src/content/spiders.js';
 import { ITEM_CATALOG } from '../src/content/items.js';
-import { spawnSpiders } from '../src/domain/systems/CombatSystem.js';
 import type { SpiderType } from '../src/domain/types.js';
 import { game, advance, addSpider } from './helpers.js';
 
@@ -259,7 +258,7 @@ describe('enemy types and rewards', () => {
         fat: [0.08, 20],
         fast: [0.24, 10],
         ninja: [0.08, 20],
-        burner: [0.08, 0],
+        burner: [0.08, 10],
         tank: [0.048, 200],
       }[type];
       expect([stats.speed, stats.damage]).toEqual(expected);
@@ -272,16 +271,34 @@ describe('enemy types and rewards', () => {
     ['fast', 20],
     ['ninja', 35],
   ] as const)('unlocks %s at %s', (type, level) => {
-    const session = game(level);
-    spawnSpiders(session.state, 0.02, () => 0);
-    expect([...session.state.spiders.values()].every((spider) => spider.type === type)).toBe(true);
+    const candidates = [
+      ['tank', 15],
+      ['burner', 5],
+      ['fat', 10],
+      ['fast', 20],
+      ['ninja', 35],
+    ] as const;
+    const rolls = [0];
+    for (const [candidate, unlock] of candidates) {
+      if (level < unlock) continue;
+      rolls.push(candidate === type ? 0 : 0.999999);
+      if (candidate === type) break;
+    }
+    rolls.push(0.5, 0.5, 0.5);
+    const session = new GameSession('normal', () => rolls.shift() ?? 0.999999);
+    session.upgradeTalent('hunterMastery');
+    session.confirmLevelUp();
+    session.state.level = level;
+    session.refreshStats();
+    session.tick(0.02);
+    expect([...session.state.spiders.values()].map((spider) => spider.type)).toEqual([type]);
   });
   it.each([0, 4, 8])('ninja jumps once without leaving the field from lane %s', (lane) => {
     const session = game(35);
     const spider = addSpider(session, 'ninja', lane, 0.3);
     advance(session, 1 / 60);
     expect(spider.lane).toBe(lane === 0 ? 1 : lane === 8 ? 7 : 5);
-    expect(spider.hasJumped).toBe(true);
+    expect(spider.jumpsMade).toBe(1);
     const newLane = spider.lane;
     advance(session, 1);
     expect(spider.lane).toBe(newLane);
@@ -290,9 +307,9 @@ describe('enemy types and rewards', () => {
     const session = game();
     addSpider(session, 'burner', 0, 1, 2);
     advance(session, 0.5);
-    expect(session.state.energy).toBeCloseTo(14.08, 8);
+    expect(session.state.energy).toBeCloseTo(12.08, 8);
     expect(session.drainEvents()).toEqual([
-      { type: 'damage', spiderId: 'spider-1', hp: 1, energy: 90 },
+      { type: 'damage', spiderId: 'spider-1', hp: 1, energy: 92 },
     ]);
     expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(102.1);
   });

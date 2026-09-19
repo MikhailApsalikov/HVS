@@ -73,6 +73,9 @@ describe('legacy feature inventory captured before rewrite', () => {
     expect(normalConfig).toEqual({
       ...baseline.normal,
       armorEffectiveness: 1.5,
+      spawnP0: 0.00054,
+      spawnDP: 0.000045,
+      spiderChanceFast: 0.07,
       baseHp: 100,
       hpRegen: 0,
       energyRegen: 8,

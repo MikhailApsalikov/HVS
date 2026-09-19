@@ -8,7 +8,7 @@ describe('combat balance through session commands', () => {
     ['tank', 15, 0.0816, 1180],
     ['fast', 20, 0.468, 77],
   ] as const)('spawns %s with its new multiplier', (type, level, speed, damage) => {
-    const rolls = [0, 0, 0.5, 0.5, 0.5];
+    const rolls = type === 'tank' ? [0, 0, 0.5, 0.5, 0.5] : [0, 0.99, 0.99, 0.99, 0, 0.5, 0.5, 0.5];
     let roll = 0;
     const session = new GameSession('normal', () => rolls[roll++ % rolls.length]);
     session.upgradeTalent('hunterMastery');
@@ -34,7 +34,7 @@ describe('combat balance through session commands', () => {
     const first = addSpider(session, 'burner', 0, 1, 0);
     const second = addSpider(session, 'burner', 1, 1, 0);
     session.tick(0.01);
-    const burned = Math.min(energy, 90);
+    const burned = Math.min(energy, 92);
     const nextEnergy = energy - burned + 3;
     expect(session.drainEvents()).toEqual([
       { type: 'damage', spiderId: first.id, hp: 0, energy: burned },

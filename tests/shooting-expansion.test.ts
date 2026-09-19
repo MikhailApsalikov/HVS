@@ -10,7 +10,7 @@ import {
   shootDescription,
 } from '../src/ui/presenters.js';
 import type { TalentId, SpiderType } from '../src/domain/types.js';
-import { addSpider } from './helpers.js';
+import { addSpider, previousSpiders } from './helpers.js';
 
 function arena(talents: { id: TalentId; rank: number }[] = [], roll = 0) {
   const session = new GameSession('normal', () => roll);
@@ -391,13 +391,14 @@ describe('version eleven saves', () => {
       const old = {
         ...current,
         version: 10,
+        spiders: previousSpiders(current),
         state,
         abilities: current.abilities.slice(0, 10),
         arrows: current.arrows.map(({ power: _power, ...arrow }) => arrow),
         talents: [...current.talents, { id: 'volleyMastery', rank: 3 }],
       };
       const parsed = parseSave(old)!;
-      expect(parsed.version).toBe(11);
+      expect(parsed.version).toBe(12);
       const loaded = restore(parsed, () => 0);
       expect(loaded.state.eagleEyeActive).toBe(false);
       expect(loaded.state.getAbility('eagleEye').isReady).toBe(true);

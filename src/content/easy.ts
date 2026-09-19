@@ -10,6 +10,6 @@ export const easyConfig: DifficultyConfig = {
   spiderSpeedStep: 0.003,
   spiderDamageBase: 20,
   spiderDamageStep: 5,
-  spawnP0: 0.0006,
-  spawnDP: 0.000035,
+  spawnP0: 0.00054,
+  spawnDP: 0.0000315,
 };

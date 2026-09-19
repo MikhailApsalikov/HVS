@@ -10,6 +10,6 @@ export const hardConfig: DifficultyConfig = {
   spiderSpeedStep: 0.005,
   spiderDamageBase: 20,
   spiderDamageStep: 9,
-  spawnP0: 0.00065,
-  spawnDP: 0.000065,
+  spawnP0: 0.000585,
+  spawnDP: 0.0000585,
 };

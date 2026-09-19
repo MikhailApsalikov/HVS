@@ -3,7 +3,7 @@ import { GameSession } from '../src/domain/GameSession.js';
 import { Arrow } from '../src/domain/model/Arrow.js';
 import { parseSave, restore, snapshot } from '../src/domain/save.js';
 import { resourceDescription } from '../src/ui/presenters.js';
-import { game, advance, addSpider } from './helpers.js';
+import { game, advance, addSpider, previousSpiders } from './helpers.js';
 
 function afkGame(level = 10) {
   const session = game(level);
@@ -327,10 +327,11 @@ describe('anti-AFK through player commands and gameplay time', () => {
     const migrated = parseSave({
       ...current,
       version: 9,
+      spiders: previousSpiders(current),
       abilities: current.abilities.slice(0, 10),
       state: previousState,
     })!;
-    expect(migrated.version).toBe(11);
+    expect(migrated.version).toBe(12);
     expect(migrated.state).toMatchObject({
       antiAfkIdleTimer: 0,
       antiAfkStacks: 0,

@@ -251,14 +251,14 @@ describe('damage blocking and counter volleys', () => {
     const hp = session.state.hp;
     session.tick(0.001);
     expect(session.state.hp).toBe(hp);
-    expect(session.state.energy).toBe(10);
+    expect(session.state.energy).toBe(0);
     const events = session.drainEvents();
     expect(events.filter((event) => event.type === 'absorb')).toHaveLength(2);
     expect(events).toContainEqual({
       type: 'damage',
       spiderId: burner.id,
       hp: 0,
-      energy: 90,
+      energy: 100,
       blockedDamage: session.state.rules.value('incomingDamage', 2),
     });
   });
@@ -392,7 +392,7 @@ describe('defense save compatibility', () => {
       ),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(11);
+    expect(parsed.version).toBe(12);
     const loaded = restore(parsed);
     expect(loaded.state.getAbility('stand').remainingCooldown).toBe(41);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(123);

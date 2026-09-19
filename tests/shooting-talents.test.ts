@@ -4,7 +4,7 @@ import { parseSave, restore, snapshot } from '../src/domain/save.js';
 import { TALENTS } from '../src/content/talents.js';
 import type { TalentId } from '../src/domain/types.js';
 import { attributeDescription, talentDescription, shootDescription } from '../src/ui/presenters.js';
-import { addSpider } from './helpers.js';
+import { addSpider, previousSpiders } from './helpers.js';
 
 function combat(rank = 1, roll = 0) {
   const random = vi.fn(() => roll);
@@ -331,10 +331,10 @@ describe('critical shot saves', () => {
         { id: 'blizzardMastery', rank: 4 },
       ],
       arrows: saved.arrows.map(({ critical: _critical, kills: _kills, ...arrow }) => arrow),
-      spiders: saved.spiders.map(({ grantsKillEnergy: _energy, ...spider }) => spider),
+      spiders: previousSpiders(saved).map(({ grantsKillEnergy: _energy, ...spider }) => spider),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(11);
+    expect(parsed.version).toBe(12);
     const loaded = restore(parsed);
     expect(loaded.talents.getRank('hunterMastery')).toBe(5);
     expect(loaded.state.stats.shootCost).toBe(25);

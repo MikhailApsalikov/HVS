@@ -1,6 +1,7 @@
 import type { DifficultyConfig, AbilityId, SpiderType } from '../types.js';
 import {
   STATS,
+  BURNER_ENERGY_PER_LEVEL,
   PRIMARY_STATS,
   PRIMARY_GROWTH,
   type PrimaryStatId,
@@ -70,6 +71,8 @@ export class GameRules {
     } as const;
     if (id in aliases) return this.config[aliases[id as keyof typeof aliases]];
     if (id === 'arrowSpeed') return 1 / this.config.arrowTravelTime;
+    if (id === 'burnerEnergy')
+      return STATS.burnerEnergy.base + BURNER_ENERGY_PER_LEVEL * this.level;
     if (id.endsWith('.cost') || id.endsWith('.cooldown')) {
       const [ability, field] = id.split('.') as [AbilityId, 'cost' | 'cooldown'];
       return this.config.abilities[ability][field];
@@ -101,6 +104,24 @@ export class GameRules {
   }
   spawnProbability(level: number): number {
     return this.value('spawnProbability', this.config.spawnP0 + this.config.spawnDP * (level - 1));
+  }
+  spiderTypeProbability(type: SpiderType, level: number): number {
+    const definition = SPIDERS[type];
+    if (level < definition.unlockLevel || !definition.chanceKey) return 0;
+    const growth = definition.chanceGrowth;
+    return this.value('spiderTypeProbability', this.config[definition.chanceKey], [
+      {
+        source: `species:${type}:level`,
+        kind: 'flat',
+        value: growth
+          ? (Math.floor((level - definition.unlockLevel) / growth.levels) * growth.percent) / 100
+          : 0,
+      },
+    ]);
+  }
+  spiderJumpLimit(type: SpiderType, level: number): number {
+    const step = SPIDERS[type].jumpLevelStep;
+    return step ? Math.floor(level / step) : 0;
   }
   spiderStats(
     type: SpiderType,

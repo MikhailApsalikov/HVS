@@ -13,8 +13,9 @@ interface SpiderDefinition {
   readonly speedPercent: number;
   readonly damagePercent: number;
   readonly hits: number;
+  readonly chanceGrowth?: { readonly levels: number; readonly percent: number };
   readonly burnsEnergy?: boolean;
-  readonly jumps?: boolean;
+  readonly jumpLevelStep?: number;
 }
 
 export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
@@ -22,6 +23,7 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
   fat: {
     unlockLevel: 10,
     chanceKey: 'spiderChanceFat',
+    chanceGrowth: { levels: 25, percent: 1 },
     speedPercent: 0,
     damagePercent: 0,
     hits: 2,
@@ -36,32 +38,34 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
   ninja: {
     unlockLevel: 35,
     chanceKey: 'spiderChanceNinja',
+    chanceGrowth: { levels: 35, percent: 1 },
     speedPercent: 0,
     damagePercent: 0,
     hits: 1,
-    jumps: true,
+    jumpLevelStep: 35,
   },
-  // Preserve the old game's effective 1% HP damage; previously applied twice as 0.1 × 0.1.
   burner: {
     unlockLevel: 5,
     chanceKey: 'spiderChanceBurner',
+    chanceGrowth: { levels: 20, percent: 1 },
     speedPercent: 0,
-    damagePercent: -99,
+    damagePercent: -50,
     hits: 1,
     burnsEnergy: true,
   },
   tank: {
     unlockLevel: 15,
     chanceKey: 'spiderChanceTank',
+    chanceGrowth: { levels: 15, percent: 1 },
     speedPercent: -40,
     damagePercent: 900,
     hits: 1,
   },
 };
 export const SPECIAL_SPIDER_ORDER: readonly SpiderType[] = [
-  'ninja',
-  'fast',
   'tank',
-  'fat',
   'burner',
+  'fat',
+  'fast',
+  'ninja',
 ];

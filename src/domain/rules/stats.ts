@@ -9,6 +9,7 @@ const probability = { digits: 6, min: 0, max: 1 } as const;
 export const BEST_DEFENSE_COOLDOWN = 3;
 export const CRITICAL_SHOT_POWER = 2;
 export const IMPROVED_CRITICAL_SHOT_POWER = 3;
+export const BURNER_ENERGY_PER_LEVEL = 2;
 export const ANTI_AFK = {
   unlockLevel: 10,
   idleDuration: 3,
@@ -60,6 +61,7 @@ export const STATS = {
   inventorySlots: stat('Слоты инвентаря', 1, integer),
   levelDuration: stat('Длительность уровня, с', 0, { ...duration, min: 10 }),
   spawnProbability: stat('Вероятность появления паука', 0, probability),
+  spiderTypeProbability: stat('Вероятность выбора вида паука', 0, probability),
   spawnInterval: stat('Интервал появления, с', 0.02, { ...duration, min: 0.01 }),
   spiderSpeed: stat('Скорость паука, поля/с', 0, speed),
   permafrostSlow: stat('Замедление: Вечная мерзлота', 0, { ...probability, max: 0.5 }),

@@ -18,12 +18,8 @@ export function spawnSpiders(state: GameState, dt: number, random: RandomSource)
       if (random() >= state.rules.spawnProbability(state.level)) continue;
       let type: SpiderType = 'normal';
       for (const candidate of SPECIAL_SPIDER_ORDER) {
-        const definition = SPIDERS[candidate];
-        if (
-          state.level >= definition.unlockLevel &&
-          definition.chanceKey &&
-          random() < state.config[definition.chanceKey]
-        ) {
+        if (state.level < SPIDERS[candidate].unlockLevel) continue;
+        if (random() < state.rules.spiderTypeProbability(candidate, state.level)) {
           type = candidate;
           break;
         }
@@ -38,6 +34,7 @@ export function spawnSpiders(state: GameState, dt: number, random: RandomSource)
         stats.damage,
         SPIDERS[type].hits,
         jump,
+        state.rules.spiderJumpLimit(type, state.level),
       );
       state.spiders.set(spider.id, spider);
     }
@@ -47,10 +44,14 @@ export function spawnSpiders(state: GameState, dt: number, random: RandomSource)
 export function moveSpiders(state: GameState, dt: number, random: RandomSource): void {
   for (const spider of state.spiders.values()) {
     if (spider.dying) continue;
-    if (SPIDERS[spider.type].jumps && !spider.hasJumped && spider.y >= spider.jumpThreshold) {
+    while (
+      SPIDERS[spider.type].jumpLevelStep &&
+      spider.jumpsMade < spider.jumpLimit &&
+      spider.y >= spider.nextJumpThreshold
+    ) {
       spider.lane +=
         spider.lane === 0 ? 1 : spider.lane === WORLD.lanes - 1 ? -1 : random() < 0.5 ? -1 : 1;
-      spider.hasJumped = true;
+      spider.jumpsMade += 1;
     }
     spider.move(dt, state.stats.permafrostSlow);
   }

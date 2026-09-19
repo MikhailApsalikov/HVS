@@ -11,7 +11,7 @@ export class Spider {
   dying = false;
   dyingTimer = 0;
   reachedCastle = false;
-  hasJumped = false;
+  jumpsMade = 0;
   grantsKillEnergy = true;
   constructor(
     readonly id: string,
@@ -21,7 +21,11 @@ export class Spider {
     readonly damage: number,
     public hits: number,
     readonly jumpThreshold: number,
+    readonly jumpLimit = 0,
   ) {}
+  get nextJumpThreshold(): number {
+    return this.jumpThreshold + ((1 - this.jumpThreshold) * this.jumpsMade) / this.jumpLimit;
+  }
   effectiveSpeed(passiveSlow = 0): number {
     return calculate(
       this.speed,

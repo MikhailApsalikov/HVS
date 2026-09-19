@@ -4,6 +4,14 @@ import { Spider } from '../src/domain/model/Spider.js';
 import { SPIDERS } from '../src/content/spiders.js';
 import type { SpiderType } from '../src/domain/types.js';
 import type { StoragePort } from '../src/infrastructure/storage/SaveSystem.js';
+import type { SaveData } from '../src/domain/save.js';
+
+export function previousSpiders(data: SaveData) {
+  return data.spiders.map(({ jumpLimit: _limit, jumpsMade, ...spider }) => ({
+    ...spider,
+    hasJumped: jumpsMade > 0,
+  }));
+}
 
 export function game(level = 1): GameSession {
   const session = new GameSession('normal', () => 0.999999);
@@ -34,6 +42,7 @@ export function addSpider(
     damage,
     SPIDERS[type].hits,
     0.2,
+    session.state.rules.spiderJumpLimit(type, session.state.level),
   );
   spider.y = spider.previousY = y;
   session.state.spiders.set(spider.id, spider);
