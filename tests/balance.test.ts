@@ -89,10 +89,13 @@ describe('combat balance through session commands', () => {
         expect(session.state.stats.armor).toBe(baseArmor + 250 * rank);
       }
       expect(session.upgradeTalent('warriorArmor')).toBe(false);
-      const flatArmor = baseArmor + 1250;
+      session.state.coins = 10000;
+      expect(session.buyItem('e-shield')).toBe(true);
+      const flatArmor = baseArmor + 1250 + 10000;
+      expect(session.state.stats.armor).toBe(flatArmor);
       for (let rank = 1; rank <= 5; rank++) {
         expect(session.upgradeTalent('titanArmor')).toBe(true);
-        expect(session.state.stats.armor).toBe(Math.round(flatArmor * (1 + 0.25 * rank)));
+        expect(session.state.stats.armor).toBe(Math.round(flatArmor * (1 + 1.25 * rank)));
       }
       expect(session.upgradeTalent('titanArmor')).toBe(false);
       session.state.character.setModifiers('item:one', [
@@ -103,7 +106,7 @@ describe('combat balance through session commands', () => {
         { stat: 'armor', kind: 'percent', value: 50 },
       ]);
       session.refreshStats();
-      expect(session.state.stats.armor).toBe(Math.round((flatArmor + 40) * 2.25 * 1.2 * 1.5));
+      expect(session.state.stats.armor).toBe(Math.round((flatArmor + 40) * 7.25 * 1.2 * 1.5));
       const data = snapshot(session);
       expect(snapshot(restore(parseSave(data)!))).toEqual(data);
     },

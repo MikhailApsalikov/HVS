@@ -15,7 +15,7 @@ const COMMON_ITEMS: readonly ItemConfig[] = [
     id: 'c-shield',
     name: 'Деревянный щит',
     rarity: 'common',
-    stats: [{ type: 'armor', value: 150 }],
+    stats: [{ type: 'armor', value: 50 }],
   },
   // ── +выносливость (N 1–15) ─────────────────────────────────────────────────
   {
@@ -105,31 +105,31 @@ const COMMON_ITEMS: readonly ItemConfig[] = [
     id: 'c040',
     name: 'Кольчужные перчатки',
     rarity: 'common',
-    stats: [{ type: 'armor', value: 300 }],
+    stats: [{ type: 'armor', value: 60 }],
   },
   {
     id: 'c046',
     name: 'Рунный щит',
     rarity: 'common',
-    stats: [{ type: 'armor', value: 800 }],
+    stats: [{ type: 'armor', value: 300 }],
   },
   {
     id: 'c050',
     name: 'Укреплённый доспех',
     rarity: 'common',
-    stats: [{ type: 'armor', value: 3600 }],
+    stats: [{ type: 'armor', value: 720 }],
   },
   {
     id: 'c052',
     name: 'Рыцарские поножи',
     rarity: 'common',
-    stats: [{ type: 'armor', value: 5200 }],
+    stats: [{ type: 'armor', value: 1040 }],
   },
   {
     id: 'c055',
     name: 'Адамантовый щит',
     rarity: 'common',
-    stats: [{ type: 'armor', value: 2500 }],
+    stats: [{ type: 'armor', value: 900 }],
   },
 
   // ── +макс. энергия (N 1–6) ─────────────────────────────────────────────
@@ -251,19 +251,19 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     id: 'r008',
     name: 'Защитный панцирь',
     rarity: 'rare',
-    stats: [{ type: 'armor', value: 13400 }],
+    stats: [{ type: 'armor', value: 2680 }],
   },
   {
     id: 'r009',
     name: 'Зачарованный щит',
     rarity: 'rare',
-    stats: [{ type: 'armor', value: 8000 }],
+    stats: [{ type: 'armor', value: 2500 }],
   },
   {
     id: 'r010',
     name: 'Несокрушимый доспех',
     rarity: 'rare',
-    stats: [{ type: 'armor', value: 32450 }],
+    stats: [{ type: 'armor', value: 6490 }],
   },
   { id: 'r011', name: 'Синий тотем', rarity: 'rare', stats: [{ type: 'maxEnergy', value: 80 }] },
   {
@@ -372,7 +372,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     rarity: 'rare',
     stats: [
       { type: 'endurance', value: 10 },
-      { type: 'armor', value: 150 },
+      { type: 'armor', value: 30 },
     ],
   },
   {
@@ -381,7 +381,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     rarity: 'rare',
     stats: [
       { type: 'endurance', value: 20 },
-      { type: 'armor', value: 650 },
+      { type: 'armor', value: 130 },
     ],
   },
   {
@@ -390,7 +390,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     rarity: 'rare',
     stats: [
       { type: 'endurance', value: 30 },
-      { type: 'armor', value: 1500 },
+      { type: 'armor', value: 300 },
     ],
   },
   {
@@ -399,7 +399,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     rarity: 'rare',
     stats: [
       { type: 'endurance', value: 45 },
-      { type: 'armor', value: 3350 },
+      { type: 'armor', value: 670 },
     ],
   },
 
@@ -519,7 +519,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     rarity: 'rare',
     stats: [
       { type: 'hpRegen', value: 1.5 },
-      { type: 'armor', value: 50 },
+      { type: 'armor', value: 10 },
     ],
   },
   {
@@ -528,7 +528,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     rarity: 'rare',
     stats: [
       { type: 'hpRegen', value: 2.5 },
-      { type: 'armor', value: 350 },
+      { type: 'armor', value: 70 },
     ],
   },
   {
@@ -537,7 +537,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     rarity: 'rare',
     stats: [
       { type: 'hpRegen', value: 4 },
-      { type: 'armor', value: 1050 },
+      { type: 'armor', value: 210 },
     ],
   },
   {
@@ -546,7 +546,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     rarity: 'rare',
     stats: [
       { type: 'hpRegen', value: 5 },
-      { type: 'armor', value: 2050 },
+      { type: 'armor', value: 410 },
     ],
   },
 
@@ -647,7 +647,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Магическая броня',
     rarity: 'rare',
     stats: [
-      { type: 'armor', value: 350 },
+      { type: 'armor', value: 70 },
       { type: 'maxEnergy', value: 20 },
     ],
   },
@@ -656,7 +656,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Рунная броня',
     rarity: 'rare',
     stats: [
-      { type: 'armor', value: 1500 },
+      { type: 'armor', value: 300 },
       { type: 'maxEnergy', value: 30 },
     ],
   },
@@ -667,7 +667,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Кольчужная жилетка',
     rarity: 'rare',
     stats: [
-      { type: 'armor', value: 350 },
+      { type: 'armor', value: 70 },
       { type: 'energyRegen', value: 1 },
     ],
   },
@@ -676,7 +676,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Броня тактика',
     rarity: 'rare',
     stats: [
-      { type: 'armor', value: 2050 },
+      { type: 'armor', value: 410 },
       { type: 'energyRegen', value: 1 },
     ],
   },
@@ -687,7 +687,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Боевой доспех',
     rarity: 'rare',
     stats: [
-      { type: 'armor', value: 350 },
+      { type: 'armor', value: 70 },
       { type: 'energyPerKill', value: 1 },
     ],
   },
@@ -696,7 +696,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Доспех убийцы',
     rarity: 'rare',
     stats: [
-      { type: 'armor', value: 2650 },
+      { type: 'armor', value: 530 },
       { type: 'energyPerKill', value: 1 },
     ],
   },
@@ -707,7 +707,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Щит стражника',
     rarity: 'rare',
     stats: [
-      { type: 'armor', value: 350 },
+      { type: 'armor', value: 70 },
       { type: 'energyPerBreach', value: 1 },
     ],
   },
@@ -716,7 +716,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Оберег крепости',
     rarity: 'rare',
     stats: [
-      { type: 'armor', value: 2050 },
+      { type: 'armor', value: 410 },
       { type: 'energyPerBreach', value: 1 },
     ],
   },
@@ -727,7 +727,7 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Золотая броня',
     rarity: 'rare',
     stats: [
-      { type: 'armor', value: 650 },
+      { type: 'armor', value: 130 },
       { type: 'coinsPerKill', value: 1 },
     ],
   },
@@ -826,7 +826,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     id: 'e-shield',
     name: 'Щит бастиона',
     rarity: 'epic',
-    stats: [{ type: 'armor', value: 35000 }],
+    stats: [{ type: 'armor', value: 10000 }],
   },
   // ── Один стат (8 шт.) — значения выше потолка Rare 1-stat ────────────────
   {
@@ -846,7 +846,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     id: 'e004',
     name: 'Щит предков',
     rarity: 'epic',
-    stats: [{ type: 'armor', value: 20000 }],
+    stats: [{ type: 'armor', value: 7777 }],
   },
   {
     id: 'e005',
@@ -875,7 +875,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     rarity: 'epic',
     stats: [
       { type: 'endurance', value: 75 },
-      { type: 'armor', value: 6900 },
+      { type: 'armor', value: 1380 },
     ],
   },
   {
@@ -929,7 +929,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     rarity: 'epic',
     stats: [
       { type: 'hpRegen', value: 8 },
-      { type: 'armor', value: 6900 },
+      { type: 'armor', value: 1380 },
     ],
   },
   {
@@ -946,7 +946,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Магический щит',
     rarity: 'epic',
     stats: [
-      { type: 'armor', value: 6900 },
+      { type: 'armor', value: 1380 },
       { type: 'maxEnergy', value: 40 },
     ],
   },
@@ -1022,7 +1022,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     stats: [
       { type: 'endurance', value: 25 },
       { type: 'hpRegen', value: 2.5 },
-      { type: 'armor', value: 1200 },
+      { type: 'armor', value: 240 },
     ],
   },
   {
@@ -1042,7 +1042,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     stats: [
       { type: 'endurance', value: 35 },
       { type: 'hpRegen', value: 2.5 },
-      { type: 'armor', value: 1200 },
+      { type: 'armor', value: 240 },
     ],
   },
   {
@@ -1091,7 +1091,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     rarity: 'epic',
     stats: [
       { type: 'hpRegen', value: 3.5 },
-      { type: 'armor', value: 1200 },
+      { type: 'armor', value: 240 },
       { type: 'energyRegen', value: 1 },
     ],
   },
@@ -1111,7 +1111,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     rarity: 'epic',
     stats: [
       { type: 'hpRegen', value: 5 },
-      { type: 'armor', value: 2350 },
+      { type: 'armor', value: 470 },
       { type: 'coinsPerKill', value: 1 },
     ],
   },
@@ -1120,7 +1120,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Доспех мага',
     rarity: 'epic',
     stats: [
-      { type: 'armor', value: 1200 },
+      { type: 'armor', value: 240 },
       { type: 'maxEnergy', value: 30 },
       { type: 'energyRegen', value: 1 },
     ],
@@ -1130,7 +1130,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Броня казначея',
     rarity: 'epic',
     stats: [
-      { type: 'armor', value: 2350 },
+      { type: 'armor', value: 470 },
       { type: 'maxEnergy', value: 30 },
       { type: 'coinsPerKill', value: 1 },
     ],
@@ -1188,7 +1188,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     rarity: 'legendary',
     stats: [
       { type: 'endurance', value: 25 },
-      { type: 'armor', value: 1550 },
+      { type: 'armor', value: 310 },
       { type: 'energyRegen', value: 1 },
     ],
     abilityMod: {
@@ -1221,7 +1221,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     stats: [
       { type: 'maxEnergy', value: 30 },
       { type: 'energyRegen', value: 1 },
-      { type: 'armor', value: 1550 },
+      { type: 'armor', value: 310 },
     ],
     abilityMod: {
       abilityId: 'armageddon',
@@ -1254,7 +1254,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     rarity: 'legendary',
     stats: [
       { type: 'endurance', value: 35 },
-      { type: 'armor', value: 1550 },
+      { type: 'armor', value: 310 },
       { type: 'energyRegen', value: 1 },
     ],
     abilityMod: {
@@ -1271,7 +1271,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     stats: [
       { type: 'maxEnergy', value: 40 },
       { type: 'energyPerBreach', value: 1 },
-      { type: 'armor', value: 550 },
+      { type: 'armor', value: 110 },
     ],
     abilityMod: {
       abilityId: 'blizzard',
@@ -1286,7 +1286,6 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     id: 'l007',
     name: 'Оберег Залпа',
     rarity: 'legendary',
-    price: 1955,
     stats: [
       { type: 'endurance', value: 200 },
       { type: 'hpRegen', value: 20 },
@@ -1322,7 +1321,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     stats: [
       { type: 'maxEnergy', value: 30 },
       { type: 'energyPerKill', value: 1 },
-      { type: 'armor', value: 1550 },
+      { type: 'armor', value: 310 },
     ],
     abilityMod: {
       abilityId: 'volley',
@@ -1338,7 +1337,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Щит Ни шагу назад!',
     rarity: 'legendary',
     stats: [
-      { type: 'armor', value: 50000 },
+      { type: 'armor', value: 11111 },
       { type: 'endurance', value: 80 },
       { type: 'agility', value: 25 },
       { type: 'intellect', value: 25 },
@@ -1357,7 +1356,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     rarity: 'legendary',
     stats: [
       { type: 'endurance', value: 35 },
-      { type: 'armor', value: 3050 },
+      { type: 'armor', value: 610 },
       { type: 'energyPerBreach', value: 2 },
     ],
     abilityMod: {
@@ -1376,7 +1375,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     stats: [
       { type: 'maxEnergy', value: 30 },
       { type: 'energyRegen', value: 1 },
-      { type: 'armor', value: 1550 },
+      { type: 'armor', value: 310 },
     ],
     abilityMod: {
       abilityId: 'prep',
@@ -1444,7 +1443,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     stats: [
       { type: 'endurance', value: 50 },
       { type: 'hpRegen', value: 5 },
-      { type: 'armor', value: 550 },
+      { type: 'armor', value: 110 },
     ],
     abilityMod: {
       abilityId: 'heal',
@@ -1652,7 +1651,7 @@ const ATTRIBUTE_ITEMS: readonly ItemConfig[] = [
 // ─── Полный каталог ────────────────────────────────────────────────────────────
 
 function withPrice(cfg: ItemConfig): ItemDefinition {
-  return { ...cfg, price: cfg.price ?? computeItemPrice(cfg) };
+  return { ...cfg, price: computeItemPrice(cfg) };
 }
 
 export const ITEM_CATALOG: readonly ItemDefinition[] = [

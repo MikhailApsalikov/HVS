@@ -8,6 +8,7 @@ import { TALENTS, TALENT_ORDER } from '../src/content/talents.js';
 import { ABILITIES, ABILITY_ORDER } from '../src/content/abilities.js';
 import { STATS } from '../src/domain/rules/stats.js';
 import { salePrice } from '../src/domain/rules/economy.js';
+import { computeItemPrice } from '../src/domain/rules/economy.js';
 import { itemModifiers } from '../src/domain/rules/itemModifiers.js';
 import { Character } from '../src/domain/model/Character.js';
 
@@ -143,6 +144,7 @@ describe('content contracts', () => {
   it.each(ITEM_CATALOG)('every item is valid, priced and resolves: $id $name', (item) => {
     expect(Number.isInteger(item.price)).toBe(true);
     expect(item.price).toBeGreaterThan(0);
+    expect(item.price).toBe(computeItemPrice(item));
     const rules = new GameRules(normalConfig, itemModifiers(item, 'item'));
     for (const value of Object.values(rules.snapshot())) expect(Number.isFinite(value)).toBe(true);
     expect(salePrice(item.price)).toBe(Math.floor(item.price / 2));

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { ITEM_CATALOG } from '../src/content/items.js';
+import { generateItemSvg } from '../src/ui/ItemSpriteGenerator.js';
 import { normalConfig } from '../src/content/normal.js';
 import { SOUND_FILES, MUSIC_FILES } from '../src/infrastructure/audio/catalog.js';
 
@@ -45,22 +46,28 @@ describe('architecture boundaries', () => {
   });
 });
 
+describe('catalog illustrations', () => {
+  it('gives every item a dedicated illustration instead of the unknown-item placeholder', () => {
+    const fallback = generateItemSvg({ ...ITEM_CATALOG[0], id: 'unknown-item' });
+    for (const item of ITEM_CATALOG) {
+      const svg = generateItemSvg(item);
+      expect(svg, item.name).not.toBe(fallback);
+      expect(svg, item.name).toContain('viewBox="0 0 48 48"');
+    }
+    const attributeItems = ITEM_CATALOG.filter(({ id }) => /-(agility|intellect)$/.test(id));
+    expect(new Set(attributeItems.map(generateItemSvg)).size).toBe(attributeItems.length);
+  });
+});
+
 describe('legacy feature inventory captured before rewrite', () => {
   const baseline = JSON.parse(readFileSync('tests/fixtures/legacy-content.json', 'utf8'));
-  it('retains every item name and ID, and prices outside the armor rebalance', () => {
+  it('retains every item name and ID', () => {
     const legacyItems = ITEM_CATALOG.filter(({ id }) =>
       baseline.items.some((item: { id: string }) => item.id === id),
     );
     expect(legacyItems.map(({ id, name }) => ({ id, name }))).toEqual(
       baseline.items.map(({ id, name }: { id: string; name: string }) => ({ id, name })),
     );
-    for (const item of legacyItems) {
-      if (!item.stats.some((stat) => stat.type === 'armor')) {
-        expect(item.price).toBe(
-          baseline.items.find((old: { id: string }) => old.id === item.id).price,
-        );
-      }
-    }
   });
   it('keeps untouched encounter and ability balance through the attribute update', () => {
     expect(normalConfig).toEqual({

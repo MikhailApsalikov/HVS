@@ -246,7 +246,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'defense',
     column: 1,
     sprite: 'TalentTitanArmor',
-    effects: [percent('armor', 25)],
+    effects: [percent('armor', 125)],
     description: 'Увеличивает броню на {armor}.',
   },
   willToWin: {

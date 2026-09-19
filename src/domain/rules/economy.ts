@@ -15,7 +15,7 @@ const PRICES: Record<StatType, PriceRule> = {
   agility: { unit: 5, base: 32, curve: logarithmic },
   intellect: { unit: 5, base: 32, curve: logarithmic },
   hpRegen: { unit: 0.5, base: 24, curve: logarithmic },
-  armor: { unit: 3, base: 1, curve: (n) => n },
+  armor: { unit: 1, base: 1, curve: (n) => n },
   coinsPerKill: { unit: 1, base: 400, curve: quadratic },
   maxEnergy: { unit: 10, base: 36, curve: quadratic },
   energyPerBreach: { unit: 1, base: 40, curve: quadratic },

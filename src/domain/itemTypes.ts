@@ -24,8 +24,6 @@ export interface AbilityMod {
   readonly description: string;
 }
 export interface ItemConfig {
-  /** Fixed catalog price for items with individually tuned bonuses. */
-  readonly price?: number;
   readonly id: string;
   readonly name: string;
   readonly rarity: ItemRarity;

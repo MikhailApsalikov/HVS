@@ -75,7 +75,7 @@ describe('item rebalance through purchases', () => {
   it('fires seven volley arrows with the amulet and applies its explicit defensive bonuses', () => {
     const session = game(20);
     session.state.phase = 'levelUp';
-    session.state.coins = 1955;
+    session.state.coins = ITEM_MAP.get('l007')!.price;
     const before = session.state.stats;
     expect(session.buyItem('l007')).toBe(true);
     expect(session.state.coins).toBe(0);
