@@ -38,11 +38,14 @@ export class GameRules {
         stat,
         allEffects.filter((effect) => effect.stat === stat),
       );
-    this.attributeEffects = attributeModifiers({
-      endurance: this.value('endurance'),
-      agility: this.value('agility'),
-      intellect: this.value('intellect'),
-    });
+    this.attributeEffects = attributeModifiers(
+      {
+        endurance: this.value('endurance'),
+        agility: this.value('agility'),
+        intellect: this.value('intellect'),
+      },
+      effects.some((effect) => effect.source === 'talent:criticalShot' && effect.value > 0),
+    );
     for (const modifier of Object.values(this.attributeEffects).flat())
       this.modifiers.set(modifier.stat, [...this.modifiers.get(modifier.stat)!, modifier]);
     this.modifiers.set('incomingDamage', [

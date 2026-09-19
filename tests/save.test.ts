@@ -46,7 +46,7 @@ describe('saves and migration', () => {
         inventory: ['c001', 'c001', 'missing', 'c003', 'c001', 'c003'],
         abilities: data.abilities.slice(0, version < 5 ? 8 : 9),
       })!;
-      expect(parsed.version).toBe(8);
+      expect(parsed.version).toBe(9);
       const loaded = restore(parsed);
       expect(loaded.items.inventory).toEqual(['c001', 'c003']);
       expect(loaded.state.coins).toBe(
@@ -98,7 +98,7 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(8);
+    expect(parsed.version).toBe(9);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
       endurance: 79,
@@ -187,7 +187,7 @@ describe('saves and migration', () => {
     expect(loaded.state.stats.energyRegen).toBe(10.54);
     expect(loaded.state.phase).toBe('levelUp');
     expect(loaded.state.maxHp).toBe(590);
-    loaded.upgradeTalent('tireless');
+    loaded.upgradeTalent('agility');
     loaded.confirmLevelUp();
     expect(loaded.state.level).toBe(21);
   });

@@ -28,6 +28,7 @@ export function formatStat(id: StatId, value: number): string {
     return `${Number((value * 100).toFixed(1))}%`;
   if (
     id === 'blockChance' ||
+    id === 'criticalShotChance' ||
     id === 'blockVolleyChance' ||
     id === 'lastHope.blockChance' ||
     id === 'blizzard.slow' ||
@@ -93,6 +94,7 @@ const ATTRIBUTE_EFFECT_TEXT: Partial<Record<StatId, string>> = {
   shootCooldown: 'Сокращает перезарядку выстрела и увеличивает скорость стрел на {value}.',
   'volley.cooldown': 'Сокращает перезарядку «Залпа» на {value}.',
   energyPerKill: 'Каждый убитый паук восстанавливает дополнительно {value} энергии.',
+  criticalShotChance: '+{value} к шансу Критического выстрела',
   maxEnergy: 'Увеличивает максимальный запас энергии на {value} единиц.',
   energyRegen: 'Восстанавливает дополнительно {value} энергии каждую секунду.',
   'heal.amount': '«Лечение» восстанавливает на {value} здоровья больше.',

@@ -32,7 +32,7 @@ describe('progression and player commands', () => {
   it('requires initial talent choice, starts at level 1 and advances exactly once', () => {
     const session = new GameSession('normal', () => 0.9999);
     expect(session.confirmLevelUp()).toBe(false);
-    expect(session.upgradeTalent('agility')).toBe(false);
+    expect(session.upgradeTalent('tireless')).toBe(false);
     expect(session.upgradeTalent('endurance')).toBe(true);
     expect(session.upgradeTalent('endurance')).toBe(false);
     expect(session.state.hp).toBe(525);
@@ -42,7 +42,7 @@ describe('progression and player commands', () => {
     advance(session, 17.02);
     expect(session.state.phase).toBe('levelUp');
     expect(session.state.pendingTalentPoints).toBe(1);
-    expect(session.upgradeTalent('tireless')).toBe(true);
+    expect(session.upgradeTalent('agility')).toBe(true);
     const health = session.state.hp;
     session.confirmLevelUp();
     expect(session.state.level).toBe(2);

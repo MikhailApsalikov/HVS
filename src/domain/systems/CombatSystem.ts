@@ -4,7 +4,7 @@ import type { RandomSource } from '../rules/random.js';
 import type { SpiderType } from '../types.js';
 import { randomInt } from '../rules/random.js';
 import { WORLD } from '../rules/world.js';
-import { BEST_DEFENSE_COOLDOWN } from '../rules/stats.js';
+import { BEST_DEFENSE_COOLDOWN, CRITICAL_SHOT_KILLS } from '../rules/stats.js';
 import { SPIDERS, SPECIAL_SPIDER_ORDER } from '../../content/spiders.js';
 import { Spider } from '../model/Spider.js';
 import { fireVolley } from './AbilitySystem.js';
@@ -60,8 +60,7 @@ export function moveSpiders(state: GameState, dt: number, random: RandomSource):
 export function tickArrows(state: GameState, dt: number): void {
   for (const [id, arrow] of state.arrows) {
     arrow.move(dt);
-    let hit: Spider | undefined;
-    let earliest = Infinity;
+    const collisions: { spider: Spider; time: number }[] = [];
     for (const spider of state.spiders.values()) {
       if (spider.dying || spider.lane !== arrow.lane) continue;
       const before = arrow.previousY - spider.previousY;
@@ -71,17 +70,23 @@ export function tickArrows(state: GameState, dt: number): void {
         0,
         (before - WORLD.hitRadius) / Math.max(Number.EPSILON, before - after),
       );
-      if (time < earliest) {
-        earliest = time;
-        hit = spider;
-      }
+      collisions.push({ spider, time });
     }
-    if (hit) {
-      hit.hits -= 1;
+    collisions.sort((a, b) => a.time - b.time);
+    for (const { spider: hit } of collisions) {
+      hit.hits = arrow.critical ? 0 : hit.hits - 1;
+      if (arrow.critical) {
+        hit.grantsKillEnergy = arrow.kills === 0;
+        arrow.kills += 1;
+      }
       if (hit.hits <= 0) hit.startDying();
       else if (hit.type === 'fat') hit.type = 'normal';
-      state.arrows.delete(id);
-    } else if (arrow.y < 0) state.arrows.delete(id);
+      if (!arrow.critical || arrow.kills >= CRITICAL_SHOT_KILLS) {
+        state.arrows.delete(id);
+        break;
+      }
+    }
+    if (arrow.y < 0) state.arrows.delete(id);
   }
 }
 
@@ -149,7 +154,8 @@ export function collectDeadSpiders(
         spider.reachedCastle ? state.stats.breachRewardFraction : 1,
       );
       state.coins += coins;
-      if (!spider.reachedCastle) state.modifyEnergy(state.stats.energyPerKill);
+      if (!spider.reachedCastle && spider.grantsKillEnergy)
+        state.modifyEnergy(state.stats.energyPerKill);
       emit({ type: 'coinDrop', spiderId: id, coins, jackpot });
     }
     state.spiders.delete(id);

@@ -136,7 +136,9 @@ export class GameSession {
         this.refreshStats(false);
       }
     }
-    const arrow = new Arrow(state.newId('arrow'), lane, state.stats.arrowSpeed);
+    const critical =
+      state.stats.criticalShotChance > 0 && this.random() < state.stats.criticalShotChance;
+    const arrow = new Arrow(state.newId('arrow'), lane, state.stats.arrowSpeed, false, critical);
     state.arrows.set(arrow.id, arrow);
     return 'shot';
   }

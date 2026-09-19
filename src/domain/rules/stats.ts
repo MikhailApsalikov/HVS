@@ -7,6 +7,7 @@ const duration = { digits: 2, min: 0 } as const;
 const speed = { digits: 6, min: 0 } as const;
 const probability = { digits: 6, min: 0, max: 1 } as const;
 export const BEST_DEFENSE_COOLDOWN = 3;
+export const CRITICAL_SHOT_KILLS = 2;
 /** Armor inflation is negligible through level 10 and accelerates quartically afterwards. */
 export const ARMOR_RULES = {
   linearScale: 24,
@@ -38,6 +39,7 @@ export const STATS = {
   shootCost: stat('Стоимость выстрела', 35, integer),
   shootCooldown: stat('Перезарядка выстрела, с', 3, duration),
   arrowSpeed: stat('Скорость стрелы, поля/с', 1 / 3, speed),
+  criticalShotChance: stat('Шанс критического выстрела', 0, probability),
   incomingDamage: stat('Получаемый урон', 0, integer),
   damageFactor: stat('Доля получаемого урона', 1, probability),
   coinsPerSec: stat('Монеты/с', 4, decimal),
@@ -114,7 +116,13 @@ export const ATTRIBUTE_RULES = {
     armorPerPoint: 2,
     lastHopeBlockPerPoint: 0.2,
   },
-  agility: { shotStep: 12, volleyStep: 18, percentCap: 70, killEnergyStep: 240 },
+  agility: {
+    shotStep: 12,
+    volleyStep: 18,
+    percentCap: 70,
+    killEnergyStep: 240,
+    criticalShotStep: 130,
+  },
   intellect: {
     energyThreshold: 100,
     energyPerPoint: 2,

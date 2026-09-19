@@ -190,10 +190,10 @@ describe('new defense talents through session commands', () => {
     const session = defense(60, () => 0);
     buy(session, 'bestDefense', 10);
     buy(session, 'adrenaline');
-    buy(session, 'tireless', 5);
+    buy(session, 'agility', 5);
     buy(session, 'improvedIntellect', 7);
     buy(session, 'hunterArsenal', 5);
-    buy(session, 'agility', 5);
+    buy(session, 'tireless', 5);
     buy(session, 'magicArmor', 6);
     buy(session, 'quickInstinct', 2);
     session.state.phase = 'playing';
@@ -335,7 +335,7 @@ describe('new defense talents through session commands', () => {
     expect(loaded.state.adrenalineShots).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(0);
     const current = snapshot(loaded);
-    expect(current.version).toBe(8);
+    expect(current.version).toBe(9);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 

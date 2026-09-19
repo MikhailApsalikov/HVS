@@ -12,6 +12,7 @@ export class Spider {
   dyingTimer = 0;
   reachedCastle = false;
   hasJumped = false;
+  grantsKillEnergy = true;
   constructor(
     readonly id: string,
     public type: SpiderType,

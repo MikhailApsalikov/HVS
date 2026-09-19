@@ -29,7 +29,7 @@ describe('primary attributes through the session API', () => {
     for (let level = 2; level <= 6; level++) {
       session.tick(session.state.levelTimerMax);
       expect(session.state.phase).toBe('levelUp');
-      expect(session.upgradeTalent('hunterMastery')).toBe(true);
+      expect(session.upgradeTalent(level < 6 ? 'hunterMastery' : 'agility')).toBe(true);
       expect(session.confirmLevelUp()).toBe(true);
       expect(session.state.stats.endurance).toBe(27 + (level - 1) * 3);
       expect(session.state.stats.agility).toBe(23 + level - 1);

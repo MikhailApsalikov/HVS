@@ -195,9 +195,9 @@ describe('defense talent abilities through session commands', () => {
     buy(session, 'shieldBlock', 8);
     buy(session, 'lastHope');
     buy(session, 'improvedLastHope', 5);
-    buy(session, 'tireless', 5);
-    buy(session, 'improvedIntellect', 7);
     buy(session, 'agility', 5);
+    buy(session, 'improvedIntellect', 7);
+    buy(session, 'tireless', 5);
     buy(session, 'improvedPrep', 5);
     buy(session, 'magicArmor', 6);
     buy(session, 'quickInstinct', 2);
@@ -386,7 +386,7 @@ describe('defense save compatibility', () => {
       ),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(8);
+    expect(parsed.version).toBe(9);
     const loaded = restore(parsed);
     expect(loaded.state.getAbility('stand').remainingCooldown).toBe(41);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(123);

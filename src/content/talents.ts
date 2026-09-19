@@ -1,6 +1,6 @@
 import type { TalentId, TalentBranch } from '../domain/types.js';
 import type { StatModifier, PrimaryStatId } from '../domain/rules/stats.js';
-import { BEST_DEFENSE_COOLDOWN } from '../domain/rules/stats.js';
+import { BEST_DEFENSE_COOLDOWN, CRITICAL_SHOT_KILLS } from '../domain/rules/stats.js';
 import { ABILITY_ORDER } from './abilities.js';
 
 type Effect = Omit<StatModifier, 'source'>;
@@ -79,6 +79,20 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     effects: [flat('shootCost', -2)],
     description: 'Каждый выстрел лучника расходует на {shootCost} энергии меньше.',
   },
+  piercingReward: {
+    branch: 'shooting',
+    name: 'Есть пробитие',
+    sprite: 'TalentPiercingReward',
+    effects: [flat('energyPerKill', 1)],
+    description: 'Увеличивает получаемую за убийство энергию на {energyPerKill}.',
+  },
+  criticalShot: {
+    branch: 'shooting',
+    name: 'Критический выстрел',
+    sprite: 'TalentCriticalShot',
+    effects: [flat('criticalShotChance', 0.02)],
+    description: `Каждый выстрел, кроме стрел «Залпа», с вероятностью {criticalShotChance} становится критическим.\nКритическая стрела убивает до ${CRITICAL_SHOT_KILLS} пауков, продолжая полёт по своей линии после первого убийства. Энергия даётся только за первого паука в цепочке.`,
+  },
   improvedPrep: {
     branch: 'magic',
     name: 'Улучшенная подготовка',
@@ -116,7 +130,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
       '«Божественный щит» действует на {stand.duration} с дольше и перезаряжается на {stand.cooldown} с быстрее.',
   },
   blizzardMastery: {
-    branch: 'shooting',
+    branch: 'magic',
     name: 'Беспощадная вьюга',
     sprite: 'TalentBlizzardMastery',
     effects: [flat('blizzard.slow', 0.07), flat('blizzard.duration', 1)],

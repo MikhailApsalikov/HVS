@@ -17,6 +17,8 @@ export type TalentId =
   | 'agility'
   | 'healBoost'
   | 'hunterMastery'
+  | 'piercingReward'
+  | 'criticalShot'
   | 'improvedPrep'
   | 'volleyMastery'
   | 'rapidFire'
