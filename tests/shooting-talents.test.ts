@@ -94,7 +94,7 @@ describe('shooting and magic talent progression', () => {
     buy(session, 'hunterMastery', 5);
     buy(session, 'improvedAgility', 7);
     buy(session, 'criticalShot', 10);
-    expect(session.upgradeTalent('blizzardMastery')).toBe(false);
+    expect(session.talents.getTalent('blizzardMastery').tier).toBe(2);
     buy(session, 'improvedIntellect', 7);
     buy(session, 'hunterArsenal', 2);
     buy(session, 'blizzardMastery', 1);

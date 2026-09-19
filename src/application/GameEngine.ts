@@ -25,6 +25,7 @@ export class GameEngine {
     private readonly render: (state: GameState) => void,
     private readonly saves: SaveSystem,
     private readonly loop = new FrameLoop(),
+    private readonly testMode = false,
   ) {}
 
   setPhaseChangeCallback(callback: NonNullable<GameEngine['phaseChanged']>): void {
@@ -58,7 +59,7 @@ export class GameEngine {
     this.stopLoop();
     const record = this.saves.getRecord();
     this.saves.clear();
-    this.session = new GameSession(difficulty);
+    this.session = new GameSession(difficulty, Math.random, this.testMode);
     this.session.state.record = Math.max(record, this.session.state.level);
     this.persist();
     this.startLoop();
@@ -67,7 +68,7 @@ export class GameEngine {
     const save = this.saves.load();
     if (!save) return false;
     this.stopLoop();
-    this.session = restore(save);
+    this.session = restore(save, undefined, this.testMode);
     this.startLoop();
     return true;
   }

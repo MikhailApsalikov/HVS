@@ -62,6 +62,7 @@ export const STATS = {
   spawnProbability: stat('Вероятность появления паука', 0, probability),
   spawnInterval: stat('Интервал появления, с', 0.02, { ...duration, min: 0.01 }),
   spiderSpeed: stat('Скорость паука, поля/с', 0, speed),
+  permafrostSlow: stat('Замедление: Вечная мерзлота', 0, { ...probability, max: 0.5 }),
   spiderDamage: stat('Урон паука', 0, integer),
   burnerEnergy: stat('Сжигание энергии', 90, integer),
   'freeze.cost': stat('Стоимость: Заморозка времени', 50, integer),

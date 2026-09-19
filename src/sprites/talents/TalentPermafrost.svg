@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="permafrostIce" x2="0.7" y2="1">
+      <stop stop-color="#c6f8ff"/>
+      <stop offset="1" stop-color="#327cae"/>
+    </linearGradient>
+  </defs>
+  <path d="M5 34L12 21L18 28L24 13L31 26L37 20L43 34L38 43H10Z" fill="url(#permafrostIce)" stroke="#a9eaff" stroke-width="2"/>
+  <g fill="none" stroke="#e1fcff" stroke-width="2" stroke-linecap="round">
+    <path d="M24 4V19M17.5 7.5L30.5 15M17.5 15L30.5 7.5M20 5L24 8L28 5M20 18L24 15L28 18"/>
+    <path d="M12 33L19 36L24 31L28 37L36 32M19 36L16 42M28 37L30 43"/>
+  </g>
+</svg>

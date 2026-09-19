@@ -186,6 +186,8 @@ describe('defense talent abilities through session commands', () => {
     expect(session.state.lastHopeTimer).toBe(6);
     session.activateAbility('freeze');
     session.state.energy = session.state.maxEnergy;
+    session.talents.loadFromSave([...session.talents.toSaveData(), { id: 'recharge', rank: 1 }]);
+    session.refreshStats();
     expect(session.activateAbility('recharge')).toBe('activated');
     expect(session.state.getAbility('lastHope').isReady).toBe(true);
     expect(session.state.lastHopeTimer).toBe(6);

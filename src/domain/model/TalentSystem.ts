@@ -104,7 +104,9 @@ export class TalentSystem {
               ...scaling.effect,
               source: `talent:${id}`,
               value:
-                Math.floor(stats[scaling.attribute] / scaling.step) * scaling.effect.value * rank,
+                ((scaling.basePerRank ?? 0) +
+                  Math.floor(stats[scaling.attribute] / scaling.step) * scaling.effect.value) *
+                rank,
             },
           ]
         : [];

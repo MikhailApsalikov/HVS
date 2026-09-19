@@ -13,6 +13,7 @@ import {
 } from '../src/ui/presenters.js';
 import { game } from './helpers.js';
 import { ABILITY_ORDER } from '../src/content/abilities.js';
+import { isTestMode } from '../src/bootstrap.js';
 
 class Frames implements FrameScheduler {
   nextId = 1;
@@ -70,6 +71,24 @@ describe('browser loop without a browser', () => {
 });
 
 describe('application orchestration', () => {
+  it('uses ten-second levels in URL test mode, including loaded games', () => {
+    expect(isTestMode('?test=true')).toBe(true);
+    expect(isTestMode('?test=false')).toBe(false);
+    expect(isTestMode('?testing=true')).toBe(false);
+
+    const frames = new Frames();
+    const saves = new SaveSystem(new MemoryStorage());
+    const engine = new GameEngine(vi.fn(), saves, new FrameLoop(frames), true);
+    engine.startNewGame('normal');
+    expect(engine.getState()!.levelTimerMax).toBe(10);
+    expect(engine.upgradeTalent('endurance')).toBe(true);
+    expect(engine.confirmLevelUp()).toBe(true);
+    expect(engine.getState()!.levelTimerMax).toBe(10);
+    engine.persist();
+    expect(engine.loadGame()).toBe(true);
+    expect(engine.getState()!.levelTimerMax).toBe(10);
+  });
+
   it('starts, upgrades, trades, saves, reloads and restarts with one loop', () => {
     const frames = new Frames();
     const saves = new SaveSystem(new MemoryStorage());
@@ -123,7 +142,7 @@ describe('presentation uses the actual resolved stats', () => {
     session.talents.loadFromSave([{ id: 'magicArmor', rank: 7 }]);
     session.refreshStats();
     expect(attributeDescription(session.state, 'intellect')).toContain(
-      'Благодаря таланту «Магическая броня»: Увеличивает броню на 210 единиц.',
+      'Благодаря таланту «Магическая броня»: Увеличивает броню на 1512 единиц.',
     );
     session.state.character.setModifiers('test:no-armor', [
       { stat: 'armor', kind: 'percent', value: -100 },
@@ -154,7 +173,7 @@ describe('presentation uses the actual resolved stats', () => {
     expect(talentDescription('tireless', 2, stats)).toContain('дополнительно 2 энергии');
     expect(talentDescription('improvedEndurance', 2, stats)).toContain('выносливость на 10%');
     expect(talentDescription('magicArmor', 7, stats)).toContain(
-      'Каждые 5 полных единиц интеллекта дают 21 брони',
+      'Каждая единица интеллекта даёт 28 брони',
     );
     expect(talentDescription('blizzardMastery', 1, stats)).toContain('7 процентных пунктов');
     expect(escapeHtml('<script>"&\'')).toBe('&lt;script&gt;&quot;&amp;&#39;');

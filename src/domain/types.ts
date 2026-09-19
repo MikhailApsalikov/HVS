@@ -25,6 +25,8 @@ export type TalentId =
   | 'agileCriticalShot'
   | 'vampirism'
   | 'improvedPrep'
+  | 'recharge'
+  | 'permafrost'
   | 'volleyMastery'
   | 'rapidFire'
   | 'dutyBound'

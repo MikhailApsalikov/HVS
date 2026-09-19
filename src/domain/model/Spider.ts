@@ -22,16 +22,19 @@ export class Spider {
     public hits: number,
     readonly jumpThreshold: number,
   ) {}
-  get effectiveSpeed(): number {
+  effectiveSpeed(passiveSlow = 0): number {
     return calculate(
       this.speed,
-      [{ source: 'blizzard', kind: 'percent', value: (this.slowFactor - 1) * 100 }],
+      [
+        { source: 'blizzard', kind: 'percent', value: (this.slowFactor - 1) * 100 },
+        { source: 'talent:permafrost', kind: 'percent', value: -passiveSlow * 100 },
+      ],
       STATS.spiderSpeed.policy,
     ).value;
   }
-  move(dt: number): void {
+  move(dt: number, passiveSlow: number): void {
     this.previousY = this.y;
-    this.y += this.effectiveSpeed * dt;
+    this.y += this.effectiveSpeed(passiveSlow) * dt;
   }
   applySlow(factor: number, duration: number): void {
     this.slowFactor = factor;

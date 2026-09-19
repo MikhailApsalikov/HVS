@@ -253,6 +253,8 @@ describe('eagle eye ability', () => {
     session.tick(19);
     expect(session.state.eagleEyeTimer).toBe(1);
     session.state.energy = 100;
+    session.talents.loadFromSave([...eagle, { id: 'recharge', rank: 1 }]);
+    session.refreshStats();
     session.activateAbility('recharge');
     expect(session.state.getAbility('eagleEye').isReady).toBe(true);
     expect(session.state.eagleEyeShots).toBe(5);

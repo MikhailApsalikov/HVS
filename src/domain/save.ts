@@ -108,8 +108,8 @@ export function snapshot(session: GameSession): SaveData {
   };
 }
 
-export function restore(data: SaveData, random?: RandomSource): GameSession {
-  const session = new GameSession(data.difficulty, random);
+export function restore(data: SaveData, random?: RandomSource, testMode = false): GameSession {
+  const session = new GameSession(data.difficulty, random, testMode);
   const state = session.state;
   state.level = data.state.level;
   state.lastHopeTimer = data.state.lastHopeTimer;
@@ -139,6 +139,12 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   if (state.levelTimerMax < minimumDuration) {
     if (state.levelTimer > 0) state.levelTimer += minimumDuration - state.levelTimerMax;
     state.levelTimerMax = minimumDuration;
+  }
+  if (testMode) {
+    const duration = state.rules.levelDuration(state.level);
+    state.levelTimer =
+      state.levelTimerMax > 0 ? (duration * state.levelTimer) / state.levelTimerMax : 0;
+    state.levelTimerMax = duration;
   }
   state.coins += duplicateRefund;
   state.pendingTalentPoints += talentRefund;

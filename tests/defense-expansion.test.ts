@@ -172,6 +172,8 @@ describe('new defense talents through session commands', () => {
     expect(session.state.adrenalineTimer).toBe(19);
     session.state.phase = 'playing';
     session.state.energy = session.state.maxEnergy;
+    session.talents.loadFromSave([...session.talents.toSaveData(), { id: 'recharge', rank: 1 }]);
+    session.refreshStats();
     expect(session.activateAbility('recharge')).toBe('activated');
     expect(session.state.getAbility('adrenaline').isReady).toBe(true);
     expect(session.state.adrenalineShots).toBe(19);

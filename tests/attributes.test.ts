@@ -435,7 +435,10 @@ describe('armor and talent branches', () => {
   it.each([
     ['spiderArmor', 3, 14, 20],
     ['volleyMastery', 4, 21, 30],
-    ['blizzardMastery', 4, 21, 30],
+    ['blizzardMastery', 2, 7, 10],
+    ['magicArmor', 2, 7, 10],
+    ['permafrost', 3, 14, 20],
+    ['recharge', 7, 42, 60],
     ['dutyBound', 5, 28, 40],
     ['healBoost', 5, 28, 40],
     ['warriorArmor', 2, 7, 10],
@@ -484,7 +487,7 @@ describe('armor and talent branches', () => {
     expect(session.state.stats.inventorySlots).toBe(2);
   });
 
-  it('magic armor scales with complete groups of five final intellect at every rank', () => {
+  it('magic armor grants four armor per final intellect at every rank', () => {
     const session = new GameSession('normal');
     session.state.level = 20;
     session.state.pendingTalentPoints = 8;
@@ -496,20 +499,20 @@ describe('armor and talent branches', () => {
     session.refreshStats(); // 54 intellect, 168 armor from endurance.
     for (let rank = 1; rank <= 7; rank++) {
       expect(session.upgradeTalent('magicArmor')).toBe(true);
-      expect(session.state.stats.armor).toBe(168 + 30 * rank);
+      expect(session.state.stats.armor).toBe(168 + 216 * rank);
     }
     expect(session.upgradeTalent('magicArmor')).toBe(false);
     session.state.character.setModifiers('intellect-item', [
       { stat: 'intellect', kind: 'flat', value: 1 },
     ]);
     session.refreshStats();
-    expect(session.state.stats.armor).toBe(399); // floor(55/5) × 3 × 7 + 168.
+    expect(session.state.stats.armor).toBe(1708); // 55 × 4 × 7 + 168.
     session.state.pendingTalentPoints = 1;
     session.upgradeTalent('improvedIntellect');
     expect(session.state.stats.intellect).toBe(78);
-    expect(session.state.stats.armor).toBe(483); // floor(78/5) × 3 × 7 + 168.
+    expect(session.state.stats.armor).toBe(2352); // 78 × 4 × 7 + 168.
     session.state.character.removeModifiers('intellect-item');
     session.refreshStats();
-    expect(session.state.stats.armor).toBe(483); // 77 intellect still contains fifteen groups.
+    expect(session.state.stats.armor).toBe(2324); // 77 × 4 × 7 + 168.
   });
 });

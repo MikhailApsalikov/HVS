@@ -81,7 +81,8 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     name: 'Перезарядка',
     key: 'I',
     sprite: 'AbilityRecharge',
-    unlockLevel: 50,
+    unlockLevel: 60,
+    talent: 'recharge',
     description: 'Сбрасывает перезарядку остальных способностей и лучников.',
   },
   lastHope: {

@@ -7,6 +7,10 @@ import { SaveSystem, type StoragePort } from './infrastructure/storage/SaveSyste
 import { InputHandler } from './infrastructure/browser/InputHandler.js';
 import type { AbilityId } from './domain/types.js';
 
+export function isTestMode(search: string): boolean {
+  return new URLSearchParams(search).get('test') === 'true';
+}
+
 /** Composition root: the only place wiring browser services to the game. */
 export function bootstrap(root: HTMLElement): () => void {
   const sprites = new SpriteRegistry();
@@ -27,7 +31,12 @@ export function bootstrap(root: HTMLElement): () => void {
     hasSave: () => saves.hasSave(),
     menu: () => audio.playMusic(MusicTrack.MAIN_MENU),
   });
-  const engine = new GameEngine((state) => app.render(state, saves.lastError), saves);
+  const engine = new GameEngine(
+    (state) => app.render(state, saves.lastError),
+    saves,
+    undefined,
+    isTestMode(window.location.search),
+  );
   const sounds: Record<AbilityId, SoundEffect> = {
     freeze: SoundEffect.FREEZE_ACTIVATE,
     blizzard: SoundEffect.BLIZZARD_ACTIVATE,

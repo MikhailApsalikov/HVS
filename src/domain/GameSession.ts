@@ -29,8 +29,10 @@ export class GameSession {
   constructor(
     difficulty: Difficulty,
     private readonly random: RandomSource = Math.random,
+    testMode = false,
   ) {
-    const config = DIFFICULTIES[difficulty];
+    const baseConfig = DIFFICULTIES[difficulty];
+    const config = testMode ? { ...baseConfig, levelTimerBase: 10, levelTimerStep: 0 } : baseConfig;
     this.talents = new TalentSystem(config);
     this.items = new ItemSystem();
     this.state = new GameState(difficulty, config, new GameRules(config));

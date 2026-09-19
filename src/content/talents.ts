@@ -24,6 +24,7 @@ interface TalentDefinition {
     readonly attribute: PrimaryStatId;
     readonly step: number;
     readonly effect: Effect;
+    readonly basePerRank?: number;
   };
 }
 export const TALENT_BRANCHES: Readonly<Record<TalentBranch, string>> = {
@@ -145,6 +146,28 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     effects: [flat('prep.cooldown', -6)],
     description: 'Сокращает перезарядку «Подготовки» на {prep.cooldown} с.',
   },
+  recharge: {
+    branch: 'magic',
+    column: 1,
+    name: 'Перезарядка',
+    sprite: 'AbilityRecharge',
+    prerequisite: { id: 'quickInstinct', rank: 10 },
+    effects: [],
+  },
+  permafrost: {
+    branch: 'magic',
+    name: 'Вечная мерзлота',
+    sprite: 'TalentPermafrost',
+    effects: [],
+    scaling: {
+      attribute: 'intellect',
+      step: 20,
+      basePerRank: 0.01,
+      effect: flat('permafrostSlow', 0.001),
+    },
+    description:
+      'Снижает скорость передвижения всех пауков на {scaling.base} + {scaling.value} за каждые {scaling.step} полных единиц интеллекта.\nЗамедление от этого таланта не может превышать 50%.',
+  },
   volleyMastery: {
     branch: 'shooting',
     column: 3,
@@ -249,8 +272,8 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'magic',
     sprite: 'TalentMagicArmor',
     effects: [],
-    scaling: { attribute: 'intellect', step: 5, effect: flat('armor', 3) },
-    description: 'Каждые {scaling.step} полных единиц интеллекта дают {scaling.value} брони.',
+    scaling: { attribute: 'intellect', step: 1, effect: flat('armor', 4) },
+    description: 'Каждая единица интеллекта даёт {scaling.value} брони.',
   },
   divineShield: {
     name: 'Божественный щит',

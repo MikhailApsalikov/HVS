@@ -181,7 +181,7 @@ describe('all abilities', () => {
     const session = game(8);
     const spider = addSpider(session, 'normal', 0, 0.1, 20, 0.01);
     session.activateAbility('blizzard');
-    expect(spider.effectiveSpeed).toBe(0.006);
+    expect(spider.effectiveSpeed()).toBe(0.006);
     const newcomer = addSpider(session, 'normal', 1, 0, 20, 0.01);
     expect(newcomer.slowFactor).toBe(1);
     advance(session, 4.02);
@@ -236,7 +236,9 @@ describe('all abilities', () => {
     expect(session.state.armageddonPhase).toBe('none');
   });
   it('recharge resets every other ability and archer while keeping its own cooldown', () => {
-    const session = game(50);
+    const session = game(60);
+    session.talents.loadFromSave([{ id: 'recharge', rank: 1 }]);
+    session.refreshStats();
     for (const id of ABILITY_ORDER) if (id !== 'recharge') session.state.getAbility(id).start(20);
     session.state.archers[0].start(10);
     session.activateAbility('recharge');

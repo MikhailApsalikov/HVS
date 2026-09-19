@@ -33,6 +33,7 @@ export function formatStat(id: StatId, value: number): string {
     id === 'blockVolleyChance' ||
     id === 'lastHope.blockChance' ||
     id === 'blizzard.slow' ||
+    id === 'permafrostSlow' ||
     id === 'jackpotChance' ||
     id === 'breachRewardFraction' ||
     id === 'spawnProbability'
@@ -73,6 +74,8 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
   if (definition.description)
     return fillDescription(definition.description, (key) => {
       if (key === 'scaling.step') return String(definition.scaling!.step);
+      if (key === 'scaling.base')
+        return formatStat(definition.scaling!.effect.stat, definition.scaling!.basePerRank! * rank);
       if (key === 'scaling.value')
         return formatStat(definition.scaling!.effect.stat, definition.scaling!.effect.value * rank);
       const effect = effects.find(({ stat }) => stat === key)!;
@@ -103,6 +106,7 @@ const ATTRIBUTE_EFFECT_TEXT: Partial<Record<StatId, string>> = {
   energyRegen: 'Восстанавливает дополнительно {value} энергии каждую секунду.',
   'heal.amount': '«Лечение» восстанавливает на {value} здоровья больше.',
   'prep.restore': '«Подготовка» восстанавливает на {value} энергии больше.',
+  permafrostSlow: 'Снижает скорость передвижения пауков на {value}.',
 };
 function attributeEffectDescription(effect: StatModifier): string {
   const value =
@@ -129,7 +133,7 @@ export function attributeDescription(state: GameState, id: PrimaryStatId | 'armo
     for (const modifier of state.rules.explain(scaling.effect.stat).modifiers) {
       if (modifier.source === `talent:${talentId}` && modifier.value !== 0)
         contributions.push(
-          `Благодаря таланту «${name}»: ${attributeEffectDescription({ ...modifier, stat: scaling.effect.stat })}`,
+          `Благодаря таланту «${name}»: ${attributeEffectDescription({ ...modifier, stat: scaling.effect.stat, value: scaling.effect.stat === 'permafrostSlow' ? state.stats.permafrostSlow : modifier.value })}`,
         );
     }
   }

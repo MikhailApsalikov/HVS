@@ -52,7 +52,7 @@ export function moveSpiders(state: GameState, dt: number, random: RandomSource):
         spider.lane === 0 ? 1 : spider.lane === WORLD.lanes - 1 ? -1 : random() < 0.5 ? -1 : 1;
       spider.hasJumped = true;
     }
-    spider.move(dt);
+    spider.move(dt, state.stats.permafrostSlow);
   }
 }
 
