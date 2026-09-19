@@ -5,7 +5,13 @@ import type { GameState } from './model/GameState.js';
 import { Spider } from './model/Spider.js';
 import { Arrow } from './model/Arrow.js';
 import { ABILITY_ORDER } from '../content/abilities.js';
-import { BEST_DEFENSE_COOLDOWN, CRITICAL_SHOT_KILLS, PRIMARY_STATS, STATS } from './rules/stats.js';
+import {
+  ANTI_AFK,
+  BEST_DEFENSE_COOLDOWN,
+  CRITICAL_SHOT_KILLS,
+  PRIMARY_STATS,
+  STATS,
+} from './rules/stats.js';
 import { TALENTS } from '../content/talents.js';
 import { SPIDERS } from '../content/spiders.js';
 import { DIFFICULTIES } from '../content/difficulties.js';
@@ -29,6 +35,9 @@ const STATE_FIELDS = [
   'bestDefenseCooldown',
   'adrenalineTimer',
   'adrenalineShots',
+  'antiAfkIdleTimer',
+  'antiAfkStacks',
+  'antiAfkRecoveryTimer',
   'blizzardTimer',
   'armageddonPhase',
   'armageddonTimer',
@@ -65,7 +74,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 9;
+  readonly version: 10;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -82,7 +91,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 9,
+    version: 10,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -103,6 +112,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   state.lastHopeTimer = data.state.lastHopeTimer;
   state.adrenalineTimer = data.state.adrenalineTimer;
   state.adrenalineShots = data.state.adrenalineShots;
+  state.antiAfkStacks = data.state.antiAfkStacks;
   const talentRefund = session.talents.loadFromSave(data.talents);
   state.character.restoreBase(data.character);
   for (const source of new Set(data.characterModifiers.map((modifier) => modifier.source))) {
@@ -206,8 +216,19 @@ export function parseSave(value: unknown): SaveData | null {
 function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
-  if (![3, 4, 5, 6, 7, 8, 9].includes(value.version as number) || !object(value.state)) return null;
+  if (![3, 4, 5, 6, 7, 8, 9, 10].includes(value.version as number) || !object(value.state))
+    return null;
   const state = value.state;
+  if (
+    value.version === 10 &&
+    (!number(state.antiAfkIdleTimer) ||
+      state.antiAfkIdleTimer > ANTI_AFK.idleDuration ||
+      !integer(state.antiAfkStacks) ||
+      !number(state.antiAfkRecoveryTimer) ||
+      state.antiAfkRecoveryTimer > ANTI_AFK.recoveryDuration ||
+      (state.antiAfkRecoveryTimer > 0 && state.antiAfkStacks === 0))
+  )
+    return null;
   const numeric = [
     'level',
     'hp',
@@ -331,7 +352,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
         typeof entry.dyingTimer === 'number' &&
         Number.isFinite(entry.dyingTimer) &&
         ['dying', 'reachedCastle', 'hasJumped'].every((key) => typeof entry[key] === 'boolean') &&
-        (value.version !== 9 || typeof entry.grantsKillEnergy === 'boolean'),
+        ((value.version as number) < 9 || typeof entry.grantsKillEnergy === 'boolean'),
     )
   )
     return null;
@@ -346,7 +367,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
         number(entry.y) &&
         number(entry.previousY) &&
         typeof entry.fromVolley === 'boolean' &&
-        (value.version !== 9 ||
+        ((value.version as number) < 9 ||
           (typeof entry.critical === 'boolean' &&
             integer(entry.kills) &&
             (entry.critical
@@ -366,22 +387,29 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
-  if (value.version !== 9) {
+  if (value.version !== 10) {
     const previous = {
       ...value,
-      version: 9,
-      spiders: value.spiders.map((entry) => ({ ...(entry as JsonObject), grantsKillEnergy: true })),
+      version: 10,
+      spiders: value.spiders.map((entry) => ({
+        ...(entry as JsonObject),
+        grantsKillEnergy:
+          (value.version as number) >= 9 ? (entry as JsonObject).grantsKillEnergy : true,
+      })),
       arrows: value.arrows.map((entry) => ({
         ...(entry as JsonObject),
-        critical: false,
-        kills: 0,
+        critical: (value.version as number) >= 9 ? (entry as JsonObject).critical : false,
+        kills: (value.version as number) >= 9 ? (entry as JsonObject).kills : 0,
       })),
       state: {
         ...state,
         lastHopeTimer: (value.version as number) >= 5 ? state.lastHopeTimer : 0,
-        bestDefenseCooldown: value.version === 8 ? state.bestDefenseCooldown : 0,
+        bestDefenseCooldown: (value.version as number) >= 8 ? state.bestDefenseCooldown : 0,
         adrenalineTimer: (value.version as number) >= 7 ? state.adrenalineTimer : 0,
         adrenalineShots: (value.version as number) >= 7 ? state.adrenalineShots : 0,
+        antiAfkIdleTimer: 0,
+        antiAfkStacks: 0,
+        antiAfkRecoveryTimer: 0,
       },
       abilities: [
         ...value.abilities,

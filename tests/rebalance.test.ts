@@ -137,7 +137,7 @@ describe('defense requirements and compatibility', () => {
       state,
       archers: current.archers.map(() => ({ duration: 3, remainingCooldown: 1 })),
     })!;
-    expect(data.version).toBe(9);
+    expect(data.version).toBe(10);
     const loaded = restore(data, () => 0);
     expect(loaded.state.bestDefenseCooldown).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(18);

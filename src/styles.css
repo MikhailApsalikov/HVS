@@ -106,6 +106,121 @@ body {
 }
 
 /* === Game Field === */
+.anti-afk-overlay {
+  display: none;
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  max-width: calc(100% - 32px);
+  z-index: 25;
+  pointer-events: none;
+}
+
+.anti-afk-overlay.active {
+  display: block;
+  opacity: 0.6;
+}
+
+.anti-afk-overlay__badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px 16px;
+  border: 1px solid #ed6262;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #451820f5, #1f1018f5);
+  box-shadow: 0 0 22px #ed40404d;
+  animation: anti-afk-pulse 1.3s ease-in-out infinite alternate;
+}
+
+.anti-afk-overlay__icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #ff9292;
+  border-radius: 50%;
+  color: #ffd3d3;
+  font-size: 20px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.anti-afk-overlay__readout {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.anti-afk-overlay__label,
+.anti-afk-overlay__caption {
+  color: #f6bfc3;
+  font-size: 11px;
+}
+
+.anti-afk-overlay__percent {
+  color: #ffb5b5;
+  font-size: 28px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  transform-origin: left center;
+  overflow-wrap: anywhere;
+}
+
+.anti-afk-overlay__timer {
+  color: #ffe3ce;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.anti-afk-overlay__track {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+  height: 4px;
+  background: #ffffff20;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.anti-afk-overlay--recovering .anti-afk-overlay__track {
+  display: block;
+}
+
+.anti-afk-overlay__progress {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6868, #ffd3a8);
+  transform: scaleX(var(--recovery, 1));
+  transform-origin: left;
+}
+
+.anti-afk-overlay--paused * {
+  animation-play-state: paused;
+}
+
+@keyframes anti-afk-pulse {
+  from {
+    box-shadow: 0 0 12px #ed404033;
+  }
+  to {
+    box-shadow:
+      0 0 28px #ed404088,
+      inset 0 0 16px #ed404026;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anti-afk-overlay__badge {
+    animation: none;
+  }
+}
+
 .game-field-wrapper {
   flex: 1;
   display: flex;

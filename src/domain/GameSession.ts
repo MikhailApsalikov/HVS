@@ -10,6 +10,7 @@ import { TalentSystem } from './model/TalentSystem.js';
 import { ItemSystem } from './model/ItemSystem.js';
 import { Arrow } from './model/Arrow.js';
 import { activateAbility, tickAbilities } from './systems/AbilitySystem.js';
+import { tickAntiAfk } from './systems/AntiAfkSystem.js';
 import {
   spawnSpiders,
   moveSpiders,
@@ -45,6 +46,13 @@ export class GameSession {
       ...this.items.getModifiers(),
       ...state.character.getModifiers(),
     ];
+    if (state.antiAfkStacks > 0)
+      effects.push({
+        source: 'effect:antiAfk',
+        stat: 'incomingDamage',
+        kind: 'percent',
+        value: state.antiAfkDamagePercent,
+      });
     const rules = new GameRules(state.config, effects, state.character.base, state.level);
     const scaling = this.talents.getScalingModifiers(rules.snapshot());
     effects.push(...scaling);
@@ -127,7 +135,7 @@ export class GameSession {
     const archer = state.archers[lane];
     if (!Number.isInteger(lane) || state.phase !== 'playing' || !archer?.isReady) return 'blocked';
     if (state.energy < state.currentShootCost) return 'not_enough_energy';
-    state.modifyEnergy(-state.currentShootCost);
+    state.spendEnergy(state.currentShootCost);
     archer.start(state.stats.shootCooldown);
     if (state.adrenalineActive) {
       state.adrenalineShots -= 1;
@@ -158,6 +166,7 @@ export class GameSession {
     const state = this.state;
     if (state.phase !== 'playing' || dt === 0) return;
     const emit = (event: GameEvent) => this.events.push(event);
+    if (tickAntiAfk(state, dt)) this.refreshStats(false);
     spawnSpiders(state, dt, this.random);
     const lastHopeWasActive = state.lastHopeTimer > 0;
     const adrenalineWasActive = state.adrenalineActive;
@@ -169,7 +178,12 @@ export class GameSession {
       this.refreshStats(false);
     moveSpiders(state, dt, this.random);
     tickArrows(state, dt);
-    resolveBreaches(state, this.random, emit);
+    resolveBreaches(state, this.random, emit, () => {
+      if (state.antiAfkStacks > 0 && state.antiAfkRecoveryTimer === 0) {
+        state.antiAfkStacks += 1;
+        this.refreshStats(false);
+      }
+    });
     collectDeadSpiders(state, dt, this.random, emit);
     // Death wins over regeneration and simultaneous completion of a level.
     if (state.hp <= 0) {

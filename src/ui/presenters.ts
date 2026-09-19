@@ -184,7 +184,9 @@ export function resourceDescription(state: GameState, id: string): string {
         state.stats.hpRegen > 0 ? `Восстанавливается ${value('hpRegen')} в секунду.` : '',
         state.stats.damageFactor < 1
           ? `Общее снижение урона - ${formatStat('damageFactor', 1 - state.stats.damageFactor)}.`
-          : '',
+          : state.stats.damageFactor > 1
+            ? `Общее увеличение урона - ${formatStat('damageFactor', state.stats.damageFactor - 1)}.`
+            : '',
       ].join('\n'),
     )}`;
   if (id === 'energy')

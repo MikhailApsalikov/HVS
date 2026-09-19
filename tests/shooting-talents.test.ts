@@ -333,7 +333,7 @@ describe('critical shot saves', () => {
       spiders: saved.spiders.map(({ grantsKillEnergy: _energy, ...spider }) => spider),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(9);
+    expect(parsed.version).toBe(10);
     const loaded = restore(parsed);
     expect(loaded.talents.getRank('hunterMastery')).toBe(5);
     expect(loaded.state.stats.shootCost).toBe(25);

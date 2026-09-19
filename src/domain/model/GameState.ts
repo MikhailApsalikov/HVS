@@ -1,6 +1,7 @@
 import type { AbilityId, Difficulty, DifficultyConfig, GamePhase } from '../types.js';
 import type { GameRules } from '../rules/GameRules.js';
 import type { ResolvedStats } from '../rules/stats.js';
+import { ANTI_AFK } from '../rules/stats.js';
 import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { WORLD } from '../rules/world.js';
 import { clamp } from '../rules/numbers.js';
@@ -28,6 +29,9 @@ export class GameState {
   bestDefenseCooldown = 0;
   adrenalineTimer = 0;
   adrenalineShots = 0;
+  antiAfkIdleTimer = 0;
+  antiAfkStacks = 0;
+  antiAfkRecoveryTimer = 0;
   readonly talentAbilities = new Set<AbilityId>();
   blizzardTimer = 0;
   armageddonPhase: ArmageddonPhase = 'none';
@@ -95,6 +99,20 @@ export class GameState {
   }
   modifyEnergy(delta: number): void {
     this.energy = clamp(this.energy + delta, 0, this.maxEnergy);
+  }
+  /** Only successful player commands count as activity, never enemy energy burns. */
+  spendEnergy(cost: number): void {
+    this.modifyEnergy(-cost);
+    if (cost <= 0) return;
+    this.antiAfkIdleTimer = 0;
+    if (this.antiAfkStacks > 0 && this.antiAfkRecoveryTimer === 0)
+      this.antiAfkRecoveryTimer = ANTI_AFK.recoveryDuration;
+  }
+  get antiAfkDamagePercent(): number {
+    return this.antiAfkStacks * ANTI_AFK.damagePerStack;
+  }
+  get antiAfkRecoveryFraction(): number {
+    return this.antiAfkRecoveryTimer / ANTI_AFK.recoveryDuration;
   }
   applyRules(rules: GameRules, grantHealthIncrease: boolean): void {
     const oldMaxHp = this.maxHp;

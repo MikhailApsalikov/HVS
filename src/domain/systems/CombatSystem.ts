@@ -90,10 +90,16 @@ export function tickArrows(state: GameState, dt: number): void {
   }
 }
 
-export function resolveBreaches(state: GameState, random: RandomSource, emit: EmitEvent): void {
+export function resolveBreaches(
+  state: GameState,
+  random: RandomSource,
+  emit: EmitEvent,
+  onBreach: () => void,
+): void {
   for (const spider of state.spiders.values()) {
     if (spider.dying || spider.y < 1) continue;
     spider.reachedCastle = true;
+    onBreach();
     if (state.isInvulnerable) emit({ type: 'absorb' });
     else {
       const blocked =

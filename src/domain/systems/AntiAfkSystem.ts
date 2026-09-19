@@ -1,0 +1,35 @@
+import type { GameState } from '../model/GameState.js';
+import { ANTI_AFK } from '../rules/stats.js';
+
+/** Called only during gameplay; returns whether the damage modifier changed. */
+export function tickAntiAfk(state: GameState, dt: number): boolean {
+  const previousStacks = state.antiAfkStacks;
+  if (previousStacks > 0 && state.antiAfkRecoveryTimer === 0) return false;
+  // Regeneration fills energy continuously: exclude the portion before it becomes full.
+  const missing = state.maxEnergy - state.energy;
+  const refillTime =
+    missing <= 0 ? 0 : state.stats.energyRegen > 0 ? missing / state.stats.energyRegen : Infinity;
+  if (missing > 0) state.antiAfkIdleTimer = 0;
+  const activationTime = refillTime + ANTI_AFK.idleDuration - state.antiAfkIdleTimer;
+  const activates = activationTime <= dt + 1e-9;
+  if (state.antiAfkRecoveryTimer > 0) {
+    // Re-entering AFK before removal preserves the stack count and cancels removal.
+    if (activates && activationTime <= state.antiAfkRecoveryTimer + 1e-9) {
+      state.antiAfkRecoveryTimer = 0;
+      state.antiAfkIdleTimer = ANTI_AFK.idleDuration;
+      return false;
+    }
+    const remaining = state.antiAfkRecoveryTimer - dt;
+    state.antiAfkRecoveryTimer = remaining > 1e-9 ? remaining : 0;
+    if (state.antiAfkRecoveryTimer === 0) state.antiAfkStacks = 0;
+  }
+  state.antiAfkIdleTimer = Math.min(
+    ANTI_AFK.idleDuration,
+    state.antiAfkIdleTimer + Math.max(0, dt - refillTime),
+  );
+  if (activates) {
+    state.antiAfkIdleTimer = ANTI_AFK.idleDuration;
+    state.antiAfkStacks = 1;
+  }
+  return previousStacks !== state.antiAfkStacks;
+}

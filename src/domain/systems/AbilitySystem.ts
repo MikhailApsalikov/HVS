@@ -63,7 +63,7 @@ export function activateAbility(
   if (ability.isOnCooldown) return 'on_cooldown';
   const cost = state.stats[`${id}.cost`];
   if (state.energy < cost) return 'not_enough_energy';
-  state.modifyEnergy(-cost);
+  state.spendEnergy(cost);
   ability.start(state.stats[`${id}.cooldown`]);
   EFFECTS[id](state, random);
   return 'activated';

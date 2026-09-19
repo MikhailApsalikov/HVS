@@ -335,7 +335,7 @@ describe('new defense talents through session commands', () => {
     expect(loaded.state.adrenalineShots).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(0);
     const current = snapshot(loaded);
-    expect(current.version).toBe(9);
+    expect(current.version).toBe(10);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 
