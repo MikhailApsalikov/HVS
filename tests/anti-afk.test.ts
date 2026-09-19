@@ -317,14 +317,20 @@ describe('anti-AFK through player commands and gameplay time', () => {
     const arrow = new Arrow(shot.id, shot.lane, shot.speed, false, true);
     session.state.arrows.set(arrow.id, arrow);
     arrow.kills = 1;
+    arrow.power = 1;
     const spider = addSpider(session);
     spider.grantsKillEnergy = false;
     session.state.bestDefenseCooldown = 2;
     const current = snapshot(session);
     const { antiAfkIdleTimer, antiAfkStacks, antiAfkRecoveryTimer, ...previousState } =
       current.state;
-    const migrated = parseSave({ ...current, version: 9, state: previousState })!;
-    expect(migrated.version).toBe(10);
+    const migrated = parseSave({
+      ...current,
+      version: 9,
+      abilities: current.abilities.slice(0, 10),
+      state: previousState,
+    })!;
+    expect(migrated.version).toBe(11);
     expect(migrated.state).toMatchObject({
       antiAfkIdleTimer: 0,
       antiAfkStacks: 0,

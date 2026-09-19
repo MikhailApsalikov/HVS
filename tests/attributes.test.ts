@@ -175,10 +175,10 @@ describe('primary attributes through the session API', () => {
     expect(session.drainEvents()).toContainEqual({
       type: 'coinDrop',
       spiderId: 'spider-2',
-      coins: 4,
+      coins: 6,
       jackpot: false,
     });
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(104 + 6.4 * 0.31);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(106 + 6.4 * 0.31);
     session.state.levelTimer = 0;
     session.tick(0.01);
     session.upgradeTalent('hunterMastery');
@@ -434,7 +434,7 @@ describe('armor and talent branches', () => {
 
   it.each([
     ['spiderArmor', 3, 14, 20],
-    ['volleyMastery', 3, 14, 20],
+    ['volleyMastery', 4, 21, 30],
     ['blizzardMastery', 4, 21, 30],
     ['dutyBound', 5, 28, 40],
     ['healBoost', 5, 28, 40],

@@ -29,6 +29,8 @@ export class GameState {
   bestDefenseCooldown = 0;
   adrenalineTimer = 0;
   adrenalineShots = 0;
+  eagleEyeTimer = 0;
+  eagleEyeShots = 0;
   antiAfkIdleTimer = 0;
   antiAfkStacks = 0;
   antiAfkRecoveryTimer = 0;
@@ -77,10 +79,14 @@ export class GameState {
   get currentShootCost(): number {
     return this.adrenalineActive ? 0 : this.stats.shootCost;
   }
+  get eagleEyeActive(): boolean {
+    return this.eagleEyeTimer > 0 && this.eagleEyeShots > 0;
+  }
   abilityActiveTimer(id: AbilityId): number {
     if (id === 'lastHope') return this.lastHopeTimer;
     if (id === 'stand') return this.invulnerableTimer;
     if (id === 'adrenaline') return this.adrenalineTimer;
+    if (id === 'eagleEye') return this.eagleEyeTimer;
     return 0;
   }
   getAbility(id: AbilityId): Cooldown {

@@ -210,8 +210,8 @@ describe('new defense talents through session commands', () => {
 
   it.each([
     [1, false, 2],
-    [2, false, 3],
-    [3, false, 5],
+    [2, false, 4],
+    [3, false, 6],
     [1, true, 5],
     [2, true, 10],
     [3, true, 15],
@@ -220,7 +220,7 @@ describe('new defense talents through session commands', () => {
     (rank, jackpot, expected) => {
       let roll = jackpot ? 0 : 0.999999;
       const session = defense(30, () => roll);
-      // Base roll is 1 (jackpot) or 3 (normal); endurance adds one, so flat reward becomes 11.
+      // Base roll is 1 (jackpot) or 5 (normal); endurance adds one, so flat reward is 11 or 13.
       session.state.character.setModifiers('reward', [
         { stat: 'coinsPerKill', kind: 'flat', value: jackpot ? 4 : 2 },
         { stat: 'energyPerKill', kind: 'flat', value: 50 },
@@ -250,7 +250,7 @@ describe('new defense talents through session commands', () => {
       expect(session.drainEvents()).toContainEqual({
         type: 'coinDrop',
         spiderId: killed.id,
-        coins: jackpot ? 13 : 11,
+        coins: jackpot ? 15 : 13,
         jackpot: false,
       });
     },
@@ -279,7 +279,7 @@ describe('new defense talents through session commands', () => {
     const before = session.state.coins;
     addSpider(session, 'tank', 0, 1, 100000);
     session.tick(0.31);
-    expect(session.state.coins).toBe(before + 4); // round((3 + 5) × .45)
+    expect(session.state.coins).toBe(before + 5); // round((5 + 5 + 1) × .45)
     expect(session.drainEvents()).toContainEqual({ type: 'absorb' });
     expect(talentDescription('marauder', 3, session.state.stats)).toContain('45%');
     expect(coinsDescription(session.state)).toContain('45%');
@@ -335,7 +335,7 @@ describe('new defense talents through session commands', () => {
     expect(loaded.state.adrenalineShots).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(0);
     const current = snapshot(loaded);
-    expect(current.version).toBe(10);
+    expect(current.version).toBe(11);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 

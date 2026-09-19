@@ -173,7 +173,7 @@ export class GameField {
         if (laneEl) laneEl.appendChild(el);
       }
       el.style.setProperty('--y', String(arrow.y));
-      el.classList.toggle('arrow--critical', arrow.critical);
+      el.classList.toggle('arrow--critical', arrow.power > 1);
     }
     for (const [id, el] of this._arrowElements) {
       if (!currentIds.has(id)) {

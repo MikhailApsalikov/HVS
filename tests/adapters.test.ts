@@ -123,7 +123,7 @@ describe('presentation uses the actual resolved stats', () => {
     session.talents.loadFromSave([{ id: 'magicArmor', rank: 7 }]);
     session.refreshStats();
     expect(attributeDescription(session.state, 'intellect')).toContain(
-      'Благодаря таланту «Магическая броня» даёт ещё 210 брони.',
+      'Благодаря таланту «Магическая броня»: Увеличивает броню на 210 единиц.',
     );
     session.state.character.setModifiers('test:no-armor', [
       { stat: 'armor', kind: 'percent', value: -100 },

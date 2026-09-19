@@ -8,7 +8,8 @@ import { ABILITY_ORDER } from '../content/abilities.js';
 import {
   ANTI_AFK,
   BEST_DEFENSE_COOLDOWN,
-  CRITICAL_SHOT_KILLS,
+  CRITICAL_SHOT_POWER,
+  IMPROVED_CRITICAL_SHOT_POWER,
   PRIMARY_STATS,
   STATS,
 } from './rules/stats.js';
@@ -35,6 +36,8 @@ const STATE_FIELDS = [
   'bestDefenseCooldown',
   'adrenalineTimer',
   'adrenalineShots',
+  'eagleEyeTimer',
+  'eagleEyeShots',
   'antiAfkIdleTimer',
   'antiAfkStacks',
   'antiAfkRecoveryTimer',
@@ -67,14 +70,14 @@ type SavedSpider = Pick<
 >;
 type SavedArrow = Pick<
   Arrow,
-  'id' | 'lane' | 'speed' | 'fromVolley' | 'critical' | 'kills' | 'y' | 'previousY'
+  'id' | 'lane' | 'speed' | 'fromVolley' | 'critical' | 'kills' | 'power' | 'y' | 'previousY'
 >;
 interface SavedCooldown {
   readonly duration: number;
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 10;
+  readonly version: 11;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -91,7 +94,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 10,
+    version: 11,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -112,6 +115,8 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   state.lastHopeTimer = data.state.lastHopeTimer;
   state.adrenalineTimer = data.state.adrenalineTimer;
   state.adrenalineShots = data.state.adrenalineShots;
+  state.eagleEyeTimer = data.state.eagleEyeTimer;
+  state.eagleEyeShots = data.state.eagleEyeShots;
   state.antiAfkStacks = data.state.antiAfkStacks;
   const talentRefund = session.talents.loadFromSave(data.talents);
   state.character.restoreBase(data.character);
@@ -165,7 +170,14 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
     state.spiders.set(spider.id, spider);
   }
   for (const entry of data.arrows) {
-    const arrow = new Arrow(entry.id, entry.lane, entry.speed, entry.fromVolley, entry.critical);
+    const arrow = new Arrow(
+      entry.id,
+      entry.lane,
+      entry.speed,
+      entry.fromVolley,
+      entry.critical,
+      entry.power,
+    );
     arrow.kills = entry.kills;
     arrow.y = entry.y;
     arrow.previousY = entry.previousY;
@@ -221,17 +233,26 @@ export function parseSave(value: unknown): SaveData | null {
 function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
-  if (![3, 4, 5, 6, 7, 8, 9, 10].includes(value.version as number) || !object(value.state))
+  if (![3, 4, 5, 6, 7, 8, 9, 10, 11].includes(value.version as number) || !object(value.state))
     return null;
   const state = value.state;
   if (
-    value.version === 10 &&
+    (value.version as number) >= 10 &&
     (!number(state.antiAfkIdleTimer) ||
       state.antiAfkIdleTimer > ANTI_AFK.idleDuration ||
       !integer(state.antiAfkStacks) ||
       !number(state.antiAfkRecoveryTimer) ||
       state.antiAfkRecoveryTimer > ANTI_AFK.recoveryDuration ||
       (state.antiAfkRecoveryTimer > 0 && state.antiAfkStacks === 0))
+  )
+    return null;
+  if (
+    (value.version as number) >= 11 &&
+    (!number(state.eagleEyeTimer) ||
+      state.eagleEyeTimer > STATS['eagleEye.duration'].policy.max! ||
+      !integer(state.eagleEyeShots) ||
+      state.eagleEyeShots > STATS['eagleEye.shots'].policy.max! ||
+      state.eagleEyeTimer > 0 !== state.eagleEyeShots > 0)
   )
     return null;
   const numeric = [
@@ -328,11 +349,13 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     value.archers.length !== WORLD.lanes ||
     !arrayOf(value.abilities, cooldown) ||
     value.abilities.length !==
-      ((value.version as number) >= 7
+      ((value.version as number) >= 11
         ? ABILITY_ORDER.length
-        : (value.version as number) >= 5
-          ? 9
-          : 8)
+        : (value.version as number) >= 7
+          ? 10
+          : (value.version as number) >= 5
+            ? 9
+            : 8)
   )
     return null;
   if (
@@ -376,8 +399,18 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
           (typeof entry.critical === 'boolean' &&
             integer(entry.kills) &&
             (entry.critical
-              ? !entry.fromVolley && entry.kills < CRITICAL_SHOT_KILLS
-              : entry.kills === 0))),
+              ? !entry.fromVolley &&
+                entry.kills <
+                  ((value.version as number) >= 11
+                    ? IMPROVED_CRITICAL_SHOT_POWER
+                    : CRITICAL_SHOT_POWER)
+              : entry.kills === 0))) &&
+        ((value.version as number) < 11 ||
+          (integer(entry.power) &&
+            entry.power > 0 &&
+            (entry.critical
+              ? entry.power + (entry.kills as number) <= IMPROVED_CRITICAL_SHOT_POWER
+              : entry.power === 1))),
     )
   )
     return null;
@@ -392,10 +425,10 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
-  if (value.version !== 10) {
+  if (value.version !== 11) {
     const previous = {
       ...value,
-      version: 10,
+      version: 11,
       spiders: value.spiders.map((entry) => ({
         ...(entry as JsonObject),
         grantsKillEnergy:
@@ -405,6 +438,10 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
         ...(entry as JsonObject),
         critical: (value.version as number) >= 9 ? (entry as JsonObject).critical : false,
         kills: (value.version as number) >= 9 ? (entry as JsonObject).kills : 0,
+        power:
+          (value.version as number) >= 9 && (entry as JsonObject).critical
+            ? CRITICAL_SHOT_POWER - ((entry as JsonObject).kills as number)
+            : 1,
       })),
       state: {
         ...state,
@@ -412,9 +449,11 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
         bestDefenseCooldown: (value.version as number) >= 8 ? state.bestDefenseCooldown : 0,
         adrenalineTimer: (value.version as number) >= 7 ? state.adrenalineTimer : 0,
         adrenalineShots: (value.version as number) >= 7 ? state.adrenalineShots : 0,
-        antiAfkIdleTimer: 0,
-        antiAfkStacks: 0,
-        antiAfkRecoveryTimer: 0,
+        eagleEyeTimer: 0,
+        eagleEyeShots: 0,
+        antiAfkIdleTimer: (value.version as number) >= 10 ? state.antiAfkIdleTimer : 0,
+        antiAfkStacks: (value.version as number) >= 10 ? state.antiAfkStacks : 0,
+        antiAfkRecoveryTimer: (value.version as number) >= 10 ? state.antiAfkRecoveryTimer : 0,
       },
       abilities: [
         ...value.abilities,

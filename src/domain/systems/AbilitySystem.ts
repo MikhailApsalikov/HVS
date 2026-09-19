@@ -37,6 +37,10 @@ const EFFECTS: Record<AbilityId, Effect> = {
     state.adrenalineShots = state.stats['adrenaline.shots'];
     for (const archer of state.archers) archer.start(0);
   },
+  eagleEye: (state) => {
+    state.eagleEyeTimer = state.stats['eagleEye.duration'];
+    state.eagleEyeShots = state.stats['eagleEye.shots'];
+  },
   armageddon: (state) => {
     state.armageddonPhase = 'charging';
     state.armageddonTimer = state.stats['armageddon.charge'];
@@ -76,6 +80,8 @@ export function tickAbilities(state: GameState, dt: number): void {
   state.bestDefenseCooldown = Math.max(0, state.bestDefenseCooldown - dt);
   state.adrenalineTimer = Math.max(0, state.adrenalineTimer - dt);
   if (state.adrenalineTimer === 0) state.adrenalineShots = 0;
+  state.eagleEyeTimer = Math.max(0, state.eagleEyeTimer - dt);
+  if (state.eagleEyeTimer === 0) state.eagleEyeShots = 0;
   state.blizzardTimer = Math.max(0, state.blizzardTimer - dt);
   for (const spider of state.spiders.values()) spider.tickSlow(dt);
   if (state.armageddonPhase === 'none') return;

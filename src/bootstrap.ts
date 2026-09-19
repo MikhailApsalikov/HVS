@@ -37,6 +37,7 @@ export function bootstrap(root: HTMLElement): () => void {
     stand: SoundEffect.STAND_ACTIVATE,
     lastHope: SoundEffect.ABSORB_DAMAGE,
     adrenaline: SoundEffect.PREP_ACTIVATE,
+    eagleEye: SoundEffect.PREP_ACTIVATE,
     armageddon: SoundEffect.ARMAGEDDON_ACTIVATE,
     recharge: SoundEffect.RECHARGE_ACTIVATE,
   };

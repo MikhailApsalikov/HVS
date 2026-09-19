@@ -1,6 +1,11 @@
 import type { TalentId, TalentBranch } from '../domain/types.js';
 import type { StatModifier, PrimaryStatId } from '../domain/rules/stats.js';
-import { BEST_DEFENSE_COOLDOWN, CRITICAL_SHOT_KILLS } from '../domain/rules/stats.js';
+import {
+  ATTRIBUTE_RULES,
+  BEST_DEFENSE_COOLDOWN,
+  CRITICAL_SHOT_POWER,
+  IMPROVED_CRITICAL_SHOT_POWER,
+} from '../domain/rules/stats.js';
 import { ABILITY_ORDER } from './abilities.js';
 
 type Effect = Omit<StatModifier, 'source'>;
@@ -74,6 +79,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   hunterMastery: {
     branch: 'shooting',
+    column: 1,
     name: 'Мастерство охотника',
     sprite: 'TalentHunter',
     effects: [flat('shootCost', -2)],
@@ -88,10 +94,49 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   criticalShot: {
     branch: 'shooting',
+    column: 2,
     name: 'Критический выстрел',
     sprite: 'TalentCriticalShot',
     effects: [flat('criticalShotChance', 0.02)],
-    description: `Каждый выстрел, кроме стрел «Залпа», с вероятностью {criticalShotChance} становится критическим.\nКритическая стрела убивает до ${CRITICAL_SHOT_KILLS} пауков, продолжая полёт по своей линии после первого убийства. Энергия даётся только за первого паука в цепочке.`,
+    description: `Каждый выстрел, кроме стрел «Залпа», с вероятностью {criticalShotChance} становится критическим.\nКритическая стрела убивает до ${CRITICAL_SHOT_POWER} пауков. Энергия даётся только за первого паука в цепочке.`,
+  },
+  eagleEye: {
+    branch: 'shooting',
+    column: 2,
+    name: 'Зоркость',
+    sprite: 'AbilityEagleEye',
+    prerequisite: { id: 'criticalShot', rank: 10 },
+    effects: [],
+  },
+  improvedCriticalShot: {
+    branch: 'shooting',
+    column: 1,
+    name: 'Улучшенный критический выстрел',
+    sprite: 'TalentImprovedCriticalShot',
+    prerequisite: { id: 'eagleEye', rank: 1 },
+    effects: [flat('improvedCriticalShotChance', 0.08)],
+    description: `С вероятностью {improvedCriticalShotChance} критическая стрела убивает до ${IMPROVED_CRITICAL_SHOT_POWER} пауков вместо ${CRITICAL_SHOT_POWER}.`,
+  },
+  agileCriticalShot: {
+    branch: 'shooting',
+    column: 2,
+    name: 'Ловкий критический выстрел',
+    sprite: 'TalentAgileCriticalShot',
+    prerequisite: { id: 'eagleEye', rank: 1 },
+    effects: [],
+    scaling: { attribute: 'agility', step: 3, effect: flat('criticalShotChance', 0.0001) },
+    description:
+      'Увеличивает шанс «Критического выстрела» на {scaling.value} за каждые {scaling.step} полных единицы ловкости.',
+  },
+  vampirism: {
+    branch: 'shooting',
+    column: 3,
+    name: 'Вампиризм',
+    sprite: 'TalentVampirism',
+    effects: [],
+    scaling: { attribute: 'agility', step: 10, effect: flat('hpPerKill', 1) },
+    description:
+      'При убийстве паука восстанавливает {scaling.value} здоровья за каждые {scaling.step} полных единиц ловкости.',
   },
   improvedPrep: {
     branch: 'magic',
@@ -102,6 +147,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   volleyMastery: {
     branch: 'shooting',
+    column: 3,
     name: 'Искусный залп',
     sprite: 'TalentVolleyMastery',
     effects: [flat('volley.lanes', 1)],
@@ -109,6 +155,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   rapidFire: {
     branch: 'shooting',
+    column: 3,
     name: 'Скорострельность',
     sprite: 'TalentRapidFire',
     effects: [
@@ -181,6 +228,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   improvedAgility: {
     name: 'Улучшенная ловкость',
     branch: 'shooting',
+    column: 2,
     sprite: 'TalentImprovedAgility',
     effects: [percent('agility', 5)],
     growth: { stat: 'agility', value: 1 },
@@ -218,8 +266,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 2,
     effects: [flat('blockChance', 0.05)],
     fixedEffects: [flat('blockPower', 50)],
-    description:
-      'Позволяет заблокировать атаку паука с вероятностью {blockChance}.\nПри блоке поглощает до {blockPower} урона.',
+    description: `Позволяет заблокировать атаку паука с вероятностью {blockChance}.\nПри блоке поглощает до {blockPower} + ${ATTRIBUTE_RULES.endurance.shieldBlockPerPoint * 100}% от выносливости урона.`,
   },
   lastHope: {
     name: 'Блок последней надежды',
@@ -235,7 +282,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     sprite: 'TalentImprovedLastHope',
     prerequisite: { id: 'lastHope', rank: 1 },
     column: 2,
-    effects: [flat('lastHope.cooldown', -10), flat('lastHope.cost', -4)],
+    effects: [flat('lastHope.cooldown', -5), flat('lastHope.cost', -4)],
     description:
       '«Блок последней надежды» перезаряжается на {lastHope.cooldown} с быстрее и расходует на {lastHope.cost} энергии меньше.',
   },

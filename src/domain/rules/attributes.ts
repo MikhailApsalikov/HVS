@@ -3,6 +3,7 @@ import { ARMOR_RULES, ATTRIBUTE_RULES, type PrimaryStatId, type StatModifier } f
 export function attributeModifiers(
   values: Readonly<Record<PrimaryStatId, number>>,
   criticalShotLearned = false,
+  shieldBlockLearned = false,
 ): Readonly<Record<PrimaryStatId, readonly StatModifier[]>> {
   const { endurance: e, agility: a, intellect: i } = values;
   const { endurance: er, agility: ar, intellect: ir } = ATTRIBUTE_RULES;
@@ -24,6 +25,9 @@ export function attributeModifiers(
       effect('endurance', 'coinsPerSec', Math.floor(e / er.incomeStep) * er.incomePerStep),
       effect('endurance', 'armor', e * er.armorPerPoint),
       effect('endurance', 'lastHope.blockPower', e * er.lastHopeBlockPerPoint),
+      ...(shieldBlockLearned
+        ? [effect('endurance', 'blockPower', e * er.shieldBlockPerPoint)]
+        : []),
     ],
     agility: [
       effect('agility', 'shootCooldown', -shotPercent, 'percent'),

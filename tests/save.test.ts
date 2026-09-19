@@ -20,7 +20,7 @@ describe('saves and migration', () => {
     };
     const loaded = restore(parseSave(previous)!);
     expect(loaded.talents.getRank('shieldBlock')).toBe(8);
-    expect(loaded.state.stats).toMatchObject({ blockChance: 0.4, blockPower: 50 });
+    expect(loaded.state.stats).toMatchObject({ blockChance: 0.4, blockPower: 64 });
     expect(loaded.state.pendingTalentPoints).toBe(session.state.pendingTalentPoints + 4);
     expect(loaded.state.isAbilityUnlocked('lastHope')).toBe(true);
     expect(loaded.talents.getRank('hunterReward')).toBe(2);
@@ -46,7 +46,7 @@ describe('saves and migration', () => {
         inventory: ['c001', 'c001', 'missing', 'c003', 'c001', 'c003'],
         abilities: data.abilities.slice(0, version < 5 ? 8 : 9),
       })!;
-      expect(parsed.version).toBe(10);
+      expect(parsed.version).toBe(11);
       const loaded = restore(parsed);
       expect(loaded.items.inventory).toEqual(['c001', 'c003']);
       expect(loaded.state.coins).toBe(
@@ -98,7 +98,7 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(10);
+    expect(parsed.version).toBe(11);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
       endurance: 79,

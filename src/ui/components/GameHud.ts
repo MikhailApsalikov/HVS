@@ -128,7 +128,7 @@ export class HUD {
       button.classList.toggle('ability-btn--active', activeTimer > 0);
       button.querySelector('.ability-btn__effect-text')!.textContent =
         activeTimer > 0
-          ? `${id === 'adrenaline' ? `Выстрелов: ${state.adrenalineShots} · ` : ''}Действует: ${formatSeconds(activeTimer)} с`
+          ? `${id === 'adrenaline' || id === 'eagleEye' ? `Выстрелов: ${id === 'adrenaline' ? state.adrenalineShots : state.eagleEyeShots} · ` : ''}Действует: ${formatSeconds(activeTimer)} с`
           : '';
       button.classList.toggle('ability-btn--locked', locked);
       button.classList.toggle('ability-btn--cooldown', cooldown.isOnCooldown);

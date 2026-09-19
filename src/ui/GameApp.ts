@@ -32,6 +32,7 @@ export class GameApp {
   private readonly shield: StandShieldOverlay;
   private readonly lastHope: StandShieldOverlay;
   private readonly adrenaline: AdrenalineOverlay;
+  private readonly eagleEye: AdrenalineOverlay;
   private readonly antiAfk: AntiAfkOverlay;
   private readonly saveStatus = document.createElement('div');
 
@@ -68,6 +69,7 @@ export class GameApp {
     this.shield = new StandShieldOverlay(field.getContainer(), sprites);
     this.lastHope = new StandShieldOverlay(field.getContainer(), sprites, 'lastHope');
     this.adrenaline = new AdrenalineOverlay(field.getContainer(), sprites);
+    this.eagleEye = new AdrenalineOverlay(field.getContainer(), sprites, 'eagleEye');
     this.antiAfk = new AntiAfkOverlay(field.getContainer());
     const wrapper = document.createElement('div');
     wrapper.className = 'app__screens';
@@ -103,6 +105,7 @@ export class GameApp {
   render(state: GameState, saveError: string | null): void {
     this.game.render(state);
     this.adrenaline.render(state);
+    this.eagleEye.render(state);
     this.antiAfk.render(state);
     this.saveStatus.textContent = saveError ?? '';
     this.saveStatus.hidden = !saveError;

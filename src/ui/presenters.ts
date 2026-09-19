@@ -29,6 +29,7 @@ export function formatStat(id: StatId, value: number): string {
   if (
     id === 'blockChance' ||
     id === 'criticalShotChance' ||
+    id === 'improvedCriticalShotChance' ||
     id === 'blockVolleyChance' ||
     id === 'lastHope.blockChance' ||
     id === 'blizzard.slow' ||
@@ -72,7 +73,8 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
   if (definition.description)
     return fillDescription(definition.description, (key) => {
       if (key === 'scaling.step') return String(definition.scaling!.step);
-      if (key === 'scaling.value') return String(definition.scaling!.effect.value * rank);
+      if (key === 'scaling.value')
+        return formatStat(definition.scaling!.effect.stat, definition.scaling!.effect.value * rank);
       const effect = effects.find(({ stat }) => stat === key)!;
       const amount = Math.abs(effect.value);
       if (effect.kind === 'percent') return `${Number(amount.toFixed(4))}%`;
@@ -90,6 +92,8 @@ const ATTRIBUTE_EFFECT_TEXT: Partial<Record<StatId, string>> = {
   levelDuration: 'Сокращает длительность уровня на {value} с.',
   coinsPerKill: 'Каждый убитый паук приносит дополнительно {value} монет.',
   coinsPerSec: 'Приносит дополнительно {value} монет каждую секунду.',
+  blockPower: 'Увеличивает силу блока на {value} единиц.',
+  hpPerKill: 'Каждое убийство восстанавливает {value} здоровья.',
   armor: 'Увеличивает броню на {value} единиц.',
   shootCooldown: 'Сокращает перезарядку выстрела и увеличивает скорость стрел на {value}.',
   'volley.cooldown': 'Сокращает перезарядку «Залпа» на {value}.',
@@ -125,7 +129,7 @@ export function attributeDescription(state: GameState, id: PrimaryStatId | 'armo
     for (const modifier of state.rules.explain(scaling.effect.stat).modifiers) {
       if (modifier.source === `talent:${talentId}` && modifier.value !== 0)
         contributions.push(
-          `Благодаря таланту «${name}» даёт ещё ${formatStat(scaling.effect.stat, modifier.value)} брони.`,
+          `Благодаря таланту «${name}»: ${attributeEffectDescription({ ...modifier, stat: scaling.effect.stat })}`,
         );
     }
   }
@@ -174,7 +178,7 @@ export function abilityDescription(state: GameState, id: AbilityId): string {
       : []),
   ];
   const activeTimer = state.abilityActiveTimer(id);
-  return `<div class="tooltip__title">${ability.name} [${ability.key}]</div>${descriptionParagraphs(abilityEffectDescription(id, state.stats))}${descriptionParagraphs(abilityUsageDescription(id, state.stats))}${activeTimer > 0 ? `<div>Действует ещё ${formatSeconds(activeTimer)} с</div>${id === 'adrenaline' ? `<div>Бесплатных выстрелов: ${state.adrenalineShots}</div>` : ''}` : ''}${reasons.map((reason) => `<div class="action-unavailable">${reason}</div>`).join('')}`;
+  return `<div class="tooltip__title">${ability.name} [${ability.key}]</div>${descriptionParagraphs(abilityEffectDescription(id, state.stats))}${descriptionParagraphs(abilityUsageDescription(id, state.stats))}${activeTimer > 0 ? `<div>Действует ещё ${formatSeconds(activeTimer)} с</div>${id === 'adrenaline' ? `<div>Бесплатных выстрелов: ${state.adrenalineShots}</div>` : id === 'eagleEye' ? `<div>Критических выстрелов: ${state.eagleEyeShots}</div>` : ''}` : ''}${reasons.map((reason) => `<div class="action-unavailable">${reason}</div>`).join('')}`;
 }
 export function resourceDescription(state: GameState, id: string): string {
   const value = (stat: StatId) => formatStat(stat, state.stats[stat]);
@@ -226,6 +230,9 @@ export function shootDescription(state: GameState, lane: number): string {
       'Выпускает стрелу, которая поражает первого паука на этой линии.',
       state.currentShootCost > 0
         ? `Выстрел расходует ${formatStat('shootCost', state.currentShootCost)} энергии.`
+        : '',
+      state.eagleEyeActive
+        ? `«Зоркость»: осталось ${state.eagleEyeShots} критических выстрелов.`
         : '',
       state.adrenalineActive
         ? `«Адреналин»: осталось ${state.adrenalineShots} бесплатных выстрелов.`

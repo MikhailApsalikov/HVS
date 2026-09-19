@@ -4,7 +4,7 @@ import type { RandomSource } from '../rules/random.js';
 import type { SpiderType } from '../types.js';
 import { randomInt } from '../rules/random.js';
 import { WORLD } from '../rules/world.js';
-import { BEST_DEFENSE_COOLDOWN, CRITICAL_SHOT_KILLS } from '../rules/stats.js';
+import { BEST_DEFENSE_COOLDOWN } from '../rules/stats.js';
 import { SPIDERS, SPECIAL_SPIDER_ORDER } from '../../content/spiders.js';
 import { Spider } from '../model/Spider.js';
 import { fireVolley } from './AbilitySystem.js';
@@ -74,14 +74,16 @@ export function tickArrows(state: GameState, dt: number): void {
     }
     collisions.sort((a, b) => a.time - b.time);
     for (const { spider: hit } of collisions) {
-      hit.hits = arrow.critical ? 0 : hit.hits - 1;
-      if (arrow.critical) {
+      const damage = Math.min(hit.hits, arrow.power);
+      hit.hits -= damage;
+      arrow.power -= damage;
+      if (arrow.critical && hit.hits === 0) {
         hit.grantsKillEnergy = arrow.kills === 0;
         arrow.kills += 1;
       }
       if (hit.hits <= 0) hit.startDying();
       else if (hit.type === 'fat') hit.type = 'normal';
-      if (!arrow.critical || arrow.kills >= CRITICAL_SHOT_KILLS) {
+      if (arrow.power === 0) {
         state.arrows.delete(id);
         break;
       }
@@ -160,6 +162,7 @@ export function collectDeadSpiders(
         spider.reachedCastle ? state.stats.breachRewardFraction : 1,
       );
       state.coins += coins;
+      if (!spider.reachedCastle && state.hp > 0) state.modifyHp(state.stats.hpPerKill);
       if (!spider.reachedCastle && spider.grantsKillEnergy)
         state.modifyEnergy(state.stats.energyPerKill);
       emit({ type: 'coinDrop', spiderId: id, coins, jackpot });

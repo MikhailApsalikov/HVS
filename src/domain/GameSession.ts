@@ -9,6 +9,7 @@ import { GameState } from './model/GameState.js';
 import { TalentSystem } from './model/TalentSystem.js';
 import { ItemSystem } from './model/ItemSystem.js';
 import { Arrow } from './model/Arrow.js';
+import { CRITICAL_SHOT_POWER, IMPROVED_CRITICAL_SHOT_POWER } from './rules/stats.js';
 import { activateAbility, tickAbilities } from './systems/AbilitySystem.js';
 import { tickAntiAfk } from './systems/AntiAfkSystem.js';
 import {
@@ -145,8 +146,25 @@ export class GameSession {
       }
     }
     const critical =
-      state.stats.criticalShotChance > 0 && this.random() < state.stats.criticalShotChance;
-    const arrow = new Arrow(state.newId('arrow'), lane, state.stats.arrowSpeed, false, critical);
+      state.eagleEyeActive ||
+      (state.stats.criticalShotChance > 0 && this.random() < state.stats.criticalShotChance);
+    if (state.eagleEyeActive) {
+      state.eagleEyeShots -= 1;
+      if (state.eagleEyeShots === 0) state.eagleEyeTimer = 0;
+    }
+    const improved =
+      critical &&
+      state.stats.improvedCriticalShotChance > 0 &&
+      this.random() < state.stats.improvedCriticalShotChance;
+    const power = improved ? IMPROVED_CRITICAL_SHOT_POWER : critical ? CRITICAL_SHOT_POWER : 1;
+    const arrow = new Arrow(
+      state.newId('arrow'),
+      lane,
+      state.stats.arrowSpeed,
+      false,
+      critical,
+      power,
+    );
     state.arrows.set(arrow.id, arrow);
     return 'shot';
   }

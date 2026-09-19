@@ -5,7 +5,7 @@ export const WORLD = {
   hitRadius: 0.05,
   deathDuration: 0.3,
   coinMin: 1,
-  coinMax: 3,
+  coinMax: 5,
   jackpotMultiplier: 3,
   saleFactor: 0.5,
   ninjaJumpMin: 0.1,

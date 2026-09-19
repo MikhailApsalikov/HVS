@@ -134,10 +134,11 @@ describe('defense requirements and compatibility', () => {
     const data = parseSave({
       ...current,
       version: 7,
+      abilities: current.abilities.slice(0, 10),
       state,
       archers: current.archers.map(() => ({ duration: 3, remainingCooldown: 1 })),
     })!;
-    expect(data.version).toBe(10);
+    expect(data.version).toBe(11);
     const loaded = restore(data, () => 0);
     expect(loaded.state.bestDefenseCooldown).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(18);

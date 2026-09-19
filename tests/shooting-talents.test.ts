@@ -131,10 +131,10 @@ describe('critical shots through session commands', () => {
     expect(random).toHaveBeenCalledTimes(rank > 0 ? 1 : 0);
   });
 
-  it('kills two fat spiders across frames, rewards energy only once, and leaves the third alive', () => {
+  it('kills two normal spiders across frames, rewards energy only once, and leaves the third alive', () => {
     const { session } = combat();
-    const first = addSpider(session, 'fat', 0, 0.9);
-    const second = addSpider(session, 'fat', 0, 0.4);
+    const first = addSpider(session, 'normal', 0, 0.9);
+    const second = addSpider(session, 'normal', 0, 0.4);
     const third = addSpider(session, 'normal', 0, 0.1);
     expect(session.shootLane(0)).toBe('shot');
     const energy = session.state.energy;
@@ -143,7 +143,7 @@ describe('critical shots through session commands', () => {
     expect(first.hits).toBe(0);
     expect(second.dying).toBe(false);
     const arrow = [...session.state.arrows.values()][0];
-    expect(arrow).toMatchObject({ critical: true, kills: 1, lane: 0 });
+    expect(arrow).toMatchObject({ critical: true, kills: 1, power: 1, lane: 0 });
     expect(arrow.y).toBeCloseTo(0.8);
     session.tick(0.04);
     expect(second.dying).toBe(true);
@@ -322,6 +322,7 @@ describe('critical shot saves', () => {
     const previous = {
       ...saved,
       version: 8,
+      abilities: saved.abilities.slice(0, 10),
       state: { ...saved.state, bestDefenseCooldown: 2, adrenalineTimer: 10, adrenalineShots: 9 },
       talents: [
         { id: 'hunterMastery', rank: 10 },
@@ -333,7 +334,7 @@ describe('critical shot saves', () => {
       spiders: saved.spiders.map(({ grantsKillEnergy: _energy, ...spider }) => spider),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(10);
+    expect(parsed.version).toBe(11);
     const loaded = restore(parsed);
     expect(loaded.talents.getRank('hunterMastery')).toBe(5);
     expect(loaded.state.stats.shootCost).toBe(25);

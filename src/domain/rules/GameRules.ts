@@ -45,6 +45,7 @@ export class GameRules {
         intellect: this.value('intellect'),
       },
       effects.some((effect) => effect.source === 'talent:criticalShot' && effect.value > 0),
+      effects.some((effect) => effect.source === 'talent:shieldBlock' && effect.value > 0),
     );
     for (const modifier of Object.values(this.attributeEffects).flat())
       this.modifiers.set(modifier.stat, [...this.modifiers.get(modifier.stat)!, modifier]);

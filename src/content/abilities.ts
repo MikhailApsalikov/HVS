@@ -106,5 +106,16 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     effectStat: 'adrenaline.shots',
     effectKind: 'flat',
   },
+  eagleEye: {
+    name: 'Зоркость',
+    key: 'F',
+    sprite: 'AbilityEagleEye',
+    unlockLevel: 20,
+    talent: 'eagleEye',
+    description:
+      'Следующие {eagleEye.shots} выстрелов будут критическими со 100% вероятностью. Стрелы «Залпа» не учитываются.\nДействует не более {eagleEye.duration} с и заканчивается при расходовании всех выстрелов.',
+    effectStat: 'eagleEye.shots',
+    effectKind: 'flat',
+  },
 };
 export const ABILITY_ORDER = Object.keys(ABILITIES) as AbilityId[];

@@ -29,7 +29,7 @@ describe('greed and hunter rewards through session commands', () => {
         expect(session.drainEvents()).toContainEqual({
           type: 'coinDrop',
           spiderId: spider.id,
-          coins: 2 + rank,
+          coins: 3 + rank,
           jackpot: false,
         });
       }
