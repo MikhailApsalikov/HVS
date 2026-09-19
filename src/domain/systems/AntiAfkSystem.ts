@@ -3,6 +3,7 @@ import { ANTI_AFK } from '../rules/stats.js';
 
 /** Called only during gameplay; returns whether the damage modifier changed. */
 export function tickAntiAfk(state: GameState, dt: number): boolean {
+  if (!state.antiAfkEnabled) return false;
   const previousStacks = state.antiAfkStacks;
   if (previousStacks > 0 && state.antiAfkRecoveryTimer === 0) return false;
   // Regeneration fills energy continuously: exclude the portion before it becomes full.

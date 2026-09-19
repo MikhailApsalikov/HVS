@@ -134,17 +134,11 @@ body {
   animation: anti-afk-pulse 1.3s ease-in-out infinite alternate;
 }
 
-.anti-afk-overlay__icon {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 2px solid #ff9292;
-  border-radius: 50%;
+.anti-afk-overlay__title {
   color: #ffd3d3;
-  font-size: 20px;
-  font-weight: 800;
-  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
 }
 
 .anti-afk-overlay__readout {
@@ -161,6 +155,8 @@ body {
 }
 
 .anti-afk-overlay__percent {
+  align-self: flex-start;
+  margin-bottom: 8px;
   color: #ffb5b5;
   font-size: 28px;
   line-height: 1.1;

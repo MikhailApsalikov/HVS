@@ -108,8 +108,11 @@ export class GameState {
     if (this.antiAfkStacks > 0 && this.antiAfkRecoveryTimer === 0)
       this.antiAfkRecoveryTimer = ANTI_AFK.recoveryDuration;
   }
+  get antiAfkEnabled(): boolean {
+    return this.level >= ANTI_AFK.unlockLevel;
+  }
   get antiAfkDamagePercent(): number {
-    return this.antiAfkStacks * ANTI_AFK.damagePerStack;
+    return this.antiAfkEnabled ? this.antiAfkStacks * ANTI_AFK.damagePerStack : 0;
   }
   get antiAfkRecoveryFraction(): number {
     return this.antiAfkRecoveryTimer / ANTI_AFK.recoveryDuration;

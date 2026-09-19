@@ -125,6 +125,11 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   const duplicateRefund = session.items.loadFromSave(data.inventory, state.stats.inventorySlots);
   session.refreshStats(false);
   Object.assign(state, Object.fromEntries(STATE_FIELDS.map((key) => [key, data.state[key]])));
+  if (!state.antiAfkEnabled) {
+    state.antiAfkIdleTimer = 0;
+    state.antiAfkStacks = 0;
+    state.antiAfkRecoveryTimer = 0;
+  }
   const minimumDuration = STATS.levelDuration.policy.min!;
   if (state.levelTimerMax < minimumDuration) {
     if (state.levelTimer > 0) state.levelTimer += minimumDuration - state.levelTimerMax;

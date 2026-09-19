@@ -8,7 +8,12 @@ const speed = { digits: 6, min: 0 } as const;
 const probability = { digits: 6, min: 0, max: 1 } as const;
 export const BEST_DEFENSE_COOLDOWN = 3;
 export const CRITICAL_SHOT_KILLS = 2;
-export const ANTI_AFK = { idleDuration: 3, recoveryDuration: 5, damagePerStack: 10 } as const;
+export const ANTI_AFK = {
+  unlockLevel: 10,
+  idleDuration: 3,
+  recoveryDuration: 10,
+  damagePerStack: 10,
+} as const;
 /** Armor inflation is negligible through level 10 and accelerates quartically afterwards. */
 export const ARMOR_RULES = {
   linearScale: 24,

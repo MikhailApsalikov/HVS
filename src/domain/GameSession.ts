@@ -46,7 +46,7 @@ export class GameSession {
       ...this.items.getModifiers(),
       ...state.character.getModifiers(),
     ];
-    if (state.antiAfkStacks > 0)
+    if (state.antiAfkDamagePercent > 0)
       effects.push({
         source: 'effect:antiAfk',
         stat: 'incomingDamage',
