@@ -34,6 +34,38 @@ function speciesRolls(type: SpiderType, level: number, roll: number) {
 
 describe('spider generation through session ticks', () => {
   it.each([
+    ['easy', 1, 22],
+    ['easy', 25, 125],
+    ['easy', 50, 320],
+    ['normal', 1, 23],
+    ['normal', 25, 180],
+    ['normal', 50, 500],
+    ['hard', 1, 24],
+    ['hard', 25, 245],
+    ['hard', 50, 720],
+  ] as const)('spawns quadratic damage on %s at level %i: %i', (difficulty, level, damage) => {
+    const session = encounter(level, speciesRolls('normal', level, 0), difficulty);
+    session.tick(0.02);
+    expect([...session.state.spiders.values()][0]).toMatchObject({ type: 'normal', damage });
+  });
+
+  it.each([
+    ['normal', 0, 350],
+    ['normal', 1, 650],
+    ['fat', 0.5, 500],
+    ['ninja', 0.5, 500],
+    ['fast', 0, 175],
+    ['burner', 1, 325],
+    ['tank', 1, 6500],
+  ] as const)('keeps species and variance modifiers for %s with roll %s', (type, roll, damage) => {
+    const rolls = speciesRolls(type, 50, 0);
+    rolls[rolls.length - 2] = roll;
+    const session = encounter(50, rolls);
+    session.tick(0.02);
+    expect([...session.state.spiders.values()][0]).toMatchObject({ type, damage });
+  });
+
+  it.each([
     ['tank', [0, 0, 0, 0, 0]],
     ['burner', [0.99, 0, 0, 0, 0]],
     ['fat', [0.99, 0.99, 0, 0, 0]],
@@ -127,9 +159,9 @@ describe('spider generation through session ticks', () => {
 
 describe('burner damage and energy', () => {
   it.each([
-    ['easy', 5, 20, 100],
-    ['normal', 25, 94, 140],
-    ['hard', 50, 231, 190],
+    ['easy', 5, 17, 100],
+    ['normal', 25, 90, 140],
+    ['hard', 50, 360, 190],
   ] as const)(
     'spawns and breaches with scaled damage on %s level %i',
     (difficulty, level, damage, energy) => {

@@ -8,6 +8,7 @@ import { game, advance, addSpider, previousSpiders } from './helpers.js';
 function afkGame(level = 10) {
   const session = game(level);
   session.state.energy = session.state.maxEnergy;
+  addSpider(session, 'normal', 8, 0.1);
   return session;
 }
 
@@ -18,6 +19,121 @@ function breach(session: GameSession, damage = 20, type: 'normal' | 'burner' = '
 }
 
 describe('anti-AFK through player commands and gameplay time', () => {
+  it.each(['stand', 'lastHope', 'adrenaline'] as const)(
+    'pauses idle detection during %s and counts only the time after expiration',
+    (ability) => {
+      const session = afkGame(60);
+      session.talents.loadFromSave([
+        { id: 'divineShield', rank: 1 },
+        { id: 'lastHope', rank: 1 },
+        { id: 'adrenaline', rank: 1 },
+      ]);
+      session.state.character.setModifiers('test', [
+        { stat: `${ability}.cost`, kind: 'percent', value: -100 },
+      ]);
+      session.refreshStats();
+      session.tick(1);
+      expect(session.activateAbility(ability)).toBe('activated');
+      const duration = session.state.abilityActiveTimer(ability);
+      session.tick(duration - 1);
+      expect(session.state.antiAfkIdleTimer).toBeCloseTo(1);
+      session.tick(2);
+      expect(session.state.antiAfkIdleTimer).toBeCloseTo(2);
+      expect(session.state.antiAfkStacks).toBe(0);
+      session.tick(1);
+      expect(session.state.antiAfkStacks).toBe(1);
+    },
+  );
+
+  it('excludes overlapping shields, adrenaline and energy regeneration only once', () => {
+    const session = afkGame(60);
+    session.talents.loadFromSave([
+      { id: 'divineShield', rank: 1 },
+      { id: 'lastHope', rank: 1 },
+      { id: 'adrenaline', rank: 1 },
+    ]);
+    session.refreshStats();
+    for (const ability of ['stand', 'lastHope', 'adrenaline'] as const)
+      expect(session.activateAbility(ability)).toBe('activated');
+    session.tick(22);
+    expect(session.state.antiAfkIdleTimer).toBeCloseTo(2);
+    expect(session.state.antiAfkStacks).toBe(0);
+    session.tick(1);
+    expect(session.state.antiAfkStacks).toBe(1);
+  });
+
+  it('resumes detection when the last adrenaline shot is spent before expiration', () => {
+    const session = afkGame(60);
+    session.talents.loadFromSave([{ id: 'adrenaline', rank: 1 }]);
+    session.refreshStats();
+    expect(session.activateAbility('adrenaline')).toBe('activated');
+    session.tick(5);
+    expect(session.state.antiAfkIdleTimer).toBe(0);
+    for (let shot = 0; shot < 20; shot++) expect(session.shootLane(0)).toBe('shot');
+    expect(session.state.adrenalineActive).toBe(false);
+    session.tick(3);
+    expect(session.state.antiAfkStacks).toBe(1);
+  });
+
+  it.each(['empty', 'dying'] as const)('pauses the idle countdown on an %s field', (field) => {
+    const session = afkGame();
+    session.tick(2);
+    if (field === 'empty') session.state.spiders.clear();
+    else for (const spider of session.state.spiders.values()) spider.startDying();
+    session.tick(10);
+    expect(session.state.antiAfkIdleTimer).toBe(2);
+    expect(session.state.antiAfkStacks).toBe(0);
+    addSpider(session, 'normal', 8, 0.1);
+    session.tick(1);
+    expect(session.state.antiAfkStacks).toBe(1);
+  });
+
+  it('counts only the part of a tick after the first spider spawns', () => {
+    const rolls: number[] = [];
+    const session = new GameSession('normal', () => rolls.shift() ?? 0.999999);
+    session.upgradeTalent('hunterMastery');
+    session.confirmLevelUp();
+    session.state.level = 10;
+    session.refreshStats();
+    session.state.energy = session.state.maxEnergy;
+    session.tick(2.01);
+    expect(session.state.antiAfkIdleTimer).toBe(0);
+    rolls.push(0, 0.999999, 0.999999, 0.5, 0.5, 0.5);
+    session.tick(2.99);
+    expect(session.state.spiders.size).toBe(1);
+    expect(session.state.antiAfkIdleTimer).toBeCloseTo(2.98);
+    expect(session.state.antiAfkStacks).toBe(0);
+    session.tick(0.02);
+    expect(session.state.antiAfkStacks).toBe(1);
+  });
+
+  it.each(['empty', 'stand', 'lastHope', 'adrenaline'] as const)(
+    'continues penalty removal without relapsing while %s exempts inactivity',
+    (exemption) => {
+      const session = afkGame(60);
+      session.talents.loadFromSave([
+        { id: 'divineShield', rank: 1 },
+        { id: 'lastHope', rank: 1 },
+        { id: 'adrenaline', rank: 1 },
+      ]);
+      session.refreshStats();
+      session.tick(3);
+      expect(session.shootLane(0)).toBe('shot');
+      if (exemption === 'empty') session.state.spiders.clear();
+      else expect(session.activateAbility(exemption)).toBe('activated');
+      session.state.energy = session.state.maxEnergy;
+      const duration = exemption === 'empty' ? 10 : session.state.abilityActiveTimer(exemption);
+      session.tick(Math.min(10, duration));
+      expect(session.state.antiAfkIdleTimer).toBe(0);
+      expect(session.state.antiAfkRecoveryTimer).toBe(Math.max(0, 10 - duration));
+      if (duration < 10) {
+        session.state.energy = 0;
+        session.tick(10 - duration);
+      }
+      expect(session.state.antiAfkStacks).toBe(0);
+    },
+  );
+
   it.each([1, 9])('does not detect inactivity or increase damage at level %i', (level) => {
     const session = afkGame(level);
     const damageFactor = session.state.stats.damageFactor;

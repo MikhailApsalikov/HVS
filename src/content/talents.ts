@@ -42,7 +42,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Стойкость',
     branch: 'defense',
     sprite: 'TalentEndurance',
-    effects: [flat('maxHp', 425), flat('energyPerBreach', 3)],
+    effects: [flat('maxHp', 425), flat('energyPerBreach', 2)],
     description:
       'Увеличивает максимальное здоровье на {maxHp} единиц.\nКогда паук доходит до вас и наносит вам урон, вы получаете {energyPerBreach} энергии.',
   },

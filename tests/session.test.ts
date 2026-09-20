@@ -254,12 +254,12 @@ describe('enemy types and rewards', () => {
       const rules = new GameRules(normalConfig);
       const stats = rules.spiderStats(type, 1, 0.5, 0.5);
       const expected = {
-        normal: [0.08, 20],
-        fat: [0.08, 20],
-        fast: [0.24, 10],
-        ninja: [0.08, 20],
-        burner: [0.08, 10],
-        tank: [0.048, 200],
+        normal: [0.08, 23],
+        fat: [0.08, 23],
+        fast: [0.24, 12],
+        ninja: [0.08, 23],
+        burner: [0.08, 12],
+        tank: [0.048, 233],
       }[type];
       expect([stats.speed, stats.damage]).toEqual(expected);
     },

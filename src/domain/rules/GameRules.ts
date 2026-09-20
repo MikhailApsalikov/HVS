@@ -146,7 +146,7 @@ export class GameRules {
       ),
       damage: this.value(
         'spiderDamage',
-        this.config.spiderDamageBase + this.config.spiderDamageStep * (level - 1),
+        this.config.spiderDamageBase * (1 + this.config.spiderDamageGrowth * level) ** 2,
         [
           variance(damageRoll),
           { source: `species:${type}`, kind: 'percent', value: definition.damagePercent },

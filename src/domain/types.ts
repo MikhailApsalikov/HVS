@@ -93,7 +93,7 @@ export interface DifficultyConfig {
   readonly spiderSpeedBase: number;
   readonly spiderSpeedStep: number;
   readonly spiderDamageBase: number;
-  readonly spiderDamageStep: number;
+  readonly spiderDamageGrowth: number;
   readonly spiderVariance: number;
 
   readonly spiderChanceFat: number;

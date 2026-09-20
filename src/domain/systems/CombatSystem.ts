@@ -9,7 +9,9 @@ import { SPIDERS, SPECIAL_SPIDER_ORDER } from '../../content/spiders.js';
 import { Spider } from '../model/Spider.js';
 import { fireVolley } from './AbilitySystem.js';
 
-export function spawnSpiders(state: GameState, dt: number, random: RandomSource): void {
+/** Returns the time within this tick when a live spider first occupies the field. */
+export function spawnSpiders(state: GameState, dt: number, random: RandomSource): number {
+  let occupiedAt = [...state.spiders.values()].some((spider) => !spider.dying) ? 0 : Infinity;
   state.spawnAccumulator += dt;
   const interval = state.stats.spawnInterval;
   while (state.spawnAccumulator + Number.EPSILON >= interval) {
@@ -37,8 +39,10 @@ export function spawnSpiders(state: GameState, dt: number, random: RandomSource)
         state.rules.spiderJumpLimit(type, state.level),
       );
       state.spiders.set(spider.id, spider);
+      occupiedAt = Math.min(occupiedAt, Math.max(0, dt - state.spawnAccumulator));
     }
   }
+  return occupiedAt;
 }
 
 export function moveSpiders(state: GameState, dt: number, random: RandomSource): void {

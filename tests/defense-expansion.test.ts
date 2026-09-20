@@ -44,6 +44,28 @@ function adrenaline(): GameSession {
 }
 
 describe('new defense talents through session commands', () => {
+  it('grants two energy per breach and 425 health for each steadfastness rank', () => {
+    const session = new GameSession('normal', () => 0.999999);
+    session.state.pendingTalentPoints = 7;
+    session.state.character.setModifiers('test', [
+      { stat: 'energyRegen', kind: 'percent', value: -100 },
+    ]);
+    session.refreshStats();
+    const baseHp = session.state.maxHp;
+    for (let rank = 1; rank <= 7; rank++) {
+      session.state.phase = 'levelUp';
+      expect(session.upgradeTalent('endurance')).toBe(true);
+      expect(session.state.maxHp).toBe(baseHp + 425 * rank);
+      expect(session.state.stats.energyPerBreach).toBe(2 * rank);
+      session.state.phase = 'playing';
+      session.state.energy = 0;
+      addSpider(session, 'normal', 0, 1, 1);
+      session.tick(0.001);
+      expect(session.state.energy).toBe(2 * rank);
+    }
+    expect(talentDescription('endurance', 7, session.state.stats)).toContain('14 энергии');
+  });
+
   it('adds 350 healing and 5 regeneration at each of exactly five ranks', () => {
     const session = defense(40);
     const baseHeal = session.state.stats['heal.amount'];

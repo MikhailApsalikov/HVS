@@ -186,8 +186,8 @@ export class GameSession {
     const state = this.state;
     if (state.phase !== 'playing' || dt === 0) return;
     const emit = (event: GameEvent) => this.events.push(event);
-    if (tickAntiAfk(state, dt)) this.refreshStats(false);
-    spawnSpiders(state, dt, this.random);
+    const occupiedAt = spawnSpiders(state, dt, this.random);
+    if (tickAntiAfk(state, dt, occupiedAt)) this.refreshStats(false);
     const lastHopeWasActive = state.lastHopeTimer > 0;
     const adrenalineWasActive = state.adrenalineActive;
     tickAbilities(state, dt);
