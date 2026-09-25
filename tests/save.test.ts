@@ -2,10 +2,36 @@ import { describe, expect, it } from 'vitest';
 import { parseSave, restore, snapshot } from '../src/domain/save.js';
 import { GameSession } from '../src/domain/GameSession.js';
 import { ITEM_MAP } from '../src/content/items.js';
+import { TALENT_ORDER } from '../src/content/talents.js';
 import { SAVE_KEY, SaveSystem } from '../src/infrastructure/storage/SaveSystem.js';
 import { game, advance, addSpider, MemoryStorage } from './helpers.js';
 
 describe('saves and migration', () => {
+  it('restores a higher-level start during talent selection and after entering combat', () => {
+    const session = new GameSession('normal', () => 0.999999, { level: 50, coins: 1000 });
+    expect(session.upgradeTalent('endurance')).toBe(true);
+    expect(session.buyItem('c001')).toBe(true);
+    const data = snapshot(session);
+    const parsed = parseSave(JSON.parse(JSON.stringify(data)));
+    expect(parsed).not.toBeNull();
+    const loaded = restore(parsed!, () => 0.999999);
+    expect(snapshot(loaded)).toEqual(data);
+    expect(loaded.state.pendingTalentPoints).toBe(49);
+    expect(loaded.confirmLevelUp()).toBe(false);
+    for (let point = 0; point < 49; point++) {
+      const id = TALENT_ORDER.find((talent) =>
+        loaded.talents.canUpgrade(talent, loaded.state.level),
+      );
+      expect(id).toBeDefined();
+      expect(loaded.upgradeTalent(id!)).toBe(true);
+    }
+    expect(loaded.confirmLevelUp()).toBe(true);
+    expect(loaded.state.level).toBe(50);
+    expect(loaded.state.phase).toBe('playing');
+    loaded.tick(0.5);
+    const playing = snapshot(loaded);
+    expect(snapshot(restore(parseSave(playing)!, () => 0.999999))).toEqual(playing);
+  });
   it.each([5, 6])('refunds removed shield block ranks from version %s exactly once', (version) => {
     const session = game(40);
     const previous = {
