@@ -184,7 +184,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     name: 'Череда убийств',
     sprite: 'TalentKillingStreak',
-    effects: [flat('killingStreak.interval', -2)],
+    effects: [flat('killingStreak.interval', -1)],
     description:
       'Каждые {streakInterval} с без урона получаете эффект «Череда убийств»: выстрелы стоят на 1 энергию меньше.\nЭффект складывается до {streakBaseStacks} раз. Урон от паука снимает один эффект.',
   },
@@ -196,7 +196,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     prerequisite: { id: 'killingStreak', rank: 1 },
     effects: [flat('enthusiasmChance', 0.2)],
     description:
-      'Если активна «Череда убийств», с вероятностью {enthusiasmChance} уклоняетесь от атаки паука, потратив один эффект.',
+      'Дает {enthusiasmChance} вероятности уклониться от урона.\nТребует активной «Череды убийств» и расходует один эффект.',
   },
   improvedKillingStreak: {
     branch: 'shooting',

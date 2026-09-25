@@ -110,7 +110,7 @@ const ATTRIBUTE_EFFECT_TEXT: Partial<Record<StatId, string>> = {
   coinsPerSec: 'Приносит дополнительно {value} монет каждую секунду.',
   blockPower: 'Увеличивает силу блока на {value} единиц.',
   hpPerKill: 'Каждое убийство восстанавливает {value} здоровья.',
-  dodgeChance: 'Даёт {value} вероятности полностью избежать урона от атаки паука.',
+  dodgeChance: 'Дает {value} вероятности уклониться от урона.',
   'killingStreak.killAdvance':
     'Каждое убийство приближает следующий эффект «Череды убийств» на {value} с.',
   armor: 'Увеличивает броню на {value} единиц.',

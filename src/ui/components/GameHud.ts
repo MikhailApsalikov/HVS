@@ -98,14 +98,10 @@ export class HUD {
       wrapper.addEventListener('mouseleave', () => this.tooltip.hide());
       this.abilities.append(wrapper);
     }
-    container.append(
-      resources,
-      this.coins,
-      this.level,
-      this.attributes,
-      this.killingStreak.container,
-      this.abilities,
-    );
+    const content = document.createElement('div');
+    content.className = 'hud__content';
+    content.append(resources, this.coins, this.level, this.attributes, this.abilities);
+    container.append(content, this.killingStreak.container);
   }
   getShootTooltipHtml(lane: number): string {
     return this.state ? shootDescription(this.state, lane) : '';

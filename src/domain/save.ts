@@ -80,7 +80,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 13;
+  readonly version: 14;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -97,7 +97,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 13,
+    version: 14,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -249,7 +249,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
   if (
-    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].includes(value.version as number) ||
+    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].includes(value.version as number) ||
     !object(value.state)
   )
     return null;
@@ -456,10 +456,20 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
-  if (value.version !== 13) {
+  if (value.version === 13) {
+    const session = restore({ ...value, version: 14 } as unknown as SaveData);
+    // Version 13 used 38–20 seconds. Preserve the fraction already earned.
+    const previousInterval = 40 - 2 * session.talents.getRank('killingStreak');
+    if (session.state.killingStreakProgress >= previousInterval) return null;
+    session.state.killingStreakProgress =
+      (session.state.killingStreakProgress / previousInterval) *
+      session.state.stats['killingStreak.interval'];
+    return snapshot(session);
+  }
+  if (value.version !== 14) {
     const previous = {
       ...value,
-      version: 13,
+      version: 14,
       spiders: value.spiders.map((entry) => {
         if ((value.version as number) >= 12) return entry;
         const { hasJumped, ...spider } = entry as JsonObject;

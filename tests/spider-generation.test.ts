@@ -313,7 +313,7 @@ describe('ninja jumps and saved progress', () => {
         spiders: previousSpiders(current).map((spider) => ({ ...spider, hasJumped })),
       };
       const migrated = parseSave(previous)!;
-      expect(migrated.version).toBe(13);
+      expect(migrated.version).toBe(14);
       expect(migrated.state).toEqual(current.state);
       expect(migrated.arrows).toEqual(current.arrows);
       const loaded = restore(migrated, () => 0.999999);
