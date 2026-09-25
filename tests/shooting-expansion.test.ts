@@ -205,6 +205,23 @@ describe('shooting progression and scaling', () => {
     ).toBe(shooting.length);
     expect(new Set(ABILITY_ORDER.map((id) => ABILITIES[id].key)).size).toBe(ABILITY_ORDER.length);
   });
+  it('keeps independent shooting dependency arrows in separate column ranges', () => {
+    const session = arena();
+    const edges = session.talents.talents
+      .filter((talent) => talent.branch === 'shooting' && TALENTS[talent.id].prerequisite)
+      .map((talent) => {
+        const from = TALENTS[talent.id].prerequisite!.id;
+        const columns = [TALENTS[from].column!, TALENTS[talent.id].column!];
+        return { from, tier: talent.tier, min: Math.min(...columns), max: Math.max(...columns) };
+      });
+    for (let i = 0; i < edges.length; i++) {
+      for (const other of edges.slice(i + 1)) {
+        const edge = edges[i];
+        if (edge.tier !== other.tier || edge.from === other.from) continue;
+        expect(Math.max(edge.min, other.min)).toBeGreaterThan(Math.min(edge.max, other.max));
+      }
+    }
+  });
 });
 
 describe('eagle eye ability', () => {

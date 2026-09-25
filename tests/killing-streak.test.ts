@@ -320,6 +320,23 @@ describe('enthusiasm and improved streak', () => {
 });
 
 describe('shooting rebalance, tooltips and save compatibility', () => {
+  it('requires enthusiasm before learning or upgrading improved killing streak', () => {
+    const session = new GameSession('normal');
+    session.state.level = 40;
+    session.state.pendingTalentPoints = 3;
+    session.talents.loadFromSave([
+      { id: 'hunterMastery', rank: 5 },
+      { id: 'criticalShot', rank: 10 },
+      { id: 'piercingReward', rank: 8 },
+      { id: 'killingStreak', rank: 10 },
+    ]);
+    expect(session.upgradeTalent('improvedKillingStreak')).toBe(false);
+    expect(session.state.pendingTalentPoints).toBe(3);
+    expect(session.upgradeTalent('enthusiasm')).toBe(true);
+    expect(session.upgradeTalent('improvedKillingStreak')).toBe(true);
+    expect(session.upgradeTalent('improvedKillingStreak')).toBe(true);
+    expect(session.state.stats['killingStreak.maxStacks']).toBe(7);
+  });
   it.each([1, 2, 3, 4, 5])(
     'agile critical shot rank %s adds two eagle-eye charges per rank',
     (rank) => {
