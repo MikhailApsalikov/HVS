@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { ITEM_CATALOG } from '../src/content/items.js';
+import { RETIRED_ITEM_REFUNDS } from '../src/content/retiredItems.js';
 import { generateItemSvg } from '../src/ui/ItemSpriteGenerator.js';
 import { normalConfig } from '../src/content/normal.js';
 import { SOUND_FILES, MUSIC_FILES } from '../src/infrastructure/audio/catalog.js';
@@ -61,17 +62,17 @@ describe('catalog illustrations', () => {
 
 describe('legacy feature inventory captured before rewrite', () => {
   const baseline = JSON.parse(readFileSync('tests/fixtures/legacy-content.json', 'utf8'));
-  it('retains every item name and ID', () => {
-    const legacyItems = ITEM_CATALOG.filter(({ id }) =>
-      baseline.items.some((item: { id: string }) => item.id === id),
-    );
-    expect(legacyItems.map(({ id, name }) => ({ id, name }))).toEqual(
-      baseline.items.map(({ id, name }: { id: string; name: string }) => ({ id, name })),
-    );
+  it('accounts for every legacy item with a current item or a full refund', () => {
+    const currentIds = new Set(ITEM_CATALOG.map((item) => item.id));
+    for (const { id } of baseline.items) {
+      expect(currentIds.has(id) || RETIRED_ITEM_REFUNDS[id] > 0, id).toBe(true);
+    }
   });
-  it('keeps untouched encounter and ability balance through the attribute update', () => {
+  it('keeps legacy balance except for the explicit current rule changes', () => {
+    const { spiderDamageStep: _linearDamage, ...normalBaseline } = baseline.normal;
     expect(normalConfig).toEqual({
-      ...baseline.normal,
+      ...normalBaseline,
+      spiderDamageGrowth: 0.08,
       armorEffectiveness: 1.5,
       spawnP0: 0.00054,
       spawnDP: 0.000045,

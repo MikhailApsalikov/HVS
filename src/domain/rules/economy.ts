@@ -11,16 +11,16 @@ const quadratic = (n: number) => n * n;
 const cubic = (n: number) => n * n * n;
 const logarithmic = (n: number) => n * Math.log2(n + 1);
 const PRICES: Record<StatType, PriceRule> = {
-  endurance: { unit: 5, base: 32, curve: logarithmic },
-  agility: { unit: 5, base: 32, curve: logarithmic },
-  intellect: { unit: 5, base: 32, curve: logarithmic },
-  hpRegen: { unit: 0.5, base: 24, curve: logarithmic },
+  endurance: { unit: 5, base: 38.4, curve: logarithmic },
+  agility: { unit: 5, base: 38.4, curve: logarithmic },
+  intellect: { unit: 5, base: 38.4, curve: logarithmic },
+  hpRegen: { unit: 0.5, base: 28.8, curve: logarithmic },
   armor: { unit: 1, base: 1, curve: (n) => n },
-  coinsPerKill: { unit: 1, base: 400, curve: quadratic },
-  maxEnergy: { unit: 10, base: 36, curve: quadratic },
-  energyPerBreach: { unit: 1, base: 40, curve: quadratic },
-  energyRegen: { unit: 1, base: 400, curve: cubic },
-  energyPerKill: { unit: 1, base: 400, curve: cubic },
+  coinsPerKill: { unit: 1, base: 480, curve: quadratic },
+  maxEnergy: { unit: 10, base: 43.2, curve: quadratic },
+  criticalShotChance: { unit: 0.01, base: 600, curve: quadratic },
+  energyRegen: { unit: 1, base: 480, curve: cubic },
+  energyPerKill: { unit: 1, base: 480, curve: cubic },
 };
 const RARITY_PERCENT: Record<ItemRarity, number> = { common: 0, rare: 15, epic: 33, legendary: 74 };
 

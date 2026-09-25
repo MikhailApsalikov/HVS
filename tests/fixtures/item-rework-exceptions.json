@@ -1,0 +1,181 @@
+[
+  {
+    "id": "c-shield",
+    "name": "Деревянный щит",
+    "rarity": "common",
+    "stats": [
+      {
+        "type": "armor",
+        "value": 50
+      }
+    ]
+  },
+  {
+    "id": "c022",
+    "name": "Лечебный настой",
+    "rarity": "common",
+    "stats": [
+      {
+        "type": "hpRegen",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "c046",
+    "name": "Рунный щит",
+    "rarity": "common",
+    "stats": [
+      {
+        "type": "armor",
+        "value": 300
+      }
+    ]
+  },
+  {
+    "id": "c055",
+    "name": "Адамантовый щит",
+    "rarity": "common",
+    "stats": [
+      {
+        "type": "armor",
+        "value": 900
+      }
+    ]
+  },
+  {
+    "id": "r009",
+    "name": "Зачарованный щит",
+    "rarity": "rare",
+    "stats": [
+      {
+        "type": "armor",
+        "value": 2500
+      }
+    ]
+  },
+  {
+    "id": "r010",
+    "name": "Несокрушимый доспех",
+    "rarity": "rare",
+    "stats": [
+      {
+        "type": "armor",
+        "value": 6490
+      }
+    ]
+  },
+  {
+    "id": "e-shield",
+    "name": "Щит бастиона",
+    "rarity": "epic",
+    "stats": [
+      {
+        "type": "armor",
+        "value": 10000
+      }
+    ]
+  },
+  {
+    "id": "e002",
+    "name": "Стальная твердыня",
+    "rarity": "epic",
+    "stats": [
+      {
+        "type": "endurance",
+        "value": 210
+      }
+    ]
+  },
+  {
+    "id": "e003",
+    "name": "Живой источник",
+    "rarity": "epic",
+    "stats": [
+      {
+        "type": "hpRegen",
+        "value": 30
+      }
+    ]
+  },
+  {
+    "id": "l007",
+    "name": "Оберег Залпа",
+    "rarity": "legendary",
+    "stats": [
+      {
+        "type": "endurance",
+        "value": 200
+      },
+      {
+        "type": "hpRegen",
+        "value": 20
+      },
+      {
+        "type": "coinsPerKill",
+        "value": 1
+      }
+    ],
+    "abilityMod": {
+      "abilityId": "volley",
+      "modType": "effectBoost",
+      "value": 3,
+      "description": "«Залп»: +3 дополнительные линии"
+    }
+  },
+  {
+    "id": "l010",
+    "name": "Щит Ни шагу назад!",
+    "rarity": "legendary",
+    "stats": [
+      {
+        "type": "armor",
+        "value": 11111
+      },
+      {
+        "type": "endurance",
+        "value": 80
+      },
+      {
+        "type": "agility",
+        "value": 25
+      },
+      {
+        "type": "intellect",
+        "value": 25
+      },
+      {
+        "type": "hpRegen",
+        "value": 5
+      }
+    ],
+    "abilityMod": {
+      "abilityId": "stand",
+      "modType": "cooldownReduction",
+      "value": 15,
+      "description": "«Божественный щит»: кулдаун −15 сек"
+    }
+  },
+  {
+    "id": "e002-agility",
+    "name": "Крылья сокола",
+    "rarity": "epic",
+    "stats": [
+      {
+        "type": "agility",
+        "value": 210
+      }
+    ]
+  },
+  {
+    "id": "e002-intellect",
+    "name": "Око вечности",
+    "rarity": "epic",
+    "stats": [
+      {
+        "type": "intellect",
+        "value": 210
+      }
+    ]
+  }
+]

@@ -75,7 +75,7 @@ describe('progression and player commands', () => {
     session.state.character.setBase('endurance', 40);
     session.refreshStats();
     expect(session.buyItem('missing')).toBe(false);
-    expect(session.buyItem('c020')).toBe(false);
+    expect(session.buyItem('c015')).toBe(false);
     expect(session.buyItem('c001')).toBe(true);
     expect(session.state.maxHp).toBe(150);
     expect(session.state.hp).toBe(150);
@@ -85,7 +85,7 @@ describe('progression and player commands', () => {
     expect(session.sellItem(0)).toBe(true);
     expect(session.state.hp).toBe(100);
     expect(session.state.maxHp).toBe(100);
-    expect(session.state.coins).toBe(84);
+    expect(session.state.coins).toBe(81);
     expect(session.sellItem(0)).toBe(false);
     session.state.coins = 1000;
     session.buyItem('c056');

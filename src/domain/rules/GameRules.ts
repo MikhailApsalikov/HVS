@@ -25,8 +25,16 @@ export class GameRules {
     private readonly bases: StatBases = {},
     readonly level = 1,
   ) {
+    const criticalShotLearned = effects.some(
+      (effect) => effect.source === 'talent:criticalShot' && effect.value > 0,
+    );
     const allEffects: StatModifier[] = [
-      ...effects,
+      ...effects.filter(
+        (effect) =>
+          criticalShotLearned ||
+          effect.stat !== 'criticalShotChance' ||
+          !effect.source.startsWith('item:'),
+      ),
       ...PRIMARY_STATS.map((stat): StatModifier => ({
         source: 'character:level',
         stat,
@@ -45,7 +53,7 @@ export class GameRules {
         agility: this.value('agility'),
         intellect: this.value('intellect'),
       },
-      effects.some((effect) => effect.source === 'talent:criticalShot' && effect.value > 0),
+      criticalShotLearned,
       effects.some((effect) => effect.source === 'talent:shieldBlock' && effect.value > 0),
     );
     for (const modifier of Object.values(this.attributeEffects).flat())

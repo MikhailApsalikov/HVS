@@ -10,7 +10,7 @@ export type StatType =
   | 'armor'
   | 'coinsPerKill'
   | 'energyPerKill'
-  | 'energyPerBreach';
+  | 'criticalShotChance';
 export type AbilityModType = 'cooldownReduction' | 'effectBoost' | 'costReduction';
 export interface ItemStat {
   readonly type: StatType;

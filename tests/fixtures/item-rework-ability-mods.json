@@ -1,0 +1,110 @@
+{
+  "l001": {
+    "abilityId": "armageddon",
+    "modType": "cooldownReduction",
+    "value": 30,
+    "description": "«Армагеддон»: кулдаун −30 сек"
+  },
+  "l002": {
+    "abilityId": "armageddon",
+    "modType": "effectBoost",
+    "value": 1,
+    "description": "«Армагеддон»: длительность +1 сек."
+  },
+  "l003": {
+    "abilityId": "armageddon",
+    "modType": "costReduction",
+    "value": 50,
+    "description": "«Армагеддон»: стоимость −50 энергии"
+  },
+  "l004": {
+    "abilityId": "blizzard",
+    "modType": "effectBoost",
+    "value": 2,
+    "description": "«Вьюга»: длительность +2 сек"
+  },
+  "l005": {
+    "abilityId": "blizzard",
+    "modType": "cooldownReduction",
+    "value": 3,
+    "description": "«Вьюга»: кулдаун −3 сек"
+  },
+  "l006": {
+    "abilityId": "blizzard",
+    "modType": "costReduction",
+    "value": 30,
+    "description": "«Вьюга»: стоимость −30 энергии"
+  },
+  "l007": {
+    "abilityId": "volley",
+    "modType": "effectBoost",
+    "value": 3,
+    "description": "«Залп»: +3 дополнительные линии"
+  },
+  "l008": {
+    "abilityId": "volley",
+    "modType": "costReduction",
+    "value": 20,
+    "description": "«Залп»: стоимость −20 энергии"
+  },
+  "l009": {
+    "abilityId": "volley",
+    "modType": "cooldownReduction",
+    "value": 1,
+    "description": "«Залп»: кулдаун −1 сек"
+  },
+  "l010": {
+    "abilityId": "stand",
+    "modType": "cooldownReduction",
+    "value": 15,
+    "description": "«Божественный щит»: кулдаун −15 сек"
+  },
+  "l011": {
+    "abilityId": "stand",
+    "modType": "effectBoost",
+    "value": 3,
+    "description": "«Божественный щит»: длительность +3 сек"
+  },
+  "l012": {
+    "abilityId": "prep",
+    "modType": "cooldownReduction",
+    "value": 8,
+    "description": "«Подготовка»: кулдаун −8 сек"
+  },
+  "l013": {
+    "abilityId": "prep",
+    "modType": "effectBoost",
+    "value": 0.5,
+    "description": "«Подготовка»: количество восстанавливаемой энергии +150"
+  },
+  "l015": {
+    "abilityId": "freeze",
+    "modType": "costReduction",
+    "value": 45,
+    "description": "«Заморозка»: стоимость −45 энергии"
+  },
+  "l016": {
+    "abilityId": "heal",
+    "modType": "effectBoost",
+    "value": 1500,
+    "description": "«Лечение»: количество восстанавливаемого HP +1500"
+  },
+  "l017": {
+    "abilityId": "heal",
+    "modType": "cooldownReduction",
+    "value": 3,
+    "description": "«Лечение»: кулдаун −3 сек"
+  },
+  "l018": {
+    "abilityId": "recharge",
+    "modType": "cooldownReduction",
+    "value": 60,
+    "description": "«Обновление»: кулдаун −60 сек"
+  },
+  "l020": {
+    "abilityId": "recharge",
+    "modType": "costReduction",
+    "value": 30,
+    "description": "«Обновление»: стоимость −30 энергии"
+  }
+}

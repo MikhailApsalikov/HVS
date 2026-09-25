@@ -8,8 +8,6 @@ export type {
   AbilityModType,
 } from '../domain/itemTypes.js';
 
-// ─── ОБЫЧНЫЕ (58 шт.) ────────────────────────────────────────────────────────
-
 const COMMON_ITEMS: readonly ItemConfig[] = [
   {
     id: 'c-shield',
@@ -17,95 +15,11 @@ const COMMON_ITEMS: readonly ItemConfig[] = [
     rarity: 'common',
     stats: [{ type: 'armor', value: 50 }],
   },
-  // ── +выносливость (N 1–15) ─────────────────────────────────────────────────
   {
-    id: 'c001',
-    name: 'Аптечные бинты',
+    id: 'c022',
+    name: 'Лечебный настой',
     rarity: 'common',
-    stats: [{ type: 'endurance', value: 5 }],
-  },
-  {
-    id: 'c003',
-    name: 'Кожаная заплата',
-    rarity: 'common',
-    stats: [{ type: 'endurance', value: 10 }],
-  },
-  {
-    id: 'c005',
-    name: 'Кожаный жилет',
-    rarity: 'common',
-    stats: [{ type: 'endurance', value: 15 }],
-  },
-  {
-    id: 'c009',
-    name: 'Боевая куртка',
-    rarity: 'common',
-    stats: [{ type: 'endurance', value: 25 }],
-  },
-  {
-    id: 'c012',
-    name: 'Наплечники охотника',
-    rarity: 'common',
-    stats: [{ type: 'endurance', value: 35 }],
-  },
-  {
-    id: 'c015',
-    name: 'Стальные наплечники',
-    rarity: 'common',
-    stats: [{ type: 'endurance', value: 50 }],
-  },
-  {
-    id: 'c020',
-    name: 'Мифриловая пластина',
-    rarity: 'common',
-    stats: [{ type: 'endurance', value: 75 }],
-  },
-
-  // ── +реген HP/сек (N 1–15) ─────────────────────────────────────────────
-  {
-    id: 'c021',
-    name: 'Травяной компресс',
-    rarity: 'common',
-    stats: [{ type: 'hpRegen', value: 0.5 }],
-  },
-  { id: 'c022', name: 'Лечебный настой', rarity: 'common', stats: [{ type: 'hpRegen', value: 1 }] },
-  {
-    id: 'c023',
-    name: 'Зелье регенерации',
-    rarity: 'common',
-    stats: [{ type: 'hpRegen', value: 1.5 }],
-  },
-  {
-    id: 'c025',
-    name: 'Паучий антидот',
-    rarity: 'common',
-    stats: [{ type: 'hpRegen', value: 2.5 }],
-  },
-  {
-    id: 'c027',
-    name: 'Эликсир бодрости',
-    rarity: 'common',
-    stats: [{ type: 'hpRegen', value: 3.5 }],
-  },
-  {
-    id: 'c030',
-    name: 'Концентрированный бальзам',
-    rarity: 'common',
-    stats: [{ type: 'hpRegen', value: 5 }],
-  },
-  {
-    id: 'c035',
-    name: 'Священный бальзам',
-    rarity: 'common',
-    stats: [{ type: 'hpRegen', value: 7.5 }],
-  },
-
-  // ── +броня ──────────────────────────────────────────
-  {
-    id: 'c040',
-    name: 'Кольчужные перчатки',
-    rarity: 'common',
-    stats: [{ type: 'armor', value: 60 }],
+    stats: [{ type: 'hpRegen', value: 1 }],
   },
   {
     id: 'c046',
@@ -114,36 +28,82 @@ const COMMON_ITEMS: readonly ItemConfig[] = [
     stats: [{ type: 'armor', value: 300 }],
   },
   {
-    id: 'c050',
-    name: 'Укреплённый доспех',
-    rarity: 'common',
-    stats: [{ type: 'armor', value: 720 }],
-  },
-  {
-    id: 'c052',
-    name: 'Рыцарские поножи',
-    rarity: 'common',
-    stats: [{ type: 'armor', value: 1040 }],
-  },
-  {
     id: 'c055',
     name: 'Адамантовый щит',
     rarity: 'common',
     stats: [{ type: 'armor', value: 900 }],
   },
-
-  // ── +макс. энергия (N 1–6) ─────────────────────────────────────────────
+  {
+    id: 'c001',
+    name: 'Аптечные бинты',
+    rarity: 'common',
+    stats: [{ type: 'endurance', value: 5 }],
+  },
+  {
+    id: 'c001-agility',
+    name: 'Перчатки стрелка',
+    rarity: 'common',
+    stats: [{ type: 'agility', value: 5 }],
+  },
+  {
+    id: 'c001-intellect',
+    name: 'Записки ученика',
+    rarity: 'common',
+    stats: [{ type: 'intellect', value: 5 }],
+  },
+  {
+    id: 'c009',
+    name: 'Боевая куртка',
+    rarity: 'common',
+    stats: [{ type: 'endurance', value: 25 }],
+  },
+  {
+    id: 'c009-agility',
+    name: 'Наручи охотника',
+    rarity: 'common',
+    stats: [{ type: 'agility', value: 25 }],
+  },
+  {
+    id: 'c009-intellect',
+    name: 'Посох чародея',
+    rarity: 'common',
+    stats: [{ type: 'intellect', value: 25 }],
+  },
+  {
+    id: 'c015',
+    name: 'Стальные наплечники',
+    rarity: 'common',
+    stats: [{ type: 'endurance', value: 50 }],
+  },
+  {
+    id: 'c015-agility',
+    name: 'Перчатки меткости',
+    rarity: 'common',
+    stats: [{ type: 'agility', value: 50 }],
+  },
+  {
+    id: 'c015-intellect',
+    name: 'Гримуар мага',
+    rarity: 'common',
+    stats: [{ type: 'intellect', value: 50 }],
+  },
+  {
+    id: 'c025',
+    name: 'Паучий антидот',
+    rarity: 'common',
+    stats: [{ type: 'hpRegen', value: 3 }],
+  },
+  {
+    id: 'c030',
+    name: 'Концентрированный бальзам',
+    rarity: 'common',
+    stats: [{ type: 'hpRegen', value: 6 }],
+  },
   {
     id: 'c056',
     name: 'Энергетическая склянка',
     rarity: 'common',
     stats: [{ type: 'maxEnergy', value: 10 }],
-  },
-  {
-    id: 'c058',
-    name: 'Синий кристалл',
-    rarity: 'common',
-    stats: [{ type: 'maxEnergy', value: 20 }],
   },
   {
     id: 'c060',
@@ -152,34 +112,17 @@ const COMMON_ITEMS: readonly ItemConfig[] = [
     stats: [{ type: 'maxEnergy', value: 30 }],
   },
   {
-    id: 'c062',
-    name: 'Сапфировый медальон',
-    rarity: 'common',
-    stats: [{ type: 'maxEnergy', value: 40 }],
-  },
-  {
     id: 'c064',
     name: 'Лазуритовая сфера',
     rarity: 'common',
     stats: [{ type: 'maxEnergy', value: 50 }],
   },
   {
-    id: 'c066',
-    name: 'Реликварий знаний',
+    id: 'c068',
+    name: 'Стимулятор',
     rarity: 'common',
-    stats: [{ type: 'maxEnergy', value: 60 }],
+    stats: [{ type: 'energyRegen', value: 1 }],
   },
-
-  // ── +реген энергии/сек ─────────────────────────────────────────────────
-  { id: 'c068', name: 'Стимулятор', rarity: 'common', stats: [{ type: 'energyRegen', value: 1 }] },
-  {
-    id: 'c076',
-    name: 'Двойной стимулятор',
-    rarity: 'common',
-    stats: [{ type: 'energyRegen', value: 2 }],
-  },
-
-  // ── +энергия за убийство ───────────────────────────────────────────────
   {
     id: 'c078',
     name: 'Адреналин убийцы',
@@ -187,72 +130,20 @@ const COMMON_ITEMS: readonly ItemConfig[] = [
     stats: [{ type: 'energyPerKill', value: 1 }],
   },
   {
-    id: 'c086',
-    name: 'Двойной адреналин',
-    rarity: 'common',
-    stats: [{ type: 'energyPerKill', value: 2 }],
-  },
-
-  // ── +энергия при прорыве ───────────────────────────────────────────────
-  {
-    id: 'c088',
-    name: 'Трофейный щит',
-    rarity: 'common',
-    stats: [{ type: 'energyPerBreach', value: 1 }],
-  },
-  {
-    id: 'c094',
-    name: 'Талисман стража',
-    rarity: 'common',
-    stats: [{ type: 'energyPerBreach', value: 2 }],
-  },
-
-  // ── +монетки за убийство ───────────────────────────────────────────────
-  {
     id: 'c096',
     name: 'Кошелёк охотника',
     rarity: 'common',
     stats: [{ type: 'coinsPerKill', value: 1 }],
   },
+  {
+    id: 'c088',
+    name: 'Наконечник меткости',
+    rarity: 'common',
+    stats: [{ type: 'criticalShotChance', value: 0.01 }],
+  },
 ];
 
-// ─── РЕДКИЕ (70 шт.) ──────────────────────────────────────────────────────────
-
 const RARE_ITEMS: readonly ItemConfig[] = [
-  // ── Один стат (20 шт.) — значения выше потолка Common ────────────────────
-  {
-    id: 'r001',
-    name: 'Грудная пластина бойца',
-    rarity: 'rare',
-    stats: [{ type: 'endurance', value: 90 }],
-  },
-  {
-    id: 'r002',
-    name: 'Нагрудник воина',
-    rarity: 'rare',
-    stats: [{ type: 'endurance', value: 110 }],
-  },
-  { id: 'r003', name: 'Латная куртка', rarity: 'rare', stats: [{ type: 'endurance', value: 135 }] },
-  {
-    id: 'r004',
-    name: 'Панцирь чемпиона',
-    rarity: 'rare',
-    stats: [{ type: 'endurance', value: 165 }],
-  },
-  { id: 'r005', name: 'Ядовитый антидот', rarity: 'rare', stats: [{ type: 'hpRegen', value: 9 }] },
-  {
-    id: 'r006',
-    name: 'Концентрированное зелье',
-    rarity: 'rare',
-    stats: [{ type: 'hpRegen', value: 11 }],
-  },
-  { id: 'r007', name: 'Зелье бессмертия', rarity: 'rare', stats: [{ type: 'hpRegen', value: 14 }] },
-  {
-    id: 'r008',
-    name: 'Защитный панцирь',
-    rarity: 'rare',
-    stats: [{ type: 'armor', value: 2680 }],
-  },
   {
     id: 'r009',
     name: 'Зачарованный щит',
@@ -265,94 +156,97 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     rarity: 'rare',
     stats: [{ type: 'armor', value: 6490 }],
   },
-  { id: 'r011', name: 'Синий тотем', rarity: 'rare', stats: [{ type: 'maxEnergy', value: 80 }] },
+  {
+    id: 'r001',
+    name: 'Грудная пластина бойца',
+    rarity: 'rare',
+    stats: [{ type: 'endurance', value: 90 }],
+  },
+  {
+    id: 'r001-agility',
+    name: 'Плащ следопыта',
+    rarity: 'rare',
+    stats: [{ type: 'agility', value: 90 }],
+  },
+  {
+    id: 'r001-intellect',
+    name: 'Посох провидца',
+    rarity: 'rare',
+    stats: [{ type: 'intellect', value: 90 }],
+  },
+  {
+    id: 'r003',
+    name: 'Латная куртка',
+    rarity: 'rare',
+    stats: [{ type: 'endurance', value: 135 }],
+  },
+  {
+    id: 'r003-agility',
+    name: 'Сапоги танцующего ветра',
+    rarity: 'rare',
+    stats: [{ type: 'agility', value: 135 }],
+  },
+  {
+    id: 'r003-intellect',
+    name: 'Гримуар тайных знаний',
+    rarity: 'rare',
+    stats: [{ type: 'intellect', value: 135 }],
+  },
+  {
+    id: 'r005',
+    name: 'Ядовитый антидот',
+    rarity: 'rare',
+    stats: [{ type: 'hpRegen', value: 9 }],
+  },
+  {
+    id: 'r007',
+    name: 'Зелье бессмертия',
+    rarity: 'rare',
+    stats: [{ type: 'hpRegen', value: 14 }],
+  },
+  {
+    id: 'r011',
+    name: 'Синий тотем',
+    rarity: 'rare',
+    stats: [{ type: 'maxEnergy', value: 80 }],
+  },
   {
     id: 'r012',
     name: 'Магический топаз',
     rarity: 'rare',
     stats: [{ type: 'maxEnergy', value: 100 }],
   },
-  { id: 'r013', name: 'Лазоревый орб', rarity: 'rare', stats: [{ type: 'maxEnergy', value: 120 }] },
   {
-    id: 'r014',
-    name: 'Серебряный стимулятор',
+    id: 'c076',
+    name: 'Двойной стимулятор',
     rarity: 'rare',
-    stats: [{ type: 'energyRegen', value: 3 }],
+    stats: [{ type: 'energyRegen', value: 2 }],
   },
   {
-    id: 'r015',
-    name: 'Усиленный концентрат',
+    id: 'c086',
+    name: 'Двойной адреналин',
     rarity: 'rare',
-    stats: [{ type: 'energyRegen', value: 4 }],
-  },
-  {
-    id: 'r016',
-    name: 'Серебряный адреналин',
-    rarity: 'rare',
-    stats: [{ type: 'energyPerKill', value: 3 }],
-  },
-  {
-    id: 'r017',
-    name: 'Усиленный адреналин',
-    rarity: 'rare',
-    stats: [{ type: 'energyPerKill', value: 4 }],
+    stats: [{ type: 'energyPerKill', value: 2 }],
   },
   {
     id: 'r018',
-    name: 'Серебряный оберег',
+    name: 'Серебряный прицел',
     rarity: 'rare',
-    stats: [{ type: 'energyPerBreach', value: 3 }],
+    stats: [{ type: 'criticalShotChance', value: 0.02 }],
   },
   {
-    id: 'r019',
-    name: 'Усиленный оберег замка',
+    id: 'r-coins',
+    name: 'Кошелёк наёмника',
     rarity: 'rare',
-    stats: [{ type: 'energyPerBreach', value: 4 }],
+    stats: [{ type: 'coinsPerKill', value: 2 }],
   },
-  {
-    id: 'r020',
-    name: 'Великий оберег',
-    rarity: 'rare',
-    stats: [{ type: 'energyPerBreach', value: 5 }],
-  },
-
-  // ── Два стата (50 шт.) ───────────────────────────────────────────────────
-
-  // HP + HPRegen
   {
     id: 'r021',
     name: 'Живая броня',
     rarity: 'rare',
     stats: [
-      { type: 'endurance', value: 10 },
-      { type: 'hpRegen', value: 1 },
-    ],
-  },
-  {
-    id: 'r022',
-    name: 'Доспех выносливости',
-    rarity: 'rare',
-    stats: [
-      { type: 'endurance', value: 15 },
-      { type: 'hpRegen', value: 1.5 },
-    ],
-  },
-  {
-    id: 'r023',
-    name: 'Боевая перевязь',
-    rarity: 'rare',
-    stats: [
-      { type: 'endurance', value: 25 },
-      { type: 'hpRegen', value: 2.5 },
-    ],
-  },
-  {
-    id: 'r024',
-    name: 'Доспех чемпиона',
-    rarity: 'rare',
-    stats: [
-      { type: 'endurance', value: 35 },
-      { type: 'hpRegen', value: 3.5 },
+      { type: 'endurance', value: 50 },
+      { type: 'hpRegen', value: 5 },
     ],
   },
   {
@@ -360,37 +254,17 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Латы долголетия',
     rarity: 'rare',
     stats: [
-      { type: 'endurance', value: 50 },
-      { type: 'hpRegen', value: 5 },
+      { type: 'endurance', value: 90 },
+      { type: 'hpRegen', value: 9 },
     ],
   },
-
-  // HP + DmgRed
   {
     id: 'r026',
     name: 'Кожаный доспех',
     rarity: 'rare',
     stats: [
-      { type: 'endurance', value: 10 },
-      { type: 'armor', value: 30 },
-    ],
-  },
-  {
-    id: 'r027',
-    name: 'Стальная куртка',
-    rarity: 'rare',
-    stats: [
-      { type: 'endurance', value: 20 },
-      { type: 'armor', value: 130 },
-    ],
-  },
-  {
-    id: 'r028',
-    name: 'Закалённый нагрудник',
-    rarity: 'rare',
-    stats: [
-      { type: 'endurance', value: 30 },
-      { type: 'armor', value: 300 },
+      { type: 'endurance', value: 50 },
+      { type: 'armor', value: 500 },
     ],
   },
   {
@@ -398,67 +272,34 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Непробиваемые латы',
     rarity: 'rare',
     stats: [
-      { type: 'endurance', value: 45 },
-      { type: 'armor', value: 670 },
+      { type: 'endurance', value: 90 },
+      { type: 'armor', value: 2500 },
     ],
   },
-
-  // HP + MaxEnergy
+  {
+    id: 'r039',
+    name: 'Трофейный нагрудник',
+    rarity: 'rare',
+    stats: [
+      { type: 'endurance', value: 75 },
+      { type: 'coinsPerKill', value: 1 },
+    ],
+  },
   {
     id: 'r030',
     name: 'Тактический жилет',
     rarity: 'rare',
     stats: [
-      { type: 'endurance', value: 15 },
-      { type: 'maxEnergy', value: 10 },
+      { type: 'endurance', value: 90 },
+      { type: 'intellect', value: 45 },
     ],
   },
-  {
-    id: 'r031',
-    name: 'Нагрудник мага',
-    rarity: 'rare',
-    stats: [
-      { type: 'endurance', value: 25 },
-      { type: 'maxEnergy', value: 20 },
-    ],
-  },
-  {
-    id: 'r032',
-    name: 'Броня волшебника',
-    rarity: 'rare',
-    stats: [
-      { type: 'endurance', value: 35 },
-      { type: 'maxEnergy', value: 30 },
-    ],
-  },
-
-  // HP + EnergyRegen
-  {
-    id: 'r033',
-    name: 'Зелье воина',
-    rarity: 'rare',
-    stats: [
-      { type: 'endurance', value: 15 },
-      { type: 'energyRegen', value: 1 },
-    ],
-  },
-  {
-    id: 'r034',
-    name: 'Тоник воина',
-    rarity: 'rare',
-    stats: [
-      { type: 'endurance', value: 35 },
-      { type: 'energyRegen', value: 1 },
-    ],
-  },
-
-  // HP + EnergyPerKill
   {
     id: 'r035',
     name: 'Боевая мазь',
     rarity: 'rare',
     stats: [
-      { type: 'endurance', value: 15 },
+      { type: 'agility', value: 50 },
       { type: 'energyPerKill', value: 1 },
     ],
   },
@@ -467,279 +308,89 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Кулон убийцы',
     rarity: 'rare',
     stats: [
-      { type: 'endurance', value: 40 },
-      { type: 'energyPerKill', value: 1 },
+      { type: 'agility', value: 50 },
+      { type: 'energyPerKill', value: 2 },
     ],
   },
-
-  // HP + EnergyPerBreach
   {
     id: 'r037',
-    name: 'Оберег бойца',
+    name: 'Оберег стрелка',
     rarity: 'rare',
     stats: [
-      { type: 'endurance', value: 15 },
-      { type: 'energyPerBreach', value: 1 },
+      { type: 'agility', value: 50 },
+      { type: 'criticalShotChance', value: 0.01 },
     ],
   },
   {
     id: 'r038',
-    name: 'Страж воина',
+    name: 'Талисман меткости',
     rarity: 'rare',
     stats: [
-      { type: 'endurance', value: 35 },
-      { type: 'energyPerBreach', value: 1 },
-    ],
-  },
-
-  // HP + CoinsPerKill
-  {
-    id: 'r039',
-    name: 'Трофейный нагрудник',
-    rarity: 'rare',
-    stats: [
-      { type: 'endurance', value: 15 },
-      { type: 'coinsPerKill', value: 1 },
+      { type: 'agility', value: 80 },
+      { type: 'criticalShotChance', value: 0.02 },
     ],
   },
   {
     id: 'r040',
-    name: 'Доспех торговца',
+    name: 'Плащ торговца',
     rarity: 'rare',
     stats: [
-      { type: 'endurance', value: 40 },
+      { type: 'agility', value: 75 },
       { type: 'coinsPerKill', value: 1 },
     ],
   },
-
-  // HPRegen + DmgRed
   {
-    id: 'r041',
-    name: 'Быстрая регенерация',
+    id: 'r068',
+    name: 'Кольцо берсерка',
     rarity: 'rare',
     stats: [
-      { type: 'hpRegen', value: 1.5 },
-      { type: 'armor', value: 10 },
+      { type: 'agility', value: 90 },
+      { type: 'endurance', value: 45 },
     ],
   },
   {
-    id: 'r042',
-    name: 'Рунный жилет',
+    id: 'r033',
+    name: 'Зелье чародея',
     rarity: 'rare',
     stats: [
-      { type: 'hpRegen', value: 2.5 },
-      { type: 'armor', value: 70 },
-    ],
-  },
-  {
-    id: 'r043',
-    name: 'Зелье стойкости',
-    rarity: 'rare',
-    stats: [
-      { type: 'hpRegen', value: 4 },
-      { type: 'armor', value: 210 },
-    ],
-  },
-  {
-    id: 'r044',
-    name: 'Зелье легенды',
-    rarity: 'rare',
-    stats: [
-      { type: 'hpRegen', value: 5 },
-      { type: 'armor', value: 410 },
-    ],
-  },
-
-  // HPRegen + MaxEnergy
-  {
-    id: 'r045',
-    name: 'Тоник мудрости',
-    rarity: 'rare',
-    stats: [
-      { type: 'hpRegen', value: 1.5 },
-      { type: 'maxEnergy', value: 20 },
-    ],
-  },
-  {
-    id: 'r046',
-    name: 'Зелье концентрата',
-    rarity: 'rare',
-    stats: [
-      { type: 'hpRegen', value: 4 },
-      { type: 'maxEnergy', value: 30 },
-    ],
-  },
-
-  // HPRegen + EnergyRegen
-  {
-    id: 'r047',
-    name: 'Амулет восстановления',
-    rarity: 'rare',
-    stats: [
-      { type: 'hpRegen', value: 2.5 },
+      { type: 'intellect', value: 50 },
       { type: 'energyRegen', value: 1 },
     ],
   },
   {
-    id: 'r048',
-    name: 'Зелье бодрости',
+    id: 'r034',
+    name: 'Тоник чародея',
     rarity: 'rare',
     stats: [
-      { type: 'hpRegen', value: 5 },
-      { type: 'energyRegen', value: 1 },
-    ],
-  },
-
-  // HPRegen + EnergyPerKill
-  {
-    id: 'r049',
-    name: 'Кровавый настой',
-    rarity: 'rare',
-    stats: [
-      { type: 'hpRegen', value: 2.5 },
-      { type: 'energyPerKill', value: 1 },
+      { type: 'intellect', value: 50 },
+      { type: 'energyRegen', value: 2 },
     ],
   },
   {
-    id: 'r050',
-    name: 'Зелье жатвы',
+    id: 'r031',
+    name: 'Нагрудник мага',
     rarity: 'rare',
     stats: [
-      { type: 'hpRegen', value: 6 },
-      { type: 'energyPerKill', value: 1 },
-    ],
-  },
-
-  // HPRegen + EnergyPerBreach
-  {
-    id: 'r051',
-    name: 'Тоник стражника',
-    rarity: 'rare',
-    stats: [
-      { type: 'hpRegen', value: 2.5 },
-      { type: 'energyPerBreach', value: 1 },
+      { type: 'intellect', value: 60 },
+      { type: 'maxEnergy', value: 40 },
     ],
   },
   {
-    id: 'r052',
-    name: 'Эликсир стражника',
+    id: 'r032',
+    name: 'Броня волшебника',
     rarity: 'rare',
     stats: [
-      { type: 'hpRegen', value: 5 },
-      { type: 'energyPerBreach', value: 1 },
+      { type: 'intellect', value: 80 },
+      { type: 'maxEnergy', value: 70 },
     ],
   },
-
-  // HPRegen + CoinsPerKill
   {
-    id: 'r053',
-    name: 'Торговое зелье',
+    id: 'r067',
+    name: 'Сапфировый кошелёк',
     rarity: 'rare',
     stats: [
-      { type: 'hpRegen', value: 2.5 },
+      { type: 'intellect', value: 75 },
       { type: 'coinsPerKill', value: 1 },
-    ],
-  },
-
-  // DmgRed + MaxEnergy
-  {
-    id: 'r054',
-    name: 'Магическая броня',
-    rarity: 'rare',
-    stats: [
-      { type: 'armor', value: 70 },
-      { type: 'maxEnergy', value: 20 },
-    ],
-  },
-  {
-    id: 'r055',
-    name: 'Рунная броня',
-    rarity: 'rare',
-    stats: [
-      { type: 'armor', value: 300 },
-      { type: 'maxEnergy', value: 30 },
-    ],
-  },
-
-  // DmgRed + EnergyRegen
-  {
-    id: 'r056',
-    name: 'Кольчужная жилетка',
-    rarity: 'rare',
-    stats: [
-      { type: 'armor', value: 70 },
-      { type: 'energyRegen', value: 1 },
-    ],
-  },
-  {
-    id: 'r057',
-    name: 'Броня тактика',
-    rarity: 'rare',
-    stats: [
-      { type: 'armor', value: 410 },
-      { type: 'energyRegen', value: 1 },
-    ],
-  },
-
-  // DmgRed + EnergyPerKill
-  {
-    id: 'r058',
-    name: 'Боевой доспех',
-    rarity: 'rare',
-    stats: [
-      { type: 'armor', value: 70 },
-      { type: 'energyPerKill', value: 1 },
-    ],
-  },
-  {
-    id: 'r059',
-    name: 'Доспех убийцы',
-    rarity: 'rare',
-    stats: [
-      { type: 'armor', value: 530 },
-      { type: 'energyPerKill', value: 1 },
-    ],
-  },
-
-  // DmgRed + EnergyPerBreach
-  {
-    id: 'r060',
-    name: 'Щит стражника',
-    rarity: 'rare',
-    stats: [
-      { type: 'armor', value: 70 },
-      { type: 'energyPerBreach', value: 1 },
-    ],
-  },
-  {
-    id: 'r061',
-    name: 'Оберег крепости',
-    rarity: 'rare',
-    stats: [
-      { type: 'armor', value: 410 },
-      { type: 'energyPerBreach', value: 1 },
-    ],
-  },
-
-  // DmgRed + CoinsPerKill
-  {
-    id: 'r062',
-    name: 'Золотая броня',
-    rarity: 'rare',
-    stats: [
-      { type: 'armor', value: 130 },
-      { type: 'coinsPerKill', value: 1 },
-    ],
-  },
-
-  // MaxEnergy + EnergyRegen
-  {
-    id: 'r063',
-    name: 'Синий амулет',
-    rarity: 'rare',
-    stats: [
-      { type: 'maxEnergy', value: 20 },
-      { type: 'energyRegen', value: 1 },
     ],
   },
   {
@@ -747,79 +398,11 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Реликвия скорости',
     rarity: 'rare',
     stats: [
-      { type: 'maxEnergy', value: 30 },
-      { type: 'energyRegen', value: 1 },
-    ],
-  },
-
-  // MaxEnergy + EnergyPerKill
-  {
-    id: 'r065',
-    name: 'Кристалл убийцы',
-    rarity: 'rare',
-    stats: [
-      { type: 'maxEnergy', value: 20 },
-      { type: 'energyPerKill', value: 1 },
-    ],
-  },
-
-  // MaxEnergy + EnergyPerBreach
-  {
-    id: 'r066',
-    name: 'Кристалл стражника',
-    rarity: 'rare',
-    stats: [
-      { type: 'maxEnergy', value: 20 },
-      { type: 'energyPerBreach', value: 1 },
-    ],
-  },
-
-  // MaxEnergy + CoinsPerKill
-  {
-    id: 'r067',
-    name: 'Сапфировый кошелёк',
-    rarity: 'rare',
-    stats: [
-      { type: 'maxEnergy', value: 20 },
-      { type: 'coinsPerKill', value: 1 },
-    ],
-  },
-
-  // EnergyRegen + EnergyPerKill
-  {
-    id: 'r068',
-    name: 'Кольцо берсерка',
-    rarity: 'rare',
-    stats: [
-      { type: 'energyRegen', value: 1 },
-      { type: 'energyPerKill', value: 1 },
-    ],
-  },
-
-  // EnergyRegen + EnergyPerBreach
-  {
-    id: 'r069',
-    name: 'Кольцо стража',
-    rarity: 'rare',
-    stats: [
-      { type: 'energyRegen', value: 1 },
-      { type: 'energyPerBreach', value: 1 },
-    ],
-  },
-
-  // EnergyRegen + CoinsPerKill
-  {
-    id: 'r070',
-    name: 'Кольцо казначея',
-    rarity: 'rare',
-    stats: [
-      { type: 'energyRegen', value: 1 },
-      { type: 'coinsPerKill', value: 1 },
+      { type: 'intellect', value: 90 },
+      { type: 'agility', value: 45 },
     ],
   },
 ];
-
-// ─── ЭПИЧЕСКИЕ (40 шт., ×1.15) ────────────────────────────────────────────────
 
 const EPIC_ITEMS: readonly ItemConfig[] = [
   {
@@ -828,54 +411,49 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     rarity: 'epic',
     stats: [{ type: 'armor', value: 10000 }],
   },
-  // ── Один стат (8 шт.) — значения выше потолка Rare 1-stat ────────────────
-  {
-    id: 'e001',
-    name: 'Монолит здоровья',
-    rarity: 'epic',
-    stats: [{ type: 'endurance', value: 180 }],
-  },
   {
     id: 'e002',
     name: 'Стальная твердыня',
     rarity: 'epic',
     stats: [{ type: 'endurance', value: 210 }],
   },
-  { id: 'e003', name: 'Живой источник', rarity: 'epic', stats: [{ type: 'hpRegen', value: 25 }] },
   {
-    id: 'e004',
-    name: 'Щит предков',
+    id: 'e002-agility',
+    name: 'Крылья сокола',
     rarity: 'epic',
-    stats: [{ type: 'armor', value: 7777 }],
+    stats: [{ type: 'agility', value: 210 }],
+  },
+  {
+    id: 'e002-intellect',
+    name: 'Око вечности',
+    rarity: 'epic',
+    stats: [{ type: 'intellect', value: 210 }],
+  },
+  {
+    id: 'e003',
+    name: 'Живой источник',
+    rarity: 'epic',
+    stats: [{ type: 'hpRegen', value: 30 }],
   },
   {
     id: 'e005',
     name: 'Средоточие энергии',
     rarity: 'epic',
-    stats: [{ type: 'maxEnergy', value: 140 }],
-  },
-  { id: 'e006', name: 'Руна потока', rarity: 'epic', stats: [{ type: 'energyRegen', value: 5 }] },
-  {
-    id: 'e007',
-    name: 'Клинок жатвы',
-    rarity: 'epic',
-    stats: [{ type: 'energyPerKill', value: 5 }],
+    stats: [{ type: 'maxEnergy', value: 150 }],
   },
   {
     id: 'e008',
-    name: 'Страж замка',
+    name: 'Око сокола',
     rarity: 'epic',
-    stats: [{ type: 'energyPerBreach', value: 6 }],
+    stats: [{ type: 'criticalShotChance', value: 0.04 }],
   },
-
-  // ── Два стата (16 шт.) — каждый стат выше потолка Rare 2-stat ──────────
   {
     id: 'e009',
     name: 'Доспех воина',
     rarity: 'epic',
     stats: [
-      { type: 'endurance', value: 75 },
-      { type: 'armor', value: 1380 },
+      { type: 'endurance', value: 150 },
+      { type: 'armor', value: 3000 },
     ],
   },
   {
@@ -883,35 +461,8 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Живая броня воителя',
     rarity: 'epic',
     stats: [
-      { type: 'endurance', value: 90 },
-      { type: 'hpRegen', value: 8 },
-    ],
-  },
-  {
-    id: 'e011',
-    name: 'Тактический жезл',
-    rarity: 'epic',
-    stats: [
-      { type: 'endurance', value: 75 },
-      { type: 'maxEnergy', value: 40 },
-    ],
-  },
-  {
-    id: 'e012',
-    name: 'Реликвия воина',
-    rarity: 'epic',
-    stats: [
-      { type: 'endurance', value: 90 },
-      { type: 'energyRegen', value: 2 },
-    ],
-  },
-  {
-    id: 'e013',
-    name: 'Клинок охотника',
-    rarity: 'epic',
-    stats: [
-      { type: 'endurance', value: 90 },
-      { type: 'energyPerKill', value: 2 },
+      { type: 'endurance', value: 150 },
+      { type: 'hpRegen', value: 15 },
     ],
   },
   {
@@ -919,17 +470,8 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Трофей удачи',
     rarity: 'epic',
     stats: [
-      { type: 'endurance', value: 100 },
+      { type: 'endurance', value: 160 },
       { type: 'coinsPerKill', value: 2 },
-    ],
-  },
-  {
-    id: 'e015',
-    name: 'Рунный доспех',
-    rarity: 'epic',
-    stats: [
-      { type: 'hpRegen', value: 8 },
-      { type: 'armor', value: 1380 },
     ],
   },
   {
@@ -937,62 +479,17 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Доспех тактика',
     rarity: 'epic',
     stats: [
-      { type: 'hpRegen', value: 8 },
-      { type: 'energyRegen', value: 2 },
+      { type: 'endurance', value: 150 },
+      { type: 'agility', value: 90 },
     ],
   },
   {
-    id: 'e017',
-    name: 'Магический щит',
+    id: 'e013',
+    name: 'Клинок охотника',
     rarity: 'epic',
     stats: [
-      { type: 'armor', value: 1380 },
-      { type: 'maxEnergy', value: 40 },
-    ],
-  },
-  {
-    id: 'e018',
-    name: 'Реликвия концентрации',
-    rarity: 'epic',
-    stats: [
-      { type: 'maxEnergy', value: 40 },
-      { type: 'energyRegen', value: 2 },
-    ],
-  },
-  {
-    id: 'e019',
-    name: 'Посох богатства',
-    rarity: 'epic',
-    stats: [
-      { type: 'maxEnergy', value: 50 },
-      { type: 'coinsPerKill', value: 2 },
-    ],
-  },
-  {
-    id: 'e020',
-    name: 'Амулет берсерка',
-    rarity: 'epic',
-    stats: [
-      { type: 'energyRegen', value: 3 },
-      { type: 'energyPerBreach', value: 3 },
-    ],
-  },
-  {
-    id: 'e021',
-    name: 'Парный амулет',
-    rarity: 'epic',
-    stats: [
-      { type: 'energyRegen', value: 2 },
+      { type: 'agility', value: 150 },
       { type: 'energyPerKill', value: 2 },
-    ],
-  },
-  {
-    id: 'e022',
-    name: 'Кошелёк скорости',
-    rarity: 'epic',
-    stats: [
-      { type: 'energyRegen', value: 2 },
-      { type: 'coinsPerKill', value: 2 },
     ],
   },
   {
@@ -1000,79 +497,72 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Амулет охотника',
     rarity: 'epic',
     stats: [
-      { type: 'energyPerKill', value: 3 },
-      { type: 'energyPerBreach', value: 3 },
+      { type: 'agility', value: 130 },
+      { type: 'criticalShotChance', value: 0.03 },
     ],
   },
   {
-    id: 'e024',
-    name: 'Трофейный кошелёк',
+    id: 'e022',
+    name: 'Кошелёк скорости',
     rarity: 'epic',
     stats: [
-      { type: 'energyPerBreach', value: 3 },
+      { type: 'agility', value: 160 },
       { type: 'coinsPerKill', value: 2 },
     ],
   },
-
-  // ── Три стата (16 шт.) ───────────────────────────────────────────────────
+  {
+    id: 'e021',
+    name: 'Парный амулет',
+    rarity: 'epic',
+    stats: [
+      { type: 'agility', value: 150 },
+      { type: 'intellect', value: 90 },
+    ],
+  },
+  {
+    id: 'e018',
+    name: 'Реликвия концентрации',
+    rarity: 'epic',
+    stats: [
+      { type: 'intellect', value: 150 },
+      { type: 'energyRegen', value: 2 },
+    ],
+  },
+  {
+    id: 'e011',
+    name: 'Тактический жезл',
+    rarity: 'epic',
+    stats: [
+      { type: 'intellect', value: 150 },
+      { type: 'maxEnergy', value: 80 },
+    ],
+  },
+  {
+    id: 'e019',
+    name: 'Посох богатства',
+    rarity: 'epic',
+    stats: [
+      { type: 'intellect', value: 160 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+  },
+  {
+    id: 'e012',
+    name: 'Реликвия чародея',
+    rarity: 'epic',
+    stats: [
+      { type: 'intellect', value: 150 },
+      { type: 'endurance', value: 90 },
+    ],
+  },
   {
     id: 'e025',
     name: 'Пояс выносливости',
     rarity: 'epic',
     stats: [
-      { type: 'endurance', value: 25 },
-      { type: 'hpRegen', value: 2.5 },
-      { type: 'armor', value: 240 },
-    ],
-  },
-  {
-    id: 'e026',
-    name: 'Реликвия мудрости',
-    rarity: 'epic',
-    stats: [
-      { type: 'endurance', value: 25 },
-      { type: 'maxEnergy', value: 20 },
-      { type: 'energyRegen', value: 1 },
-    ],
-  },
-  {
-    id: 'e027',
-    name: 'Нагрудник воителя',
-    rarity: 'epic',
-    stats: [
-      { type: 'endurance', value: 35 },
-      { type: 'hpRegen', value: 2.5 },
-      { type: 'armor', value: 240 },
-    ],
-  },
-  {
-    id: 'e028',
-    name: 'Талисман охотника',
-    rarity: 'epic',
-    stats: [
-      { type: 'endurance', value: 25 },
-      { type: 'hpRegen', value: 2.5 },
-      { type: 'maxEnergy', value: 20 },
-    ],
-  },
-  {
-    id: 'e029',
-    name: 'Дух победителя',
-    rarity: 'epic',
-    stats: [
-      { type: 'endurance', value: 35 },
-      { type: 'energyRegen', value: 1 },
-      { type: 'coinsPerKill', value: 1 },
-    ],
-  },
-  {
-    id: 'e030',
-    name: 'Клинок силы',
-    rarity: 'epic',
-    stats: [
-      { type: 'endurance', value: 35 },
-      { type: 'energyPerKill', value: 1 },
-      { type: 'maxEnergy', value: 20 },
+      { type: 'endurance', value: 130 },
+      { type: 'hpRegen', value: 12 },
+      { type: 'armor', value: 2000 },
     ],
   },
   {
@@ -1080,58 +570,48 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Доспех богача',
     rarity: 'epic',
     stats: [
-      { type: 'endurance', value: 40 },
-      { type: 'hpRegen', value: 3.5 },
-      { type: 'coinsPerKill', value: 1 },
+      { type: 'endurance', value: 140 },
+      { type: 'hpRegen', value: 10 },
+      { type: 'coinsPerKill', value: 2 },
     ],
   },
   {
-    id: 'e032',
-    name: 'Боевой жилет',
+    id: 'e029',
+    name: 'Дух победителя',
     rarity: 'epic',
     stats: [
-      { type: 'hpRegen', value: 3.5 },
-      { type: 'armor', value: 240 },
-      { type: 'energyRegen', value: 1 },
+      { type: 'endurance', value: 140 },
+      { type: 'agility', value: 70 },
+      { type: 'coinsPerKill', value: 2 },
     ],
   },
   {
-    id: 'e033',
-    name: 'Зелье героя',
+    id: 'e027',
+    name: 'Нагрудник воителя',
     rarity: 'epic',
     stats: [
-      { type: 'hpRegen', value: 4 },
-      { type: 'maxEnergy', value: 30 },
-      { type: 'energyPerKill', value: 1 },
+      { type: 'endurance', value: 140 },
+      { type: 'agility', value: 80 },
+      { type: 'intellect', value: 40 },
     ],
   },
   {
-    id: 'e034',
-    name: 'Кулон стратега',
+    id: 'e030',
+    name: 'Клинок силы',
     rarity: 'epic',
     stats: [
-      { type: 'hpRegen', value: 5 },
-      { type: 'armor', value: 470 },
-      { type: 'coinsPerKill', value: 1 },
+      { type: 'agility', value: 100 },
+      { type: 'energyPerKill', value: 2 },
+      { type: 'criticalShotChance', value: 0.02 },
     ],
   },
   {
-    id: 'e035',
-    name: 'Доспех мага',
+    id: 'e039',
+    name: 'Ожерелье берсерка',
     rarity: 'epic',
     stats: [
-      { type: 'armor', value: 240 },
-      { type: 'maxEnergy', value: 30 },
-      { type: 'energyRegen', value: 1 },
-    ],
-  },
-  {
-    id: 'e036',
-    name: 'Броня казначея',
-    rarity: 'epic',
-    stats: [
-      { type: 'armor', value: 470 },
-      { type: 'maxEnergy', value: 30 },
+      { type: 'agility', value: 130 },
+      { type: 'energyPerKill', value: 2 },
       { type: 'coinsPerKill', value: 1 },
     ],
   },
@@ -1140,148 +620,70 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Амулет авантюриста',
     rarity: 'epic',
     stats: [
-      { type: 'energyRegen', value: 1 },
-      { type: 'energyPerKill', value: 1 },
-      { type: 'endurance', value: 25 },
+      { type: 'agility', value: 140 },
+      { type: 'intellect', value: 70 },
+      { type: 'coinsPerKill', value: 2 },
     ],
   },
   {
-    id: 'e038',
-    name: 'Кольцо стража',
+    id: 'e028',
+    name: 'Талисман охотника',
     rarity: 'epic',
     stats: [
-      { type: 'energyRegen', value: 1 },
-      { type: 'energyPerBreach', value: 1 },
-      { type: 'maxEnergy', value: 20 },
+      { type: 'agility', value: 140 },
+      { type: 'intellect', value: 80 },
+      { type: 'endurance', value: 40 },
     ],
   },
   {
-    id: 'e039',
-    name: 'Ожерелье берсерка',
+    id: 'e026',
+    name: 'Реликвия мудрости',
     rarity: 'epic',
     stats: [
-      { type: 'energyPerKill', value: 2 },
+      { type: 'intellect', value: 100 },
+      { type: 'maxEnergy', value: 80 },
+      { type: 'energyRegen', value: 2 },
+    ],
+  },
+  {
+    id: 'e036',
+    name: 'Мантия казначея',
+    rarity: 'epic',
+    stats: [
+      { type: 'intellect', value: 140 },
+      { type: 'maxEnergy', value: 80 },
       { type: 'coinsPerKill', value: 1 },
-      { type: 'endurance', value: 35 },
     ],
   },
   {
-    id: 'e040',
-    name: 'Оберег крепости',
+    id: 'e034',
+    name: 'Кулон стратега',
     rarity: 'epic',
     stats: [
-      { type: 'energyPerBreach', value: 2 },
-      { type: 'energyRegen', value: 1 },
-      { type: 'coinsPerKill', value: 1 },
+      { type: 'intellect', value: 140 },
+      { type: 'endurance', value: 70 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+  },
+  {
+    id: 'e035',
+    name: 'Доспех мага',
+    rarity: 'epic',
+    stats: [
+      { type: 'intellect', value: 140 },
+      { type: 'endurance', value: 80 },
+      { type: 'agility', value: 40 },
     ],
   },
 ];
 
-// ─── ЛЕГЕНДАРНЫЕ (20 шт., ×1.5) ───────────────────────────────────────────────
-// Каждый предмет: 3 стата + уникальная модификация способности.
-
 const LEGENDARY_ITEMS: readonly ItemConfig[] = [
-  // ── Армагеддон (3 предмета) ───────────────────────────────────────────────
   {
-    id: 'l001',
-    name: 'Реликвия Армагеддона',
+    id: 'e006',
+    name: 'Руна потока',
     rarity: 'legendary',
-    stats: [
-      { type: 'endurance', value: 25 },
-      { type: 'armor', value: 310 },
-      { type: 'energyRegen', value: 1 },
-    ],
-    abilityMod: {
-      abilityId: 'armageddon',
-      modType: 'cooldownReduction',
-      value: 30,
-      description: '«Армагеддон»: кулдаун −30 сек',
-    },
+    stats: [{ type: 'energyRegen', value: 4 }],
   },
-  {
-    id: 'l002',
-    name: 'Гримуар Армагеддона',
-    rarity: 'legendary',
-    stats: [
-      { type: 'endurance', value: 45 },
-      { type: 'hpRegen', value: 2.5 },
-      { type: 'coinsPerKill', value: 1 },
-    ],
-    abilityMod: {
-      abilityId: 'armageddon',
-      modType: 'effectBoost',
-      value: 1,
-      description: '«Армагеддон»: длительность +1 сек.',
-    },
-  },
-  {
-    id: 'l003',
-    name: 'Доспех Армагеддона',
-    rarity: 'legendary',
-    stats: [
-      { type: 'maxEnergy', value: 30 },
-      { type: 'energyRegen', value: 1 },
-      { type: 'armor', value: 310 },
-    ],
-    abilityMod: {
-      abilityId: 'armageddon',
-      modType: 'costReduction',
-      value: 50,
-      description: '«Армагеддон»: стоимость −50 энергии',
-    },
-  },
-
-  // ── Вьюга (3 предмета) ────────────────────────────────────────────────────
-  {
-    id: 'l004',
-    name: 'Клинок Вьюги',
-    rarity: 'legendary',
-    stats: [
-      { type: 'maxEnergy', value: 30 },
-      { type: 'energyPerKill', value: 1 },
-      { type: 'coinsPerKill', value: 1 },
-    ],
-    abilityMod: {
-      abilityId: 'blizzard',
-      modType: 'effectBoost',
-      value: 2,
-      description: '«Вьюга»: длительность +2 сек',
-    },
-  },
-  {
-    id: 'l005',
-    name: 'Корона Вьюги',
-    rarity: 'legendary',
-    stats: [
-      { type: 'endurance', value: 35 },
-      { type: 'armor', value: 310 },
-      { type: 'energyRegen', value: 1 },
-    ],
-    abilityMod: {
-      abilityId: 'blizzard',
-      modType: 'cooldownReduction',
-      value: 3,
-      description: '«Вьюга»: кулдаун −3 сек',
-    },
-  },
-  {
-    id: 'l006',
-    name: 'Мантия Вьюги',
-    rarity: 'legendary',
-    stats: [
-      { type: 'maxEnergy', value: 40 },
-      { type: 'energyPerBreach', value: 1 },
-      { type: 'armor', value: 110 },
-    ],
-    abilityMod: {
-      abilityId: 'blizzard',
-      modType: 'costReduction',
-      value: 30,
-      description: '«Вьюга»: стоимость −30 энергии',
-    },
-  },
-
-  // ── Залп (3 предмета) ─────────────────────────────────────────────────────
   {
     id: 'l007',
     name: 'Оберег Залпа',
@@ -1298,40 +700,6 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
       description: '«Залп»: +3 дополнительные линии',
     },
   },
-  {
-    id: 'l008',
-    name: 'Перчатки Залпа',
-    rarity: 'legendary',
-    stats: [
-      { type: 'endurance', value: 25 },
-      { type: 'maxEnergy', value: 30 },
-      { type: 'energyRegen', value: 1 },
-    ],
-    abilityMod: {
-      abilityId: 'volley',
-      modType: 'costReduction',
-      value: 20,
-      description: '«Залп»: стоимость −20 энергии',
-    },
-  },
-  {
-    id: 'l009',
-    name: 'Тетива Залпа',
-    rarity: 'legendary',
-    stats: [
-      { type: 'maxEnergy', value: 30 },
-      { type: 'energyPerKill', value: 1 },
-      { type: 'armor', value: 310 },
-    ],
-    abilityMod: {
-      abilityId: 'volley',
-      modType: 'cooldownReduction',
-      value: 1,
-      description: '«Залп»: кулдаун −1 сек',
-    },
-  },
-
-  // ── Ни шагу назад! (2 предмета) ──────────────────────────────────────────
   {
     id: 'l010',
     name: 'Щит Ни шагу назад!',
@@ -1351,13 +719,139 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     },
   },
   {
+    id: 'l001',
+    name: 'Реликвия Армагеддона',
+    rarity: 'legendary',
+    stats: [
+      { type: 'endurance', value: 200 },
+      { type: 'hpRegen', value: 10 },
+      { type: 'armor', value: 3000 },
+    ],
+    abilityMod: {
+      abilityId: 'armageddon',
+      modType: 'cooldownReduction',
+      value: 30,
+      description: '«Армагеддон»: кулдаун −30 сек',
+    },
+  },
+  {
+    id: 'l002',
+    name: 'Гримуар Армагеддона',
+    rarity: 'legendary',
+    stats: [
+      { type: 'intellect', value: 200 },
+      { type: 'agility', value: 100 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'armageddon',
+      modType: 'effectBoost',
+      value: 1,
+      description: '«Армагеддон»: длительность +1 сек.',
+    },
+  },
+  {
+    id: 'l003',
+    name: 'Доспех Армагеддона',
+    rarity: 'legendary',
+    stats: [
+      { type: 'endurance', value: 220 },
+      { type: 'armor', value: 5000 },
+    ],
+    abilityMod: {
+      abilityId: 'armageddon',
+      modType: 'costReduction',
+      value: 50,
+      description: '«Армагеддон»: стоимость −50 энергии',
+    },
+  },
+  {
+    id: 'l004',
+    name: 'Клинок Вьюги',
+    rarity: 'legendary',
+    stats: [
+      { type: 'agility', value: 180 },
+      { type: 'energyPerKill', value: 2 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'blizzard',
+      modType: 'effectBoost',
+      value: 2,
+      description: '«Вьюга»: длительность +2 сек',
+    },
+  },
+  {
+    id: 'l005',
+    name: 'Корона Вьюги',
+    rarity: 'legendary',
+    stats: [
+      { type: 'intellect', value: 180 },
+      { type: 'maxEnergy', value: 120 },
+      { type: 'energyRegen', value: 1 },
+    ],
+    abilityMod: {
+      abilityId: 'blizzard',
+      modType: 'cooldownReduction',
+      value: 3,
+      description: '«Вьюга»: кулдаун −3 сек',
+    },
+  },
+  {
+    id: 'l006',
+    name: 'Мантия Вьюги',
+    rarity: 'legendary',
+    stats: [
+      { type: 'intellect', value: 200 },
+      { type: 'endurance', value: 120 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'blizzard',
+      modType: 'costReduction',
+      value: 30,
+      description: '«Вьюга»: стоимость −30 энергии',
+    },
+  },
+  {
+    id: 'l008',
+    name: 'Перчатки Залпа',
+    rarity: 'legendary',
+    stats: [
+      { type: 'agility', value: 200 },
+      { type: 'criticalShotChance', value: 0.03 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'volley',
+      modType: 'costReduction',
+      value: 20,
+      description: '«Залп»: стоимость −20 энергии',
+    },
+  },
+  {
+    id: 'l009',
+    name: 'Тетива Залпа',
+    rarity: 'legendary',
+    stats: [
+      { type: 'agility', value: 240 },
+      { type: 'energyPerKill', value: 1 },
+    ],
+    abilityMod: {
+      abilityId: 'volley',
+      modType: 'cooldownReduction',
+      value: 1,
+      description: '«Залп»: кулдаун −1 сек',
+    },
+  },
+  {
     id: 'l011',
     name: 'Оберег стойкости',
     rarity: 'legendary',
     stats: [
-      { type: 'endurance', value: 35 },
-      { type: 'armor', value: 610 },
-      { type: 'energyPerBreach', value: 2 },
+      { type: 'endurance', value: 200 },
+      { type: 'hpRegen', value: 15 },
+      { type: 'coinsPerKill', value: 2 },
     ],
     abilityMod: {
       abilityId: 'stand',
@@ -1366,16 +860,14 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
       description: '«Божественный щит»: длительность +3 сек',
     },
   },
-
-  // ── Подготовка (2 предмета) ───────────────────────────────────────────────
   {
     id: 'l012',
     name: 'Амулет Подготовки',
     rarity: 'legendary',
     stats: [
-      { type: 'maxEnergy', value: 30 },
-      { type: 'energyRegen', value: 1 },
-      { type: 'armor', value: 310 },
+      { type: 'intellect', value: 200 },
+      { type: 'energyRegen', value: 2 },
+      { type: 'maxEnergy', value: 80 },
     ],
     abilityMod: {
       abilityId: 'prep',
@@ -1389,9 +881,9 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Кулон Подготовки',
     rarity: 'legendary',
     stats: [
-      { type: 'maxEnergy', value: 40 },
-      { type: 'energyPerKill', value: 1 },
-      { type: 'coinsPerKill', value: 1 },
+      { type: 'agility', value: 200 },
+      { type: 'intellect', value: 100 },
+      { type: 'coinsPerKill', value: 2 },
     ],
     abilityMod: {
       abilityId: 'prep',
@@ -1400,16 +892,13 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
       description: '«Подготовка»: количество восстанавливаемой энергии +150',
     },
   },
-
-  // ── Заморозка (1 предмет) ────────────────────────────────────────────────
   {
     id: 'l015',
     name: 'Ледяная корона',
     rarity: 'legendary',
     stats: [
-      { type: 'maxEnergy', value: 30 },
-      { type: 'energyRegen', value: 1 },
-      { type: 'energyPerBreach', value: 2 },
+      { type: 'intellect', value: 240 },
+      { type: 'maxEnergy', value: 80 },
     ],
     abilityMod: {
       abilityId: 'freeze',
@@ -1418,16 +907,14 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
       description: '«Заморозка»: стоимость −45 энергии',
     },
   },
-
-  // ── Лечение (2 предмета) ──────────────────────────────────────────────────
   {
     id: 'l016',
     name: 'Амулет Лечения',
     rarity: 'legendary',
     stats: [
-      { type: 'endurance', value: 35 },
-      { type: 'hpRegen', value: 4 },
-      { type: 'energyRegen', value: 1 },
+      { type: 'endurance', value: 220 },
+      { type: 'hpRegen', value: 12 },
+      { type: 'armor', value: 3500 },
     ],
     abilityMod: {
       abilityId: 'heal',
@@ -1441,9 +928,9 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Оберег Лечения',
     rarity: 'legendary',
     stats: [
-      { type: 'endurance', value: 50 },
-      { type: 'hpRegen', value: 5 },
-      { type: 'armor', value: 110 },
+      { type: 'endurance', value: 240 },
+      { type: 'agility', value: 100 },
+      { type: 'intellect', value: 60 },
     ],
     abilityMod: {
       abilityId: 'heal',
@@ -1452,16 +939,14 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
       description: '«Лечение»: кулдаун −3 сек',
     },
   },
-
-  // ── Обновление (2 предмета) ───────────────────────────────────────────────
   {
     id: 'l018',
     name: 'Кристалл Обновления',
     rarity: 'legendary',
     stats: [
-      { type: 'maxEnergy', value: 40 },
-      { type: 'energyRegen', value: 1 },
-      { type: 'energyPerKill', value: 1 },
+      { type: 'intellect', value: 200 },
+      { type: 'agility', value: 100 },
+      { type: 'endurance', value: 60 },
     ],
     abilityMod: {
       abilityId: 'recharge',
@@ -1475,9 +960,9 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Посох Обновления',
     rarity: 'legendary',
     stats: [
-      { type: 'maxEnergy', value: 30 },
-      { type: 'energyRegen', value: 1 },
-      { type: 'coinsPerKill', value: 1 },
+      { type: 'intellect', value: 210 },
+      { type: 'energyRegen', value: 2 },
+      { type: 'coinsPerKill', value: 2 },
     ],
     abilityMod: {
       abilityId: 'recharge',
@@ -1488,179 +973,12 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
   },
 ];
 
-// Предметы с одной характеристикой: аналоги выносливости по силе и цене.
-const ATTRIBUTE_ITEMS: readonly ItemConfig[] = [
-  {
-    id: 'c001-agility',
-    name: 'Перчатки стрелка',
-    rarity: 'common',
-    stats: [{ type: 'agility', value: 5 }],
-  },
-  {
-    id: 'c003-agility',
-    name: 'Сапоги следопыта',
-    rarity: 'common',
-    stats: [{ type: 'agility', value: 10 }],
-  },
-  {
-    id: 'c005-agility',
-    name: 'Пояс разведчика',
-    rarity: 'common',
-    stats: [{ type: 'agility', value: 15 }],
-  },
-  {
-    id: 'c009-agility',
-    name: 'Наручи охотника',
-    rarity: 'common',
-    stats: [{ type: 'agility', value: 25 }],
-  },
-  {
-    id: 'c012-agility',
-    name: 'Сапоги ветра',
-    rarity: 'common',
-    stats: [{ type: 'agility', value: 35 }],
-  },
-  {
-    id: 'c015-agility',
-    name: 'Перчатки меткости',
-    rarity: 'common',
-    stats: [{ type: 'agility', value: 50 }],
-  },
-  {
-    id: 'c020-agility',
-    name: 'Мифриловые наручи',
-    rarity: 'common',
-    stats: [{ type: 'agility', value: 75 }],
-  },
-  {
-    id: 'r001-agility',
-    name: 'Плащ следопыта',
-    rarity: 'rare',
-    stats: [{ type: 'agility', value: 90 }],
-  },
-  {
-    id: 'r002-agility',
-    name: 'Пояс мастера стрельбы',
-    rarity: 'rare',
-    stats: [{ type: 'agility', value: 110 }],
-  },
-  {
-    id: 'r003-agility',
-    name: 'Сапоги танцующего ветра',
-    rarity: 'rare',
-    stats: [{ type: 'agility', value: 135 }],
-  },
-  {
-    id: 'r004-agility',
-    name: 'Перчатки чемпиона',
-    rarity: 'rare',
-    stats: [{ type: 'agility', value: 165 }],
-  },
-  {
-    id: 'e001-agility',
-    name: 'Сердце бури',
-    rarity: 'epic',
-    stats: [{ type: 'agility', value: 180 }],
-  },
-  {
-    id: 'e002-agility',
-    name: 'Крылья сокола',
-    rarity: 'epic',
-    stats: [{ type: 'agility', value: 210 }],
-  },
-  {
-    id: 'c001-intellect',
-    name: 'Записки ученика',
-    rarity: 'common',
-    stats: [{ type: 'intellect', value: 5 }],
-  },
-  {
-    id: 'c003-intellect',
-    name: 'Книга заклинаний',
-    rarity: 'common',
-    stats: [{ type: 'intellect', value: 10 }],
-  },
-  {
-    id: 'c005-intellect',
-    name: 'Кулон знатока',
-    rarity: 'common',
-    stats: [{ type: 'intellect', value: 15 }],
-  },
-  {
-    id: 'c009-intellect',
-    name: 'Посох чародея',
-    rarity: 'common',
-    stats: [{ type: 'intellect', value: 25 }],
-  },
-  {
-    id: 'c012-intellect',
-    name: 'Венец мудреца',
-    rarity: 'common',
-    stats: [{ type: 'intellect', value: 35 }],
-  },
-  {
-    id: 'c015-intellect',
-    name: 'Гримуар мага',
-    rarity: 'common',
-    stats: [{ type: 'intellect', value: 50 }],
-  },
-  {
-    id: 'c020-intellect',
-    name: 'Мифриловая диадема',
-    rarity: 'common',
-    stats: [{ type: 'intellect', value: 75 }],
-  },
-  {
-    id: 'r001-intellect',
-    name: 'Посох провидца',
-    rarity: 'rare',
-    stats: [{ type: 'intellect', value: 90 }],
-  },
-  {
-    id: 'r002-intellect',
-    name: 'Венец архимага',
-    rarity: 'rare',
-    stats: [{ type: 'intellect', value: 110 }],
-  },
-  {
-    id: 'r003-intellect',
-    name: 'Гримуар тайных знаний',
-    rarity: 'rare',
-    stats: [{ type: 'intellect', value: 135 }],
-  },
-  {
-    id: 'r004-intellect',
-    name: 'Сфера оракула',
-    rarity: 'rare',
-    stats: [{ type: 'intellect', value: 165 }],
-  },
-  {
-    id: 'e001-intellect',
-    name: 'Источник мудрости',
-    rarity: 'epic',
-    stats: [{ type: 'intellect', value: 180 }],
-  },
-  {
-    id: 'e002-intellect',
-    name: 'Око вечности',
-    rarity: 'epic',
-    stats: [{ type: 'intellect', value: 210 }],
-  },
-];
-
-// ─── Полный каталог ────────────────────────────────────────────────────────────
-
-function withPrice(cfg: ItemConfig): ItemDefinition {
-  return { ...cfg, price: computeItemPrice(cfg) };
-}
-
 export const ITEM_CATALOG: readonly ItemDefinition[] = [
   ...COMMON_ITEMS,
   ...RARE_ITEMS,
   ...EPIC_ITEMS,
   ...LEGENDARY_ITEMS,
-  ...ATTRIBUTE_ITEMS,
-].map(withPrice);
+].map((item) => ({ ...item, price: computeItemPrice(item) }));
 
 export const ITEM_MAP: ReadonlyMap<string, ItemDefinition> = new Map(
   ITEM_CATALOG.map((item) => [item.id, item]),

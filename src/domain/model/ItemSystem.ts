@@ -1,5 +1,6 @@
 import type { ItemDefinition } from '../itemTypes.js';
 import { ITEM_MAP } from '../../content/items.js';
+import { RETIRED_ITEM_REFUNDS } from '../../content/retiredItems.js';
 import { itemModifiers } from '../rules/itemModifiers.js';
 import { salePrice } from '../rules/economy.js';
 import type { StatModifier } from '../rules/stats.js';
@@ -51,7 +52,10 @@ export class ItemSystem {
     let refund = 0;
     for (const id of ids) {
       const item = ITEM_MAP.get(id);
-      if (!item) continue;
+      if (!item) {
+        if (Object.hasOwn(RETIRED_ITEM_REFUNDS, id)) refund += RETIRED_ITEM_REFUNDS[id];
+        continue;
+      }
       if (unique.has(id)) refund += item.price;
       else unique.add(id);
     }

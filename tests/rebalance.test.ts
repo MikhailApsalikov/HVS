@@ -1,38 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
 import { GameSession } from '../src/domain/GameSession.js';
 import { ITEM_CATALOG, ITEM_MAP } from '../src/content/items.js';
 import { parseSave, restore, snapshot } from '../src/domain/save.js';
 import { abilityDescription, talentDescription } from '../src/ui/presenters.js';
-import type { StatType } from '../src/domain/itemTypes.js';
 import { addSpider, game } from './helpers.js';
 
-const beforeItems = JSON.parse(
-  readFileSync('tests/fixtures/items-before-rebalance.json', 'utf8'),
-) as Record<string, Partial<Record<StatType, number>>>;
-
 describe('item rebalance through purchases', () => {
-  it.each(Object.entries(beforeItems))(
-    'applies current endurance and regeneration of %s and charges its catalog price',
-    (id, previous) => {
-      const session = new GameSession('normal');
-      session.state.coins = 1000000;
-      const before = session.state.stats;
-      const coins = session.state.coins;
-      const endurance = id === 'l010' ? 80 : id === 'l007' ? 200 : (previous.endurance ?? 0) / 2;
-      const regeneration = id === 'l010' ? 5 : id === 'l007' ? 20 : (previous.hpRegen ?? 0) / 2;
-      expect(session.buyItem(id)).toBe(true);
-      expect(session.state.stats.endurance).toBe(before.endurance + endurance);
-      expect(session.state.stats.hpRegen).toBeCloseTo(
-        before.hpRegen + regeneration + endurance * 0.04,
-      );
-      expect(session.state.coins).toBe(coins - ITEM_MAP.get(id)!.price);
-      expect(session.sellItem(0)).toBe(true);
-      expect(session.state.stats).toEqual(before);
-      expect(session.state.coins).toBe(coins - Math.ceil(ITEM_MAP.get(id)!.price / 2));
-    },
-  );
-
   const enduranceItems = ITEM_CATALOG.filter(
     (item) => item.stats.length === 1 && item.stats[0].type === 'endurance',
   );

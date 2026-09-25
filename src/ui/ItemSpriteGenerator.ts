@@ -4,6 +4,7 @@ import { RARE_SVGS } from './_rare_svgs.js';
 import { EPIC_SVGS } from './_epic_svgs.js';
 import { LEGENDARY_SVGS } from './_legendary_svgs.js';
 import { ATTRIBUTE_SVGS } from './_attribute_svgs.js';
+import { REWORKED_SVGS } from './_reworked_svgs.js';
 
 const ITEM_SVGS: Record<string, string> = {
   ...COMMON_SVGS,
@@ -11,6 +12,7 @@ const ITEM_SVGS: Record<string, string> = {
   ...EPIC_SVGS,
   ...LEGENDARY_SVGS,
   ...ATTRIBUTE_SVGS,
+  ...REWORKED_SVGS,
 };
 
 const FALLBACK =
