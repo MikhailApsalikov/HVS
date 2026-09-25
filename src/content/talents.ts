@@ -112,7 +112,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   improvedCriticalShot: {
     branch: 'shooting',
-    column: 1,
+    column: 3,
     name: 'Улучшенный критический выстрел',
     sprite: 'TalentImprovedCriticalShot',
     prerequisite: { id: 'eagleEye', rank: 1 },
@@ -176,7 +176,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'shooting',
     column: 3,
     name: 'Залп',
-    sprite: 'AbilityVolley',
+    sprite: 'TalentVolley',
     effects: [],
   },
   killingStreak: {
@@ -190,7 +190,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   enthusiasm: {
     branch: 'shooting',
-    column: 3,
+    column: 1,
     name: 'Увлеченность',
     sprite: 'TalentEnthusiasm',
     prerequisite: { id: 'killingStreak', rank: 1 },
@@ -203,6 +203,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     name: 'Улучшенная череда убийств',
     sprite: 'TalentImprovedKillingStreak',
+    prerequisite: { id: 'enthusiasm', rank: 1 },
     effects: [flat('killingStreak.maxStacks', 1)],
     scaling: { attribute: 'agility', step: 50, effect: flat('killingStreak.killAdvance', 0.01) },
     description:
