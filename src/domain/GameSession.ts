@@ -20,6 +20,11 @@ import {
   collectDeadSpiders,
 } from './systems/CombatSystem.js';
 
+export interface NewGameOptions {
+  readonly level?: number;
+  readonly coins?: number;
+}
+
 /** Headless game: explicit commands in, state and semantic events out. */
 export class GameSession {
   readonly state: GameState;
@@ -29,13 +34,16 @@ export class GameSession {
   constructor(
     difficulty: Difficulty,
     private readonly random: RandomSource = Math.random,
-    testMode = false,
+    options: NewGameOptions = {},
   ) {
-    const baseConfig = DIFFICULTIES[difficulty];
-    const config = testMode ? { ...baseConfig, levelTimerBase: 10, levelTimerStep: 0 } : baseConfig;
+    const config = DIFFICULTIES[difficulty];
+    const { level = 1, coins = config.startingCoins } = options;
+    if (!Number.isSafeInteger(level) || level < 1 || !Number.isSafeInteger(coins) || coins < 0)
+      throw new RangeError('Invalid new game options');
     this.talents = new TalentSystem(config);
     this.items = new ItemSystem();
-    this.state = new GameState(difficulty, config, new GameRules(config));
+    this.state = new GameState(difficulty, config, new GameRules(config, [], {}, level));
+    this.state.coins = coins;
   }
   refreshStats(grantHealthIncrease = true): void {
     const state = this.state;

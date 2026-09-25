@@ -13,7 +13,8 @@ import {
 } from '../src/ui/presenters.js';
 import { game } from './helpers.js';
 import { ABILITY_ORDER } from '../src/content/abilities.js';
-import { isTestMode } from '../src/bootstrap.js';
+import { parseNewGameOptions } from '../src/bootstrap.js';
+import { GameSession } from '../src/domain/GameSession.js';
 
 class Frames implements FrameScheduler {
   nextId = 1;
@@ -71,23 +72,81 @@ describe('browser loop without a browser', () => {
 });
 
 describe('application orchestration', () => {
-  it('uses ten-second levels in URL test mode, including loaded games', () => {
-    expect(isTestMode('?test=true')).toBe(true);
-    expect(isTestMode('?test=false')).toBe(false);
-    expect(isTestMode('?testing=true')).toBe(false);
+  it.each([
+    ['', undefined, undefined],
+    ['?test=50&money=1000', 50, 1000],
+    ['?test=1&money=0', 1, 0],
+    ['?test=50', 50, undefined],
+    ['?money=1000', undefined, 1000],
+    ['?test=true&money=1000', undefined, 1000],
+    ['?test=false', undefined, undefined],
+    ['?testing=50&coins=1000', undefined, undefined],
+    ['?test=0&money=-1', undefined, undefined],
+    ['?test=-50&money=1.5', undefined, undefined],
+    ['?test=1.5&money=NaN', undefined, undefined],
+    ['?test=&money=', undefined, undefined],
+    ['?test=50abc&money=Infinity', undefined, undefined],
+    ['?test=1e2&money=0x10', undefined, undefined],
+    ['?test=9007199254740992&money=9007199254740992', undefined, undefined],
+    ['?test=50&money=bad', 50, undefined],
+  ])('parses independent new-game parameters from %s', (search, level, coins) => {
+    expect(parseNewGameOptions(search)).toEqual({ level, coins });
+  });
 
+  it('applies URL starting level and money before rendering and saving a new game', () => {
     const frames = new Frames();
     const saves = new SaveSystem(new MemoryStorage());
-    const engine = new GameEngine(vi.fn(), saves, new FrameLoop(frames), true);
+    const engine = new GameEngine(
+      vi.fn(),
+      saves,
+      new FrameLoop(frames),
+      parseNewGameOptions('?test=50&money=1000'),
+    );
+    const phases = vi.fn();
+    engine.setPhaseChangeCallback(phases);
     engine.startNewGame('normal');
-    expect(engine.getState()!.levelTimerMax).toBe(10);
-    expect(engine.upgradeTalent('endurance')).toBe(true);
-    expect(engine.confirmLevelUp()).toBe(true);
-    expect(engine.getState()!.levelTimerMax).toBe(10);
-    engine.persist();
-    expect(engine.loadGame()).toBe(true);
-    expect(engine.getState()!.levelTimerMax).toBe(10);
+    expect(engine.getState()).toMatchObject({
+      level: 50,
+      pendingTalentPoints: 50,
+      coins: 1000,
+      levelTimerMax: 109,
+      initialTalentPick: true,
+      record: 50,
+    });
+    frames.advance(0);
+    expect(phases).toHaveBeenCalledWith('levelUp', engine.getState());
+    expect(saves.load()!.state).toMatchObject({ level: 50, coins: 1000, pendingTalentPoints: 50 });
+    engine.stopLoop();
   });
+
+  it.each(['?test=50&money=1000', ''])(
+    'preserves saved progress despite URL options %s',
+    (search) => {
+      const session = new GameSession('normal', () => 0.999999, { level: 7, coins: 300 });
+      session.upgradeTalent('endurance');
+      session.buyItem('c001');
+      const saves = new SaveSystem(new MemoryStorage());
+      saves.save(session);
+      const engine = new GameEngine(
+        vi.fn(),
+        saves,
+        new FrameLoop(new Frames()),
+        parseNewGameOptions(search),
+      );
+      expect(engine.loadGame()).toBe(true);
+      expect(engine.getState()).toMatchObject({
+        level: 7,
+        pendingTalentPoints: 6,
+        coins: session.state.coins,
+        levelTimer: session.state.levelTimer,
+        levelTimerMax: session.state.levelTimerMax,
+        initialTalentPick: true,
+      });
+      expect(engine.getTalentSystem()!.getRank('endurance')).toBe(1);
+      expect(engine.getItemSystem()!.inventory).toEqual(['c001']);
+      engine.stopLoop();
+    },
+  );
 
   it('starts, upgrades, trades, saves, reloads and restarts with one loop', () => {
     const frames = new Frames();

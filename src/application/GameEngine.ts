@@ -7,7 +7,7 @@ import type {
   TalentId,
 } from '../domain/types.js';
 import type { GameState } from '../domain/model/GameState.js';
-import { GameSession } from '../domain/GameSession.js';
+import { GameSession, type NewGameOptions } from '../domain/GameSession.js';
 import { restore } from '../domain/save.js';
 import { FrameLoop } from '../infrastructure/browser/FrameLoop.js';
 import { SaveSystem } from '../infrastructure/storage/SaveSystem.js';
@@ -26,7 +26,7 @@ export class GameEngine {
     private readonly render: (state: GameState) => void,
     private readonly saves: SaveSystem,
     private readonly loop = new FrameLoop(),
-    private readonly testMode = false,
+    private readonly newGameOptions: NewGameOptions = {},
   ) {}
 
   setPhaseChangeCallback(callback: NonNullable<GameEngine['phaseChanged']>): void {
@@ -60,7 +60,7 @@ export class GameEngine {
     this.stopLoop();
     const record = this.saves.getRecord();
     this.saves.clear();
-    this.session = new GameSession(difficulty, Math.random, this.testMode);
+    this.session = new GameSession(difficulty, Math.random, this.newGameOptions);
     this.session.state.record = Math.max(record, this.session.state.level);
     this.persist();
     this.startLoop();
@@ -69,7 +69,7 @@ export class GameEngine {
     const save = this.saves.load();
     if (!save) return false;
     this.stopLoop();
-    this.session = restore(save, undefined, this.testMode);
+    this.session = restore(save);
     this.startLoop();
     return true;
   }

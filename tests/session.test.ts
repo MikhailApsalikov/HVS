@@ -3,6 +3,8 @@ import { GameSession } from '../src/domain/GameSession.js';
 import { Arrow } from '../src/domain/model/Arrow.js';
 import { GameRules } from '../src/domain/rules/GameRules.js';
 import { normalConfig } from '../src/content/normal.js';
+import { DIFFICULTIES } from '../src/content/difficulties.js';
+import { TALENT_ORDER } from '../src/content/talents.js';
 import { ABILITIES, ABILITY_ORDER } from '../src/content/abilities.js';
 import { SPIDERS } from '../src/content/spiders.js';
 import { ITEM_CATALOG } from '../src/content/items.js';
@@ -10,6 +12,80 @@ import type { SpiderType } from '../src/domain/types.js';
 import { game, advance, addSpider } from './helpers.js';
 
 describe('progression and player commands', () => {
+  it.each(['easy', 'normal', 'hard'] as const)(
+    'starts at the requested level with its stats, talent points and money on %s',
+    (difficulty) => {
+      const session = new GameSession(difficulty, () => 0.999999, { level: 50, coins: 1000 });
+      const state = session.state;
+      expect(state.level).toBe(50);
+      expect(state.record).toBe(50);
+      expect(state.pendingTalentPoints).toBe(50);
+      expect(state.phase).toBe('levelUp');
+      expect(state.initialTalentPick).toBe(true);
+      expect(state.coins).toBe(1000);
+      expect(state.stats).toMatchObject({ endurance: 174, agility: 72, intellect: 114 });
+      expect(state.hp).toBe(state.maxHp);
+      expect(state.energy).toBe(state.maxEnergy);
+      expect(state.levelTimer).toBe(state.rules.levelDuration(50));
+      expect(state.levelTimerMax).toBe(state.levelTimer);
+      expect(state.levelTimerMax).toBeGreaterThan(10);
+      expect(session.confirmLevelUp()).toBe(false);
+
+      for (let point = 0; point < 50; point++) {
+        const id = TALENT_ORDER.find((talent) => session.talents.canUpgrade(talent, state.level));
+        expect(id).toBeDefined();
+        expect(session.upgradeTalent(id!)).toBe(true);
+      }
+      expect(state.pendingTalentPoints).toBe(0);
+      expect(session.confirmLevelUp()).toBe(true);
+      expect(state.level).toBe(50);
+      expect(state.phase).toBe('playing');
+      expect(state.initialTalentPick).toBe(false);
+      expect(state.levelTimerMax).toBe(state.rules.levelDuration(50));
+
+      session.tick(state.levelTimer);
+      expect(state.phase).toBe('levelUp');
+      expect(state.pendingTalentPoints).toBe(1);
+      const nextTalent = TALENT_ORDER.find((talent) =>
+        session.talents.canUpgrade(talent, state.level),
+      );
+      expect(nextTalent).toBeDefined();
+      expect(session.upgradeTalent(nextTalent!)).toBe(true);
+      expect(session.confirmLevelUp()).toBe(true);
+      expect(state.level).toBe(51);
+      expect(state.record).toBe(51);
+    },
+  );
+  it.each(['easy', 'normal', 'hard'] as const)(
+    'defaults omitted options independently and accepts zero starting gold on %s',
+    (difficulty) => {
+      const atLevel = new GameSession(difficulty, () => 0.999999, { level: 50 });
+      expect(atLevel.state.coins).toBe(DIFFICULTIES[difficulty].startingCoins);
+      const withMoney = new GameSession(difficulty, () => 0.999999, { coins: 1000 });
+      expect(withMoney.state.level).toBe(1);
+      expect(withMoney.state.pendingTalentPoints).toBe(1);
+      expect(withMoney.state.coins).toBe(1000);
+      expect(withMoney.buyItem('c001')).toBe(true);
+      const withoutMoney = new GameSession(difficulty, () => 0.999999, { coins: 0 });
+      expect(withoutMoney.state.coins).toBe(0);
+      expect(withoutMoney.buyItem('c001')).toBe(false);
+    },
+  );
+  it.each([
+    { level: 0 },
+    { level: -1 },
+    { level: 1.5 },
+    { level: NaN },
+    { level: Infinity },
+    { level: Number.MAX_SAFE_INTEGER + 1 },
+    { coins: -1 },
+    { coins: 1.5 },
+    { coins: NaN },
+    { coins: Infinity },
+    { coins: Number.MAX_SAFE_INTEGER + 1 },
+  ])('rejects invalid starting values %j', (options) => {
+    expect(() => new GameSession('normal', () => 0.999999, options)).toThrow(RangeError);
+  });
   it.each(ITEM_CATALOG)(
     'allows only one $id, spends nothing on a duplicate and permits rebuy after sale',
     (item) => {

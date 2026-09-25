@@ -111,8 +111,8 @@ export function snapshot(session: GameSession): SaveData {
   };
 }
 
-export function restore(data: SaveData, random?: RandomSource, testMode = false): GameSession {
-  const session = new GameSession(data.difficulty, random, testMode);
+export function restore(data: SaveData, random?: RandomSource): GameSession {
+  const session = new GameSession(data.difficulty, random);
   const state = session.state;
   state.level = data.state.level;
   state.lastHopeTimer = data.state.lastHopeTimer;
@@ -142,12 +142,6 @@ export function restore(data: SaveData, random?: RandomSource, testMode = false)
   if (state.levelTimerMax < minimumDuration) {
     if (state.levelTimer > 0) state.levelTimer += minimumDuration - state.levelTimerMax;
     state.levelTimerMax = minimumDuration;
-  }
-  if (testMode) {
-    const duration = state.rules.levelDuration(state.level);
-    state.levelTimer =
-      state.levelTimerMax > 0 ? (duration * state.levelTimer) / state.levelTimerMax : 0;
-    state.levelTimerMax = duration;
   }
   state.coins += duplicateRefund;
   state.pendingTalentPoints += talentRefund;
@@ -337,7 +331,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     return null;
   if (
     (state.phase === 'paused') !== state.freezeActive ||
-    (state.initialTalentPick && (state.phase !== 'levelUp' || state.level !== 1))
+    (state.initialTalentPick && state.phase !== 'levelUp')
   )
     return null;
   if (

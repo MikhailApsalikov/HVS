@@ -6,9 +6,17 @@ import { SoundEffect, MusicTrack } from './infrastructure/audio/catalog.js';
 import { SaveSystem, type StoragePort } from './infrastructure/storage/SaveSystem.js';
 import { InputHandler } from './infrastructure/browser/InputHandler.js';
 import type { AbilityId } from './domain/types.js';
+import type { NewGameOptions } from './domain/GameSession.js';
 
-export function isTestMode(search: string): boolean {
-  return new URLSearchParams(search).get('test') === 'true';
+export function parseNewGameOptions(search: string): NewGameOptions {
+  const params = new URLSearchParams(search);
+  const integer = (name: string, minimum: number): number | undefined => {
+    const raw = params.get(name);
+    if (raw === null || !/^\d+$/.test(raw)) return undefined;
+    const value = Number(raw);
+    return Number.isSafeInteger(value) && value >= minimum ? value : undefined;
+  };
+  return { level: integer('test', 1), coins: integer('money', 0) };
 }
 
 /** Composition root: the only place wiring browser services to the game. */
@@ -35,7 +43,7 @@ export function bootstrap(root: HTMLElement): () => void {
     (state) => app.render(state, saves.lastError),
     saves,
     undefined,
-    isTestMode(window.location.search),
+    parseNewGameOptions(window.location.search),
   );
   const sounds: Record<AbilityId, SoundEffect> = {
     freeze: SoundEffect.FREEZE_ACTIVATE,

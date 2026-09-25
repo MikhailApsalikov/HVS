@@ -14,14 +14,14 @@ export type ArmageddonPhase = 'none' | 'charging' | 'firing';
 
 export class GameState {
   phase: GamePhase = 'levelUp';
-  level = 1;
+  level: number;
   levelTimer: number;
   levelTimerMax: number;
   hp: number;
   energy: number;
   coins: number;
-  pendingTalentPoints = 1;
-  record = 1;
+  pendingTalentPoints: number;
+  record: number;
   initialTalentPick = true;
   freezeActive = false;
   invulnerableTimer = 0;
@@ -58,6 +58,7 @@ export class GameState {
     readonly config: DifficultyConfig,
     public rules: GameRules,
   ) {
+    this.level = this.pendingTalentPoints = this.record = rules.level;
     this.stats = rules.snapshot();
     this.hp = this.maxHp;
     this.energy = this.maxEnergy;
