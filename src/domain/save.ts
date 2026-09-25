@@ -38,6 +38,8 @@ const STATE_FIELDS = [
   'adrenalineShots',
   'eagleEyeTimer',
   'eagleEyeShots',
+  'killingStreakStacks',
+  'killingStreakProgress',
   'antiAfkIdleTimer',
   'antiAfkStacks',
   'antiAfkRecoveryTimer',
@@ -78,7 +80,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 12;
+  readonly version: 13;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -95,7 +97,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 12,
+    version: 13,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -231,7 +233,18 @@ export function parseSave(value: unknown): SaveData | null {
   try {
     const data = parseSaveUnchecked(value);
     // Structural validity also has to produce a usable set of game values.
-    if (data) restore(data);
+    if (data) {
+      const { state } = restore(data);
+      if (
+        state.eagleEyeShots > state.stats['eagleEye.shots'] ||
+        state.killingStreakStacks > state.stats['killingStreak.maxStacks'] ||
+        state.killingStreakProgress >= state.stats['killingStreak.interval'] ||
+        (state.killingStreakFull && state.killingStreakProgress > 0) ||
+        (!state.killingStreakLearned &&
+          (state.killingStreakStacks > 0 || state.killingStreakProgress > 0))
+      )
+        return null;
+    }
     return data;
   } catch {
     return null;
@@ -241,9 +254,17 @@ export function parseSave(value: unknown): SaveData | null {
 function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
-  if (![3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(value.version as number) || !object(value.state))
+  if (
+    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].includes(value.version as number) ||
+    !object(value.state)
+  )
     return null;
   const state = value.state;
+  if (
+    (value.version as number) >= 13 &&
+    (!integer(state.killingStreakStacks) || !number(state.killingStreakProgress))
+  )
+    return null;
   if (
     (value.version as number) >= 10 &&
     (!number(state.antiAfkIdleTimer) ||
@@ -259,7 +280,6 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     (!number(state.eagleEyeTimer) ||
       state.eagleEyeTimer > STATS['eagleEye.duration'].policy.max! ||
       !integer(state.eagleEyeShots) ||
-      state.eagleEyeShots > STATS['eagleEye.shots'].policy.max! ||
       state.eagleEyeTimer > 0 !== state.eagleEyeShots > 0)
   )
     return null;
@@ -442,11 +462,12 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
-  if (value.version !== 12) {
+  if (value.version !== 13) {
     const previous = {
       ...value,
-      version: 12,
+      version: 13,
       spiders: value.spiders.map((entry) => {
+        if ((value.version as number) >= 12) return entry;
         const { hasJumped, ...spider } = entry as JsonObject;
         return {
           ...spider,
@@ -468,6 +489,8 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
       })),
       state: {
         ...state,
+        killingStreakStacks: 0,
+        killingStreakProgress: 0,
         lastHopeTimer: (value.version as number) >= 5 ? state.lastHopeTimer : 0,
         bestDefenseCooldown: (value.version as number) >= 8 ? state.bestDefenseCooldown : 0,
         adrenalineTimer: (value.version as number) >= 7 ? state.adrenalineTimer : 0,

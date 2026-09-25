@@ -56,7 +56,7 @@ describe('progression and player commands', () => {
     advance(session, 2.5);
     expect(session.state.hp).toBeCloseTo(52.7, 8);
     expect(session.state.energy).toBeCloseTo(20.4, 8);
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(110.5, 8);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(260.5, 8);
   });
   it('rejects invalid timestep and blocks commands outside their phase', () => {
     const session = new GameSession('normal');
@@ -85,7 +85,7 @@ describe('progression and player commands', () => {
     expect(session.sellItem(0)).toBe(true);
     expect(session.state.hp).toBe(100);
     expect(session.state.maxHp).toBe(100);
-    expect(session.state.coins).toBe(81);
+    expect(session.state.coins).toBe(231);
     expect(session.sellItem(0)).toBe(false);
     session.state.coins = 1000;
     session.buyItem('c056');
@@ -203,6 +203,8 @@ describe('all abilities', () => {
   });
   it('fires a volley on four distinct lanes, capped at nine with bonuses', () => {
     const session = game(20);
+    session.talents.loadFromSave([{ id: 'volley', rank: 1 }]);
+    session.refreshStats();
     session.activateAbility('volley');
     expect(new Set([...session.state.arrows.values()].map((arrow) => arrow.lane)).size).toBe(4);
     expect([...session.state.arrows.values()].every((arrow) => arrow.fromVolley)).toBe(true);
@@ -311,7 +313,7 @@ describe('enemy types and rewards', () => {
     expect(session.drainEvents()).toEqual([
       { type: 'damage', spiderId: 'spider-1', hp: 1, energy: 92 },
     ]);
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(102.1);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(252.1);
   });
   it('lethal damage takes priority over regeneration and wave completion', () => {
     const session = game();

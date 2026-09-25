@@ -83,10 +83,10 @@ describe('projectile strength', () => {
     expect(session.state.arrows.size).toBe(0);
   });
   it.each([
-    [1, 0.079999, 3],
-    [1, 0.08, 2],
-    [8, 0.639999, 3],
-    [8, 0.64, 2],
+    [1, 0.119999, 3],
+    [1, 0.12, 2],
+    [8, 0.959999, 3],
+    [8, 0.96, 2],
   ])('improvement rank %s at roll %s gives %s units', (rank, roll, power) => {
     const session = arena([...eagle, { id: 'improvedCriticalShot', rank }], roll);
     session.activateAbility('eagleEye');
@@ -111,7 +111,7 @@ describe('shooting progression and scaling', () => {
       expect(session.state.stats.hpPerKill).toBe(10);
       for (let rank = 0; rank < 5; rank++) session.upgradeTalent('hunterMastery');
       session.state.level = 30;
-      for (let rank = 0; rank < 5; rank++) session.upgradeTalent('rapidFire');
+      for (let rank = 0; rank < 5; rank++) session.upgradeTalent('piercingReward');
       expect(session.upgradeTalent('eagleEye')).toBe(false);
       for (let rank = 0; rank < 9; rank++) expect(session.upgradeTalent('criticalShot')).toBe(true);
       expect(session.upgradeTalent('eagleEye')).toBe(false);
@@ -129,11 +129,14 @@ describe('shooting progression and scaling', () => {
         expect(session.upgradeTalent('agileCriticalShot')).toBe(true);
       expect(session.upgradeTalent('agileCriticalShot')).toBe(false);
       expect(session.talents.getTalent('eagleEye').tier).toBe(3);
-      for (const id of ['improvedCriticalShot', 'agileCriticalShot', 'volleyMastery'] as const)
+      for (const id of ['improvedCriticalShot', 'agileCriticalShot'] as const)
         expect(session.talents.getTalent(id).tier).toBe(4);
-      session.state.level = 29;
+      expect(session.talents.getTalent('volleyMastery').tier).toBe(3);
       expect(session.upgradeTalent('volleyMastery')).toBe(false);
-      session.state.level = 30;
+      expect(session.upgradeTalent('volley')).toBe(true);
+      session.state.level = 19;
+      expect(session.upgradeTalent('volleyMastery')).toBe(false);
+      session.state.level = 20;
       expect(session.upgradeTalent('volleyMastery')).toBe(true);
       expect(session.state.stats['volley.lanes']).toBe(5);
     },
@@ -264,7 +267,12 @@ describe('eagle eye ability', () => {
   });
   it('combines with adrenaline, excludes all volleys and receives common cooldown bonuses', () => {
     const session = arena(
-      [...eagle, { id: 'adrenaline', rank: 1 }, { id: 'quickInstinct', rank: 2 }],
+      [
+        ...eagle,
+        { id: 'adrenaline', rank: 1 },
+        { id: 'quickInstinct', rank: 2 },
+        { id: 'volley', rank: 1 },
+      ],
       0.999999,
     );
     session.state.level = 60;
@@ -299,6 +307,7 @@ describe('vampirism and gold', () => {
     (source) => {
       const session = arena([
         { id: 'vampirism', rank: 5 },
+        { id: 'volley', rank: 1 },
         ...(source === 'critical' ? critical : []),
       ]);
       session.state.character.setBase('agility', 20);
@@ -332,6 +341,10 @@ describe('vampirism and gold', () => {
     addSpider(session, 'normal', 1, 1, 0);
     session.tick(0.4);
     expect(session.state.hp).toBe(50);
+    session.state.character.setModifiers('test:no-dodge', [
+      { stat: 'dodgeChance', kind: 'percent', value: -100 },
+    ]);
+    session.refreshStats();
     addSpider(session, 'normal', 1, 1, 1000);
     addSpider(session, 'normal', 0, 0.9);
     session.shootLane(0);
@@ -352,7 +365,7 @@ describe('vampirism and gold', () => {
     addSpider(session, 'normal', 0, 0.9);
     session.shootLane(0);
     session.tick(0.4);
-    expect(session.state.coins).toBe(100 + coins);
+    expect(session.state.coins).toBe(250 + coins);
   });
 });
 
@@ -398,7 +411,7 @@ describe('version eleven saves', () => {
         talents: [...current.talents, { id: 'volleyMastery', rank: 3 }],
       };
       const parsed = parseSave(old)!;
-      expect(parsed.version).toBe(12);
+      expect(parsed.version).toBe(13);
       const loaded = restore(parsed, () => 0);
       expect(loaded.state.eagleEyeActive).toBe(false);
       expect(loaded.state.getAbility('eagleEye').isReady).toBe(true);

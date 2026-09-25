@@ -5,7 +5,7 @@ export const easyConfig: DifficultyConfig = {
   ...normalConfig,
   armorEffectiveness: 2,
   coinsPerSec: 1,
-  startingCoins: 50,
+  startingCoins: 0,
   spiderSpeedBase: 0.07,
   spiderSpeedStep: 0.003,
   spiderDamageBase: 20,

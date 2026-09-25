@@ -22,6 +22,7 @@ function defense(random = () => 0.999999): GameSession {
   session.state.character.setModifiers('test:quiet', [
     { stat: 'spawnProbability', kind: 'percent', value: -100 },
     { stat: 'hpRegen', kind: 'percent', value: -100 },
+    { stat: 'dodgeChance', kind: 'percent', value: -100 },
     { stat: 'energyRegen', kind: 'percent', value: -100 },
     { stat: 'energyPerBreach', kind: 'percent', value: -100 },
   ]);
@@ -392,7 +393,7 @@ describe('defense save compatibility', () => {
       ),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(12);
+    expect(parsed.version).toBe(13);
     const loaded = restore(parsed);
     expect(loaded.state.getAbility('stand').remainingCooldown).toBe(41);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(123);

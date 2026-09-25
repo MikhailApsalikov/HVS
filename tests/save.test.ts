@@ -46,7 +46,7 @@ describe('saves and migration', () => {
         inventory: ['c001', 'c001', 'missing', 'c009', 'c001', 'c009'],
         abilities: data.abilities.slice(0, version < 5 ? 8 : 9),
       })!;
-      expect(parsed.version).toBe(12);
+      expect(parsed.version).toBe(13);
       const loaded = restore(parsed);
       expect(loaded.items.inventory).toEqual(['c001', 'c009']);
       expect(loaded.state.coins).toBe(
@@ -98,7 +98,7 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(12);
+    expect(parsed.version).toBe(13);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
       endurance: 79,

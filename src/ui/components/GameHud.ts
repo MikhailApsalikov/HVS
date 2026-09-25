@@ -13,6 +13,7 @@ import {
   shootDescription,
 } from '../presenters.js';
 import { TooltipManager } from './TooltipManager.js';
+import { KillingStreakEffect } from './KillingStreakEffect.js';
 
 export class HUD {
   private state: GameState | null = null;
@@ -23,12 +24,14 @@ export class HUD {
   private readonly level = document.createElement('div');
   private readonly attributes = document.createElement('div');
   private readonly abilities = document.createElement('div');
+  private readonly killingStreak: KillingStreakEffect;
 
   constructor(
     private readonly container: HTMLElement,
     sprites: SpriteRegistry,
   ) {
     container.className = 'hud';
+    this.killingStreak = new KillingStreakEffect(sprites);
     const resources = document.createElement('div');
     resources.className = 'resource-bars';
     for (const [id, label] of [
@@ -95,13 +98,21 @@ export class HUD {
       wrapper.addEventListener('mouseleave', () => this.tooltip.hide());
       this.abilities.append(wrapper);
     }
-    container.append(resources, this.coins, this.level, this.attributes, this.abilities);
+    container.append(
+      resources,
+      this.coins,
+      this.level,
+      this.attributes,
+      this.killingStreak.container,
+      this.abilities,
+    );
   }
   getShootTooltipHtml(lane: number): string {
     return this.state ? shootDescription(this.state, lane) : '';
   }
   render(state: GameState): void {
     this.state = state;
+    this.killingStreak.render(state);
     for (const [id, current, max] of [
       ['hp', state.hp, state.maxHp],
       ['energy', state.energy, state.maxEnergy],

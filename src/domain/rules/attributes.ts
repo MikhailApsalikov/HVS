@@ -1,4 +1,10 @@
-import { ARMOR_RULES, ATTRIBUTE_RULES, type PrimaryStatId, type StatModifier } from './stats.js';
+import {
+  ARMOR_RULES,
+  ATTRIBUTE_RULES,
+  DODGE_CAP,
+  type PrimaryStatId,
+  type StatModifier,
+} from './stats.js';
 
 export function attributeModifiers(
   values: Readonly<Record<PrimaryStatId, number>>,
@@ -30,6 +36,7 @@ export function attributeModifiers(
         : []),
     ],
     agility: [
+      effect('agility', 'dodgeChance', Math.min(DODGE_CAP, a * ar.dodgePerPoint)),
       effect('agility', 'shootCooldown', -shotPercent, 'percent'),
       effect('agility', 'arrowSpeed', shotPercent, 'percent'),
       effect('agility', 'volley.cooldown', -volleyPercent, 'percent'),

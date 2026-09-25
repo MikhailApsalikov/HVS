@@ -46,8 +46,7 @@ describe('shooting and magic talent progression', () => {
       buy(session, 'criticalShot', 10);
       expect(session.upgradeTalent('criticalShot')).toBe(false);
       expect(session.state.stats.criticalShotChance).toBe(0.2);
-      expect(session.upgradeTalent('piercingReward')).toBe(false);
-      session.state.level = 20;
+      expect(session.talents.canUpgrade('piercingReward', 10)).toBe(true);
       const energyPerKill = session.state.stats.energyPerKill;
       for (let rank = 1; rank <= 8; rank++) {
         buy(session, 'piercingReward', 1);
@@ -59,7 +58,7 @@ describe('shooting and magic talent progression', () => {
         branch: 'shooting',
       });
       expect(session.talents.getTalent('piercingReward')).toMatchObject({
-        tier: 3,
+        tier: 2,
         branch: 'shooting',
       });
     },
@@ -74,7 +73,7 @@ describe('shooting and magic talent progression', () => {
     buy(session, 'hunterMastery', 5);
     buy(session, 'improvedAgility', 2);
     buy(session, 'criticalShot', 1);
-    expect(session.upgradeTalent('piercingReward')).toBe(false);
+    expect(session.talents.canUpgrade('piercingReward', 20)).toBe(true);
     buy(session, 'criticalShot', 6);
     buy(session, 'piercingReward', 1);
   });
@@ -154,7 +153,7 @@ describe('critical shots through session commands', () => {
     expect(session.state.energy).toBe(energy + 8);
     const rewards = session.drainEvents().filter((event) => event.type === 'coinDrop');
     expect(rewards.map((event) => event.spiderId)).toEqual([first.id, second.id]);
-    expect(session.state.coins).toBe(102);
+    expect(session.state.coins).toBe(252);
   });
 
   it('takes the nearest two along a swept path regardless of insertion order and skips corpses and other lanes', () => {
@@ -204,6 +203,7 @@ describe('critical shots through session commands', () => {
     session.talents.loadFromSave([
       { id: 'criticalShot', rank: 10 },
       { id: 'adrenaline', rank: 1 },
+      { id: 'volley', rank: 1 },
     ]);
     session.state.character.setModifiers('test:counter', [
       { stat: 'blockVolleyChance', kind: 'flat', value: 1 },
@@ -334,7 +334,7 @@ describe('critical shot saves', () => {
       spiders: previousSpiders(saved).map(({ grantsKillEnergy: _energy, ...spider }) => spider),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(12);
+    expect(parsed.version).toBe(13);
     const loaded = restore(parsed);
     expect(loaded.talents.getRank('hunterMastery')).toBe(5);
     expect(loaded.state.stats.shootCost).toBe(25);

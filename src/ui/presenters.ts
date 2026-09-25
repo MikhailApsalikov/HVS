@@ -4,7 +4,7 @@ import type { ResolvedStats, StatId, StatModifier, PrimaryStatId } from '../doma
 import { ATTRIBUTE_RULES, STATS } from '../domain/rules/stats.js';
 import { ABILITIES, ABILITY_ORDER } from '../content/abilities.js';
 import { TALENTS, TALENT_ORDER } from '../content/talents.js';
-import { talentRankEffects } from '../domain/model/TalentSystem.js';
+import { talentRankEffects, talentEffectValue } from '../domain/model/TalentSystem.js';
 
 export function escapeHtml(text: string): string {
   return text.replace(
@@ -28,6 +28,9 @@ export function formatStat(id: StatId, value: number): string {
     return `${Number((value * 100).toFixed(1))}%`;
   if (
     id === 'blockChance' ||
+    id === 'dodgeChance' ||
+    id === 'enthusiasmChance' ||
+    id === 'eagleEye.improvedCriticalShotChance' ||
     id === 'criticalShotChance' ||
     id === 'improvedCriticalShotChance' ||
     id === 'blockVolleyChance' ||
@@ -73,6 +76,16 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
   const effects = talentRankEffects(id, rank);
   if (definition.description)
     return fillDescription(definition.description, (key) => {
+      if (key === 'streakInterval')
+        return formatSeconds(talentEffectValue(id, rank, 'killingStreak.interval'));
+      if (key === 'streakBaseStacks') return String(STATS['killingStreak.maxStacks'].base);
+      if (key === 'eagleEyeImprovedChance')
+        return formatStat(
+          'improvedCriticalShotChance',
+          talentEffectValue(id, rank, 'improvedCriticalShotChance', [
+            'eagleEye.improvedCriticalShotChance',
+          ]),
+        );
       if (key === 'scaling.step') return String(definition.scaling!.step);
       if (key === 'scaling.base')
         return formatStat(definition.scaling!.effect.stat, definition.scaling!.basePerRank! * rank);
@@ -97,6 +110,9 @@ const ATTRIBUTE_EFFECT_TEXT: Partial<Record<StatId, string>> = {
   coinsPerSec: 'Приносит дополнительно {value} монет каждую секунду.',
   blockPower: 'Увеличивает силу блока на {value} единиц.',
   hpPerKill: 'Каждое убийство восстанавливает {value} здоровья.',
+  dodgeChance: 'Даёт {value} вероятности полностью избежать урона от атаки паука.',
+  'killingStreak.killAdvance':
+    'Каждое убийство приближает следующий эффект «Череды убийств» на {value} с.',
   armor: 'Увеличивает броню на {value} единиц.',
   shootCooldown: 'Сокращает перезарядку выстрела и увеличивает скорость стрел на {value}.',
   'volley.cooldown': 'Сокращает перезарядку «Залпа» на {value}.',
@@ -246,4 +262,17 @@ export function shootDescription(state: GameState, lane: number): string {
         : '',
     ].join('\n'),
   )}${state.energy < state.currentShootCost ? '<div class="action-unavailable">Недостаточно энергии</div>' : ''}${state.archers[lane - 1].isOnCooldown ? '<div class="action-unavailable">Выстрел перезаряжается</div>' : ''}`;
+}
+
+export function killingStreakDescription(state: GameState): string {
+  return `<div class="tooltip__title">Череда убийств</div>${descriptionParagraphs(
+    [
+      `Эффектов: ${state.killingStreakStacks} из ${state.stats['killingStreak.maxStacks']}.`,
+      `Стоимость выстрела снижена на ${state.killingStreakStacks} энергии.`,
+      state.killingStreakFull
+        ? 'Набрано максимальное количество эффектов.'
+        : `Следующий эффект через ${formatSeconds(state.killingStreakRemaining)} с без урона.`,
+      'Урон от паука снимает один эффект.',
+    ].join('\n'),
+  )}`;
 }

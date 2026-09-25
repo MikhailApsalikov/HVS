@@ -43,9 +43,9 @@ describe('talent strength and independent sources', () => {
       { id: 'improvedPrep', rank: 1 },
     ]);
     session.refreshStats();
-    expect(session.state.stats['volley.cooldown']).toBe(31.11); // 36 × .9 × .97 × .99
+    expect(session.state.stats['volley.cooldown']).toBe(29.73); // 36 × .86 × .97 × .99
     expect(session.state.stats['prep.cooldown']).toBe(52.2); // 60 × .97 − 6
-    expect(session.state.stats.shootCooldown).toBe(2.67);
+    expect(session.state.stats.shootCooldown).toBe(2.55);
   });
   it('adds flat item, intellect and tireless regeneration', () => {
     const session = new GameSession('normal');
@@ -138,7 +138,7 @@ describe('primary attribute sources', () => {
 describe('content contracts', () => {
   it('retains all difficulties, talents, abilities and unique items', () => {
     expect(Object.keys(DIFFICULTIES)).toHaveLength(3);
-    expect(TALENT_ORDER).toHaveLength(37);
+    expect(TALENT_ORDER).toHaveLength(41);
     expect(ABILITY_ORDER).toHaveLength(11);
     expect(new Set(ITEM_CATALOG.map((item) => item.id)).size).toBe(ITEM_CATALOG.length);
   });

@@ -1,5 +1,6 @@
 import type { DifficultyConfig, TalentId, TalentBranch } from '../types.js';
-import type { StatModifier, ResolvedStats } from '../rules/stats.js';
+import { STATS, type StatId, type StatModifier, type ResolvedStats } from '../rules/stats.js';
+import { calculate } from '../rules/numbers.js';
 import { TALENTS, TALENT_ORDER, TALENT_TIER_RULES } from '../../content/talents.js';
 
 export interface TalentState {
@@ -36,6 +37,21 @@ export function talentRankEffects(id: TalentId, rank: number, level = 1): StatMo
             ]
           : []),
       ];
+}
+
+export function talentEffectValue(
+  id: TalentId,
+  rank: number,
+  stat: StatId,
+  additional: readonly StatId[] = [],
+): number {
+  return calculate(
+    STATS[stat].base,
+    talentRankEffects(id, rank).filter(
+      (effect) => effect.stat === stat || additional.includes(effect.stat),
+    ),
+    STATS[stat].policy,
+  ).value;
 }
 
 export class TalentSystem {

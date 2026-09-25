@@ -91,9 +91,9 @@ export function bootstrap(root: HTMLElement): () => void {
     field.showCoinDrop(id, coins, jackpot);
     audio.playSfx(SoundEffect.KILL_SPIDER);
   });
-  engine.setDamagePopCallback((id, hp, energy, blockedDamage) => {
-    field.showDamagePop(id, hp, energy, blockedDamage);
-    audio.playSfx(SoundEffect.PLAYER_TAKE_DAMAGE);
+  engine.setDamagePopCallback((id, hp, energy, blockedDamage, dodged) => {
+    field.showDamagePop(id, hp, energy, blockedDamage, dodged);
+    if (hp > 0) audio.playSfx(SoundEffect.PLAYER_TAKE_DAMAGE);
     if (energy > 0) audio.playSfx(SoundEffect.BURNER_DRAIN);
     const state = engine.getState();
     if (state && state.hp > 0 && state.hp / state.maxHp < 0.05)

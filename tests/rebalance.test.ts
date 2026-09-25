@@ -47,6 +47,8 @@ describe('item rebalance through purchases', () => {
 
   it('fires seven volley arrows with the amulet and applies its explicit defensive bonuses', () => {
     const session = game(20);
+    session.talents.loadFromSave([{ id: 'volley', rank: 1 }]);
+    session.refreshStats();
     session.state.phase = 'levelUp';
     session.state.coins = ITEM_MAP.get('l007')!.price;
     const before = session.state.stats;
@@ -111,7 +113,7 @@ describe('defense requirements and compatibility', () => {
       state,
       archers: current.archers.map(() => ({ duration: 3, remainingCooldown: 1 })),
     })!;
-    expect(data.version).toBe(12);
+    expect(data.version).toBe(13);
     const loaded = restore(data, () => 0);
     expect(loaded.state.bestDefenseCooldown).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(18);

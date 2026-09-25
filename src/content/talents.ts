@@ -44,7 +44,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     sprite: 'TalentEndurance',
     effects: [flat('maxHp', 425), flat('energyPerBreach', 2)],
     description:
-      'Увеличивает максимальное здоровье на {maxHp} единиц.\nКогда паук доходит до вас и наносит вам урон, вы получаете {energyPerBreach} энергии.',
+      'Увеличивает максимальное здоровье на {maxHp} единиц.\nКогда паук доходит до вас, вы получаете {energyPerBreach} энергии.',
   },
   spiderArmor: {
     branch: 'defense',
@@ -88,6 +88,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   piercingReward: {
     branch: 'shooting',
+    column: 1,
     name: 'Есть пробитие',
     sprite: 'TalentPiercingReward',
     effects: [flat('energyPerKill', 1)],
@@ -115,8 +116,11 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Улучшенный критический выстрел',
     sprite: 'TalentImprovedCriticalShot',
     prerequisite: { id: 'eagleEye', rank: 1 },
-    effects: [flat('improvedCriticalShotChance', 0.08)],
-    description: `С вероятностью {improvedCriticalShotChance} критическая стрела убивает до ${IMPROVED_CRITICAL_SHOT_POWER} пауков вместо ${CRITICAL_SHOT_POWER}.`,
+    effects: [
+      flat('improvedCriticalShotChance', 0.08),
+      flat('eagleEye.improvedCriticalShotChance', 0.04),
+    ],
+    description: `С вероятностью {improvedCriticalShotChance} критическая стрела убивает до ${IMPROVED_CRITICAL_SHOT_POWER} пауков вместо ${CRITICAL_SHOT_POWER}.\nВо время «Зоркости» вероятность повышается до {eagleEyeImprovedChance}.`,
   },
   agileCriticalShot: {
     branch: 'shooting',
@@ -124,10 +128,10 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Ловкий критический выстрел',
     sprite: 'TalentAgileCriticalShot',
     prerequisite: { id: 'eagleEye', rank: 1 },
-    effects: [],
+    effects: [flat('eagleEye.shots', 2)],
     scaling: { attribute: 'agility', step: 3, effect: flat('criticalShotChance', 0.0001) },
     description:
-      'Увеличивает шанс «Критического выстрела» на {scaling.value} за каждые {scaling.step} полных единицы ловкости.',
+      'Увеличивает шанс «Критического выстрела» на {scaling.value} за каждые {scaling.step} полных единицы ловкости.\n«Зоркость» даёт на {eagleEye.shots} критических стрел больше.',
   },
   vampirism: {
     branch: 'shooting',
@@ -168,13 +172,51 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     description:
       'Снижает скорость передвижения всех пауков на {scaling.base} + {scaling.value} за каждые {scaling.step} полных единиц интеллекта.\nЗамедление от этого таланта не может превышать 50%.',
   },
+  volley: {
+    branch: 'shooting',
+    column: 3,
+    name: 'Залп',
+    sprite: 'AbilityVolley',
+    effects: [],
+  },
+  killingStreak: {
+    branch: 'shooting',
+    column: 1,
+    name: 'Череда убийств',
+    sprite: 'TalentKillingStreak',
+    effects: [flat('killingStreak.interval', -2)],
+    description:
+      'Каждые {streakInterval} с без урона получаете эффект «Череда убийств»: выстрелы стоят на 1 энергию меньше.\nЭффект складывается до {streakBaseStacks} раз. Урон от паука снимает один эффект.',
+  },
+  enthusiasm: {
+    branch: 'shooting',
+    column: 3,
+    name: 'Увлеченность',
+    sprite: 'TalentEnthusiasm',
+    prerequisite: { id: 'killingStreak', rank: 1 },
+    effects: [flat('enthusiasmChance', 0.2)],
+    description:
+      'Если активна «Череда убийств», с вероятностью {enthusiasmChance} уклоняетесь от атаки паука, потратив один эффект.',
+  },
+  improvedKillingStreak: {
+    branch: 'shooting',
+    column: 1,
+    name: 'Улучшенная череда убийств',
+    sprite: 'TalentImprovedKillingStreak',
+    effects: [flat('killingStreak.maxStacks', 1)],
+    scaling: { attribute: 'agility', step: 50, effect: flat('killingStreak.killAdvance', 0.01) },
+    description:
+      'Увеличивает максимум эффектов «Череды убийств» на {killingStreak.maxStacks}.\nКаждое убийство приближает следующий эффект на {scaling.value} с за каждые {scaling.step} ловкости.',
+  },
   volleyMastery: {
     branch: 'shooting',
     column: 3,
     name: 'Искусный залп',
     sprite: 'TalentVolleyMastery',
-    effects: [flat('volley.lanes', 1)],
-    description: 'Увеличивает число стрел «Залпа» на {volley.lanes}.',
+    prerequisite: { id: 'volley', rank: 1 },
+    effects: [flat('volley.lanes', 1), percent('volley.cooldown', -4), flat('volley.cost', -2)],
+    description:
+      'Увеличивает число стрел «Залпа» на {volley.lanes}, сокращает его перезарядку на {volley.cooldown} и снижает стоимость на {volley.cost} энергии.',
   },
   rapidFire: {
     branch: 'shooting',
@@ -182,9 +224,9 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Скорострельность',
     sprite: 'TalentRapidFire',
     effects: [
-      percent('shootCooldown', -5),
-      percent('volley.cooldown', -5),
-      percent('arrowSpeed', 5),
+      percent('shootCooldown', -7),
+      percent('volley.cooldown', -7),
+      percent('arrowSpeed', 7),
     ],
     description:
       'Сокращает перезарядку выстрела на {shootCooldown}, а «Залпа» — на {volley.cooldown}.\nСтрелы летят на {arrowSpeed} быстрее.',
@@ -315,7 +357,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 2,
     sprite: 'TalentBestDefense',
     effects: [flat('blockVolleyChance', 0.01)],
-    description: `Когда паук доходит до вас, с вероятностью {blockVolleyChance} выпускает «Залп» со всеми его улучшениями, даже без урона, при блоке или неуязвимости.\nСрабатывает не чаще одного раза в ${BEST_DEFENSE_COOLDOWN} с. Этот залп не расходует энергию и может сработать во время перезарядки. Перезарядка «Залпа» и лучников при этом не меняется.`,
+    description: `Когда паук доходит до вас, с вероятностью {blockVolleyChance} выпускает бесплатный «Залп» со всеми улучшениями, даже если он не изучен.\nСрабатывает не чаще одного раза в ${BEST_DEFENSE_COOLDOWN} с и не мешает обычным выстрелам и способностям.`,
   },
   warriorArmor: {
     name: 'Броня воина',

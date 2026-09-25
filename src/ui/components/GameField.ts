@@ -229,6 +229,7 @@ export class GameField {
     hpDamage: number,
     energyBurn: number,
     blockedDamage?: number,
+    dodged = false,
   ): void {
     const pos = this._lastSpiderPositions.get(spiderId);
     if (!pos) return;
@@ -236,11 +237,12 @@ export class GameField {
     const laneEl = this._lanes[pos.lane];
     if (!laneEl) return;
 
-    if (hpDamage > 0 || blockedDamage !== undefined) {
+    if (hpDamage > 0 || blockedDamage !== undefined || dodged) {
       const el = document.createElement('div');
       el.className = 'damage-pop damage-pop--hp';
-      el.classList.toggle('damage-pop--heavy', pos.type === 'tank');
-      el.textContent = hpDamage === 0 ? 'Блок' : `-${hpDamage}`;
+      el.classList.toggle('damage-pop--dodge', dodged);
+      el.classList.toggle('damage-pop--heavy', pos.type === 'tank' && !dodged);
+      el.textContent = dodged ? 'Уклонение' : hpDamage === 0 ? 'Блок' : `-${hpDamage}`;
       if (blockedDamage !== undefined && hpDamage > 0) {
         const block = document.createElement('span');
         block.className = 'damage-pop__blocked';

@@ -19,7 +19,8 @@ export class GameEngine {
   private phaseChanged: ((phase: GamePhase, state: GameState) => void) | null = null;
   private coinDrop: ((id: string, coins: number, jackpot: boolean) => void) | null = null;
   private damage:
-    ((id: string, hp: number, energy: number, blockedDamage?: number) => void) | null = null;
+    | ((id: string, hp: number, energy: number, blockedDamage?: number, dodged?: boolean) => void)
+    | null = null;
   private absorb: (() => void) | null = null;
   constructor(
     private readonly render: (state: GameState) => void,
@@ -113,7 +114,13 @@ export class GameEngine {
           if (event.type === 'coinDrop')
             this.coinDrop?.(event.spiderId, event.coins, event.jackpot);
           else if (event.type === 'damage')
-            this.damage?.(event.spiderId, event.hp, event.energy, event.blockedDamage);
+            this.damage?.(
+              event.spiderId,
+              event.hp,
+              event.energy,
+              event.blockedDamage,
+              event.dodged,
+            );
           else this.absorb?.();
         }
         this.render(state);

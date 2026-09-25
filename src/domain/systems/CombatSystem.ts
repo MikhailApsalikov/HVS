@@ -114,11 +114,23 @@ export function resolveBreaches(
         state.stats.blockPower > 0 &&
         state.stats.blockChance > 0 &&
         random() < state.stats.blockChance;
-      const hp = state.rules.value(
+      let hp = state.rules.value(
         'incomingDamage',
         spider.damage,
         blocked ? [{ source: 'block', kind: 'flat', value: -state.stats.blockPower }] : [],
       );
+      const blockedDamage = blocked
+        ? state.rules.value('incomingDamage', spider.damage) - hp
+        : undefined;
+      let dodged = hp > 0 && state.stats.dodgeChance > 0 && random() < state.stats.dodgeChance;
+      if (hp > 0 && !dodged) {
+        if (state.killingStreakStacks > 0) {
+          dodged = state.stats.enthusiasmChance > 0 && random() < state.stats.enthusiasmChance;
+          state.killingStreakStacks -= 1;
+        }
+        if (!dodged) state.killingStreakProgress = 0;
+      }
+      if (dodged) hp = 0;
       const energy = SPIDERS[spider.type].burnsEnergy
         ? Math.min(state.energy, state.stats.burnerEnergy)
         : 0;
@@ -129,9 +141,8 @@ export function resolveBreaches(
         spiderId: spider.id,
         hp,
         energy,
-        ...(blocked
-          ? { blockedDamage: state.rules.value('incomingDamage', spider.damage) - hp }
-          : {}),
+        ...(blocked ? { blockedDamage } : {}),
+        ...(dodged ? { dodged: true } : {}),
       });
       if (blocked) emit({ type: 'absorb' });
     }
@@ -158,6 +169,7 @@ export function collectDeadSpiders(
     if (!spider.dying) continue;
     spider.dyingTimer -= dt;
     if (spider.dyingTimer > 0) continue;
+    if (!spider.reachedCastle) state.advanceKillingStreak(state.stats['killingStreak.killAdvance']);
     if (!spider.reachedCastle || state.stats.breachRewardFraction > 0) {
       const base = randomInt(random, WORLD.coinMin, WORLD.coinMax);
       const jackpot = random() < state.stats.jackpotChance;

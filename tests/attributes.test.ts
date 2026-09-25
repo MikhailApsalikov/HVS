@@ -109,16 +109,19 @@ describe('primary attributes through the session API', () => {
     session.state.character.setBase('agility', 10000);
     session.talents.loadFromSave([
       { id: 'rapidFire', rank: 7 },
+      { id: 'volley', rank: 1 },
       { id: 'quickInstinct', rank: 2 },
     ]);
     session.refreshStats();
     expect(session.shootLane(0)).toBe('shot');
-    expect(session.state.archers[0].duration).toBe(0.59);
-    expect([...session.state.arrows.values()][0].speed).toBe(0.765);
+    expect(session.state.archers[0].duration).toBe(0.46);
+    expect([...session.state.arrows.values()][0].speed).toBe(0.844333);
     session.state.energy = session.state.maxEnergy;
     expect(session.activateAbility('volley')).toBe('activated');
-    expect(session.state.getAbility('volley').duration).toBe(6.81);
-    expect([...session.state.arrows.values()].every((arrow) => arrow.speed === 0.765)).toBe(true);
+    expect(session.state.getAbility('volley').duration).toBe(5.34);
+    expect([...session.state.arrows.values()].every((arrow) => arrow.speed === 0.844333)).toBe(
+      true,
+    );
   });
 
   it.each([
@@ -178,7 +181,7 @@ describe('primary attributes through the session API', () => {
       coins: 6,
       jackpot: false,
     });
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(106 + 6.4 * 0.31);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(256 + 6.4 * 0.31);
     session.state.levelTimer = 0;
     session.tick(0.01);
     session.upgradeTalent('hunterMastery');
@@ -411,22 +414,22 @@ describe('armor and talent branches', () => {
     session.state.level = 10;
     session.state.pendingTalentPoints = 20;
     for (let rank = 0; rank < 7; rank++) expect(session.upgradeTalent('endurance')).toBe(true);
-    expect(session.upgradeTalent('rapidFire')).toBe(false);
-    expect(session.talents.upgradeBlockReason('rapidFire', 10)).toBe('branch');
+    expect(session.upgradeTalent('criticalShot')).toBe(false);
+    expect(session.talents.upgradeBlockReason('criticalShot', 10)).toBe('branch');
     for (let rank = 0; rank < 5; rank++) expect(session.upgradeTalent('hunterMastery')).toBe(true);
     for (const points of [5, 6]) {
       const pending = session.state.pendingTalentPoints;
       expect(session.talents.branchPoints('shooting')).toBe(points);
-      expect(session.upgradeTalent('rapidFire')).toBe(false);
-      expect(session.talents.getRank('rapidFire')).toBe(0);
+      expect(session.upgradeTalent('criticalShot')).toBe(false);
+      expect(session.talents.getRank('criticalShot')).toBe(0);
       expect(session.state.pendingTalentPoints).toBe(pending);
       expect(session.upgradeTalent('improvedAgility')).toBe(true);
     }
     session.state.level = 9;
-    expect(session.upgradeTalent('rapidFire')).toBe(false);
+    expect(session.upgradeTalent('criticalShot')).toBe(false);
     session.state.level = 10;
-    expect(session.upgradeTalent('rapidFire')).toBe(true);
-    expect(session.upgradeTalent('rapidFire')).toBe(true);
+    expect(session.upgradeTalent('criticalShot')).toBe(true);
+    expect(session.upgradeTalent('criticalShot')).toBe(true);
     expect(session.talents.branchPoints('shooting')).toBe(9);
     expect(session.talents.branchPoints('defense')).toBe(7);
     expect(session.talents.branchPoints('magic')).toBe(0);
@@ -434,7 +437,8 @@ describe('armor and talent branches', () => {
 
   it.each([
     ['spiderArmor', 3, 14, 20],
-    ['volleyMastery', 4, 21, 30],
+    ['volleyMastery', 3, 14, 20],
+    ['rapidFire', 5, 28, 40],
     ['blizzardMastery', 2, 7, 10],
     ['magicArmor', 2, 7, 10],
     ['permafrost', 3, 14, 20],

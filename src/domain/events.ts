@@ -11,6 +11,7 @@ export type GameEvent =
       readonly hp: number;
       readonly energy: number;
       readonly blockedDamage?: number;
+      readonly dodged?: boolean;
     }
   | { readonly type: 'absorb' };
 export type EmitEvent = (event: GameEvent) => void;

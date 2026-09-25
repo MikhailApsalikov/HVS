@@ -31,6 +31,9 @@ export class GameState {
   adrenalineShots = 0;
   eagleEyeTimer = 0;
   eagleEyeShots = 0;
+  killingStreakLearned = false;
+  killingStreakStacks = 0;
+  killingStreakProgress = 0;
   antiAfkIdleTimer = 0;
   antiAfkStacks = 0;
   antiAfkRecoveryTimer = 0;
@@ -77,7 +80,37 @@ export class GameState {
     return this.adrenalineTimer > 0 && this.adrenalineShots > 0;
   }
   get currentShootCost(): number {
-    return this.adrenalineActive ? 0 : this.stats.shootCost;
+    return this.adrenalineActive
+      ? 0
+      : this.rules.value('shootCost', undefined, [
+          { source: 'effect:killingStreak', kind: 'flat', value: -this.killingStreakStacks },
+        ]);
+  }
+  get killingStreakFull(): boolean {
+    return this.killingStreakStacks >= this.stats['killingStreak.maxStacks'];
+  }
+  get killingStreakRemaining(): number {
+    return this.killingStreakFull
+      ? 0
+      : Math.max(0, this.stats['killingStreak.interval'] - this.killingStreakProgress);
+  }
+  get killingStreakFraction(): number {
+    return this.killingStreakFull
+      ? 1
+      : this.killingStreakProgress / this.stats['killingStreak.interval'];
+  }
+  advanceKillingStreak(seconds: number): void {
+    if (!this.killingStreakLearned || this.killingStreakFull) return;
+    const progress = this.killingStreakProgress + seconds;
+    const interval = this.stats['killingStreak.interval'];
+    const gained = Math.floor((progress + 1e-9) / interval);
+    this.killingStreakStacks = Math.min(
+      this.stats['killingStreak.maxStacks'],
+      this.killingStreakStacks + gained,
+    );
+    this.killingStreakProgress = this.killingStreakFull
+      ? 0
+      : Math.max(0, progress - gained * interval);
   }
   get eagleEyeActive(): boolean {
     return this.eagleEyeTimer > 0 && this.eagleEyeShots > 0;

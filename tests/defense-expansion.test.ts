@@ -38,6 +38,8 @@ function adrenaline(): GameSession {
   const session = defense();
   buy(session, 'bestDefense', 10);
   buy(session, 'adrenaline');
+  session.talents.loadFromSave([...session.talents.toSaveData(), { id: 'volley', rank: 1 }]);
+  session.refreshStats();
   session.state.phase = 'playing';
   session.state.energy = 0;
   return session;
@@ -220,6 +222,8 @@ describe('new defense talents through session commands', () => {
     buy(session, 'tireless', 5);
     buy(session, 'magicArmor', 6);
     buy(session, 'quickInstinct', 2);
+    session.talents.loadFromSave([...session.talents.toSaveData(), { id: 'volley', rank: 1 }]);
+    session.refreshStats();
     session.state.phase = 'playing';
     session.state.energy = session.state.maxEnergy;
     expect(session.activateAbility('adrenaline')).toBe('activated');
@@ -359,7 +363,7 @@ describe('new defense talents through session commands', () => {
     expect(loaded.state.adrenalineShots).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(0);
     const current = snapshot(loaded);
-    expect(current.version).toBe(12);
+    expect(current.version).toBe(13);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 

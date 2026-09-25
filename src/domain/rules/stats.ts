@@ -10,6 +10,7 @@ export const BEST_DEFENSE_COOLDOWN = 3;
 export const CRITICAL_SHOT_POWER = 2;
 export const IMPROVED_CRITICAL_SHOT_POWER = 3;
 export const BURNER_ENERGY_PER_LEVEL = 2;
+export const DODGE_CAP = 0.75;
 export const ANTI_AFK = {
   unlockLevel: 10,
   idleDuration: 3,
@@ -37,6 +38,11 @@ export const STATS = {
   intellect: stat('Интеллект', 16, integer),
   armor: stat('Броня', 0, integer),
   blockChance: stat('Шанс блока', 0, probability),
+  dodgeChance: stat('Шанс уклонения', 0, { ...probability, max: DODGE_CAP }),
+  enthusiasmChance: stat('Шанс уклонения: Увлечённость', 0, probability),
+  'killingStreak.interval': stat('Время набора: Череда убийств, с', 40, { ...duration, min: 1 }),
+  'killingStreak.maxStacks': stat('Максимум эффектов: Череда убийств', 5, integer),
+  'killingStreak.killAdvance': stat('Ускорение за убийство: Череда убийств, с', 0, decimal),
   blockPower: stat('Сила блока', 0, integer),
   blockVolleyChance: stat('Шанс бесплатного «Залпа» при прорыве паука', 0, probability),
   armorReduction: stat('Снижение урона бронёй', 0, { ...probability, max: ARMOR_RULES.cap }),
@@ -49,6 +55,11 @@ export const STATS = {
   arrowSpeed: stat('Скорость стрелы, поля/с', 1 / 3, speed),
   criticalShotChance: stat('Шанс критического выстрела', 0, probability),
   improvedCriticalShotChance: stat('Шанс усиления критического выстрела', 0, probability),
+  'eagleEye.improvedCriticalShotChance': stat(
+    'Дополнительный шанс усиления: Зоркость',
+    0,
+    probability,
+  ),
   hpPerKill: stat('Здоровье за убийство', 0, integer),
   incomingDamage: stat('Получаемый урон', 0, integer),
   damageFactor: stat('Доля получаемого урона', 1, { digits: 6, min: 0 }),
@@ -100,7 +111,7 @@ export const STATS = {
   'eagleEye.cost': stat('Стоимость: Зоркость', 20, integer),
   'eagleEye.cooldown': stat('Перезарядка: Зоркость, с', 60, duration),
   'eagleEye.duration': stat('Длительность: Зоркость, с', 20, { ...duration, max: 20 }),
-  'eagleEye.shots': stat('Критические выстрелы: Зоркость', 5, { ...integer, max: 5 }),
+  'eagleEye.shots': stat('Критические выстрелы: Зоркость', 5, integer),
   'adrenaline.cooldown': stat('Перезарядка: Адреналин, с', 120, duration),
   'adrenaline.duration': stat('Длительность: Адреналин, с', 20, { ...duration, max: 20 }),
   'adrenaline.shots': stat('Бесплатные выстрелы: Адреналин', 20, { ...integer, max: 20 }),
@@ -134,6 +145,7 @@ export const ATTRIBUTE_RULES = {
     lastHopeBlockPerPoint: 0.25,
   },
   agility: {
+    dodgePerPoint: 0.0003,
     shotStep: 12,
     volleyStep: 18,
     percentCap: 70,

@@ -39,6 +39,7 @@ export class GameSession {
   }
   refreshStats(grantHealthIncrease = true): void {
     const state = this.state;
+    state.killingStreakLearned = this.talents.getRank('killingStreak') > 0;
     state.talentAbilities.clear();
     for (const id of ABILITY_ORDER) {
       const talent = ABILITIES[id].talent;
@@ -87,6 +88,7 @@ export class GameSession {
       new GameRules(state.config, effects, state.character.base, state.level),
       grantHealthIncrease,
     );
+    state.advanceKillingStreak(0);
   }
   upgradeTalent(id: TalentId): boolean {
     if (
@@ -147,17 +149,28 @@ export class GameSession {
         this.refreshStats(false);
       }
     }
+    const eagleEyeActive = state.eagleEyeActive;
     const critical =
-      state.eagleEyeActive ||
+      eagleEyeActive ||
       (state.stats.criticalShotChance > 0 && this.random() < state.stats.criticalShotChance);
     if (state.eagleEyeActive) {
       state.eagleEyeShots -= 1;
       if (state.eagleEyeShots === 0) state.eagleEyeTimer = 0;
     }
-    const improved =
-      critical &&
-      state.stats.improvedCriticalShotChance > 0 &&
-      this.random() < state.stats.improvedCriticalShotChance;
+    const improvedChance = state.rules.value(
+      'improvedCriticalShotChance',
+      undefined,
+      eagleEyeActive
+        ? [
+            {
+              source: 'ability:eagleEye',
+              kind: 'flat',
+              value: state.stats['eagleEye.improvedCriticalShotChance'],
+            },
+          ]
+        : [],
+    );
+    const improved = critical && improvedChance > 0 && this.random() < improvedChance;
     const power = improved ? IMPROVED_CRITICAL_SHOT_POWER : critical ? CRITICAL_SHOT_POWER : 1;
     const arrow = new Arrow(
       state.newId('arrow'),
@@ -191,6 +204,7 @@ export class GameSession {
     const lastHopeWasActive = state.lastHopeTimer > 0;
     const adrenalineWasActive = state.adrenalineActive;
     tickAbilities(state, dt);
+    state.advanceKillingStreak(dt);
     if (
       (lastHopeWasActive && state.lastHopeTimer === 0) ||
       (adrenalineWasActive && !state.adrenalineActive)

@@ -172,7 +172,10 @@ describe('item price bases and curves', () => {
 describe('reworked equipment through session commands', () => {
   it.each(ITEM_CATALOG)('buys, applies, saves and sells every bonus on $id', (item) => {
     const session = new GameSession('normal');
-    session.talents.loadFromSave([{ id: 'criticalShot', rank: 1 }]);
+    session.talents.loadFromSave([
+      { id: 'criticalShot', rank: 1 },
+      { id: 'volley', rank: 1 },
+    ]);
     session.refreshStats();
     const before = session.state.stats;
     session.state.coins = item.price;
@@ -250,7 +253,10 @@ describe('reworked equipment through session commands', () => {
     const session = new GameSession('normal', () => 0.999999);
     session.state.level = 20;
     session.state.character.setBase('agility', 13000);
-    session.talents.loadFromSave([{ id: 'criticalShot', rank: 1 }]);
+    session.talents.loadFromSave([
+      { id: 'criticalShot', rank: 1 },
+      { id: 'volley', rank: 1 },
+    ]);
     session.state.coins = 600;
     expect(session.buyItem('c088')).toBe(true);
     expect(session.state.stats.criticalShotChance).toBe(1);
