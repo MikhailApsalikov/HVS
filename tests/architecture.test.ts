@@ -76,6 +76,8 @@ describe('legacy feature inventory captured before rewrite', () => {
       armorEffectiveness: 1.5,
       spawnP0: 0.0006,
       spawnDP: 0.0000405,
+      spiderChanceGolden: 0.005,
+      spiderChanceMegaFat: 0.01,
       spiderChanceFast: 0.07,
       baseHp: 100,
       hpRegen: 0,

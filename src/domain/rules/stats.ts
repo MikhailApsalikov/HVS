@@ -10,6 +10,7 @@ export const BEST_DEFENSE_COOLDOWN = 3;
 export const CRITICAL_SHOT_POWER = 2;
 export const IMPROVED_CRITICAL_SHOT_POWER = 3;
 export const BURNER_ENERGY_PER_LEVEL = 2;
+export const GOLDEN_SPIDER_REWARD = { base: 10, perLevel: 1 } as const;
 export const DODGE_CAP = 0.75;
 export const ANTI_AFK = {
   unlockLevel: 10,

@@ -333,6 +333,8 @@ describe('enemy types and rewards', () => {
       const stats = rules.spiderStats(type, 1, 0.5, 0.5);
       const expected = {
         normal: [0.08, 23],
+        golden: [0.08, 23],
+        megaFat: [0.08, 23],
         fat: [0.08, 23],
         fast: [0.24, 12],
         ninja: [0.08, 23],

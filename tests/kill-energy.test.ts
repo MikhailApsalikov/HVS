@@ -96,18 +96,19 @@ describe('energy for every spider kill', () => {
     expect(session.shootLane(0)).toBe('shot');
     session.tick(0.02);
     expect([...session.state.spiders.values()][0].dying).toBe(true);
-    for (const type of Object.keys(SPIDERS) as SpiderType[]) addSpider(session, type, 0, 0.05);
+    const species = Object.keys(SPIDERS) as SpiderType[];
+    for (const type of species) addSpider(session, type, 0, 0.05);
     const energy = session.state.energy;
     const reward = session.state.stats.energyPerKill;
     session.tick(0.4);
     expect(session.state.spiders.size).toBe(0);
-    expect(session.state.energy).toBe(energy + 7 * reward);
+    expect(session.state.energy).toBe(energy + (species.length + 1) * reward);
     addSpider(session, 'fat');
     session.tick(0.4);
     expect(session.state.spiders.size).toBe(0);
-    expect(session.state.energy).toBe(energy + 8 * reward);
+    expect(session.state.energy).toBe(energy + (species.length + 2) * reward);
     session.tick(1);
-    expect(session.state.energy).toBe(energy + 8 * reward);
+    expect(session.state.energy).toBe(energy + (species.length + 2) * reward);
   });
 
   it('caps energy from several kills at the maximum without banking the excess', () => {

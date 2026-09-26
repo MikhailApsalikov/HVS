@@ -400,7 +400,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     prerequisite: { id: 'hunterReward', rank: 5 },
     effects: [flat('breachRewardFraction', 0.15)],
     description:
-      'Когда паук доходит до вас, вы получаете {breachRewardFraction} золота, которое он оставил бы при убийстве, с учётом всех прибавок и шанса тройной награды.',
+      'Когда паук доходит до вас, вы получаете {breachRewardFraction} обычной награды за его убийство, с учётом всех прибавок и шанса тройной награды. Дополнительное золото золотого паука при прорыве не начисляется.',
   },
 };
 export const TALENT_ORDER = Object.keys(TALENTS) as TalentId[];

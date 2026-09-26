@@ -4,6 +4,8 @@ interface SpiderDefinition {
   readonly unlockLevel: number;
   readonly chanceKey?: keyof Pick<
     DifficultyConfig,
+    | 'spiderChanceGolden'
+    | 'spiderChanceMegaFat'
     | 'spiderChanceFat'
     | 'spiderChanceFast'
     | 'spiderChanceNinja'
@@ -20,6 +22,21 @@ interface SpiderDefinition {
 
 export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
   normal: { unlockLevel: 1, speedPercent: 0, damagePercent: 0, hits: 1 },
+  golden: {
+    unlockLevel: 40,
+    chanceKey: 'spiderChanceGolden',
+    speedPercent: 0,
+    damagePercent: 0,
+    hits: 1,
+  },
+  megaFat: {
+    unlockLevel: 50,
+    chanceKey: 'spiderChanceMegaFat',
+    chanceGrowth: { levels: 40, percent: 1 },
+    speedPercent: 0,
+    damagePercent: 0,
+    hits: 3,
+  },
   fat: {
     unlockLevel: 10,
     chanceKey: 'spiderChanceFat',
@@ -63,8 +80,10 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
   },
 };
 export const SPECIAL_SPIDER_ORDER: readonly SpiderType[] = [
+  'golden',
   'tank',
   'burner',
+  'megaFat',
   'fat',
   'fast',
   'ninja',

@@ -83,7 +83,8 @@ export function tickArrows(state: GameState, dt: number): void {
       hit.hits -= damage;
       arrow.power -= damage;
       if (hit.hits <= 0) hit.startDying();
-      else if (hit.type === 'fat') hit.type = 'normal';
+      else if (hit.type === 'megaFat' || hit.type === 'fat')
+        hit.type = hit.hits === SPIDERS.fat.hits ? 'fat' : 'normal';
       if (arrow.power === 0) {
         state.arrows.delete(id);
         break;
@@ -177,6 +178,7 @@ export function collectDeadSpiders(
         base,
         jackpot,
         spider.reachedCastle ? state.stats.breachRewardFraction : 1,
+        !spider.reachedCastle && spider.type === 'golden',
       );
       state.coins += coins;
       emit({ type: 'coinDrop', spiderId: id, coins, jackpot });

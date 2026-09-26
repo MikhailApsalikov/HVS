@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="spiderGoldenBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff3a1"/>
+      <stop offset="45%" stop-color="#f5c344"/>
+      <stop offset="100%" stop-color="#a5650b"/>
+    </linearGradient>
+    <linearGradient id="spiderGoldenLeg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffe385"/>
+      <stop offset="100%" stop-color="#b87912"/>
+    </linearGradient>
+    <radialGradient id="spiderGoldenEye">
+      <stop offset="0%" stop-color="#564023"/>
+      <stop offset="100%" stop-color="#1c1307"/>
+    </radialGradient>
+  </defs>
+  <g stroke="url(#spiderGoldenLeg)" stroke-width="2.5" fill="none" stroke-linecap="round">
+    <path d="M18 28 Q8 20 4 12"/>
+    <path d="M46 28 Q56 20 60 12"/>
+    <path d="M14 32 Q2 30 0 24"/>
+    <path d="M50 32 Q62 30 64 24"/>
+    <path d="M22 36 Q12 44 8 52"/>
+    <path d="M42 36 Q52 44 56 52"/>
+    <path d="M26 38 Q18 48 16 58"/>
+    <path d="M38 38 Q46 48 48 58"/>
+  </g>
+  <ellipse cx="32" cy="36" rx="14" ry="16" fill="url(#spiderGoldenBody)" stroke="#e9b438"/>
+  <ellipse cx="32" cy="22" rx="10" ry="9" fill="url(#spiderGoldenBody)"/>
+  <ellipse cx="28" cy="18" rx="4" ry="5" fill="url(#spiderGoldenEye)"/>
+  <ellipse cx="36" cy="18" rx="4" ry="5" fill="url(#spiderGoldenEye)"/>
+  <g fill="#69430e">
+    <ellipse cx="24" cy="22" rx="2" ry="2.5"/>
+    <ellipse cx="40" cy="22" rx="2" ry="2.5"/>
+    <circle cx="32" cy="24" r="2"/>
+  </g>
+  <path d="M32 31 L35 37 L32 44 L29 37 Z" fill="#fff7bb" stroke="#c28c20"/>
+  <path d="M49 5 L50.5 9.5 L55 11 L50.5 12.5 L49 17 L47.5 12.5 L43 11 L47.5 9.5 Z" fill="#fff4ae"/>
+</svg>

@@ -5,8 +5,10 @@ import type { HUD } from './GameHud.js';
 import { WORLD } from '../../domain/rules/world.js';
 import { TooltipManager } from './TooltipManager.js';
 
-const SPIDER_SPRITE_MAP: Record<string, string> = {
+const SPIDER_SPRITE_MAP: Record<Spider['type'], string> = {
   normal: 'SpiderNormal',
+  golden: 'SpiderGolden',
+  megaFat: 'SpiderMegaFat',
   fat: 'SpiderFat',
   fast: 'SpiderFast',
   ninja: 'SpiderNinja',

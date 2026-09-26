@@ -5,8 +5,10 @@ import type { Difficulty, SpiderType } from '../src/domain/types.js';
 import { addSpider, game, previousSpiders } from './helpers.js';
 
 const priority = [
+  ['golden', 40],
   ['tank', 15],
   ['burner', 5],
+  ['megaFat', 50],
   ['fat', 10],
   ['fast', 20],
   ['ninja', 35],
@@ -53,6 +55,8 @@ describe('spider generation through session ticks', () => {
     ['normal', 0, 350],
     ['normal', 1, 650],
     ['fat', 0.5, 500],
+    ['megaFat', 0.5, 500],
+    ['golden', 0.5, 500],
     ['ninja', 0.5, 500],
     ['fast', 0, 175],
     ['burner', 1, 325],
@@ -66,19 +70,29 @@ describe('spider generation through session ticks', () => {
   });
 
   it.each([
-    ['tank', [0, 0, 0, 0, 0]],
-    ['burner', [0.99, 0, 0, 0, 0]],
-    ['fat', [0.99, 0.99, 0, 0, 0]],
-    ['fast', [0.99, 0.99, 0.99, 0, 0]],
-    ['ninja', [0.99, 0.99, 0.99, 0.99, 0]],
-    ['normal', [0.99, 0.99, 0.99, 0.99, 0.99]],
+    ['golden', [0, 0, 0, 0, 0, 0, 0]],
+    ['tank', [0.99, 0, 0, 0, 0, 0, 0]],
+    ['burner', [0.99, 0.99, 0, 0, 0, 0, 0]],
+    ['megaFat', [0.99, 0.99, 0.99, 0, 0, 0, 0]],
+    ['fat', [0.99, 0.99, 0.99, 0.99, 0, 0, 0]],
+    ['fast', [0.99, 0.99, 0.99, 0.99, 0.99, 0, 0]],
+    ['ninja', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0]],
+    ['normal', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]],
   ] as const)('chooses %s before every later eligible type', (type, rolls) => {
-    const session = encounter(35, [0, ...rolls]);
+    const session = encounter(50, [0, ...rolls]);
     session.tick(0.02);
     expect([...session.state.spiders.values()][0].type).toBe(type);
   });
 
   it.each([
+    ['golden', 40, 0.005],
+    ['golden', 50, 0.005],
+    ['golden', 500, 0.005],
+    ['megaFat', 50, 0.01],
+    ['megaFat', 89, 0.01],
+    ['megaFat', 90, 0.02],
+    ['megaFat', 129, 0.02],
+    ['megaFat', 130, 0.03],
     ['tank', 15, 0.02],
     ['tank', 29, 0.02],
     ['tank', 30, 0.03],
@@ -115,8 +129,38 @@ describe('spider generation through session ticks', () => {
     expect(session.state.rules.spiderTypeProbability('normal', unlock)).toBe(0);
   });
 
+  it.each(['easy', 'normal', 'hard'] as const)(
+    'uses the same new-species chances and ordinary speed and damage on %s',
+    (difficulty) => {
+      for (const [type, level, probability, hits] of [
+        ['golden', 40, 0.005, 1],
+        ['megaFat', 50, 0.01, 3],
+        ['megaFat', 90, 0.02, 3],
+      ] as const) {
+        const normal = encounter(level, speciesRolls('normal', level, 0), difficulty);
+        normal.tick(0.02);
+        const ordinary = [...normal.state.spiders.values()][0];
+        const success = encounter(
+          level,
+          speciesRolls(type, level, probability - 0.000001),
+          difficulty,
+        );
+        success.tick(0.02);
+        expect([...success.state.spiders.values()][0]).toMatchObject({
+          type,
+          hits,
+          speed: ordinary.speed,
+          damage: ordinary.damage,
+        });
+        const failure = encounter(level, speciesRolls(type, level, probability), difficulty);
+        failure.tick(0.02);
+        expect([...failure.state.spiders.values()][0].type).toBe('normal');
+      }
+    },
+  );
+
   it('caps a growing species chance at 100 percent', () => {
-    const session = encounter(1500, [0, 0.999999, 0.5, 0.5, 0.5]);
+    const session = encounter(1500, [0, 0.999999, 0.999999, 0.5, 0.5, 0.5]);
     session.tick(0.02);
     expect([...session.state.spiders.values()][0].type).toBe('tank');
     expect(session.state.rules.spiderTypeProbability('tank', 1500)).toBe(1);

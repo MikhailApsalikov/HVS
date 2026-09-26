@@ -2,6 +2,7 @@ import type { DifficultyConfig, AbilityId, SpiderType } from '../types.js';
 import {
   STATS,
   BURNER_ENERGY_PER_LEVEL,
+  GOLDEN_SPIDER_REWARD,
   PRIMARY_STATS,
   PRIMARY_GROWTH,
   type PrimaryStatId,
@@ -165,18 +166,28 @@ export class GameRules {
       ),
     };
   }
-  killReward(base: number, jackpot: boolean, share = 1): number {
-    return this.value('coinsPerKill', base, [
-      ...(jackpot
-        ? [
-            {
-              source: 'jackpot',
-              kind: 'percent' as const,
-              value: (WORLD.jackpotMultiplier - 1) * 100,
-            },
-          ]
-        : []),
+  killReward(base: number, jackpot: boolean, share = 1, golden = false): number {
+    const jackpotModifiers: readonly Modifier[] = jackpot
+      ? [
+          {
+            source: 'jackpot',
+            kind: 'percent',
+            value: (WORLD.jackpotMultiplier - 1) * 100,
+          },
+        ]
+      : [];
+    const reward = this.value('coinsPerKill', base, [
+      ...jackpotModifiers,
       { source: 'reward:share', kind: 'percent', value: (share - 1) * 100 },
     ]);
+    // Only the jackpot multiplies the golden bonus; ordinary reward modifiers do not apply.
+    const extra = golden
+      ? calculate(
+          GOLDEN_SPIDER_REWARD.base + GOLDEN_SPIDER_REWARD.perLevel * this.level,
+          jackpotModifiers,
+          STATS.coinsPerKill.policy,
+        ).value
+      : 0;
+    return reward + extra;
   }
 }
