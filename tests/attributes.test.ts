@@ -157,7 +157,7 @@ describe('primary attributes through the session API', () => {
     expect(session.state.hp).toBe(268);
     expect(session.state.energy).toBe(0);
     expect(session.activateAbility('prep')).toBe('activated');
-    expect(session.state.energy).toBe(304);
+    expect(session.state.energy).toBe(154);
   });
 
   it('grants discrete income, breach energy and kill rewards in the simulation', () => {

@@ -216,7 +216,9 @@ export function resourceDescription(state: GameState, id: string): string {
   if (id === 'energy')
     return `<div class="tooltip__title">Энергия</div>${descriptionParagraphs(
       [
-        state.stats.energyRegen > 0 ? `Восстанавливается ${value('energyRegen')} в секунду.` : '',
+        state.currentEnergyRegen > 0
+          ? `Восстанавливается ${formatStat('energyRegen', state.currentEnergyRegen)} в секунду.`
+          : '',
         state.stats.energyPerKill > 0
           ? `Каждый убитый паук возвращает ${value('energyPerKill')} энергии.`
           : '',

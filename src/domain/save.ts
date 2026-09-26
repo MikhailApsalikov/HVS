@@ -33,6 +33,7 @@ const STATE_FIELDS = [
   'freezeActive',
   'invulnerableTimer',
   'lastHopeTimer',
+  'prepTimer',
   'bestDefenseCooldown',
   'adrenalineTimer',
   'adrenalineShots',
@@ -69,18 +70,17 @@ type SavedSpider = Pick<
   | 'reachedCastle'
   | 'jumpsMade'
   | 'jumpLimit'
-  | 'grantsKillEnergy'
 >;
 type SavedArrow = Pick<
   Arrow,
-  'id' | 'lane' | 'speed' | 'fromVolley' | 'critical' | 'kills' | 'power' | 'y' | 'previousY'
+  'id' | 'lane' | 'speed' | 'fromVolley' | 'critical' | 'power' | 'y' | 'previousY'
 >;
 interface SavedCooldown {
   readonly duration: number;
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 14;
+  readonly version: 16;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -97,7 +97,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 14,
+    version: 16,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -167,7 +167,6 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
       'dyingTimer',
       'reachedCastle',
       'jumpsMade',
-      'grantsKillEnergy',
     ] as const) {
       Object.assign(spider, { [key]: entry[key] });
     }
@@ -182,7 +181,6 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
       entry.critical,
       entry.power,
     );
-    arrow.kills = entry.kills;
     arrow.y = entry.y;
     arrow.previousY = entry.previousY;
     state.arrows.set(arrow.id, arrow);
@@ -249,11 +247,16 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
   if (
-    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].includes(value.version as number) ||
+    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(value.version as number) ||
     !object(value.state)
   )
     return null;
   const state = value.state;
+  if (
+    (value.version as number) >= 15 &&
+    (!number(state.prepTimer) || state.prepTimer > STATS['prep.duration'].policy.max!)
+  )
+    return null;
   if (
     (value.version as number) >= 13 &&
     (!integer(state.killingStreakStacks) || !number(state.killingStreakProgress))
@@ -410,8 +413,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
             (entry.type === 'ninja' ? entry.jumpLimit >= 1 : entry.jumpLimit === 0) &&
             number(entry.jumpThreshold) &&
             entry.jumpThreshold <= WORLD.ninjaJumpMax &&
-            entry.jumpThreshold >= WORLD.ninjaJumpMin) &&
-        ((value.version as number) < 9 || typeof entry.grantsKillEnergy === 'boolean'),
+            entry.jumpThreshold >= WORLD.ninjaJumpMin),
     )
   )
     return null;
@@ -427,21 +429,16 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
         number(entry.previousY) &&
         typeof entry.fromVolley === 'boolean' &&
         ((value.version as number) < 9 ||
-          (typeof entry.critical === 'boolean' &&
-            integer(entry.kills) &&
-            (entry.critical
-              ? !entry.fromVolley &&
-                entry.kills <
-                  ((value.version as number) >= 11
-                    ? IMPROVED_CRITICAL_SHOT_POWER
-                    : CRITICAL_SHOT_POWER)
-              : entry.kills === 0))) &&
+          (typeof entry.critical === 'boolean' && (!entry.critical || !entry.fromVolley))) &&
+        // Versions 9–10 stored kills instead of remaining arrow power.
+        ((value.version as number) < 9 ||
+          (value.version as number) >= 11 ||
+          (integer(entry.kills) &&
+            (entry.critical ? entry.kills < CRITICAL_SHOT_POWER : entry.kills === 0))) &&
         ((value.version as number) < 11 ||
           (integer(entry.power) &&
             entry.power > 0 &&
-            (entry.critical
-              ? entry.power + (entry.kills as number) <= IMPROVED_CRITICAL_SHOT_POWER
-              : entry.power === 1))),
+            (entry.critical ? entry.power <= IMPROVED_CRITICAL_SHOT_POWER : entry.power === 1))),
     )
   )
     return null;
@@ -456,8 +453,13 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
-  if (value.version === 13) {
-    const session = restore({ ...value, version: 14 } as unknown as SaveData);
+  if (value.version === 13 || value.version === 14 || value.version === 15) {
+    const session = restore({
+      ...value,
+      version: 16,
+      state: { ...state, prepTimer: value.version >= 15 ? state.prepTimer : 0 },
+    } as unknown as SaveData);
+    if (value.version !== 13) return snapshot(session);
     // Version 13 used 38–20 seconds. Preserve the fraction already earned.
     const previousInterval = 40 - 2 * session.talents.getRank('killingStreak');
     if (session.state.killingStreakProgress >= previousInterval) return null;
@@ -466,10 +468,10 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
       session.state.stats['killingStreak.interval'];
     return snapshot(session);
   }
-  if (value.version !== 14) {
+  if (value.version !== 16) {
     const previous = {
       ...value,
-      version: 14,
+      version: 16,
       spiders: value.spiders.map((entry) => {
         if ((value.version as number) >= 12) return entry;
         const { hasJumped, ...spider } = entry as JsonObject;
@@ -477,13 +479,11 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
           ...spider,
           jumpLimit: spider.type === 'ninja' ? 1 : 0,
           jumpsMade: spider.type === 'ninja' && hasJumped ? 1 : 0,
-          grantsKillEnergy: (value.version as number) >= 9 ? spider.grantsKillEnergy : true,
         };
       }),
       arrows: value.arrows.map((entry) => ({
         ...(entry as JsonObject),
         critical: (value.version as number) >= 9 ? (entry as JsonObject).critical : false,
-        kills: (value.version as number) >= 9 ? (entry as JsonObject).kills : 0,
         power:
           (value.version as number) >= 11
             ? (entry as JsonObject).power
@@ -493,6 +493,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
       })),
       state: {
         ...state,
+        prepTimer: 0,
         killingStreakStacks: 0,
         killingStreakProgress: 0,
         lastHopeTimer: (value.version as number) >= 5 ? state.lastHopeTimer : 0,

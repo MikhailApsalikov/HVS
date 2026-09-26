@@ -3,7 +3,6 @@ import { CRITICAL_SHOT_POWER } from '../rules/stats.js';
 export class Arrow {
   y = 1;
   previousY = 1;
-  kills = 0;
   constructor(
     readonly id: string,
     readonly lane: number,

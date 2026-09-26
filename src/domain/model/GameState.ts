@@ -26,6 +26,7 @@ export class GameState {
   freezeActive = false;
   invulnerableTimer = 0;
   lastHopeTimer = 0;
+  prepTimer = 0;
   bestDefenseCooldown = 0;
   adrenalineTimer = 0;
   adrenalineShots = 0;
@@ -80,6 +81,9 @@ export class GameState {
   get adrenalineActive(): boolean {
     return this.adrenalineTimer > 0 && this.adrenalineShots > 0;
   }
+  get currentEnergyRegen(): number {
+    return this.stats.energyRegen + (this.prepTimer > 0 ? this.stats['prep.energyRegen'] : 0);
+  }
   get currentShootCost(): number {
     return this.adrenalineActive
       ? 0
@@ -117,6 +121,7 @@ export class GameState {
     return this.eagleEyeTimer > 0 && this.eagleEyeShots > 0;
   }
   abilityActiveTimer(id: AbilityId): number {
+    if (id === 'prep') return this.prepTimer;
     if (id === 'lastHope') return this.lastHopeTimer;
     if (id === 'stand') return this.invulnerableTimer;
     if (id === 'adrenaline') return this.adrenalineTimer;

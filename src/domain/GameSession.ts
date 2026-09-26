@@ -211,6 +211,7 @@ export class GameSession {
     if (tickAntiAfk(state, dt, occupiedAt)) this.refreshStats(false);
     const lastHopeWasActive = state.lastHopeTimer > 0;
     const adrenalineWasActive = state.adrenalineActive;
+    const prepRegeneration = state.stats['prep.energyRegen'] * Math.min(dt, state.prepTimer);
     tickAbilities(state, dt);
     state.advanceKillingStreak(dt);
     if (
@@ -233,7 +234,7 @@ export class GameSession {
       return;
     }
     state.modifyHp(state.stats.hpRegen * dt);
-    state.modifyEnergy(state.stats.energyRegen * dt);
+    state.modifyEnergy(state.stats.energyRegen * dt + prepRegeneration);
     state.coinAccumulator += state.stats.coinsPerSec * dt;
     const whole = Math.floor(state.coinAccumulator);
     state.coins += whole;

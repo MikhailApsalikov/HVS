@@ -40,7 +40,7 @@ describe('projectile strength', () => {
     const behind = addSpider(session, 'normal', 0, 0.4);
     session.shootLane(0);
     session.tick(0.09);
-    expect(fat).toMatchObject({ dying: true, hits: 0, grantsKillEnergy: true });
+    expect(fat).toMatchObject({ dying: true, hits: 0 });
     expect(behind).toMatchObject({ dying: false, hits: 1 });
     expect(session.state.arrows.size).toBe(0);
   });
@@ -53,14 +53,14 @@ describe('projectile strength', () => {
     session.tick(0.02);
     expect([...session.state.arrows.values()][0].power).toBe(1);
     session.tick(0.04);
-    expect(fat).toMatchObject({ hits: 1, type: 'normal', dying: false, grantsKillEnergy: true });
+    expect(fat).toMatchObject({ hits: 1, type: 'normal', dying: false });
     expect(behind.dying).toBe(false);
     session.tick(0.3);
     expect(session.state.energy).toBe(73);
     session.state.archers[0].start(0);
     session.shootLane(0);
     session.tick(0.4);
-    expect(session.state.energy).toBe(46);
+    expect(session.state.energy).toBe(54);
   });
   it.each([
     ['normal', 'normal', 'normal'],
@@ -68,10 +68,15 @@ describe('projectile strength', () => {
     ['normal', 'fat'],
     ['fat', 'fat'],
   ] as SpiderType[][])('spends three units in encounter order: %j', (...types) => {
-    const session = arena([...critical, { id: 'improvedCriticalShot', rank: 8 }]);
+    const session = arena([
+      ...critical,
+      { id: 'improvedCriticalShot', rank: 8 },
+      { id: 'piercingReward', rank: 8 },
+    ]);
     const spiders = types.map((type, index) => addSpider(session, type, 0, 0.9 - index * 0.2));
     const behind = addSpider(session, 'normal', 0, 0.1);
     session.shootLane(0);
+    const energy = session.state.energy;
     expect([...session.state.arrows.values()][0].power).toBe(3);
     session.tick(0.09);
     expect(spiders[0].dying).toBe(true);
@@ -81,6 +86,9 @@ describe('projectile strength', () => {
     if (types[0] === 'fat' && types[1] === 'fat') expect(spiders[1].hits).toBe(1);
     expect(behind.dying).toBe(false);
     expect(session.state.arrows.size).toBe(0);
+    const kills = spiders.filter((spider) => spider.dying).length;
+    session.tick(0.3);
+    expect(session.state.energy).toBe(energy + kills * 8);
   });
   it.each([
     [1, 0.119999, 3],
@@ -424,11 +432,14 @@ describe('version eleven saves', () => {
         spiders: previousSpiders(current),
         state,
         abilities: current.abilities.slice(0, 10),
-        arrows: current.arrows.map(({ power: _power, ...arrow }) => arrow),
+        arrows: current.arrows.map(({ power: _power, ...arrow }) => ({
+          ...arrow,
+          kills: isCritical ? 1 : 0,
+        })),
         talents: [...current.talents, { id: 'volleyMastery', rank: 3 }],
       };
       const parsed = parseSave(old)!;
-      expect(parsed.version).toBe(14);
+      expect(parsed.version).toBe(16);
       const loaded = restore(parsed, () => 0);
       expect(loaded.state.eagleEyeActive).toBe(false);
       expect(loaded.state.getAbility('eagleEye').isReady).toBe(true);

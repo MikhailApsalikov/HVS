@@ -35,7 +35,8 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     key: 'E',
     sprite: 'AbilityPrep',
     unlockLevel: 12,
-    description: 'Мгновенно восстанавливает {prep.restore} энергии.',
+    description:
+      'Восстанавливает {prep.instant} энергии и {prep.overTime} в течение {prep.duration} секунд.',
     effectStat: 'prep.restore',
     effectKind: 'percent',
   },

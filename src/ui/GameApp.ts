@@ -13,6 +13,7 @@ import { BlizzardOverlay } from './overlays/BlizzardOverlay.js';
 import { StandShieldOverlay } from './overlays/StandShieldOverlay.js';
 import { AdrenalineOverlay } from './overlays/AdrenalineOverlay.js';
 import { AntiAfkOverlay } from './overlays/AntiAfkOverlay.js';
+import { PreparationOverlay } from './overlays/PreparationOverlay.js';
 
 export interface MenuActions {
   start(difficulty: Difficulty): void;
@@ -34,6 +35,7 @@ export class GameApp {
   private readonly adrenaline: AdrenalineOverlay;
   private readonly eagleEye: AdrenalineOverlay;
   private readonly antiAfk: AntiAfkOverlay;
+  private readonly preparation: PreparationOverlay;
   private readonly saveStatus = document.createElement('div');
 
   constructor(
@@ -71,6 +73,7 @@ export class GameApp {
     this.adrenaline = new AdrenalineOverlay(field.getContainer(), sprites);
     this.eagleEye = new AdrenalineOverlay(field.getContainer(), sprites, 'eagleEye');
     this.antiAfk = new AntiAfkOverlay(field.getContainer());
+    this.preparation = new PreparationOverlay(field.getContainer(), sprites);
     const wrapper = document.createElement('div');
     wrapper.className = 'app__screens';
     wrapper.append(this.menu.getContainer(), this.game.getContainer(), this.over.getContainer());
@@ -107,6 +110,7 @@ export class GameApp {
     this.adrenaline.render(state);
     this.eagleEye.render(state);
     this.antiAfk.render(state);
+    this.preparation.render(state);
     this.saveStatus.textContent = saveError ?? '';
     this.saveStatus.hidden = !saveError;
     if (state.freezeActive) this.freeze.show();

@@ -23,7 +23,10 @@ const EFFECTS: Record<AbilityId, Effect> = {
     for (const spider of state.spiders.values())
       spider.applySlow(1 - state.stats['blizzard.slow'], state.blizzardTimer);
   },
-  prep: (state) => state.modifyEnergy(state.stats['prep.restore']),
+  prep: (state) => {
+    state.modifyEnergy(state.stats['prep.instant']);
+    state.prepTimer = state.stats['prep.duration'];
+  },
   heal: (state) => state.modifyHp(state.stats['heal.amount']),
   volley: fireVolley,
   stand: (state) => {
@@ -77,6 +80,8 @@ export function tickAbilities(state: GameState, dt: number): void {
   for (const cooldown of [...state.abilities.values(), ...state.archers]) cooldown.tick(dt);
   state.invulnerableTimer = Math.max(0, state.invulnerableTimer - dt);
   state.lastHopeTimer = Math.max(0, state.lastHopeTimer - dt);
+  const prepRemaining = state.prepTimer - dt;
+  state.prepTimer = prepRemaining > 1e-9 ? prepRemaining : 0;
   state.bestDefenseCooldown = Math.max(0, state.bestDefenseCooldown - dt);
   state.adrenalineTimer = Math.max(0, state.adrenalineTimer - dt);
   if (state.adrenalineTimer === 0) state.adrenalineShots = 0;

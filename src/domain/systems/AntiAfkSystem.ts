@@ -8,8 +8,15 @@ export function tickAntiAfk(state: GameState, dt: number, occupiedAt: number): b
   if (previousStacks > 0 && state.antiAfkRecoveryTimer === 0) return false;
   // Regeneration fills energy continuously: exclude the portion before it becomes full.
   const missing = state.maxEnergy - state.energy;
+  const boostedEnergy = state.currentEnergyRegen * state.prepTimer;
   const refillTime =
-    missing <= 0 ? 0 : state.stats.energyRegen > 0 ? missing / state.stats.energyRegen : Infinity;
+    missing <= 0
+      ? 0
+      : missing <= boostedEnergy
+        ? missing / state.currentEnergyRegen
+        : state.stats.energyRegen > 0
+          ? state.prepTimer + (missing - boostedEnergy) / state.stats.energyRegen
+          : Infinity;
   if (missing > 0) state.antiAfkIdleTimer = 0;
   // Overlapping exemptions pause detection; recovery still uses the entire gameplay tick.
   const idleStartsAt = Math.max(

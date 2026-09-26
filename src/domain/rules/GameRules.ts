@@ -70,6 +70,9 @@ export class GameRules {
   }
   private base(id: StatId): number {
     if (this.bases[id] !== undefined) return this.bases[id];
+    if (id === 'prep.overTime') return this.value('prep.energyRegen') * this.value('prep.duration');
+    // Keep the previous total, including all bonuses, and defer only the fixed recovery.
+    if (id === 'prep.instant') return this.value('prep.restore') - this.value('prep.overTime');
     if (id === 'armorReduction')
       return armorReduction(this.value('armor'), this.level, this.config.armorEffectiveness);
     const aliases = {

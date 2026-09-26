@@ -82,10 +82,6 @@ export function tickArrows(state: GameState, dt: number): void {
       const damage = Math.min(hit.hits, arrow.power);
       hit.hits -= damage;
       arrow.power -= damage;
-      if (arrow.critical && hit.hits === 0) {
-        hit.grantsKillEnergy = arrow.kills === 0;
-        arrow.kills += 1;
-      }
       if (hit.hits <= 0) hit.startDying();
       else if (hit.type === 'fat') hit.type = 'normal';
       if (arrow.power === 0) {
@@ -169,7 +165,11 @@ export function collectDeadSpiders(
     if (!spider.dying) continue;
     spider.dyingTimer -= dt;
     if (spider.dyingTimer > 0) continue;
-    if (!spider.reachedCastle) state.advanceKillingStreak(state.stats['killingStreak.killAdvance']);
+    if (!spider.reachedCastle) {
+      state.advanceKillingStreak(state.stats['killingStreak.killAdvance']);
+      state.modifyEnergy(state.stats.energyPerKill);
+      if (state.hp > 0) state.modifyHp(state.stats.hpPerKill);
+    }
     if (!spider.reachedCastle || state.stats.breachRewardFraction > 0) {
       const base = randomInt(random, WORLD.coinMin, WORLD.coinMax);
       const jackpot = random() < state.stats.jackpotChance;
@@ -179,9 +179,6 @@ export function collectDeadSpiders(
         spider.reachedCastle ? state.stats.breachRewardFraction : 1,
       );
       state.coins += coins;
-      if (!spider.reachedCastle && state.hp > 0) state.modifyHp(state.stats.hpPerKill);
-      if (!spider.reachedCastle && spider.grantsKillEnergy)
-        state.modifyEnergy(state.stats.energyPerKill);
       emit({ type: 'coinDrop', spiderId: id, coins, jackpot });
     }
     state.spiders.delete(id);

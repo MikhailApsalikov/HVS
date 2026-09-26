@@ -130,7 +130,7 @@ describe('critical shots through session commands', () => {
     expect(random).toHaveBeenCalledTimes(rank > 0 ? 1 : 0);
   });
 
-  it('kills two normal spiders across frames, rewards energy only once, and leaves the third alive', () => {
+  it('kills two normal spiders across frames, rewards energy for each, and leaves the third alive', () => {
     const { session } = combat();
     const first = addSpider(session, 'normal', 0, 0.9);
     const second = addSpider(session, 'normal', 0, 0.4);
@@ -142,15 +142,14 @@ describe('critical shots through session commands', () => {
     expect(first.hits).toBe(0);
     expect(second.dying).toBe(false);
     const arrow = [...session.state.arrows.values()][0];
-    expect(arrow).toMatchObject({ critical: true, kills: 1, power: 1, lane: 0 });
+    expect(arrow).toMatchObject({ critical: true, power: 1, lane: 0 });
     expect(arrow.y).toBeCloseTo(0.8);
     session.tick(0.04);
     expect(second.dying).toBe(true);
-    expect(second.grantsKillEnergy).toBe(false);
     expect(session.state.arrows.size).toBe(0);
     expect(third.dying).toBe(false);
     session.tick(0.3);
-    expect(session.state.energy).toBe(energy + 8);
+    expect(session.state.energy).toBe(energy + 16);
     const rewards = session.drainEvents().filter((event) => event.type === 'coinDrop');
     expect(rewards.map((event) => event.spiderId)).toEqual([first.id, second.id]);
     expect(session.state.coins).toBe(252);
@@ -167,9 +166,7 @@ describe('critical shots through session commands', () => {
     session.shootLane(0);
     session.tick(0.09);
     expect(first.dying).toBe(true);
-    expect(first.grantsKillEnergy).toBe(true);
     expect(second.dying).toBe(true);
-    expect(second.grantsKillEnergy).toBe(false);
     expect(far.dying).toBe(false);
     expect(neighbor.dying).toBe(false);
     expect(session.state.arrows.size).toBe(0);
@@ -290,7 +287,7 @@ describe('agility contribution and tooltips', () => {
 
 describe('critical shot saves', () => {
   it.each([0, 1, 2])(
-    'round-trips after %s kills without restoring piercing or extra energy',
+    'round-trips after %s kills and rewards every victim once without restoring piercing',
     (kills) => {
       const { session } = combat();
       addSpider(session, 'normal', 0, 0.9);
@@ -307,7 +304,7 @@ describe('critical shot saves', () => {
       loaded.tick(0.4);
       session.tick(0.4);
       expect(snapshot(loaded)).toEqual(snapshot(session));
-      expect(loaded.state.energy).toBe(energy + 8);
+      expect(loaded.state.energy).toBe(energy + 16);
       expect(loaded.state.spiders.get(third.id)?.dying).toBe(false);
       expect(loaded.state.arrows.size).toBe(0);
     },
@@ -330,11 +327,11 @@ describe('critical shot saves', () => {
         { id: 'agility', rank: 2 },
         { id: 'blizzardMastery', rank: 4 },
       ],
-      arrows: saved.arrows.map(({ critical: _critical, kills: _kills, ...arrow }) => arrow),
-      spiders: previousSpiders(saved).map(({ grantsKillEnergy: _energy, ...spider }) => spider),
+      arrows: saved.arrows.map(({ critical: _critical, ...arrow }) => arrow),
+      spiders: previousSpiders(saved),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(14);
+    expect(parsed.version).toBe(16);
     const loaded = restore(parsed);
     expect(loaded.talents.getRank('hunterMastery')).toBe(5);
     expect(loaded.state.stats.shootCost).toBe(25);
@@ -347,27 +344,20 @@ describe('critical shot saves', () => {
       adrenalineTimer: 10,
       adrenalineShots: 9,
     });
-    expect([...loaded.state.arrows.values()][0]).toMatchObject({ critical: false, kills: 0 });
-    expect([...loaded.state.spiders.values()][0].grantsKillEnergy).toBe(true);
+    expect([...loaded.state.arrows.values()][0]).toMatchObject({ critical: false, power: 1 });
     expect(snapshot(restore(parseSave(snapshot(loaded))!))).toEqual(snapshot(loaded));
   });
 
-  it('rejects corrupt critical arrow and energy reward fields', () => {
+  it('rejects corrupt critical arrow fields', () => {
     const { session } = combat();
     session.shootLane(0);
     addSpider(session);
     const saved = snapshot(session);
     for (const invalid of [
       { critical: 'yes' },
-      { kills: -1 },
-      { kills: 0.5 },
-      { kills: 2 },
-      { critical: false, kills: 1 },
+      { critical: false, power: 2 },
       { fromVolley: true },
     ])
       expect(parseSave({ ...saved, arrows: [{ ...saved.arrows[0], ...invalid }] })).toBeNull();
-    expect(
-      parseSave({ ...saved, spiders: [{ ...saved.spiders[0], grantsKillEnergy: 'yes' }] }),
-    ).toBeNull();
   });
 });
