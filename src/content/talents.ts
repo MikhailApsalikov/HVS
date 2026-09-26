@@ -193,7 +193,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     name: 'Увлеченность',
     sprite: 'TalentEnthusiasm',
-    prerequisite: { id: 'killingStreak', rank: 1 },
+    prerequisite: { id: 'killingStreak', rank: 10 },
     effects: [flat('enthusiasmChance', 0.2)],
     description:
       'Дает {enthusiasmChance} вероятности уклониться от урона.\nТребует активной «Череды убийств» и расходует один эффект.',
@@ -203,7 +203,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     name: 'Улучшенная череда убийств',
     sprite: 'TalentImprovedKillingStreak',
-    prerequisite: { id: 'enthusiasm', rank: 1 },
+    prerequisite: { id: 'enthusiasm', rank: 5 },
     effects: [flat('killingStreak.maxStacks', 1)],
     scaling: { attribute: 'agility', step: 50, effect: flat('killingStreak.killAdvance', 0.01) },
     description:

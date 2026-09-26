@@ -40,7 +40,7 @@ export const STATS = {
   blockChance: stat('Шанс блока', 0, probability),
   dodgeChance: stat('Шанс уклонения', 0, { ...probability, max: DODGE_CAP }),
   enthusiasmChance: stat('Шанс уклонения: Увлечённость', 0, probability),
-  'killingStreak.interval': stat('Время набора: Череда убийств, с', 15, { ...duration, min: 1 }),
+  'killingStreak.interval': stat('Время набора: Череда убийств, с', 20, { ...duration, min: 1 }),
   'killingStreak.maxStacks': stat('Максимум эффектов: Череда убийств', 5, integer),
   'killingStreak.killAdvance': stat('Ускорение за убийство: Череда убийств, с', 0, decimal),
   blockPower: stat('Сила блока', 0, integer),

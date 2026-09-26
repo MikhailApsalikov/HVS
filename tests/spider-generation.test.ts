@@ -123,17 +123,17 @@ describe('spider generation through session ticks', () => {
   });
 
   it.each([
-    ['easy', 1, 0.00054],
-    ['easy', 2, 0.000572],
-    ['easy', 50, 0.002084],
-    ['normal', 1, 0.00054],
-    ['normal', 2, 0.000585],
-    ['normal', 50, 0.002745],
-    ['hard', 1, 0.000585],
-    ['hard', 2, 0.000644],
-    ['hard', 50, 0.003452],
+    ['easy', 1, 0.0006],
+    ['easy', 2, 0.000628],
+    ['easy', 50, 0.001989],
+    ['normal', 1, 0.0006],
+    ['normal', 2, 0.000641],
+    ['normal', 50, 0.002585],
+    ['hard', 1, 0.00065],
+    ['hard', 2, 0.000703],
+    ['hard', 50, 0.00323],
   ] as const)(
-    'reduces total appearance chance on %s at level %i to %s',
+    'uses restored spawn base and reduced level growth on %s at level %i: %s',
     (difficulty, level, probability) => {
       const spawned = encounter(level, [probability - 0.000001], difficulty);
       spawned.tick(0.01);

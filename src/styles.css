@@ -590,7 +590,7 @@ body {
 }
 .killing-streak__track {
   height: 4px;
-  margin: 9px 0 5px;
+  margin: 9px 0 0;
   border-radius: 2px;
   overflow: hidden;
   background: #111c15;
@@ -600,10 +600,6 @@ body {
   background: linear-gradient(90deg, #70b899, #e1cf82);
   transform: scaleX(var(--streak-progress, 0));
   transform-origin: left;
-}
-.killing-streak__timer {
-  color: #d6c991;
-  font-variant-numeric: tabular-nums;
 }
 
 .hud-wrapper,

@@ -29,8 +29,8 @@ export const normalConfig: DifficultyConfig = {
   levelTimerStep: 2,
 
   spawnTickInterval: STATS.spawnInterval.base,
-  spawnP0: 0.00054,
-  spawnDP: 0.000045,
+  spawnP0: 0.0006,
+  spawnDP: 0.0000405,
 
   spiderSpeedBase: 0.08,
   spiderSpeedStep: 0.004,

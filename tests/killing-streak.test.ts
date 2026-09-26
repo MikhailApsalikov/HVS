@@ -109,7 +109,8 @@ describe('killing streak through gameplay time', () => {
     'rank %s sets the stack interval',
     (rank) => {
       const session = arena([{ id: 'killingStreak', rank }]);
-      const interval = 15 - rank;
+      const interval = 20 - rank;
+      expect(session.state.stats['killingStreak.interval']).toBe(interval);
       session.tick(interval - 0.01);
       expect(session.state.killingStreakStacks).toBe(0);
       expect(session.state.killingStreakRemaining).toBeCloseTo(0.01);
@@ -131,7 +132,7 @@ describe('killing streak through gameplay time', () => {
     ]);
     expect(session.upgradeTalent('killingStreak')).toBe(true);
     session.state.phase = 'playing';
-    session.tick(14);
+    session.tick(19);
     expect(session.state.killingStreakStacks).toBe(1);
   });
   it('caps at five, discards time at cap and reduces the actual energy spent', () => {
@@ -146,15 +147,15 @@ describe('killing streak through gameplay time', () => {
     expect(killingStreakDescription(session.state)).toContain('максимальное количество');
     hit(session);
     expect(session.state.killingStreakStacks).toBe(4);
-    expect(session.state.killingStreakRemaining).toBe(5);
-    session.tick(4);
+    expect(session.state.killingStreakRemaining).toBe(10);
+    session.tick(9);
     expect(session.state.killingStreakStacks).toBe(4);
     session.tick(1);
     expect(session.state.killingStreakStacks).toBe(5);
   });
   it('removes exactly one stack per damaging spider and restarts progress, including at zero stacks', () => {
     const session = arena(streak);
-    session.tick(16);
+    session.tick(31);
     addSpider(session, 'normal', 0, 1, 10);
     addSpider(session, 'normal', 1, 1, 10);
     session.tick(0.001);
@@ -164,7 +165,7 @@ describe('killing streak through gameplay time', () => {
     session.tick(4);
     hit(session);
     expect(session.state.killingStreakStacks).toBe(0);
-    expect(session.state.killingStreakRemaining).toBe(5);
+    expect(session.state.killingStreakRemaining).toBe(10);
   });
   it.each(['dodge', 'block', 'shield', 'reduction', 'zero'] as const)(
     'preserves stacks and progress on %s',
@@ -185,7 +186,7 @@ describe('killing streak through gameplay time', () => {
       session.state.character.setModifiers('test:protection', modifiers);
       if (protection === 'dodge') session.state.character.setBase('agility', 2500);
       session.refreshStats();
-      session.tick(11);
+      session.tick(21);
       if (protection === 'shield') session.activateAbility('stand');
       hit(session, protection === 'zero' ? 0 : 10);
       expect(session.state.killingStreakStacks).toBe(2);
@@ -199,7 +200,7 @@ describe('killing streak through gameplay time', () => {
       { stat: 'blockPower', kind: 'flat', value: 4 },
     ]);
     session.refreshStats();
-    session.tick(11);
+    session.tick(21);
     expect(hit(session)).toMatchObject({ hp: 6, blockedDamage: 4 });
     expect(session.state.killingStreakStacks).toBe(1);
     expect(session.state.killingStreakProgress).toBe(0);
@@ -210,13 +211,13 @@ describe('killing streak through gameplay time', () => {
     session.state.level = 4;
     expect(session.activateAbility('freeze')).toBe('activated');
     session.tick(100);
-    expect(session.state.killingStreakRemaining).toBe(3);
+    expect(session.state.killingStreakRemaining).toBe(8);
     session.activateAbility('freeze');
     session.state.phase = 'levelUp';
     session.tick(100);
     expect(session.state.killingStreakProgress).toBe(2);
     session.state.phase = 'playing';
-    session.tick(3);
+    session.tick(8);
     expect(session.state.killingStreakStacks).toBe(1);
   });
   it('applies the discount after other modifiers, clamps at zero and combines with adrenaline', () => {
@@ -241,14 +242,14 @@ describe('enthusiasm and improved streak', () => {
     'enthusiasm rank %s consumes a stack only when damage remains',
     (rank) => {
       const session = arena([...streak, { id: 'enthusiasm', rank }], rank * 0.2 - 0.000001);
-      session.tick(11);
+      session.tick(21);
       expect(hit(session)).toMatchObject({ hp: 0, dodged: true });
       expect(session.state.killingStreakStacks).toBe(1);
       expect(session.state.killingStreakProgress).toBeCloseTo(1.001);
       expect(session.state.hp).toBe(100);
       if (rank < 5) {
         const failed = arena([...streak, { id: 'enthusiasm', rank }], rank * 0.2 + 0.000001);
-        failed.tick(11);
+        failed.tick(21);
         expect(hit(failed)).toMatchObject({ hp: 10 });
         expect(failed.state.killingStreakStacks).toBe(1);
         expect(failed.state.killingStreakProgress).toBe(0);
@@ -268,7 +269,7 @@ describe('enthusiasm and improved streak', () => {
       const session = arena([...streak, { id: 'improvedKillingStreak', rank }]);
       session.state.character.setBase('agility', 149);
       session.refreshStats();
-      session.tick(5 * (5 + rank) + 7);
+      session.tick(10 * (5 + rank) + 7);
       expect(session.state.killingStreakStacks).toBe(5 + rank);
       expect(session.state.killingStreakProgress).toBe(0);
       hit(session);
@@ -312,7 +313,7 @@ describe('enthusiasm and improved streak', () => {
     const session = arena([...streak, { id: 'improvedKillingStreak', rank: 5 }]);
     session.state.character.setBase('agility', 100);
     session.refreshStats();
-    session.tick(4.55);
+    session.tick(9.55);
     addSpider(session, 'normal', 0, 0.9);
     session.shootLane(0);
     session.tick(0.4);
@@ -322,23 +323,39 @@ describe('enthusiasm and improved streak', () => {
 });
 
 describe('shooting rebalance, tooltips and save compatibility', () => {
-  it('requires enthusiasm before learning or upgrading improved killing streak', () => {
-    const session = new GameSession('normal');
-    session.state.level = 40;
-    session.state.pendingTalentPoints = 3;
-    session.talents.loadFromSave([
-      { id: 'hunterMastery', rank: 5 },
-      { id: 'criticalShot', rank: 10 },
-      { id: 'piercingReward', rank: 8 },
-      { id: 'killingStreak', rank: 10 },
-    ]);
-    expect(session.upgradeTalent('improvedKillingStreak')).toBe(false);
-    expect(session.state.pendingTalentPoints).toBe(3);
-    expect(session.upgradeTalent('enthusiasm')).toBe(true);
-    expect(session.upgradeTalent('improvedKillingStreak')).toBe(true);
-    expect(session.upgradeTalent('improvedKillingStreak')).toBe(true);
-    expect(session.state.stats['killingStreak.maxStacks']).toBe(7);
-  });
+  it.each([
+    ['enthusiasm', 'killingStreak', 10, 0],
+    ['enthusiasm', 'killingStreak', 10, 1],
+    ['improvedKillingStreak', 'enthusiasm', 5, 0],
+    ['improvedKillingStreak', 'enthusiasm', 5, 1],
+  ] as const)(
+    '%s requires all %s ranks (%s) before upgrading from rank %s',
+    (id, prerequisite, maxRanks, currentRank) => {
+      const session = new GameSession('normal');
+      session.state.level = 40;
+      session.state.pendingTalentPoints = 30;
+      session.talents.loadFromSave([
+        { id: 'hunterMastery', rank: 5 },
+        { id: 'criticalShot', rank: 10 },
+        { id: 'piercingReward', rank: 8 },
+        { id: 'improvedAgility', rank: 7 },
+        { id: 'killingStreak', rank: 10 },
+        { id: prerequisite, rank: 0 },
+        { id, rank: currentRank },
+      ]);
+      for (let rank = 0; rank < maxRanks; rank++) {
+        expect(session.talents.getRank(prerequisite)).toBe(rank);
+        expect(session.talents.upgradeBlockReason(id, 40)).toBe('prerequisite');
+        expect(session.upgradeTalent(id)).toBe(false);
+        expect(session.state.pendingTalentPoints).toBe(30 - rank);
+        expect(session.talents.getRank(id)).toBe(currentRank);
+        expect(session.upgradeTalent(prerequisite)).toBe(true);
+      }
+      expect(session.upgradeTalent(id)).toBe(true);
+      expect(session.talents.getRank(id)).toBe(currentRank + 1);
+      expect(session.state.pendingTalentPoints).toBe(29 - maxRanks);
+    },
+  );
   it.each([1, 2, 3, 4, 5])(
     'agile critical shot rank %s adds two eagle-eye charges per rank',
     (rank) => {
@@ -443,8 +460,8 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
   });
   it('describes the bonuses without leaking placeholders or rules internals', () => {
     const session = arena(streak);
-    expect(talentDescription('killingStreak', 1, session.state.stats)).toContain('14 с');
-    expect(talentDescription('killingStreak', 10, session.state.stats)).toContain('5 с');
+    expect(talentDescription('killingStreak', 1, session.state.stats)).toContain('19 с');
+    expect(talentDescription('killingStreak', 10, session.state.stats)).toContain('10 с');
     expect(talentDescription('enthusiasm', 5, session.state.stats)).toContain('100%');
     expect(talentDescription('improvedKillingStreak', 5, session.state.stats)).toContain('0.05 с');
     expect(talentDescription('volleyMastery', 5, session.state.stats)).toContain('20%');
@@ -452,7 +469,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
     expect(talentDescription('agileCriticalShot', 5, session.state.stats)).toContain(
       '10 критических стрел',
     );
-    expect(killingStreakDescription(session.state)).toContain('через 5 с');
+    expect(killingStreakDescription(session.state)).toContain('через 10 с');
   });
   it('retains stacks, timer and fifteen eagle-eye charges across save and load', () => {
     const session = arena([
@@ -461,15 +478,15 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       { id: 'eagleEye', rank: 1 },
       { id: 'agileCriticalShot', rank: 5 },
     ]);
-    session.tick(38.5);
+    session.tick(73.5);
     session.activateAbility('eagleEye');
     expect(session.state.eagleEyeShots).toBe(15);
     const saved = snapshot(session);
     const loaded = restore(parseSave(JSON.parse(JSON.stringify(saved)))!, () => 0.999999);
     expect(snapshot(loaded)).toEqual(saved);
     expect(loaded.state.currentShootCost).toBe(28);
-    loaded.tick(1.5);
-    session.tick(1.5);
+    loaded.tick(6.5);
+    session.tick(6.5);
     expect(snapshot(loaded)).toEqual(snapshot(session));
   });
   it.each([1, 5, 10])(
@@ -489,12 +506,12 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       expect(parsed.version).toBe(14);
       const session = restore(parsed, () => 0.999999);
       expect(session.state.killingStreakStacks).toBe(2);
-      expect(session.state.killingStreakProgress).toBe((15 - rank) / 2);
+      expect(session.state.killingStreakProgress).toBe((20 - rank) / 2);
       expect(session.state.killingStreakFraction).toBe(0.5);
       expect(session.state.currentShootCost).toBe(33);
       expect(session.state.coins).toBe(previous.state.coins);
       expect(snapshot(restore(parseSave(snapshot(session))!))).toEqual(snapshot(session));
-      session.tick((15 - rank) / 2);
+      session.tick((20 - rank) / 2);
       expect(session.state.killingStreakStacks).toBe(3);
       expect(session.state.killingStreakProgress).toBe(0);
     },
@@ -502,7 +519,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
   it('keeps full stacks and an unlearned streak unchanged when migrating version thirteen', () => {
     for (const talents of [[], streak]) {
       const session = arena(talents);
-      session.tick(25);
+      session.tick(50);
       const saved = snapshot(session);
       expect(parseSave({ ...saved, version: 13 })).toEqual(saved);
     }
@@ -551,7 +568,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
     { killingStreakStacks: 1.5 },
     { killingStreakStacks: 6 },
     { killingStreakProgress: -1 },
-    { killingStreakProgress: 5 },
+    { killingStreakProgress: 10 },
     { killingStreakProgress: null },
     { killingStreakStacks: 5, killingStreakProgress: 1 },
   ])('rejects invalid streak data %j', (invalid) => {
