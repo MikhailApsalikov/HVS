@@ -253,7 +253,7 @@ describe('all abilities', () => {
     expect(session.state.energy).toBe(50);
   });
   it('slows existing spiders, then removes the slow', () => {
-    const session = game(8);
+    const session = game(20);
     const spider = addSpider(session, 'normal', 0, 0.1, 20, 0.01);
     session.activateAbility('blizzard');
     expect(spider.effectiveSpeed()).toBe(0.006);
@@ -279,7 +279,6 @@ describe('all abilities', () => {
   });
   it('fires a volley on four distinct lanes, capped at nine with bonuses', () => {
     const session = game(20);
-    session.talents.loadFromSave([{ id: 'volley', rank: 1 }]);
     session.refreshStats();
     session.activateAbility('volley');
     expect(new Set([...session.state.arrows.values()].map((arrow) => arrow.lane)).size).toBe(4);

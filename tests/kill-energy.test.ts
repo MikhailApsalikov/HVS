@@ -47,7 +47,8 @@ describe('energy for every spider kill', () => {
   );
 
   it.each(['volley', 'counterVolley'] as const)('rewards every kill from %s', (attack) => {
-    const session = arena([{ id: attack === 'volley' ? 'volley' : 'bestDefense', rank: 1 }]);
+    const session = arena(attack === 'volley' ? [] : [{ id: 'bestDefense', rank: 1 }]);
+    session.state.level = 8;
     session.state.character.setModifiers('test:volley', [
       { stat: 'volley.lanes', kind: 'flat', value: 5 },
     ]);
@@ -159,6 +160,7 @@ describe('kill energy save migration', () => {
       const old = {
         ...current,
         version: 15,
+        abilities: current.abilities.slice(0, 11),
         arrows: current.arrows.map((arrow) => ({ ...arrow, kills: 3 - arrow.power })),
         spiders: current.spiders.map((spider, index) => ({
           ...spider,

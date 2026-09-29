@@ -283,12 +283,7 @@ describe('enthusiasm and improved streak', () => {
     'advances for every kill from %s, never from a breach',
     (source) => {
       const session = arena(
-        [
-          ...streak,
-          { id: 'improvedKillingStreak', rank: 5 },
-          { id: 'criticalShot', rank: 10 },
-          { id: 'volley', rank: 1 },
-        ],
+        [...streak, { id: 'improvedKillingStreak', rank: 5 }, { id: 'criticalShot', rank: 10 }],
         0,
       );
       session.state.character.setBase('agility', 100);
@@ -297,6 +292,7 @@ describe('enthusiasm and improved streak', () => {
       addSpider(session, 'normal', source === 'critical' ? 0 : 1, 0.7);
       if (source === 'critical') session.shootLane(0);
       else {
+        if (source === 'volley') session.state.level = 8;
         if (source === 'armageddon') session.state.level = 30;
         session.activateAbility(source);
       }
@@ -400,8 +396,9 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       expect(session.state.coins).toBe({ easy: 0, normal: 250, hard: 1000 }[difficulty]);
       for (const [id, tier, maxRanks] of [
         ['piercingReward', 2, 8],
-        ['volley', 2, 1],
-        ['volleyMastery', 3, 5],
+        ['volleyMastery', 2, 5],
+        ['titanPreparation', 5, 5],
+        ['aimedFire', 7, 1],
         ['killingStreak', 3, 10],
         ['enthusiasm', 4, 5],
         ['rapidFire', 5, 7],
@@ -417,9 +414,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         { id: 'vampirism', rank: 5 },
         { id: 'piercingReward', rank: 8 },
       ]);
-      expect(session.upgradeTalent('volleyMastery')).toBe(false);
       expect(session.upgradeTalent('enthusiasm')).toBe(false);
-      expect(session.upgradeTalent('volley')).toBe(true);
       expect(session.upgradeTalent('volleyMastery')).toBe(true);
       for (let i = 0; i < 10; i++) expect(session.upgradeTalent('killingStreak')).toBe(true);
       expect(session.upgradeTalent('killingStreak')).toBe(false);
@@ -429,19 +424,17 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       }
     },
   );
-  it('volley requires its talent even at high level, and works without an ability level gate', () => {
+  it('volley unlocks at level eight without a talent', () => {
     const session = arena();
-    session.state.level = 100;
+    session.state.level = 7;
     expect(session.activateAbility('volley')).toBe('level_locked');
-    expect(abilityDescription(session.state, 'volley')).toContain('Требуется талант «Залп»');
-    session.state.level = 10;
-    session.talents.loadFromSave([{ id: 'volley', rank: 1 }]);
+    expect(abilityDescription(session.state, 'volley')).toContain('Требуется уровень 8');
+    session.state.level = 8;
     session.refreshStats();
     expect(session.activateAbility('volley')).toBe('activated');
   });
   it('mastery and rapid fire are independent sources for all their bonuses', () => {
     const session = arena([
-      { id: 'volley', rank: 1 },
       { id: 'volleyMastery', rank: 5 },
       { id: 'rapidFire', rank: 7 },
     ]);
@@ -454,6 +447,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       shootCooldown: 1.53,
       arrowSpeed: 0.496667,
     });
+    session.state.level = 8;
     expect(session.activateAbility('volley')).toBe('activated');
     expect(session.state.energy).toBe(10);
     expect(session.state.arrows.size).toBe(9);
@@ -496,6 +490,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       const previous = {
         ...saved,
         version: 13,
+        abilities: saved.abilities.slice(0, 11),
         state: {
           ...saved.state,
           killingStreakStacks: 2,
@@ -503,7 +498,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         },
       };
       const parsed = parseSave(previous)!;
-      expect(parsed.version).toBe(16);
+      expect(parsed.version).toBe(17);
       const session = restore(parsed, () => 0.999999);
       expect(session.state.killingStreakStacks).toBe(2);
       expect(session.state.killingStreakProgress).toBe((20 - rank) / 2);
@@ -521,13 +516,20 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       const session = arena(talents);
       session.tick(50);
       const saved = snapshot(session);
-      expect(parseSave({ ...saved, version: 13 })).toEqual(saved);
+      expect(parseSave({ ...saved, version: 13, abilities: saved.abilities.slice(0, 11) })).toEqual(
+        saved,
+      );
     }
   });
   it('rejects progress beyond the old interval in a version thirteen save', () => {
     const saved = snapshot(arena(streak));
     expect(
-      parseSave({ ...saved, version: 13, state: { ...saved.state, killingStreakProgress: 20 } }),
+      parseSave({
+        ...saved,
+        version: 13,
+        abilities: saved.abilities.slice(0, 11),
+        state: { ...saved.state, killingStreakProgress: 20 },
+      }),
     ).toBeNull();
   });
   it('migrates version twelve with unchanged gold, cooldowns, moved ranks and ninja progress', () => {
@@ -548,6 +550,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
     const previous = {
       ...saved,
       version: 12,
+      abilities: saved.abilities.slice(0, 11),
       state,
       talents: saved.talents.filter(
         (t) => !['killingStreak', 'enthusiasm', 'improvedKillingStreak', 'volley'].includes(t.id),

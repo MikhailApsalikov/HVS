@@ -51,6 +51,7 @@ export function bootstrap(root: HTMLElement): () => void {
     prep: SoundEffect.PREP_ACTIVATE,
     heal: SoundEffect.HEAL,
     volley: SoundEffect.VOLLEY_ACTIVATE,
+    aimedFire: SoundEffect.VOLLEY_ACTIVATE,
     stand: SoundEffect.STAND_ACTIVATE,
     lastHope: SoundEffect.ABSORB_DAMAGE,
     adrenaline: SoundEffect.PREP_ACTIVATE,

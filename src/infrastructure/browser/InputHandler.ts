@@ -2,7 +2,9 @@ import type { AbilityId } from '../../domain/types.js';
 import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { WORLD } from '../../domain/rules/world.js';
 
-const ABILITY_BY_CODE = new Map(ABILITY_ORDER.map((id) => [`Key${ABILITIES[id].key}`, id]));
+const ABILITY_BY_CODE = new Map(
+  ABILITY_ORDER.map((id) => [ABILITIES[id].code ?? `Key${ABILITIES[id].key}`, id]),
+);
 
 export class InputHandler {
   private _onShoot: (lane: number) => void;

@@ -109,7 +109,7 @@ describe('primary attributes through the session API', () => {
     session.state.character.setBase('agility', 10000);
     session.talents.loadFromSave([
       { id: 'rapidFire', rank: 7 },
-      { id: 'volley', rank: 1 },
+
       { id: 'quickInstinct', rank: 2 },
     ]);
     session.refreshStats();
@@ -437,7 +437,7 @@ describe('armor and talent branches', () => {
 
   it.each([
     ['spiderArmor', 3, 14, 20],
-    ['volleyMastery', 3, 14, 20],
+    ['volleyMastery', 2, 7, 10],
     ['rapidFire', 5, 28, 40],
     ['blizzardMastery', 2, 7, 10],
     ['magicArmor', 2, 7, 10],

@@ -40,6 +40,7 @@ export function attributeModifiers(
       effect('agility', 'shootCooldown', -shotPercent, 'percent'),
       effect('agility', 'arrowSpeed', shotPercent, 'percent'),
       effect('agility', 'volley.cooldown', -volleyPercent, 'percent'),
+      effect('agility', 'aimedFire.cooldown', -volleyPercent, 'percent'),
       effect('agility', 'energyPerKill', Math.floor(a / ar.killEnergyStep)),
       ...(criticalShotLearned
         ? [effect('agility', 'criticalShotChance', Math.floor(a / ar.criticalShotStep) / 100)]

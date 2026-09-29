@@ -5,6 +5,8 @@ import { pickLanes } from '../rules/random.js';
 import { WORLD } from '../rules/world.js';
 import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { Arrow } from '../model/Arrow.js';
+import { AIMED_FIRE_DELAYS } from '../rules/stats.js';
+import { createArrow } from './ArrowFactory.js';
 
 type Effect = (state: GameState, random: RandomSource) => void;
 export function fireVolley(state: GameState, random: RandomSource): void {
@@ -26,9 +28,19 @@ const EFFECTS: Record<AbilityId, Effect> = {
   prep: (state) => {
     state.modifyEnergy(state.stats['prep.instant']);
     state.prepTimer = state.stats['prep.duration'];
+    state.prepareKillingStreak();
   },
   heal: (state) => state.modifyHp(state.stats['heal.amount']),
   volley: fireVolley,
+  aimedFire: (state) => {
+    state.aimedFireWaves = [
+      ...state.aimedFireWaves,
+      ...AIMED_FIRE_DELAYS.map((remaining, index) => ({
+        remaining,
+        guaranteedCritical: index === 0,
+      })),
+    ];
+  },
   stand: (state) => {
     state.invulnerableTimer = state.stats['stand.duration'];
   },
@@ -53,6 +65,19 @@ const EFFECTS: Record<AbilityId, Effect> = {
     for (const archer of state.archers) archer.start(0);
   },
 };
+
+/** Called at a wave boundary, after existing arrows have moved for this interval. */
+export function tickAimedFire(state: GameState, dt: number, random: RandomSource): void {
+  const pending = state.aimedFireWaves.map((wave) => ({ ...wave, remaining: wave.remaining - dt }));
+  state.aimedFireWaves = pending.filter((wave) => wave.remaining > 1e-9);
+  for (const wave of pending) {
+    if (wave.remaining > 1e-9) continue;
+    for (let lane = 0; lane < WORLD.lanes; lane++) {
+      const arrow = createArrow(state, random, lane, true, wave.guaranteedCritical);
+      state.arrows.set(arrow.id, arrow);
+    }
+  }
+}
 
 export function activateAbility(
   state: GameState,

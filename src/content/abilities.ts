@@ -1,9 +1,12 @@
 import type { AbilityId, TalentId } from '../domain/types.js';
 import type { StatId } from '../domain/rules/stats.js';
+import { AIMED_FIRE_DELAYS } from '../domain/rules/stats.js';
+import { WORLD } from '../domain/rules/world.js';
 
 interface AbilityDefinition {
   readonly name: string;
   readonly key: string;
+  readonly code?: string;
   readonly sprite: string;
   readonly unlockLevel: number;
   readonly talent?: TalentId;
@@ -22,9 +25,9 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
   },
   blizzard: {
     name: 'Вьюга',
-    key: 'W',
+    key: 'T',
     sprite: 'AbilityBlizzard',
-    unlockLevel: 8,
+    unlockLevel: 20,
     description:
       'Снижает скорость всех пауков на поле на {blizzard.slow} на {blizzard.duration} с.',
     effectStat: 'blizzard.duration',
@@ -51,17 +54,16 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
   },
   volley: {
     name: 'Залп',
-    key: 'T',
+    key: 'W',
     sprite: 'AbilityVolley',
-    unlockLevel: 0,
-    talent: 'volley',
+    unlockLevel: 8,
     description: 'Выпускает {volley.lanes} стрел из случайных разных линий.',
     effectStat: 'volley.lanes',
     effectKind: 'flat',
   },
   stand: {
     name: 'Божественный щит',
-    key: 'Y',
+    key: 'I',
     sprite: 'AbilityStand',
     unlockLevel: 30,
     talent: 'divineShield',
@@ -71,7 +73,7 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
   },
   armageddon: {
     name: 'Армагеддон',
-    key: 'U',
+    key: 'Y',
     sprite: 'AbilityArmageddon',
     unlockLevel: 30,
     description:
@@ -81,7 +83,8 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
   },
   recharge: {
     name: 'Перезарядка',
-    key: 'I',
+    key: '[',
+    code: 'BracketLeft',
     sprite: 'AbilityRecharge',
     unlockLevel: 60,
     talent: 'recharge',
@@ -100,7 +103,8 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
   },
   adrenaline: {
     name: 'Адреналин',
-    key: 'P',
+    key: ']',
+    code: 'BracketRight',
     sprite: 'AbilityAdrenaline',
     unlockLevel: 60,
     talent: 'adrenaline',
@@ -111,14 +115,37 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
   },
   eagleEye: {
     name: 'Зоркость',
-    key: 'F',
+    key: 'U',
     sprite: 'AbilityEagleEye',
     unlockLevel: 20,
     talent: 'eagleEye',
     description:
-      'Следующие {eagleEye.shots} выстрелов будут критическими со 100% вероятностью. Стрелы «Залпа» не учитываются.\nДействует не более {eagleEye.duration} с и заканчивается при расходовании всех выстрелов.',
+      'Следующие {eagleEye.shots} выстрелов лучников будут критическими со 100% вероятностью.\nДействует не более {eagleEye.duration} с и заканчивается при расходовании всех выстрелов.',
     effectStat: 'eagleEye.shots',
     effectKind: 'flat',
   },
+  aimedFire: {
+    name: 'Прицельный огонь',
+    key: 'P',
+    sprite: 'AbilityAimedFire',
+    unlockLevel: 60,
+    talent: 'aimedFire',
+    description: `Через ${AIMED_FIRE_DELAYS[0]} с выпускает ${WORLD.lanes} критических стрел, даже без таланта «Критический выстрел».\nНа ${AIMED_FIRE_DELAYS[1]}-й и ${AIMED_FIRE_DELAYS[2]}-й секунде выпускает ещё по ${WORLD.lanes} стрел с обычным шансом критического выстрела.`,
+  },
 };
+/** Stable storage order; the HUD has its own order by level, then keyboard position. */
 export const ABILITY_ORDER = Object.keys(ABILITIES) as AbilityId[];
+export const ABILITY_DISPLAY_ORDER: readonly AbilityId[] = [
+  'freeze',
+  'volley',
+  'prep',
+  'heal',
+  'blizzard',
+  'armageddon',
+  'eagleEye',
+  'stand',
+  'lastHope',
+  'aimedFire',
+  'recharge',
+  'adrenaline',
+];

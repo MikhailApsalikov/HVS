@@ -12,6 +12,8 @@ import {
   IMPROVED_CRITICAL_SHOT_POWER,
   PRIMARY_STATS,
   STATS,
+  KILLING_STREAK,
+  AIMED_FIRE_DELAYS,
 } from './rules/stats.js';
 import { TALENTS } from '../content/talents.js';
 import { SPIDERS } from '../content/spiders.js';
@@ -41,6 +43,8 @@ const STATE_FIELDS = [
   'eagleEyeShots',
   'killingStreakStacks',
   'killingStreakProgress',
+  'killingStreakDecayProgress',
+  'aimedFireWaves',
   'antiAfkIdleTimer',
   'antiAfkStacks',
   'antiAfkRecoveryTimer',
@@ -80,7 +84,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 16;
+  readonly version: 17;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -97,7 +101,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 16,
+    version: 17,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -216,8 +220,10 @@ const cooldown = (entry: unknown) =>
   number(entry.duration) &&
   number(entry.remainingCooldown) &&
   entry.remainingCooldown <= entry.duration;
-const talent = (entry: unknown) =>
-  object(entry) && member(entry.id, TALENTS) && integer(entry.rank);
+const talent = (entry: unknown, allowRetired = false) =>
+  object(entry) &&
+  (member(entry.id, TALENTS) || (allowRetired && entry.id === 'volley')) &&
+  integer(entry.rank);
 const lane = (value: unknown) => integer(value) && value < WORLD.lanes;
 
 /** Validate at the trust boundary. Bad/future saves are left intact in storage. */
@@ -229,11 +235,15 @@ export function parseSave(value: unknown): SaveData | null {
       const { state } = restore(data);
       if (
         state.eagleEyeShots > state.stats['eagleEye.shots'] ||
-        state.killingStreakStacks > state.stats['killingStreak.maxStacks'] ||
+        data.state.killingStreakStacks > KILLING_STREAK.maxStacks ||
+        state.killingStreakStacks >
+          Math.max(state.killingStreakMaximum, state.stats['prep.stacks']) ||
+        (state.killingStreakExcess > 0 && state.stats['prep.stacks'] === 0) ||
+        (state.killingStreakExcess === 0 && state.killingStreakDecayProgress > 0) ||
+        (state.aimedFireWaves.length > 0 && !state.isAbilityUnlocked('aimedFire')) ||
         state.killingStreakProgress >= state.stats['killingStreak.interval'] ||
         (state.killingStreakFull && state.killingStreakProgress > 0) ||
-        (!state.killingStreakLearned &&
-          (state.killingStreakStacks > 0 || state.killingStreakProgress > 0))
+        (!state.killingStreakLearned && state.killingStreakProgress > 0)
       )
         return null;
     }
@@ -247,11 +257,26 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
   if (
-    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(value.version as number) ||
+    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].includes(value.version as number) ||
     !object(value.state)
   )
     return null;
   const state = value.state;
+  if (
+    value.version === 17 &&
+    (!number(state.killingStreakDecayProgress) ||
+      state.killingStreakDecayProgress >= KILLING_STREAK.decayInterval ||
+      !arrayOf(
+        state.aimedFireWaves,
+        (wave) =>
+          object(wave) &&
+          number(wave.remaining) &&
+          wave.remaining > 0 &&
+          wave.remaining <= AIMED_FIRE_DELAYS[2] &&
+          typeof wave.guaranteedCritical === 'boolean',
+      ))
+  )
+    return null;
   if (
     (value.version as number) >= 15 &&
     (!number(state.prepTimer) || state.prepTimer > STATS['prep.duration'].policy.max!)
@@ -259,7 +284,9 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     return null;
   if (
     (value.version as number) >= 13 &&
-    (!integer(state.killingStreakStacks) || !number(state.killingStreakProgress))
+    (!integer(state.killingStreakStacks) ||
+      state.killingStreakStacks > KILLING_STREAK.maxStacks ||
+      !number(state.killingStreakProgress))
   )
     return null;
   if (
@@ -344,7 +371,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   )
     return null;
   if (
-    !arrayOf(value.talents, talent) ||
+    !arrayOf(value.talents, (entry) => talent(entry, value.version !== 17)) ||
     !arrayOf(value.inventory, (entry) => typeof entry === 'string')
   )
     return null;
@@ -374,13 +401,15 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     value.archers.length !== WORLD.lanes ||
     !arrayOf(value.abilities, cooldown) ||
     value.abilities.length !==
-      ((value.version as number) >= 11
+      (value.version === 17
         ? ABILITY_ORDER.length
-        : (value.version as number) >= 7
-          ? 10
-          : (value.version as number) >= 5
-            ? 9
-            : 8)
+        : (value.version as number) >= 11
+          ? 11
+          : (value.version as number) >= 7
+            ? 10
+            : (value.version as number) >= 5
+              ? 9
+              : 8)
   )
     return null;
   if (
@@ -429,7 +458,8 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
         number(entry.previousY) &&
         typeof entry.fromVolley === 'boolean' &&
         ((value.version as number) < 9 ||
-          (typeof entry.critical === 'boolean' && (!entry.critical || !entry.fromVolley))) &&
+          (typeof entry.critical === 'boolean' &&
+            (value.version === 17 || !entry.critical || !entry.fromVolley))) &&
         // Versions 9–10 stored kills instead of remaining arrow power.
         ((value.version as number) < 9 ||
           (value.version as number) >= 11 ||
@@ -453,12 +483,13 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
-  if (value.version === 13 || value.version === 14 || value.version === 15) {
-    const session = restore({
-      ...value,
-      version: 16,
-      state: { ...state, prepTimer: value.version >= 15 ? state.prepTimer : 0 },
-    } as unknown as SaveData);
+  if ([13, 14, 15, 16].includes(value.version as number)) {
+    const session = restore(
+      upgradeShootingSave({
+        ...value,
+        state: { ...state, prepTimer: (value.version as number) >= 15 ? state.prepTimer : 0 },
+      }),
+    );
     if (value.version !== 13) return snapshot(session);
     // Version 13 used 38–20 seconds. Preserve the fraction already earned.
     const previousInterval = 40 - 2 * session.talents.getRank('killingStreak');
@@ -468,10 +499,9 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
       session.state.stats['killingStreak.interval'];
     return snapshot(session);
   }
-  if (value.version !== 16) {
-    const previous = {
+  if (value.version !== 17) {
+    const previous = upgradeShootingSave({
       ...value,
-      version: 16,
       spiders: value.spiders.map((entry) => {
         if ((value.version as number) >= 12) return entry;
         const { hasJumped, ...spider } = entry as JsonObject;
@@ -513,7 +543,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
           remainingCooldown: 0,
         })),
       ],
-    } as unknown as SaveData;
+    });
     if (value.version !== 3) return snapshot(restore(previous));
     const character = Object.fromEntries(
       PRIMARY_STATS.map((id) => [id, previous.character[id] + STATS[id].base]),
@@ -530,6 +560,19 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   return value as unknown as SaveData;
 }
 
+function upgradeShootingSave(value: JsonObject): SaveData {
+  const abilities = value.abilities as unknown[];
+  return {
+    ...value,
+    version: 17,
+    state: { ...(value.state as JsonObject), killingStreakDecayProgress: 0, aimedFireWaves: [] },
+    abilities: [
+      ...abilities,
+      ...ABILITY_ORDER.slice(abilities.length).map(() => ({ duration: 0, remainingCooldown: 0 })),
+    ],
+  } as unknown as SaveData;
+}
+
 function migrateLegacy(value: JsonObject): SaveData | null {
   if (
     !['level', 'coins', 'pendingTalentPoints', 'record'].every((key) => integer(value[key])) ||
@@ -539,7 +582,7 @@ function migrateLegacy(value: JsonObject): SaveData | null {
   )
     return null;
   if (
-    !arrayOf(value.talents, talent) ||
+    !arrayOf(value.talents, (entry) => talent(entry, true)) ||
     (value.inventory !== undefined &&
       !arrayOf(value.inventory, (entry) => typeof entry === 'string'))
   )

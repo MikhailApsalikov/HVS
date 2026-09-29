@@ -446,7 +446,7 @@ describe('anti-AFK through player commands and gameplay time', () => {
       abilities: current.abilities.slice(0, 10),
       state: previousState,
     })!;
-    expect(migrated.version).toBe(16);
+    expect(migrated.version).toBe(17);
     expect(migrated.state).toMatchObject({
       antiAfkIdleTimer: 0,
       antiAfkStacks: 0,

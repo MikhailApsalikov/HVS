@@ -120,10 +120,10 @@ describe('magic talent update through session commands', () => {
   it.each(['normal', 'fat', 'fast', 'ninja', 'burner', 'tank'] as const)(
     'slows existing and new %s spiders independently of blizzard and recalculates live',
     (type) => {
-      const session = game(8);
+      const session = game(20);
       const spider = addSpider(session, type, 0, 0, 0, 0.1);
       session.talents.loadFromSave([{ id: 'permafrost', rank: 5 }]);
-      session.state.character.setBase('intellect', 186);
+      session.state.character.setBase('intellect', 162);
       session.refreshStats();
       expect(session.state.stats.intellect).toBe(200);
       session.tick(0.5);
@@ -133,7 +133,7 @@ describe('magic talent update through session commands', () => {
       session.tick(0.5);
       expect(spider.y).toBeCloseTo(0.072);
       expect(newcomer.y).toBeCloseTo(0.045);
-      session.state.character.setBase('intellect', 386);
+      session.state.character.setBase('intellect', 362);
       session.refreshStats();
       session.tick(0.5);
       expect(spider.y).toBeCloseTo(0.0975);
@@ -149,7 +149,7 @@ describe('magic talent update through session commands', () => {
   );
 
   it('caps only permafrost while allowing blizzard to slow further', () => {
-    const session = game(8);
+    const session = game(20);
     session.talents.loadFromSave([{ id: 'permafrost', rank: 5 }]);
     session.state.character.setBase('intellect', 10000);
     session.refreshStats();

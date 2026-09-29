@@ -10,7 +10,8 @@ export type AbilityId =
   | 'recharge'
   | 'lastHope'
   | 'adrenaline'
-  | 'eagleEye';
+  | 'eagleEye'
+  | 'aimedFire';
 export type TalentId =
   | 'endurance'
   | 'spiderArmor'
@@ -28,7 +29,8 @@ export type TalentId =
   | 'recharge'
   | 'permafrost'
   | 'volleyMastery'
-  | 'volley'
+  | 'titanPreparation'
+  | 'aimedFire'
   | 'killingStreak'
   | 'enthusiasm'
   | 'improvedKillingStreak'

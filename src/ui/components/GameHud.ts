@@ -1,7 +1,7 @@
 import type { GameState } from '../../domain/model/GameState.js';
 import type { AbilityId } from '../../domain/types.js';
 import type { SpriteRegistry } from '../SpriteRegistry.js';
-import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
+import { ABILITIES, ABILITY_DISPLAY_ORDER } from '../../content/abilities.js';
 import { PRIMARY_STATS, STATS } from '../../domain/rules/stats.js';
 import {
   abilityDescription,
@@ -80,7 +80,7 @@ export class HUD {
     }
     this.abilities.className = 'ability-buttons';
     this.abilities.id = 'ability-buttons';
-    for (const id of ABILITY_ORDER) {
+    for (const id of ABILITY_DISPLAY_ORDER) {
       const definition = ABILITIES[id];
       const wrapper = document.createElement('div');
       wrapper.className = 'ability-btn-wrapper';
@@ -89,7 +89,7 @@ export class HUD {
       button.className = 'ability-btn';
       button.dataset.ability = id;
       button.setAttribute('aria-label', definition.name);
-      button.innerHTML = `<span class="ability-btn__icon">${sprites.get(definition.sprite)}</span><span class="ability-btn__info"><span class="ability-btn__name">${definition.name}</span><span class="ability-btn__hotkey">[${definition.key}]</span><span class="ability-btn__effect-text"></span></span><span class="ability-btn__cd-text"></span><span class="ability-btn__lock">${sprites.get('Lock')}</span>`;
+      button.innerHTML = `<span class="ability-btn__icon">${sprites.get(definition.sprite)}</span><span class="ability-btn__info"><span class="ability-btn__name">${definition.name}</span><kbd class="ability-btn__hotkey">${definition.key}</kbd><span class="ability-btn__effect-text"></span></span><span class="ability-btn__cd-text"></span><span class="ability-btn__lock">${sprites.get('Lock')}</span>`;
       wrapper.append(button);
       this.buttons.set(id, button);
       wrapper.addEventListener('mouseenter', () => {

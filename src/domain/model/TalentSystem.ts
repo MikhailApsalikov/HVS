@@ -133,12 +133,16 @@ export class TalentSystem {
   }
   loadFromSave(data: readonly { id: string; rank: number }[]): number {
     this.ranks.clear();
+    let refundedPoints = 0;
     for (const entry of data) {
+      if (entry.id === 'volley' && Number.isInteger(entry.rank)) {
+        refundedPoints = Math.max(0, entry.rank);
+        continue;
+      }
       if (!Object.hasOwn(TALENTS, entry.id) || !Number.isInteger(entry.rank)) continue;
       const id = entry.id as TalentId;
       this.ranks.set(id, Math.max(0, entry.rank));
     }
-    let refundedPoints = 0;
     for (const [id, rank] of this.ranks) {
       const capped = Math.min(rank, this.config.talents[id].maxRanks);
       refundedPoints += rank - capped;

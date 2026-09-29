@@ -115,7 +115,7 @@ const ATTRIBUTE_EFFECT_TEXT: Partial<Record<StatId, string>> = {
     'Каждое убийство приближает следующий эффект «Череды убийств» на {value} с.',
   armor: 'Увеличивает броню на {value} единиц.',
   shootCooldown: 'Сокращает перезарядку выстрела и увеличивает скорость стрел на {value}.',
-  'volley.cooldown': 'Сокращает перезарядку «Залпа» на {value}.',
+  'volley.cooldown': 'Сокращает перезарядку «Залпа» и «Прицельного огня» на {value}.',
   energyPerKill: 'Каждый убитый паук восстанавливает дополнительно {value} энергии.',
   criticalShotChance: '+{value} к шансу Критического выстрела',
   maxEnergy: 'Увеличивает максимальный запас энергии на {value} единиц.',
@@ -140,7 +140,10 @@ export function attributeDescription(state: GameState, id: PrimaryStatId | 'armo
   const contributions = state.rules.attributeEffects[id]
     .filter(
       (effect) =>
-        effect.stat !== 'lastHope.blockPower' && effect.stat !== 'arrowSpeed' && effect.value !== 0,
+        effect.stat !== 'lastHope.blockPower' &&
+        effect.stat !== 'arrowSpeed' &&
+        effect.stat !== 'aimedFire.cooldown' &&
+        effect.value !== 0,
     )
     .map(attributeEffectDescription);
   for (const talentId of TALENT_ORDER) {
@@ -198,7 +201,7 @@ export function abilityDescription(state: GameState, id: AbilityId): string {
       : []),
   ];
   const activeTimer = state.abilityActiveTimer(id);
-  return `<div class="tooltip__title">${ability.name} [${ability.key}]</div>${descriptionParagraphs(abilityEffectDescription(id, state.stats))}${descriptionParagraphs(abilityUsageDescription(id, state.stats))}${activeTimer > 0 ? `<div>Действует ещё ${formatSeconds(activeTimer)} с</div>${id === 'adrenaline' ? `<div>Бесплатных выстрелов: ${state.adrenalineShots}</div>` : id === 'eagleEye' ? `<div>Критических выстрелов: ${state.eagleEyeShots}</div>` : ''}` : ''}${reasons.map((reason) => `<div class="action-unavailable">${reason}</div>`).join('')}`;
+  return `<div class="tooltip__title">${ability.name} · ${ability.key}</div>${descriptionParagraphs(abilityEffectDescription(id, state.stats))}${descriptionParagraphs(abilityUsageDescription(id, state.stats))}${activeTimer > 0 ? `<div>Действует ещё ${formatSeconds(activeTimer)} с</div>${id === 'adrenaline' ? `<div>Бесплатных выстрелов: ${state.adrenalineShots}</div>` : id === 'eagleEye' ? `<div>Критических выстрелов: ${state.eagleEyeShots}</div>` : ''}` : ''}${reasons.map((reason) => `<div class="action-unavailable">${reason}</div>`).join('')}`;
 }
 export function resourceDescription(state: GameState, id: string): string {
   const value = (stat: StatId) => formatStat(stat, state.stats[stat]);
@@ -269,11 +272,13 @@ export function shootDescription(state: GameState, lane: number): string {
 export function killingStreakDescription(state: GameState): string {
   return `<div class="tooltip__title">Череда убийств</div>${descriptionParagraphs(
     [
-      `Эффектов: ${state.killingStreakStacks} из ${state.stats['killingStreak.maxStacks']}.`,
+      `Эффектов: ${state.killingStreakStacks}.`,
       `Стоимость выстрела снижена на ${state.killingStreakStacks} энергии.`,
-      state.killingStreakFull
-        ? 'Набрано максимальное количество эффектов.'
-        : `Следующий эффект через ${formatSeconds(state.killingStreakRemaining)} с без урона.`,
+      state.killingStreakExcess > 0
+        ? `«Подготовка титана»: ${state.killingStreakExcess} временных эффектов.`
+        : state.killingStreakFull
+          ? 'Набрано максимальное количество эффектов.'
+          : `Следующий эффект через ${formatSeconds(state.killingStreakRemaining)} с без урона.`,
       'Урон от паука снимает один эффект.',
     ].join('\n'),
   )}`;

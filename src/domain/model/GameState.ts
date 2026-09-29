@@ -1,7 +1,7 @@
 import type { AbilityId, Difficulty, DifficultyConfig, GamePhase } from '../types.js';
 import type { GameRules } from '../rules/GameRules.js';
 import type { ResolvedStats } from '../rules/stats.js';
-import { ANTI_AFK } from '../rules/stats.js';
+import { ANTI_AFK, KILLING_STREAK } from '../rules/stats.js';
 import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { WORLD } from '../rules/world.js';
 import { clamp } from '../rules/numbers.js';
@@ -11,6 +11,10 @@ import { Spider } from './Spider.js';
 import { Arrow } from './Arrow.js';
 
 export type ArmageddonPhase = 'none' | 'charging' | 'firing';
+export interface AimedFireWave {
+  readonly remaining: number;
+  readonly guaranteedCritical: boolean;
+}
 
 export class GameState {
   phase: GamePhase = 'levelUp';
@@ -33,8 +37,10 @@ export class GameState {
   eagleEyeTimer = 0;
   eagleEyeShots = 0;
   killingStreakLearned = false;
-  killingStreakStacks = 0;
+  private streakStacks = 0;
   killingStreakProgress = 0;
+  killingStreakDecayProgress = 0;
+  aimedFireWaves: readonly AimedFireWave[] = [];
   antiAfkIdleTimer = 0;
   antiAfkStacks = 0;
   antiAfkRecoveryTimer = 0;
@@ -92,7 +98,52 @@ export class GameState {
         ]);
   }
   get killingStreakFull(): boolean {
-    return this.killingStreakStacks >= this.stats['killingStreak.maxStacks'];
+    return this.killingStreakStacks >= this.killingStreakMaximum;
+  }
+  get killingStreakStacks(): number {
+    return this.streakStacks;
+  }
+  set killingStreakStacks(value: number) {
+    this.streakStacks = clamp(Math.floor(value), 0, KILLING_STREAK.maxStacks);
+    if (this.killingStreakFull) this.killingStreakProgress = 0;
+    if (this.killingStreakExcess === 0) this.killingStreakDecayProgress = 0;
+  }
+  get killingStreakMaximum(): number {
+    return this.killingStreakLearned ? this.stats['killingStreak.maxStacks'] : 0;
+  }
+  get killingStreakExcess(): number {
+    return Math.max(0, this.killingStreakStacks - this.killingStreakMaximum);
+  }
+  get killingStreakDisplayMaximum(): number {
+    return Math.max(this.killingStreakMaximum, this.stats['prep.stacks'], this.killingStreakStacks);
+  }
+  get killingStreakDecayRemaining(): number {
+    return this.killingStreakExcess > 0
+      ? KILLING_STREAK.decayInterval - this.killingStreakDecayProgress
+      : 0;
+  }
+  get killingStreakDecayFraction(): number {
+    return this.killingStreakDecayRemaining / KILLING_STREAK.decayInterval;
+  }
+  prepareKillingStreak(): void {
+    if (this.stats['prep.stacks'] <= this.killingStreakStacks) return;
+    this.killingStreakStacks = this.stats['prep.stacks'];
+    this.killingStreakDecayProgress = 0;
+  }
+  tickKillingStreak(dt: number): void {
+    if (this.killingStreakExcess > 0) {
+      const progress = this.killingStreakDecayProgress + dt;
+      const lost = Math.min(
+        this.killingStreakExcess,
+        Math.floor((progress + 1e-9) / KILLING_STREAK.decayInterval),
+      );
+      this.killingStreakStacks -= lost;
+      this.killingStreakDecayProgress =
+        this.killingStreakExcess > 0
+          ? Math.max(0, progress - lost * KILLING_STREAK.decayInterval)
+          : 0;
+    }
+    this.advanceKillingStreak(dt);
   }
   get killingStreakRemaining(): number {
     return this.killingStreakFull
@@ -110,7 +161,7 @@ export class GameState {
     const interval = this.stats['killingStreak.interval'];
     const gained = Math.floor((progress + 1e-9) / interval);
     this.killingStreakStacks = Math.min(
-      this.stats['killingStreak.maxStacks'],
+      this.killingStreakMaximum,
       this.killingStreakStacks + gained,
     );
     this.killingStreakProgress = this.killingStreakFull

@@ -73,7 +73,7 @@ export class GameApp {
     this.adrenaline = new AdrenalineOverlay(field.getContainer(), sprites);
     this.eagleEye = new AdrenalineOverlay(field.getContainer(), sprites, 'eagleEye');
     this.antiAfk = new AntiAfkOverlay(field.getContainer());
-    this.preparation = new PreparationOverlay(field.getContainer(), sprites);
+    this.preparation = new PreparationOverlay(field.getContainer());
     const wrapper = document.createElement('div');
     wrapper.className = 'app__screens';
     wrapper.append(this.menu.getContainer(), this.game.getContainer(), this.over.getContainer());

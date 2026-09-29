@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <defs><linearGradient id="titanPrep" x1="9" y1="7" x2="36" y2="44" gradientUnits="userSpaceOnUse"><stop stop-color="#d5faff"/><stop offset="1" stop-color="#479bbe"/></linearGradient></defs>
+  <path d="M24 3 43 14v21L24 46 5 35V14Z" fill="#152e40" stroke="#b8dfe6" stroke-width="2"/>
+  <path d="m14 34-4-17 9 6 5-13 5 13 9-6-4 17Z" fill="url(#titanPrep)" stroke="#e4fbff" stroke-linejoin="round"/>
+  <path d="M16 39h16M18 34h12" stroke="#edc675" stroke-width="3" stroke-linecap="round"/>
+  <path d="m24 20-6 9h5l-1 7 8-11h-6Z" fill="#fff3bc" stroke="#bd9645"/>
+</svg>

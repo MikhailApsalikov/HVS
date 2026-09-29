@@ -7,6 +7,7 @@ export class KillingStreakEffect {
   readonly container = document.createElement('div');
   private readonly count: HTMLElement;
   private readonly pips: HTMLElement;
+  private readonly status: HTMLElement;
   private previousStacks = 0;
   private flashes: Animation[] = [];
   private state: GameState | null = null;
@@ -18,6 +19,9 @@ export class KillingStreakEffect {
     this.container.innerHTML = `<div class="killing-streak__flames" aria-hidden="true">${Array.from({ length: 7 }, (_, index) => `<i style="--flame:${index}"></i>`).join('')}</div><div class="killing-streak__heading"><span class="killing-streak__icon">${sprites.get('TalentKillingStreak')}</span><span>Череда убийств</span><strong class="killing-streak__count"></strong></div><div class="killing-streak__pips" aria-hidden="true"></div><div class="killing-streak__track" aria-hidden="true"><div class="killing-streak__progress"></div></div>`;
     this.count = this.container.querySelector('.killing-streak__count')!;
     this.pips = this.container.querySelector('.killing-streak__pips')!;
+    this.status = document.createElement('div');
+    this.status.className = 'killing-streak__status';
+    this.pips.after(this.status);
     const tooltip = TooltipManager.getInstance();
     const show = () => {
       if (this.state) tooltip.show(this.container, killingStreakDescription(this.state));
@@ -30,7 +34,9 @@ export class KillingStreakEffect {
 
   render(state: GameState): void {
     this.state = state;
-    this.container.hidden = !state.killingStreakLearned || state.phase === 'gameOver';
+    this.container.hidden =
+      (!state.killingStreakLearned && state.killingStreakStacks === 0) ||
+      state.phase === 'gameOver';
     if (this.container.hidden) {
       this.flashes.forEach((animation) => animation.cancel());
       this.flashes = [];
@@ -38,16 +44,28 @@ export class KillingStreakEffect {
       return;
     }
     const stacks = state.killingStreakStacks;
-    const maximum = state.stats['killingStreak.maxStacks'];
+    const maximum = state.killingStreakDisplayMaximum;
+    const excess = state.killingStreakExcess;
     this.container.classList.toggle('killing-streak--active', stacks > 0);
-    this.container.classList.toggle('killing-streak--full', state.killingStreakFull);
+    this.container.classList.toggle('killing-streak--full', state.killingStreakFull && stacks > 0);
+    this.container.classList.toggle('killing-streak--titan', excess > 0);
     this.container.classList.toggle('killing-streak--paused', state.phase !== 'playing');
     this.container.style.setProperty('--streak-strength', String(stacks / maximum));
-    this.count.textContent = `${stacks}/${maximum}`;
-    const timerLabel = state.killingStreakFull
-      ? 'Максимум эффектов'
-      : `Следующий через ${formatSeconds(state.killingStreakRemaining)} с${state.phase !== 'playing' ? ' · Пауза' : ''}`;
-    this.container.style.setProperty('--streak-progress', String(state.killingStreakFraction));
+    this.count.textContent =
+      excess > 0 ? String(stacks) : `${stacks}/${state.killingStreakMaximum}`;
+    this.status.textContent =
+      excess > 0 ? `Подготовка титана · +${excess}` : `−${stacks} энергии за выстрел`;
+    const timerLabel =
+      excess > 0
+        ? `Временных эффектов: ${excess}`
+        : state.killingStreakFull
+          ? 'Максимум эффектов'
+          : `Следующий через ${formatSeconds(state.killingStreakRemaining)} с${state.phase !== 'playing' ? ' · Пауза' : ''}`;
+    this.container.style.setProperty(
+      '--streak-progress',
+      String(excess > 0 ? state.killingStreakDecayFraction : state.killingStreakFraction),
+    );
+    this.pips.style.setProperty('--streak-columns', String(Math.min(10, maximum)));
     this.container.setAttribute(
       'aria-label',
       `Череда убийств: ${stacks} из ${maximum}. ${timerLabel}`,
@@ -56,9 +74,10 @@ export class KillingStreakEffect {
       this.pips.replaceChildren(
         ...Array.from({ length: maximum }, () => document.createElement('i')),
       );
-    Array.from(this.pips.children).forEach((pip, index) =>
-      pip.classList.toggle('filled', index < stacks),
-    );
+    Array.from(this.pips.children).forEach((pip, index) => {
+      pip.classList.toggle('filled', index < stacks);
+      pip.classList.toggle('temporary', index >= state.killingStreakMaximum);
+    });
     if (stacks !== this.previousStacks && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       this.flashes.forEach((animation) => animation.cancel());
       this.flashes = [

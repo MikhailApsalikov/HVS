@@ -61,7 +61,12 @@ describe('whole item bonuses and common price steps', () => {
     ['e-coins', 10214],
   ] as const)('refunds newly removed %s from a version 12 save only once', (id, price) => {
     const session = new GameSession('normal');
-    const previous = { ...snapshot(session), version: 12, inventory: [id] };
+    const previous = {
+      ...snapshot(session),
+      version: 12,
+      abilities: snapshot(session).abilities.slice(0, 11),
+      inventory: [id],
+    };
     const loaded = restore(parseSave(previous)!);
     expect(loaded.items.inventory).toEqual([]);
     expect(loaded.state.coins).toBe(session.state.coins + price);

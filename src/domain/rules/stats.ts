@@ -9,6 +9,8 @@ const probability = { digits: 6, min: 0, max: 1 } as const;
 export const BEST_DEFENSE_COOLDOWN = 3;
 export const CRITICAL_SHOT_POWER = 2;
 export const IMPROVED_CRITICAL_SHOT_POWER = 3;
+export const KILLING_STREAK = { maxStacks: 20, decayInterval: 1.5 } as const;
+export const AIMED_FIRE_DELAYS = [1, 3, 5] as const;
 export const BURNER_ENERGY_PER_LEVEL = 2;
 export const GOLDEN_SPIDER_REWARD = { base: 10, perLevel: 1 } as const;
 export const DODGE_CAP = 0.75;
@@ -42,7 +44,10 @@ export const STATS = {
   dodgeChance: stat('Шанс уклонения', 0, { ...probability, max: DODGE_CAP }),
   enthusiasmChance: stat('Шанс уклонения: Увлечённость', 0, probability),
   'killingStreak.interval': stat('Время набора: Череда убийств, с', 20, { ...duration, min: 1 }),
-  'killingStreak.maxStacks': stat('Максимум эффектов: Череда убийств', 5, integer),
+  'killingStreak.maxStacks': stat('Максимум эффектов: Череда убийств', 5, {
+    ...integer,
+    max: KILLING_STREAK.maxStacks,
+  }),
   'killingStreak.killAdvance': stat('Ускорение за убийство: Череда убийств, с', 0, decimal),
   blockPower: stat('Сила блока', 0, integer),
   blockVolleyChance: stat('Шанс бесплатного «Залпа» при прорыве паука', 0, probability),
@@ -92,12 +97,18 @@ export const STATS = {
   'prep.energyRegen': stat('Восстановление энергии/с: Подготовка', 30, decimal),
   'prep.overTime': stat('Постепенное восстановление энергии: Подготовка', 0, decimal),
   'prep.instant': stat('Мгновенное восстановление энергии: Подготовка', 0, integer),
+  'prep.stacks': stat('Эффекты Череды убийств: Подготовка титана', 0, {
+    ...integer,
+    max: KILLING_STREAK.maxStacks,
+  }),
   'heal.cost': stat('Стоимость: Лечение', 100, integer),
   'heal.cooldown': stat('Перезарядка: Лечение, с', 10, duration),
   'heal.amount': stat('Восстановление HP: Лечение', 150, integer),
   'volley.cost': stat('Стоимость: Залп', 100, integer),
   'volley.cooldown': stat('Перезарядка: Залп, с', 36, duration),
   'volley.lanes': stat('Количество стрел: Залп', 4, { ...integer, max: WORLD.lanes }),
+  'aimedFire.cost': stat('Стоимость: Прицельный огонь', 100, integer),
+  'aimedFire.cooldown': stat('Перезарядка: Прицельный огонь, с', 100, duration),
   'stand.cost': stat('Стоимость: Божественный щит', 15, integer),
   'stand.cooldown': stat('Перезарядка: Божественный щит, с', 180, duration),
   'stand.duration': stat('Длительность: Божественный щит, с', 7, duration),

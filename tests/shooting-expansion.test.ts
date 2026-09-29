@@ -139,12 +139,10 @@ describe('shooting progression and scaling', () => {
       expect(session.talents.getTalent('eagleEye').tier).toBe(3);
       for (const id of ['improvedCriticalShot', 'agileCriticalShot'] as const)
         expect(session.talents.getTalent(id).tier).toBe(4);
-      expect(session.talents.getTalent('volleyMastery').tier).toBe(3);
+      expect(session.talents.getTalent('volleyMastery').tier).toBe(2);
+      session.state.level = 9;
       expect(session.upgradeTalent('volleyMastery')).toBe(false);
-      expect(session.upgradeTalent('volley')).toBe(true);
-      session.state.level = 19;
-      expect(session.upgradeTalent('volleyMastery')).toBe(false);
-      session.state.level = 20;
+      session.state.level = 10;
       expect(session.upgradeTalent('volleyMastery')).toBe(true);
       expect(session.state.stats['volley.lanes']).toBe(5);
     },
@@ -292,12 +290,7 @@ describe('eagle eye ability', () => {
   });
   it('combines with adrenaline, excludes all volleys and receives common cooldown bonuses', () => {
     const session = arena(
-      [
-        ...eagle,
-        { id: 'adrenaline', rank: 1 },
-        { id: 'quickInstinct', rank: 2 },
-        { id: 'volley', rank: 1 },
-      ],
+      [...eagle, { id: 'adrenaline', rank: 1 }, { id: 'quickInstinct', rank: 2 }],
       0.999999,
     );
     session.state.level = 60;
@@ -332,7 +325,7 @@ describe('vampirism and gold', () => {
     (source) => {
       const session = arena([
         { id: 'vampirism', rank: 5 },
-        { id: 'volley', rank: 1 },
+
         ...(source === 'critical' ? critical : []),
       ]);
       session.state.character.setBase('agility', 20);
@@ -439,7 +432,7 @@ describe('version eleven saves', () => {
         talents: [...current.talents, { id: 'volleyMastery', rank: 3 }],
       };
       const parsed = parseSave(old)!;
-      expect(parsed.version).toBe(16);
+      expect(parsed.version).toBe(17);
       const loaded = restore(parsed, () => 0);
       expect(loaded.state.eagleEyeActive).toBe(false);
       expect(loaded.state.getAbility('eagleEye').isReady).toBe(true);

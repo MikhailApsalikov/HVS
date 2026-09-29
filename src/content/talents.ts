@@ -172,11 +172,21 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     description:
       'Снижает скорость передвижения всех пауков на {scaling.base} + {scaling.value} за каждые {scaling.step} полных единиц интеллекта.\nЗамедление от этого таланта не может превышать 50%.',
   },
-  volley: {
+  titanPreparation: {
     branch: 'shooting',
-    column: 3,
-    name: 'Залп',
-    sprite: 'TalentVolley',
+    column: 2,
+    name: 'Подготовка титана',
+    sprite: 'TalentTitanPreparation',
+    effects: [flat('prep.stacks', 4)],
+    description:
+      '«Подготовка» доводит число эффектов «Череды убийств» до {prep.stacks}, даже если этот талант не изучен.',
+  },
+  aimedFire: {
+    branch: 'shooting',
+    column: 2,
+    name: 'Прицельный огонь',
+    sprite: 'AbilityAimedFire',
+    prerequisite: { id: 'titanPreparation', rank: 5 },
     effects: [],
   },
   killingStreak: {
@@ -214,10 +224,14 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 3,
     name: 'Искусный залп',
     sprite: 'TalentVolleyMastery',
-    prerequisite: { id: 'volley', rank: 1 },
-    effects: [flat('volley.lanes', 1), percent('volley.cooldown', -4), flat('volley.cost', -2)],
+    effects: [
+      flat('volley.lanes', 1),
+      percent('volley.cooldown', -4),
+      percent('aimedFire.cooldown', -4),
+      flat('volley.cost', -2),
+    ],
     description:
-      'Увеличивает число стрел «Залпа» на {volley.lanes}, сокращает его перезарядку на {volley.cooldown} и снижает стоимость на {volley.cost} энергии.',
+      'Увеличивает число стрел «Залпа» на {volley.lanes} и снижает его стоимость на {volley.cost} энергии.\nСокращает перезарядку «Залпа» и «Прицельного огня» на {volley.cooldown}.',
   },
   rapidFire: {
     branch: 'shooting',
@@ -227,10 +241,11 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     effects: [
       percent('shootCooldown', -7),
       percent('volley.cooldown', -7),
+      percent('aimedFire.cooldown', -7),
       percent('arrowSpeed', 7),
     ],
     description:
-      'Сокращает перезарядку выстрела на {shootCooldown}, а «Залпа» — на {volley.cooldown}.\nСтрелы летят на {arrowSpeed} быстрее.',
+      'Сокращает перезарядку выстрела на {shootCooldown}, а «Залпа» и «Прицельного огня» — на {volley.cooldown}.\nСтрелы летят на {arrowSpeed} быстрее.',
   },
   dutyBound: {
     branch: 'defense',

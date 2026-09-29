@@ -8,9 +8,8 @@ import { GameRules } from './rules/GameRules.js';
 import { GameState } from './model/GameState.js';
 import { TalentSystem } from './model/TalentSystem.js';
 import { ItemSystem } from './model/ItemSystem.js';
-import { Arrow } from './model/Arrow.js';
-import { CRITICAL_SHOT_POWER, IMPROVED_CRITICAL_SHOT_POWER } from './rules/stats.js';
-import { activateAbility, tickAbilities } from './systems/AbilitySystem.js';
+import { createArrow } from './systems/ArrowFactory.js';
+import { activateAbility, tickAbilities, tickAimedFire } from './systems/AbilitySystem.js';
 import { tickAntiAfk } from './systems/AntiAfkSystem.js';
 import {
   spawnSpiders,
@@ -96,6 +95,7 @@ export class GameSession {
       new GameRules(state.config, effects, state.character.base, state.level),
       grantHealthIncrease,
     );
+    state.killingStreakStacks = state.killingStreakStacks;
     state.advanceKillingStreak(0);
   }
   upgradeTalent(id: TalentId): boolean {
@@ -158,36 +158,11 @@ export class GameSession {
       }
     }
     const eagleEyeActive = state.eagleEyeActive;
-    const critical =
-      eagleEyeActive ||
-      (state.stats.criticalShotChance > 0 && this.random() < state.stats.criticalShotChance);
+    const arrow = createArrow(state, this.random, lane, false, eagleEyeActive, eagleEyeActive);
     if (state.eagleEyeActive) {
       state.eagleEyeShots -= 1;
       if (state.eagleEyeShots === 0) state.eagleEyeTimer = 0;
     }
-    const improvedChance = state.rules.value(
-      'improvedCriticalShotChance',
-      undefined,
-      eagleEyeActive
-        ? [
-            {
-              source: 'ability:eagleEye',
-              kind: 'flat',
-              value: state.stats['eagleEye.improvedCriticalShotChance'],
-            },
-          ]
-        : [],
-    );
-    const improved = critical && improvedChance > 0 && this.random() < improvedChance;
-    const power = improved ? IMPROVED_CRITICAL_SHOT_POWER : critical ? CRITICAL_SHOT_POWER : 1;
-    const arrow = new Arrow(
-      state.newId('arrow'),
-      lane,
-      state.stats.arrowSpeed,
-      false,
-      critical,
-      power,
-    );
     state.arrows.set(arrow.id, arrow);
     return 'shot';
   }
@@ -204,6 +179,14 @@ export class GameSession {
   }
   tick(dt: number): void {
     if (!Number.isFinite(dt) || dt < 0) throw new RangeError('Invalid timestep');
+    let remaining = dt;
+    while (remaining > 0 && this.state.phase === 'playing') {
+      const step = Math.min(remaining, ...this.state.aimedFireWaves.map((wave) => wave.remaining));
+      this.tickStep(step);
+      remaining = Math.max(0, remaining - step);
+    }
+  }
+  private tickStep(dt: number): void {
     const state = this.state;
     if (state.phase !== 'playing' || dt === 0) return;
     const emit = (event: GameEvent) => this.events.push(event);
@@ -213,7 +196,7 @@ export class GameSession {
     const adrenalineWasActive = state.adrenalineActive;
     const prepRegeneration = state.stats['prep.energyRegen'] * Math.min(dt, state.prepTimer);
     tickAbilities(state, dt);
-    state.advanceKillingStreak(dt);
+    state.tickKillingStreak(dt);
     if (
       (lastHopeWasActive && state.lastHopeTimer === 0) ||
       (adrenalineWasActive && !state.adrenalineActive)
@@ -233,6 +216,7 @@ export class GameSession {
       state.phase = 'gameOver';
       return;
     }
+    tickAimedFire(state, dt, this.random);
     state.modifyHp(state.stats.hpRegen * dt);
     state.modifyEnergy(state.stats.energyRegen * dt + prepRegeneration);
     state.coinAccumulator += state.stats.coinsPerSec * dt;

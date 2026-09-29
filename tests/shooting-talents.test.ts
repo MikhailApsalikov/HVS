@@ -200,7 +200,6 @@ describe('critical shots through session commands', () => {
     session.talents.loadFromSave([
       { id: 'criticalShot', rank: 10 },
       { id: 'adrenaline', rank: 1 },
-      { id: 'volley', rank: 1 },
     ]);
     session.state.character.setModifiers('test:counter', [
       { stat: 'blockVolleyChance', kind: 'flat', value: 1 },
@@ -331,7 +330,7 @@ describe('critical shot saves', () => {
       spiders: previousSpiders(saved),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(16);
+    expect(parsed.version).toBe(17);
     const loaded = restore(parsed);
     expect(loaded.talents.getRank('hunterMastery')).toBe(5);
     expect(loaded.state.stats.shootCost).toBe(25);
@@ -353,11 +352,7 @@ describe('critical shot saves', () => {
     session.shootLane(0);
     addSpider(session);
     const saved = snapshot(session);
-    for (const invalid of [
-      { critical: 'yes' },
-      { critical: false, power: 2 },
-      { fromVolley: true },
-    ])
+    for (const invalid of [{ critical: 'yes' }, { critical: false, power: 2 }, { fromVolley: 1 }])
       expect(parseSave({ ...saved, arrows: [{ ...saved.arrows[0], ...invalid }] })).toBeNull();
   });
 });
