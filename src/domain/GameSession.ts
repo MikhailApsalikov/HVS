@@ -11,6 +11,7 @@ import { ItemSystem } from './model/ItemSystem.js';
 import { createArrow } from './systems/ArrowFactory.js';
 import { activateAbility, tickAbilities, tickAimedFire } from './systems/AbilitySystem.js';
 import { tickAntiAfk } from './systems/AntiAfkSystem.js';
+import { debuffModifiers, nextDebuffBoundary, tickDebuffs } from './systems/DebuffSystem.js';
 import {
   spawnSpiders,
   moveSpiders,
@@ -56,6 +57,7 @@ export class GameSession {
       ...this.talents.getModifiers(state.level),
       ...this.items.getModifiers(),
       ...state.character.getModifiers(),
+      ...debuffModifiers(state),
     ];
     if (state.antiAfkDamagePercent > 0)
       effects.push({
@@ -168,7 +170,7 @@ export class GameSession {
   }
   activateAbility(id: AbilityId): AbilityResult {
     const result = activateAbility(this.state, id, this.random);
-    if ((id === 'lastHope' || id === 'adrenaline') && result === 'activated')
+    if ((id === 'lastHope' || id === 'adrenaline' || id === 'stand') && result === 'activated')
       this.refreshStats(false);
     return result;
   }
@@ -181,7 +183,11 @@ export class GameSession {
     if (!Number.isFinite(dt) || dt < 0) throw new RangeError('Invalid timestep');
     let remaining = dt;
     while (remaining > 0 && this.state.phase === 'playing') {
-      const step = Math.min(remaining, ...this.state.aimedFireWaves.map((wave) => wave.remaining));
+      const step = Math.min(
+        remaining,
+        nextDebuffBoundary(this.state),
+        ...this.state.aimedFireWaves.map((wave) => wave.remaining),
+      );
       this.tickStep(step);
       remaining = Math.max(0, remaining - step);
     }
@@ -190,6 +196,13 @@ export class GameSession {
     const state = this.state;
     if (state.phase !== 'playing' || dt === 0) return;
     const emit = (event: GameEvent) => this.events.push(event);
+    const hpRegeneration = state.stats.hpRegen * dt;
+    const passiveCoins = state.stats.coinsPerSec * dt;
+    if (tickDebuffs(state, dt)) this.refreshStats(false);
+    if (state.hp <= 0) {
+      state.phase = 'gameOver';
+      return;
+    }
     const occupiedAt = spawnSpiders(state, dt, this.random);
     if (tickAntiAfk(state, dt, occupiedAt)) this.refreshStats(false);
     const lastHopeWasActive = state.lastHopeTimer > 0;
@@ -204,12 +217,18 @@ export class GameSession {
       this.refreshStats(false);
     moveSpiders(state, dt, this.random);
     tickArrows(state, dt);
-    resolveBreaches(state, this.random, emit, () => {
-      if (state.antiAfkStacks > 0 && state.antiAfkRecoveryTimer === 0) {
-        state.antiAfkStacks += 1;
-        this.refreshStats(false);
-      }
-    });
+    resolveBreaches(
+      state,
+      this.random,
+      emit,
+      () => {
+        if (state.antiAfkStacks > 0 && state.antiAfkRecoveryTimer === 0) {
+          state.antiAfkStacks += 1;
+          this.refreshStats(false);
+        }
+      },
+      () => this.refreshStats(false),
+    );
     collectDeadSpiders(state, dt, this.random, emit);
     // Death wins over regeneration and simultaneous completion of a level.
     if (state.hp <= 0) {
@@ -217,9 +236,9 @@ export class GameSession {
       return;
     }
     tickAimedFire(state, dt, this.random);
-    state.modifyHp(state.stats.hpRegen * dt);
+    state.modifyHp(hpRegeneration);
     state.modifyEnergy(state.stats.energyRegen * dt + prepRegeneration);
-    state.coinAccumulator += state.stats.coinsPerSec * dt;
+    state.coinAccumulator += passiveCoins;
     const whole = Math.floor(state.coinAccumulator);
     state.coins += whole;
     state.coinAccumulator -= whole;

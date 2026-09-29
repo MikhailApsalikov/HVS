@@ -7,6 +7,7 @@ import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { Arrow } from '../model/Arrow.js';
 import { AIMED_FIRE_DELAYS } from '../rules/stats.js';
 import { createArrow } from './ArrowFactory.js';
+import { clearDebuffs } from './DebuffSystem.js';
 
 type Effect = (state: GameState, random: RandomSource) => void;
 export function fireVolley(state: GameState, random: RandomSource): void {
@@ -42,6 +43,7 @@ const EFFECTS: Record<AbilityId, Effect> = {
     ];
   },
   stand: (state) => {
+    clearDebuffs(state);
     state.invulnerableTimer = state.stats['stand.duration'];
   },
   lastHope: (state) => {

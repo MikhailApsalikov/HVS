@@ -42,6 +42,7 @@ export const normalConfig: DifficultyConfig = {
   spiderChanceMegaFat: 0.01,
   spiderChanceFat: 0.05,
   spiderChanceFast: 0.07,
+  spiderChancePoisonous: 0.01,
   spiderChanceNinja: 0.02,
   spiderChanceBurner: 0.01,
   spiderChanceTank: 0.02,

@@ -919,8 +919,8 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     abilityMod: {
       abilityId: 'heal',
       modType: 'effectBoost',
-      value: 1500,
-      description: '«Лечение»: количество восстанавливаемого HP +1500',
+      value: 650,
+      description: '«Лечение»: количество восстанавливаемого HP +650',
     },
   },
   {

@@ -204,7 +204,7 @@ describe('preparation saves', () => {
     const { prepTimer: _timer, ...state } = saved.state;
     const previous = { ...saved, version: 14, abilities: saved.abilities.slice(0, 11), state };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(17);
+    expect(parsed.version).toBe(18);
     const loaded = restore(parsed, () => 0.999999);
     expect(loaded.state.prepTimer).toBe(0);
     expect(loaded.state.energy).toBe(saved.state.energy);

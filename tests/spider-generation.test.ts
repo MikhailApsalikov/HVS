@@ -11,6 +11,7 @@ const priority = [
   ['megaFat', 50],
   ['fat', 10],
   ['fast', 20],
+  ['poisonous', 8],
   ['ninja', 35],
 ] as const;
 
@@ -57,6 +58,7 @@ describe('spider generation through session ticks', () => {
     ['fat', 0.5, 500],
     ['megaFat', 0.5, 500],
     ['golden', 0.5, 500],
+    ['poisonous', 0.5, 500],
     ['ninja', 0.5, 500],
     ['fast', 0, 175],
     ['burner', 1, 325],
@@ -76,8 +78,9 @@ describe('spider generation through session ticks', () => {
     ['megaFat', [0.99, 0.99, 0.99, 0, 0, 0, 0]],
     ['fat', [0.99, 0.99, 0.99, 0.99, 0, 0, 0]],
     ['fast', [0.99, 0.99, 0.99, 0.99, 0.99, 0, 0]],
-    ['ninja', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0]],
-    ['normal', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]],
+    ['poisonous', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0, 0]],
+    ['ninja', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0]],
+    ['normal', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]],
   ] as const)('chooses %s before every later eligible type', (type, rolls) => {
     const session = encounter(50, [0, ...rolls]);
     session.tick(0.02);
@@ -108,6 +111,11 @@ describe('spider generation through session ticks', () => {
     ['fast', 20, 0.07],
     ['fast', 70, 0.07],
     ['fast', 140, 0.07],
+    ['poisonous', 8, 0.01],
+    ['poisonous', 15, 0.01],
+    ['poisonous', 16, 0.02],
+    ['poisonous', 23, 0.02],
+    ['poisonous', 24, 0.03],
     ['ninja', 35, 0.02],
     ['ninja', 69, 0.02],
     ['ninja', 70, 0.03],
@@ -134,6 +142,8 @@ describe('spider generation through session ticks', () => {
     (difficulty) => {
       for (const [type, level, probability, hits] of [
         ['golden', 40, 0.005, 1],
+        ['poisonous', 8, 0.01, 1],
+        ['poisonous', 16, 0.02, 1],
         ['megaFat', 50, 0.01, 3],
         ['megaFat', 90, 0.02, 3],
       ] as const) {
@@ -358,7 +368,7 @@ describe('ninja jumps and saved progress', () => {
         spiders: previousSpiders(current).map((spider) => ({ ...spider, hasJumped })),
       };
       const migrated = parseSave(previous)!;
-      expect(migrated.version).toBe(17);
+      expect(migrated.version).toBe(18);
       expect(migrated.state).toEqual(current.state);
       expect(migrated.arrows).toEqual(current.arrows);
       const loaded = restore(migrated, () => 0.999999);

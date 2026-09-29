@@ -347,7 +347,7 @@ describe('progression and compatibility', () => {
     expect(loaded.state.getAbility('aimedFire').isReady).toBe(true);
     expect(loaded.state.aimedFireWaves).toEqual([]);
     const current = snapshot(loaded);
-    expect(current.version).toBe(17);
+    expect(current.version).toBe(18);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 });

@@ -22,7 +22,7 @@ describe('primary attributes through the session API', () => {
       'volley.cooldown': 35.64,
       'heal.amount': 182,
       'prep.restore': 266,
-      coinsPerSec: 4.2,
+      coinsPerSec: 4.07,
     });
     session.upgradeTalent('hunterMastery');
     session.confirmLevelUp();
@@ -65,9 +65,10 @@ describe('primary attributes through the session API', () => {
     [240, 'coinsPerKill', 1],
     [480, 'coinsPerKill', 2],
     [9, 'coinsPerSec', 4],
-    [10, 'coinsPerSec', 4.1],
-    [19, 'coinsPerSec', 4.1],
-    [20, 'coinsPerSec', 4.2],
+    [10, 'coinsPerSec', 4.03],
+    [19, 'coinsPerSec', 4.03],
+    [20, 'coinsPerSec', 4.07],
+    [30, 'coinsPerSec', 4.1],
     [1, 'hpRegen', 0.04],
     [55, 'hpRegen', 2.2],
     [55, 'armor', 110],
@@ -181,7 +182,7 @@ describe('primary attributes through the session API', () => {
       coins: 6,
       jackpot: false,
     });
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(256 + 6.4 * 0.31);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(256 + 4.8 * 0.31);
     session.state.levelTimer = 0;
     session.tick(0.01);
     session.upgradeTalent('hunterMastery');
@@ -201,7 +202,7 @@ describe('primary attributes through the session API', () => {
       maxHp: 220,
       hpRegen: 2.08,
       armor: 104,
-      coinsPerSec: 4.5,
+      coinsPerSec: 4.17,
     });
     expect(session.sellItem(0)).toBe(true);
     expect(session.state.stats).toMatchObject({
@@ -209,7 +210,7 @@ describe('primary attributes through the session API', () => {
       maxHp: 100,
       hpRegen: 1.08,
       armor: 54,
-      coinsPerSec: 4.2,
+      coinsPerSec: 4.07,
     });
     expect(session.state.hp).toBe(100);
   });
@@ -272,7 +273,9 @@ describe('armor and talent branches', () => {
     expect(session.upgradeTalent('healBoost')).toBe(true);
     expect(session.talents.branchPoints('defense')).toBe(34);
     expect(session.talents.branchPoints('magic')).toBe(21);
-    expect(session.state.stats['heal.amount']).toBe(before['heal.amount'] + 350);
+    expect(session.state.stats['heal.amount']).toBe(
+      Math.round(before['heal.amount'] + before.endurance * 0.4),
+    );
     expect(session.state.stats.hpRegen).toBeCloseTo(before.hpRegen + 5);
   });
 

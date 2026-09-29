@@ -79,6 +79,7 @@ describe('legacy feature inventory captured before rewrite', () => {
       spiderChanceGolden: 0.005,
       spiderChanceMegaFat: 0.01,
       spiderChanceFast: 0.07,
+      spiderChancePoisonous: 0.01,
       baseHp: 100,
       hpRegen: 0,
       energyRegen: 8,
@@ -88,6 +89,7 @@ describe('legacy feature inventory captured before rewrite', () => {
       arrowTravelTime: 3,
       abilities: {
         ...baseline.normal.abilities,
+        heal: { cost: 100, cooldown: 17 },
         volley: { cost: 100, cooldown: 36 },
         aimedFire: { cost: 100, cooldown: 100 },
         stand: { cost: 15, cooldown: 180 },

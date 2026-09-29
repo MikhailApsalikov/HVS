@@ -17,6 +17,7 @@ import {
 } from './rules/stats.js';
 import { TALENTS } from '../content/talents.js';
 import { SPIDERS } from '../content/spiders.js';
+import { DEBUFFS } from '../content/debuffs.js';
 import { DIFFICULTIES } from '../content/difficulties.js';
 import { WORLD } from './rules/world.js';
 import type { RandomSource } from './rules/random.js';
@@ -34,6 +35,11 @@ const STATE_FIELDS = [
   'levelTimerMax',
   'freezeActive',
   'invulnerableTimer',
+  'goldLockTimer',
+  'healingReductionTimer',
+  'poisonTimer',
+  'poisonTickTimer',
+  'poisonDamage',
   'lastHopeTimer',
   'prepTimer',
   'bestDefenseCooldown',
@@ -84,7 +90,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 17;
+  readonly version: 18;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -101,7 +107,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 17,
+    version: 18,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -125,6 +131,11 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   state.eagleEyeTimer = data.state.eagleEyeTimer;
   state.eagleEyeShots = data.state.eagleEyeShots;
   state.antiAfkStacks = data.state.antiAfkStacks;
+  state.goldLockTimer = data.state.goldLockTimer;
+  state.healingReductionTimer = data.state.healingReductionTimer;
+  state.poisonTimer = data.state.poisonTimer;
+  state.poisonTickTimer = data.state.poisonTickTimer;
+  state.poisonDamage = [...data.state.poisonDamage];
   const talentRefund = session.talents.loadFromSave(data.talents);
   state.character.restoreBase(data.character);
   for (const source of new Set(data.characterModifiers.map((modifier) => modifier.source))) {
@@ -137,6 +148,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   const duplicateRefund = session.items.loadFromSave(data.inventory, state.stats.inventorySlots);
   session.refreshStats(false);
   Object.assign(state, Object.fromEntries(STATE_FIELDS.map((key) => [key, data.state[key]])));
+  state.poisonDamage = [...data.state.poisonDamage];
   if (!state.antiAfkEnabled) {
     state.antiAfkIdleTimer = 0;
     state.antiAfkStacks = 0;
@@ -257,13 +269,32 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
   if (
-    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].includes(value.version as number) ||
+    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].includes(value.version as number) ||
     !object(value.state)
   )
     return null;
   const state = value.state;
   if (
-    value.version === 17 &&
+    value.version === 18 &&
+    (!number(state.goldLockTimer) ||
+      state.goldLockTimer > DEBUFFS.goldLock.duration ||
+      !number(state.healingReductionTimer) ||
+      !number(state.level) ||
+      state.healingReductionTimer >
+        DEBUFFS.healingReduction.duration +
+          DEBUFFS.healingReduction.durationPerLevel * state.level ||
+      !number(state.poisonTimer) ||
+      state.poisonTimer > DEBUFFS.poison.duration ||
+      !number(state.poisonTickTimer) ||
+      state.poisonTickTimer > DEBUFFS.poison.interval ||
+      !arrayOf(state.poisonDamage, number) ||
+      state.poisonDamage.length > DEBUFFS.poison.maxStacks ||
+      state.poisonTimer > 0 !== state.poisonTickTimer > 0 ||
+      state.poisonTimer > 0 !== state.poisonDamage.length > 0)
+  )
+    return null;
+  if (
+    (value.version as number) >= 17 &&
     (!number(state.killingStreakDecayProgress) ||
       state.killingStreakDecayProgress >= KILLING_STREAK.decayInterval ||
       !arrayOf(
@@ -371,7 +402,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   )
     return null;
   if (
-    !arrayOf(value.talents, (entry) => talent(entry, value.version !== 17)) ||
+    !arrayOf(value.talents, (entry) => talent(entry, (value.version as number) < 17)) ||
     !arrayOf(value.inventory, (entry) => typeof entry === 'string')
   )
     return null;
@@ -401,7 +432,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     value.archers.length !== WORLD.lanes ||
     !arrayOf(value.abilities, cooldown) ||
     value.abilities.length !==
-      (value.version === 17
+      ((value.version as number) >= 17
         ? ABILITY_ORDER.length
         : (value.version as number) >= 11
           ? 11
@@ -459,7 +490,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
         typeof entry.fromVolley === 'boolean' &&
         ((value.version as number) < 9 ||
           (typeof entry.critical === 'boolean' &&
-            (value.version === 17 || !entry.critical || !entry.fromVolley))) &&
+            ((value.version as number) >= 17 || !entry.critical || !entry.fromVolley))) &&
         // Versions 9–10 stored kills instead of remaining arrow power.
         ((value.version as number) < 9 ||
           (value.version as number) >= 11 ||
@@ -483,6 +514,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
+  if (value.version === 17) return upgradeDebuffSave(value);
   if ([13, 14, 15, 16].includes(value.version as number)) {
     const session = restore(
       upgradeShootingSave({
@@ -499,7 +531,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
       session.state.stats['killingStreak.interval'];
     return snapshot(session);
   }
-  if (value.version !== 17) {
+  if (value.version !== 18) {
     const previous = upgradeShootingSave({
       ...value,
       spiders: value.spiders.map((entry) => {
@@ -562,7 +594,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
 
 function upgradeShootingSave(value: JsonObject): SaveData {
   const abilities = value.abilities as unknown[];
-  return {
+  return upgradeDebuffSave({
     ...value,
     version: 17,
     state: { ...(value.state as JsonObject), killingStreakDecayProgress: 0, aimedFireWaves: [] },
@@ -570,6 +602,21 @@ function upgradeShootingSave(value: JsonObject): SaveData {
       ...abilities,
       ...ABILITY_ORDER.slice(abilities.length).map(() => ({ duration: 0, remainingCooldown: 0 })),
     ],
+  });
+}
+
+function upgradeDebuffSave(value: JsonObject): SaveData {
+  return {
+    ...value,
+    version: 18,
+    state: {
+      ...(value.state as JsonObject),
+      goldLockTimer: 0,
+      healingReductionTimer: 0,
+      poisonTimer: 0,
+      poisonTickTimer: 0,
+      poisonDamage: [],
+    },
   } as unknown as SaveData;
 }
 

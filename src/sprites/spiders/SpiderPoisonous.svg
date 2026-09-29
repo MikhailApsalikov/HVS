@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="poisonBody">
+      <stop stop-color="#6dba33"/>
+      <stop offset="1" stop-color="#183813"/>
+    </radialGradient>
+  </defs>
+  <g fill="none" stroke="#408a26" stroke-width="3" stroke-linecap="round">
+    <path d="M24 25 12 16 7 5 M40 25 52 16 57 5"/>
+    <path d="M21 30 7 24 2 16 M43 30 57 24 62 16"/>
+    <path d="M21 35 8 42 3 51 M43 35 56 42 61 51"/>
+    <path d="M25 39 17 49 15 60 M39 39 47 49 49 60"/>
+  </g>
+  <ellipse cx="32" cy="37" rx="14" ry="17" fill="url(#poisonBody)" stroke="#93d640"/>
+  <ellipse cx="32" cy="21" rx="10" ry="10" fill="#254e1c"/>
+  <path d="M32 27 38 38 32 45 26 38Z" fill="#d1ef45"/>
+  <circle cx="27" cy="18" r="3" fill="#f0f983"/>
+  <circle cx="37" cy="18" r="3" fill="#f0f983"/>
+  <path d="M27 26 25 31 M37 26 39 31" stroke="#ecfbb5" stroke-width="2"/>
+  <circle cx="32" cy="51" r="2" fill="#b4e246"/>
+</svg>

@@ -36,11 +36,11 @@ describe('anti-AFK through player commands and gameplay time', () => {
       expect(session.activateAbility(ability)).toBe('activated');
       const duration = session.state.abilityActiveTimer(ability);
       session.tick(duration - 1);
-      expect(session.state.antiAfkIdleTimer).toBeCloseTo(1);
+      expect(session.state.antiAfkIdleTimer).toBeCloseTo(ability === 'stand' ? 0 : 1);
       session.tick(2);
-      expect(session.state.antiAfkIdleTimer).toBeCloseTo(2);
+      expect(session.state.antiAfkIdleTimer).toBeCloseTo(ability === 'stand' ? 1 : 2);
       expect(session.state.antiAfkStacks).toBe(0);
-      session.tick(1);
+      session.tick(ability === 'stand' ? 2 : 1);
       expect(session.state.antiAfkStacks).toBe(1);
     },
   );
@@ -125,6 +125,15 @@ describe('anti-AFK through player commands and gameplay time', () => {
       const duration = exemption === 'empty' ? 10 : session.state.abilityActiveTimer(exemption);
       session.tick(Math.min(10, duration));
       expect(session.state.antiAfkIdleTimer).toBe(0);
+      if (exemption === 'stand') {
+        expect(session.state.antiAfkRecoveryTimer).toBe(0);
+        expect(session.state.antiAfkStacks).toBe(0);
+        session.tick(2);
+        expect(session.state.antiAfkStacks).toBe(0);
+        session.tick(1);
+        expect(session.state.antiAfkStacks).toBe(1);
+        return;
+      }
       expect(session.state.antiAfkRecoveryTimer).toBe(Math.max(0, 10 - duration));
       if (duration < 10) {
         session.state.energy = 0;
@@ -446,7 +455,7 @@ describe('anti-AFK through player commands and gameplay time', () => {
       abilities: current.abilities.slice(0, 10),
       state: previousState,
     })!;
-    expect(migrated.version).toBe(17);
+    expect(migrated.version).toBe(18);
     expect(migrated.state).toMatchObject({
       antiAfkIdleTimer: 0,
       antiAfkStacks: 0,

@@ -57,7 +57,7 @@ export type TalentId =
   | 'marauder';
 export type TalentBranch = 'defense' | 'shooting' | 'magic';
 export type SpiderType =
-  'normal' | 'golden' | 'megaFat' | 'fat' | 'fast' | 'ninja' | 'burner' | 'tank';
+  'normal' | 'golden' | 'megaFat' | 'fat' | 'fast' | 'poisonous' | 'ninja' | 'burner' | 'tank';
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'levelUp' | 'gameOver';
 
 export type AbilityResult =
@@ -107,6 +107,7 @@ export interface DifficultyConfig {
   readonly spiderChanceMegaFat: number;
   readonly spiderChanceFat: number;
   readonly spiderChanceFast: number;
+  readonly spiderChancePoisonous: number;
   readonly spiderChanceNinja: number;
   readonly spiderChanceBurner: number;
   readonly spiderChanceTank: number;

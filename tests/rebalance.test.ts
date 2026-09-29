@@ -6,6 +6,34 @@ import { abilityDescription, talentDescription } from '../src/ui/presenters.js';
 import { addSpider, game } from './helpers.js';
 
 describe('item rebalance through purchases', () => {
+  it('combines the 650 healing amulet with endurance scaling and the new healing cooldown', () => {
+    const session = game(40);
+    session.state.phase = 'levelUp';
+    session.state.coins = 100000;
+    const base = session.state.stats;
+    expect(base['heal.cooldown']).toBe(17);
+    expect(session.buyItem('l016')).toBe(true);
+    expect(session.state.stats['heal.amount']).toBe(base['heal.amount'] + 650);
+    session.talents.loadFromSave([{ id: 'healBoost', rank: 5 }]);
+    session.refreshStats();
+    expect(session.state.stats['heal.amount']).toBe(
+      base['heal.amount'] + 650 + session.state.stats.endurance * 2,
+    );
+    session.state.phase = 'playing';
+    session.state.hp = 1;
+    expect(session.activateAbility('heal')).toBe('activated');
+    expect(session.state.hp).toBe(1 + session.state.stats['heal.amount']);
+    expect(session.state.getAbility('heal').remainingCooldown).toBe(7);
+    session.state.phase = 'levelUp';
+    expect(session.sellItem(0)).toBe(true);
+    expect(session.state.stats['heal.amount']).toBe(base['heal.amount'] + base.endurance * 2);
+    expect(session.buyItem('l017')).toBe(true);
+    expect(session.state.stats['heal.cooldown']).toBe(4);
+    const loaded = restore(parseSave(snapshot(session))!);
+    expect(loaded.state.stats).toEqual(session.state.stats);
+    expect(loaded.state.getAbility('heal').remainingCooldown).toBe(7);
+  });
+
   const enduranceItems = ITEM_CATALOG.filter(
     (item) => item.stats.length === 1 && item.stats[0].type === 'endurance',
   );
@@ -112,7 +140,7 @@ describe('defense requirements and compatibility', () => {
       state,
       archers: current.archers.map(() => ({ duration: 3, remainingCooldown: 1 })),
     })!;
-    expect(data.version).toBe(17);
+    expect(data.version).toBe(18);
     const loaded = restore(data, () => 0);
     expect(loaded.state.bestDefenseCooldown).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(18);

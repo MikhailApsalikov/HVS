@@ -155,7 +155,7 @@ describe('content contracts', () => {
     expect(rules.levelDuration(1)).toBe(16);
     expect(rules.levelDuration(20)).toBe(54);
     expect(rules.spawnProbability(1)).toBe(config.spawnP0);
-    expect(rules.value('coinsPerSec')).toBeCloseTo(config.coinsPerSec + 0.2);
+    expect(rules.value('coinsPerSec')).toBeCloseTo(config.coinsPerSec + 0.07);
     expect(rules.spawnProbability(1_000_000)).toBe(1);
   });
   it('assigns a rounding policy to every tunable value', () => {

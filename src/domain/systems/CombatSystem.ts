@@ -8,6 +8,7 @@ import { BEST_DEFENSE_COOLDOWN } from '../rules/stats.js';
 import { SPIDERS, SPECIAL_SPIDER_ORDER } from '../../content/spiders.js';
 import { Spider } from '../model/Spider.js';
 import { fireVolley } from './AbilitySystem.js';
+import { applySpiderDebuff } from './DebuffSystem.js';
 
 /** Returns the time within this tick when a live spider first occupies the field. */
 export function spawnSpiders(state: GameState, dt: number, random: RandomSource): number {
@@ -99,6 +100,7 @@ export function resolveBreaches(
   random: RandomSource,
   emit: EmitEvent,
   onBreach: () => void,
+  onDebuff: () => void,
 ): void {
   for (const spider of state.spiders.values()) {
     if (spider.dying || spider.y < 1) continue;
@@ -131,7 +133,9 @@ export function resolveBreaches(
       const energy = SPIDERS[spider.type].burnsEnergy
         ? Math.min(state.energy, state.stats.burnerEnergy)
         : 0;
+      const previousHp = state.hp;
       state.modifyHp(-hp);
+      if (state.hp < previousHp && applySpiderDebuff(state, spider)) onDebuff();
       state.modifyEnergy(-energy);
       emit({
         type: 'damage',

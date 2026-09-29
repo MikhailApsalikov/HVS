@@ -86,8 +86,8 @@
   "l016": {
     "abilityId": "heal",
     "modType": "effectBoost",
-    "value": 1500,
-    "description": "«Лечение»: количество восстанавливаемого HP +1500"
+    "value": 650,
+    "description": "«Лечение»: количество восстанавливаемого HP +650"
   },
   "l017": {
     "abilityId": "heal",

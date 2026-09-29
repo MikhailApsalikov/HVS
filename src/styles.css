@@ -2490,3 +2490,31 @@ body {
 .eagle-eye-overlay .adrenaline-overlay__aura {
   filter: hue-rotate(25deg);
 }
+
+.player-debuffs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.player-debuffs[hidden],
+.player-debuff[hidden] {
+  display: none;
+}
+.player-debuff {
+  padding: 3px 7px;
+  border: 1px solid #a34b51;
+  border-radius: 5px;
+  background: #321c25;
+  color: #ffd3d6;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+.player-debuff--poison {
+  border-color: #708e37;
+  background: #23321c;
+  color: #d8efa9;
+}
+.player-debuff--goldLock {
+  border-color: #a68836;
+  color: #f6db94;
+}

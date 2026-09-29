@@ -4,6 +4,7 @@ import type { ResolvedStats, StatId, StatModifier, PrimaryStatId } from '../doma
 import { ATTRIBUTE_RULES, STATS } from '../domain/rules/stats.js';
 import { ABILITIES, ABILITY_ORDER } from '../content/abilities.js';
 import { TALENTS, TALENT_ORDER } from '../content/talents.js';
+import { DEBUFFS } from '../content/debuffs.js';
 import { talentRankEffects, talentEffectValue } from '../domain/model/TalentSystem.js';
 
 export function escapeHtml(text: string): string {
@@ -24,7 +25,7 @@ export function formatStat(id: StatId, value: number): string {
     id === 'spawnInterval'
   )
     return value < 0 ? `-${formatSeconds(-value)}` : formatSeconds(value);
-  if (id === 'damageFactor' || id === 'armorReduction')
+  if (id === 'damageFactor' || id === 'armorReduction' || id === 'healingReceived')
     return `${Number((value * 100).toFixed(1))}%`;
   if (
     id === 'blockChance' ||
@@ -87,6 +88,8 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
           ]),
         );
       if (key === 'scaling.step') return String(definition.scaling!.step);
+      if (key === 'scaling.percent')
+        return String(Number((definition.scaling!.effect.value * rank * 100).toFixed(4)));
       if (key === 'scaling.base')
         return formatStat(definition.scaling!.effect.stat, definition.scaling!.basePerRank! * rank);
       if (key === 'scaling.value')
@@ -209,6 +212,7 @@ export function resourceDescription(state: GameState, id: string): string {
     return `<div class="tooltip__title">Здоровье</div>${descriptionParagraphs(
       [
         state.stats.hpRegen > 0 ? `Восстанавливается ${value('hpRegen')} в секунду.` : '',
+        `Получаемое лечение и регенерация: ${value('healingReceived')}.`,
         state.stats.damageFactor < 1
           ? `Общее снижение урона - ${formatStat('damageFactor', 1 - state.stats.damageFactor)}.`
           : state.stats.damageFactor > 1
@@ -237,6 +241,9 @@ export function coinsDescription(state: GameState): string {
   return `<div class="tooltip__title">Монеты</div>${descriptionParagraphs(
     [
       state.stats.coinsPerSec > 0 ? `${value('coinsPerSec')} монет в секунду.` : '',
+      state.goldLockTimer > 0
+        ? `Пассивный доход заблокирован: ещё ${formatSeconds(state.goldLockTimer)} с.`
+        : '',
       state.stats.coinsPerKill > 0
         ? `За каждого убитого паука награда увеличена на +${value('coinsPerKill')}.`
         : '',
@@ -249,6 +256,29 @@ export function coinsDescription(state: GameState): string {
     ].join('\n'),
   )}`;
 }
+export function activeDebuffs(state: GameState) {
+  return [
+    {
+      id: 'goldLock',
+      name: DEBUFFS.goldLock.name,
+      timer: state.goldLockTimer,
+      detail: 'Пассивный доход отключён. Награды за пауков сохраняются.',
+    },
+    {
+      id: 'healingReduction',
+      name: DEBUFFS.healingReduction.name,
+      timer: state.healingReductionTimer,
+      detail: `Регенерация здоровья и получаемое лечение: ${DEBUFFS.healingReduction.healingPercent}%.`,
+    },
+    {
+      id: 'poison',
+      name: `${DEBUFFS.poison.name} ×${state.poisonDamage.length}`,
+      timer: state.poisonTimer,
+      detail: `Броня: ${DEBUFFS.poison.armorPercent}%. Урон: ${formatStat('poison.tickDamage', state.stats['poison.tickDamage'])} каждые ${DEBUFFS.poison.interval} с, игнорирует защиту. Следующий тик через ${formatSeconds(state.poisonTickTimer)} с.`,
+    },
+  ].filter(({ timer }) => timer > 0);
+}
+
 export function shootDescription(state: GameState, lane: number): string {
   return `<div class="tooltip__title">Лучник ${lane}</div>${descriptionParagraphs(
     [

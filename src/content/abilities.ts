@@ -67,7 +67,8 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     sprite: 'AbilityStand',
     unlockLevel: 30,
     talent: 'divineShield',
-    description: 'Призывает силу света и делает вас неуязвимым на {stand.duration} секунд.',
+    description:
+      'Снимает все дебаффы, включая штраф за бездействие, и делает вас неуязвимым на {stand.duration} секунд.',
     effectStat: 'stand.duration',
     effectKind: 'flat',
   },

@@ -74,9 +74,10 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 3,
     name: 'Усиленное лечение',
     sprite: 'TalentHealBoost',
-    effects: [flat('heal.amount', 350), flat('hpRegen', 5)],
+    effects: [flat('heal.cooldown', -2), flat('hpRegen', 5)],
+    scaling: { attribute: 'endurance', step: 1, effect: flat('heal.amount', 0.4) },
     description:
-      '«Лечение» восстанавливает на {heal.amount} здоровья больше.\nТакже вы восстанавливаете дополнительно {hpRegen} здоровья каждую секунду.',
+      '«Лечение» восстанавливает дополнительно {scaling.percent}% от выносливости и перезаряжается на {heal.cooldown} с быстрее.\nТакже вы восстанавливаете дополнительно {hpRegen} здоровья каждую секунду.',
   },
   hunterMastery: {
     branch: 'shooting',
@@ -373,7 +374,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 2,
     sprite: 'TalentBestDefense',
     effects: [flat('blockVolleyChance', 0.01)],
-    description: `Когда паук доходит до вас, с вероятностью {blockVolleyChance} выпускает бесплатный «Залп» со всеми улучшениями, даже если он не изучен.\nСрабатывает не чаще одного раза в ${BEST_DEFENSE_COOLDOWN} с и не мешает обычным выстрелам и способностям.`,
+    description: `Когда паук доходит до вас, с вероятностью {blockVolleyChance} выпускает бесплатный «Залп» со всеми улучшениями.\nСрабатывает не чаще одного раза в ${BEST_DEFENSE_COOLDOWN} с и не мешает обычным выстрелам и способностям.`,
   },
   warriorArmor: {
     name: 'Броня воина',

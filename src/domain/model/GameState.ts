@@ -29,6 +29,11 @@ export class GameState {
   initialTalentPick = true;
   freezeActive = false;
   invulnerableTimer = 0;
+  goldLockTimer = 0;
+  healingReductionTimer = 0;
+  poisonTimer = 0;
+  poisonTickTimer = 0;
+  poisonDamage: readonly number[] = [];
   lastHopeTimer = 0;
   prepTimer = 0;
   bestDefenseCooldown = 0;

@@ -132,7 +132,7 @@ describe('progression and player commands', () => {
     advance(session, 2.5);
     expect(session.state.hp).toBeCloseTo(52.7, 8);
     expect(session.state.energy).toBeCloseTo(20.4, 8);
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(260.5, 8);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(260.175, 8);
   });
   it('rejects invalid timestep and blocks commands outside their phase', () => {
     const session = new GameSession('normal');
@@ -336,6 +336,7 @@ describe('enemy types and rewards', () => {
         megaFat: [0.08, 23],
         fat: [0.08, 23],
         fast: [0.24, 12],
+        poisonous: [0.08, 23],
         ninja: [0.08, 23],
         burner: [0.08, 12],
         tank: [0.048, 233],
@@ -355,6 +356,7 @@ describe('enemy types and rewards', () => {
       ['burner', 5],
       ['fat', 10],
       ['fast', 20],
+      ['poisonous', 8],
       ['ninja', 35],
     ] as const;
     const rolls = [0];
@@ -390,7 +392,7 @@ describe('enemy types and rewards', () => {
     expect(session.drainEvents()).toEqual([
       { type: 'damage', spiderId: 'spider-1', hp: 1, energy: 92 },
     ]);
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(252.1);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(252.035);
   });
   it('lethal damage takes priority over regeneration and wave completion', () => {
     const session = game();

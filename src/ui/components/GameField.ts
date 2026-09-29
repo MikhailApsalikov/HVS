@@ -11,6 +11,7 @@ const SPIDER_SPRITE_MAP: Record<Spider['type'], string> = {
   megaFat: 'SpiderMegaFat',
   fat: 'SpiderFat',
   fast: 'SpiderFast',
+  poisonous: 'SpiderPoisonous',
   ninja: 'SpiderNinja',
   burner: 'SpiderBurner',
   tank: 'SpiderTank',

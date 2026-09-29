@@ -59,6 +59,16 @@ export class GameRules {
     );
     for (const modifier of Object.values(this.attributeEffects).flat())
       this.modifiers.set(modifier.stat, [...this.modifiers.get(modifier.stat)!, modifier]);
+    for (const stat of ['hpRegen', 'heal.amount', 'hpPerKill'] as const)
+      this.modifiers.set(stat, [
+        ...this.modifiers.get(stat)!,
+        {
+          source: 'healingReceived',
+          stat,
+          kind: 'percent',
+          value: (this.value('healingReceived') - 1) * 100,
+        },
+      ]);
     this.modifiers.set('incomingDamage', [
       ...this.modifiers.get('incomingDamage')!,
       {

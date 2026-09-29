@@ -8,6 +8,7 @@ interface SpiderDefinition {
     | 'spiderChanceMegaFat'
     | 'spiderChanceFat'
     | 'spiderChanceFast'
+    | 'spiderChancePoisonous'
     | 'spiderChanceNinja'
     | 'spiderChanceBurner'
     | 'spiderChanceTank'
@@ -52,6 +53,14 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
     damagePercent: -50,
     hits: 1,
   },
+  poisonous: {
+    unlockLevel: 8,
+    chanceKey: 'spiderChancePoisonous',
+    chanceGrowth: { levels: 8, percent: 1 },
+    speedPercent: 0,
+    damagePercent: 0,
+    hits: 1,
+  },
   ninja: {
     unlockLevel: 35,
     chanceKey: 'spiderChanceNinja',
@@ -86,5 +95,6 @@ export const SPECIAL_SPIDER_ORDER: readonly SpiderType[] = [
   'megaFat',
   'fat',
   'fast',
+  'poisonous',
   'ninja',
 ];

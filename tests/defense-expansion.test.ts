@@ -67,24 +67,32 @@ describe('new defense talents through session commands', () => {
     expect(talentDescription('endurance', 7, session.state.stats)).toContain('14 энергии');
   });
 
-  it('adds 350 healing and 5 regeneration at each of exactly five ranks', () => {
+  it('adds endurance healing, 5 regeneration and reduces cooldown at each of five ranks', () => {
     const session = defense(40);
     const baseHeal = session.state.stats['heal.amount'];
     const baseRegen = session.state.stats.hpRegen;
     for (let rank = 1; rank <= 5; rank++) {
       buy(session, 'healBoost');
-      expect(session.state.stats['heal.amount']).toBe(baseHeal + rank * 350);
+      const healing = Math.round(baseHeal + rank * session.state.stats.endurance * 0.4);
+      expect(session.state.stats['heal.amount']).toBe(healing);
+      expect(talentDescription('healBoost', rank, session.state.stats)).toContain(
+        `${40 * rank}% от выносливости`,
+      );
       expect(session.state.stats.hpRegen).toBeCloseTo(baseRegen + rank * 5);
       session.state.phase = 'playing';
       session.state.hp = 1;
       session.state.energy = 100;
       session.state.getAbility('heal').start(0);
       expect(session.activateAbility('heal')).toBe('activated');
-      expect(session.state.hp).toBe(1 + baseHeal + rank * 350);
+      expect(session.state.hp).toBe(1 + healing);
+      expect(session.state.getAbility('heal').remainingCooldown).toBe(17 - rank * 2);
       session.state.phase = 'levelUp';
     }
     expect(session.upgradeTalent('healBoost')).toBe(false);
-    expect(talentDescription('healBoost', 5, session.state.stats)).toContain('1750');
+    expect(talentDescription('healBoost', 5, session.state.stats)).toContain(
+      '200% от выносливости',
+    );
+    expect(talentDescription('bestDefense', 1, session.state.stats)).not.toContain('не изучен');
   });
 
   it('requires tier six and subtracts ten seconds per will-to-win rank from actual levels', () => {
@@ -361,7 +369,7 @@ describe('new defense talents through session commands', () => {
     expect(loaded.state.adrenalineShots).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(0);
     const current = snapshot(loaded);
-    expect(current.version).toBe(17);
+    expect(current.version).toBe(18);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 
@@ -386,19 +394,19 @@ describe('tenfold base passive income', () => {
   ] as const)('%s has a base of %s and retains separate bonuses', (difficulty, base) => {
     const session = new GameSession(difficulty, () => 0.999999);
     expect(session.state.config.coinsPerSec).toBe(base);
-    expect(session.state.stats.coinsPerSec).toBe(base + 0.2);
+    expect(session.state.stats.coinsPerSec).toBe(base + 0.07);
     session.upgradeTalent('hunterMastery');
     session.confirmLevelUp();
     const coins = session.state.coins;
     session.tick(2.5);
     expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(
-      coins + (base + 0.2) * 2.5,
+      coins + (base + 0.07) * 2.5,
     );
     session.state.character.setModifiers('income', [
       { stat: 'coinsPerSec', kind: 'flat', value: 2 },
       { stat: 'coinsPerSec', kind: 'percent', value: 50 },
     ]);
     session.refreshStats();
-    expect(session.state.stats.coinsPerSec).toBeCloseTo((base + 0.2 + 2) * 1.5);
+    expect(session.state.stats.coinsPerSec).toBeCloseTo((base + 2 / 30 + 2) * 1.5);
   });
 });
