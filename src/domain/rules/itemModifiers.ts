@@ -15,11 +15,13 @@ export function itemModifiers(
   }));
   const mod = item.abilityMod;
   if (!mod || !includeAbility) return modifiers;
-  if (mod.modType === 'costReduction' || mod.modType === 'cooldownReduction') {
+  if (mod.abilityId === 'killingStreak') {
+    modifiers.push({ source, stat: 'killingStreak.maxStacks', kind: 'flat', value: mod.value });
+  } else if (mod.modType === 'costReduction' || mod.modType === 'cooldownReduction') {
     modifiers.push({
       source,
       stat: `${mod.abilityId}.${mod.modType === 'costReduction' ? 'cost' : 'cooldown'}`,
-      kind: 'flat',
+      kind: mod.kind ?? 'flat',
       value: -mod.value,
     });
   } else {

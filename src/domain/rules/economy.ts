@@ -49,3 +49,10 @@ export function salePrice(price: number): number {
     { digits: 0, min: 0, rounding: 'floor' },
   ).value;
 }
+
+export function purchasePrice(price: number, discount: number): number {
+  return calculate(price, [{ source: 'shop:discount', kind: 'percent', value: -discount }], {
+    digits: 0,
+    min: 0,
+  }).value;
+}

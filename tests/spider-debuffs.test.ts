@@ -31,6 +31,87 @@ function breach(session: GameSession, type: 'golden' | 'fast' | 'poisonous', dam
 }
 
 describe('spider debuffs through session commands', () => {
+  it('unlocks resistance at defense tier six, with five ranks and no prerequisite', () => {
+    const session = new GameSession('normal', () => 0.999999, { level: 49 });
+    session.state.pendingTalentPoints = 100;
+    session.talents.loadFromSave([
+      { id: 'endurance', rank: 7 },
+      { id: 'improvedEndurance', rank: 7 },
+      { id: 'warriorArmor', rank: 5 },
+      { id: 'spiderArmor', rank: 10 },
+      { id: 'shieldBlock', rank: 5 },
+    ]);
+    expect(session.upgradeTalent('poisonResistance')).toBe(false);
+    session.state.level = 50;
+    expect(session.upgradeTalent('poisonResistance')).toBe(false);
+    expect(session.upgradeTalent('shieldBlock')).toBe(true);
+    expect(session.talents.getTalent('poisonResistance')).toMatchObject({
+      branch: 'defense',
+      tier: 6,
+      requiredBranchPoints: 35,
+      maxRanks: 5,
+    });
+    for (let rank = 1; rank <= 5; rank++) {
+      expect(session.upgradeTalent('poisonResistance')).toBe(true);
+      expect(session.state.rules.value('spiderDebuffDuration', 40)).toBeCloseTo(
+        40 * (1 - 0.08 * rank),
+      );
+    }
+    expect(session.upgradeTalent('poisonResistance')).toBe(false);
+  });
+
+  it.each([1, 2, 3, 4, 5])(
+    'rank %i shortens all breach debuffs, without weakening them or changing poison ticks',
+    (rank) => {
+      for (const type of ['golden', 'fast', 'poisonous'] as const) {
+        const session = arena();
+        session.talents.loadFromSave([{ id: 'poisonResistance', rank }]);
+        session.refreshStats();
+        breach(session, type, 101);
+        const duration = Number(((type === 'fast' ? 17 : 40) * (1 - 0.08 * rank)).toFixed(2));
+        expect(activeDebuffs(session.state)[0].timer).toBe(duration);
+        if (type === 'golden') expect(session.state.stats.coinsPerSec).toBe(0);
+        if (type === 'fast') expect(session.state.stats.healingReceived).toBe(0.25);
+        if (type === 'poisonous') {
+          expect(session.state.stats['poison.tickDamage']).toBe(15.15);
+          expect(activeDebuffs(session.state)[0].detail).toContain(
+            '15.15 здоровья за тик (каждые 2 секунды)',
+          );
+        }
+        const hp = session.state.hp;
+        const loaded = restore(parseSave(snapshot(session))!, () => 0.999999);
+        loaded.tick(duration);
+        expect(activeDebuffs(loaded.state)).toEqual([]);
+        expect(loaded.state.hp).toBeCloseTo(
+          hp - (type === 'poisonous' ? Math.floor(duration / 2) * 15.15 : 0),
+        );
+        expect(loaded.state.stats.healingReceived).toBe(1);
+        expect(loaded.state.stats.coinsPerSec).toBeGreaterThan(0);
+      }
+    },
+  );
+
+  it('refreshes reduced poison duration without restarting its tick and shows total stacked damage', () => {
+    const session = arena();
+    session.talents.loadFromSave([{ id: 'poisonResistance', rank: 5 }]);
+    session.refreshStats();
+    breach(session, 'poisonous', 101);
+    session.tick(0.999);
+    breach(session, 'poisonous', 202);
+    expect(session.state.poisonTimer).toBe(24);
+    expect(session.state.poisonTickTimer).toBeCloseTo(1);
+    expect(activeDebuffs(session.state)[0]).toMatchObject({ name: 'Яд ×2' });
+    expect(activeDebuffs(session.state)[0].detail).toContain('45.45 здоровья за тик');
+    const hp = session.state.hp;
+    session.tick(1);
+    expect(session.state.hp).toBeCloseTo(hp - 45.45);
+    session.state.energy = 100;
+    expect(session.activateAbility('freeze')).toBe('activated');
+    session.tick(20);
+    expect(session.state.poisonTimer).toBe(23);
+    expect(session.state.hp).toBeCloseTo(hp - 45.45);
+  });
+
   it('stops only passive income for 40 seconds, refreshes duration and retains fractional gold', () => {
     const session = arena();
     const rate = session.state.stats.coinsPerSec;

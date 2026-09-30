@@ -4,7 +4,7 @@ import type { ItemSystem } from '../../domain/model/ItemSystem.js';
 import type { ItemDefinition, ItemRarity, StatType } from '../../domain/itemTypes.js';
 import { ITEM_CATALOG } from '../../content/items.js';
 import { generateItemSvg } from '../ItemSpriteGenerator.js';
-import { salePrice } from '../../domain/rules/economy.js';
+import { purchasePrice, salePrice } from '../../domain/rules/economy.js';
 import { STATS } from '../../domain/rules/stats.js';
 import { escapeHtml } from '../presenters.js';
 import {
@@ -131,12 +131,18 @@ export class ShopPanel {
           grid.append(section);
           lastRarity = rarity;
         }
-        const canBuy = items.canBuy(item.id, state.coins, state.stats.inventorySlots);
+        const price = purchasePrice(item.price, state.stats.shopDiscount);
+        const canBuy = items.canBuy(
+          item.id,
+          state.coins,
+          state.stats.inventorySlots,
+          state.stats.shopDiscount,
+        );
         const reason = canBuy
           ? '2× клик — купить'
           : items.owns(item.id)
             ? 'Уже надето'
-            : state.coins < item.price
+            : state.coins < price
               ? 'Недостаточно монет'
               : 'Нет свободных слотов';
         row.append(
@@ -149,7 +155,7 @@ export class ShopPanel {
                 this.render(state, talents, items, actions);
               }
             },
-            `Цена: ${coinAmount(item.price)}<br><span class="${canBuy ? '' : 'action-unavailable'}">${reason}</span>`,
+            `Цена: ${coinAmount(price)}<br><span class="${canBuy ? '' : 'action-unavailable'}">${reason}</span>`,
           ),
         );
       }

@@ -114,8 +114,8 @@ describe('defense requirements and compatibility', () => {
       expect(session.upgradeTalent('spiderArmor')).toBe(true);
       expect(session.talents.getTalent('warriorArmor').tier).toBe(2);
       expect(session.talents.getTalent('spiderArmor').tier).toBe(3);
-      expect(talentDescription('bestDefense', 1, session.state.stats)).toContain('1%');
-      expect(talentDescription('bestDefense', 10, session.state.stats)).toContain('10%');
+      expect(talentDescription('bestDefense', 1, session.state.stats)).toContain('0.6%');
+      expect(talentDescription('bestDefense', 10, session.state.stats)).toContain('6%');
       expect(talentDescription('bestDefense', 10, session.state.stats)).toContain('3 с');
     },
   );

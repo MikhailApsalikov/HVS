@@ -274,7 +274,7 @@ export function activeDebuffs(state: GameState) {
       id: 'poison',
       name: `${DEBUFFS.poison.name} ×${state.poisonDamage.length}`,
       timer: state.poisonTimer,
-      detail: `Броня: ${DEBUFFS.poison.armorPercent}%. Урон: ${formatStat('poison.tickDamage', state.stats['poison.tickDamage'])} каждые ${DEBUFFS.poison.interval} с, игнорирует защиту. Следующий тик через ${formatSeconds(state.poisonTickTimer)} с.`,
+      detail: `Броня: ${DEBUFFS.poison.armorPercent}%.\nВы теряете ${formatStat('poison.tickDamage', state.stats['poison.tickDamage'])} здоровья за тик (каждые ${DEBUFFS.poison.interval} секунды). Урон игнорирует защиту.\nСледующий тик через ${formatSeconds(state.poisonTickTimer)} с.`,
     },
   ].filter(({ timer }) => timer > 0);
 }

@@ -5,7 +5,7 @@ import { pickLanes } from '../rules/random.js';
 import { WORLD } from '../rules/world.js';
 import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { Arrow } from '../model/Arrow.js';
-import { AIMED_FIRE_DELAYS } from '../rules/stats.js';
+import { AIMED_FIRE } from '../rules/stats.js';
 import { createArrow } from './ArrowFactory.js';
 import { clearDebuffs } from './DebuffSystem.js';
 
@@ -36,8 +36,8 @@ const EFFECTS: Record<AbilityId, Effect> = {
   aimedFire: (state) => {
     state.aimedFireWaves = [
       ...state.aimedFireWaves,
-      ...AIMED_FIRE_DELAYS.map((remaining, index) => ({
-        remaining,
+      ...Array.from({ length: state.stats['aimedFire.waves'] }, (_, index) => ({
+        remaining: AIMED_FIRE.firstDelay + index * AIMED_FIRE.interval,
         guaranteedCritical: index === 0,
       })),
     ];

@@ -265,10 +265,10 @@ describe('damage blocking and counter volleys', () => {
   });
 
   it.each([
-    [1, 0.009999, true],
-    [1, 0.01, false],
-    [10, 0.099999, true],
-    [10, 0.1, false],
+    [1, 0.005999, true],
+    [1, 0.006, false],
+    [10, 0.059999, true],
+    [10, 0.06, false],
   ] as const)(
     'counter volley rank %s, roll %s, triggers %s without touching energy or cooldowns',
     (rank, procRoll, triggered) => {

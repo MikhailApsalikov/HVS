@@ -11,10 +11,10 @@ import {
   resourceDescription,
   coinsDescription,
   shootDescription,
-  activeDebuffs,
 } from '../presenters.js';
 import { TooltipManager } from './TooltipManager.js';
 import { KillingStreakEffect } from './KillingStreakEffect.js';
+import { DebuffPanel } from './DebuffPanel.js';
 
 export class HUD {
   private state: GameState | null = null;
@@ -25,8 +25,7 @@ export class HUD {
   private readonly level = document.createElement('div');
   private readonly attributes = document.createElement('div');
   private readonly abilities = document.createElement('div');
-  private readonly debuffs = document.createElement('div');
-  private readonly debuffBadges = new Map<string, HTMLElement>();
+  private readonly debuffs: DebuffPanel;
   private readonly killingStreak: KillingStreakEffect;
 
   constructor(
@@ -35,6 +34,7 @@ export class HUD {
   ) {
     container.className = 'hud';
     this.killingStreak = new KillingStreakEffect(sprites);
+    this.debuffs = new DebuffPanel(sprites);
     const resources = document.createElement('div');
     resources.className = 'resource-bars';
     for (const [id, label] of [
@@ -66,9 +66,6 @@ export class HUD {
     });
     this.coins.addEventListener('mouseleave', () => this.tooltip.hide());
     this.level.className = 'level-number';
-    this.debuffs.className = 'player-debuffs';
-    this.debuffs.setAttribute('aria-label', 'Дебаффы');
-    this.debuffs.hidden = true;
     this.attributes.className = 'character-attributes';
     for (const id of [...PRIMARY_STATS, 'armor'] as const) {
       const row = document.createElement('div');
@@ -111,7 +108,7 @@ export class HUD {
       this.coins,
       this.level,
       this.attributes,
-      this.debuffs,
+      this.debuffs.container,
       this.abilities,
     );
     container.append(content, this.killingStreak.container);
@@ -122,24 +119,7 @@ export class HUD {
   render(state: GameState): void {
     this.state = state;
     this.killingStreak.render(state);
-    const debuffs = activeDebuffs(state);
-    this.debuffs.hidden = debuffs.length === 0;
-    for (const [id, badge] of this.debuffBadges)
-      badge.hidden = !debuffs.some((debuff) => debuff.id === id);
-    for (const debuff of debuffs) {
-      let badge = this.debuffBadges.get(debuff.id);
-      if (!badge) {
-        badge = document.createElement('span');
-        badge.className = `player-debuff player-debuff--${debuff.id}`;
-        badge.tabIndex = 0;
-        this.debuffBadges.set(debuff.id, badge);
-        this.debuffs.append(badge);
-      }
-      badge.hidden = false;
-      badge.textContent = `${debuff.name} · ${formatSeconds(debuff.timer)} с`;
-      badge.title = debuff.detail;
-      badge.setAttribute('aria-label', `${badge.textContent}. ${debuff.detail}`);
-    }
+    this.debuffs.render(state);
     for (const [id, current, max] of [
       ['hp', state.hp, state.maxHp],
       ['energy', state.energy, state.maxEnergy],

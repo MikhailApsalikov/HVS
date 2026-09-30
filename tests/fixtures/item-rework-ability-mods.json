@@ -14,8 +14,8 @@
   "l003": {
     "abilityId": "armageddon",
     "modType": "costReduction",
-    "value": 50,
-    "description": "«Армагеддон»: стоимость −50 энергии"
+    "value": 85,
+    "description": "«Армагеддон»: стоимость −85 энергии"
   },
   "l004": {
     "abilityId": "blizzard",
@@ -50,8 +50,9 @@
   "l009": {
     "abilityId": "volley",
     "modType": "cooldownReduction",
-    "value": 1,
-    "description": "«Залп»: кулдаун −1 сек"
+    "value": 20,
+    "kind": "percent",
+    "description": "«Залп»: время восстановления −20%"
   },
   "l010": {
     "abilityId": "stand",
@@ -104,7 +105,7 @@
   "l020": {
     "abilityId": "recharge",
     "modType": "costReduction",
-    "value": 30,
-    "description": "«Обновление»: стоимость −30 энергии"
+    "value": 60,
+    "description": "«Перезарядка»: стоимость −60 энергии"
   }
 }

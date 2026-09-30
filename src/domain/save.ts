@@ -13,7 +13,7 @@ import {
   PRIMARY_STATS,
   STATS,
   KILLING_STREAK,
-  AIMED_FIRE_DELAYS,
+  aimedFireDuration,
 } from './rules/stats.js';
 import { TALENTS } from '../content/talents.js';
 import { SPIDERS } from '../content/spiders.js';
@@ -246,7 +246,7 @@ export function parseSave(value: unknown): SaveData | null {
     if (data) {
       const { state } = restore(data);
       if (
-        state.eagleEyeShots > state.stats['eagleEye.shots'] ||
+        state.eagleEyeShots > STATS['eagleEye.shots'].policy.max! ||
         data.state.killingStreakStacks > KILLING_STREAK.maxStacks ||
         state.killingStreakStacks >
           Math.max(state.killingStreakMaximum, state.stats['prep.stacks']) ||
@@ -303,7 +303,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
           object(wave) &&
           number(wave.remaining) &&
           wave.remaining > 0 &&
-          wave.remaining <= AIMED_FIRE_DELAYS[2] &&
+          wave.remaining <= aimedFireDuration(STATS['aimedFire.waves'].policy.max!) &&
           typeof wave.guaranteedCritical === 'boolean',
       ))
   )

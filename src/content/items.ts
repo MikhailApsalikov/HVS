@@ -723,9 +723,9 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Реликвия Армагеддона',
     rarity: 'legendary',
     stats: [
-      { type: 'endurance', value: 200 },
-      { type: 'hpRegen', value: 10 },
-      { type: 'armor', value: 3000 },
+      { type: 'intellect', value: 200 },
+      { type: 'endurance', value: 110 },
+      { type: 'coinsPerKill', value: 2 },
     ],
     abilityMod: {
       abilityId: 'armageddon',
@@ -755,14 +755,14 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Доспех Армагеддона',
     rarity: 'legendary',
     stats: [
-      { type: 'endurance', value: 220 },
-      { type: 'armor', value: 5000 },
+      { type: 'intellect', value: 220 },
+      { type: 'energyRegen', value: 2 },
     ],
     abilityMod: {
       abilityId: 'armageddon',
       modType: 'costReduction',
-      value: 50,
-      description: '«Армагеддон»: стоимость −50 энергии',
+      value: 85,
+      description: '«Армагеддон»: стоимость −85 энергии',
     },
   },
   {
@@ -770,9 +770,9 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     name: 'Клинок Вьюги',
     rarity: 'legendary',
     stats: [
-      { type: 'agility', value: 180 },
-      { type: 'energyPerKill', value: 2 },
-      { type: 'coinsPerKill', value: 2 },
+      { type: 'intellect', value: 180 },
+      { type: 'agility', value: 80 },
+      { type: 'maxEnergy', value: 80 },
     ],
     abilityMod: {
       abilityId: 'blizzard',
@@ -840,8 +840,9 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     abilityMod: {
       abilityId: 'volley',
       modType: 'cooldownReduction',
-      value: 1,
-      description: '«Залп»: кулдаун −1 сек',
+      value: 20,
+      kind: 'percent',
+      description: '«Залп»: время восстановления −20%',
     },
   },
   {
@@ -967,8 +968,104 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     abilityMod: {
       abilityId: 'recharge',
       modType: 'costReduction',
-      value: 30,
-      description: '«Обновление»: стоимость −30 энергии',
+      value: 60,
+      description: '«Перезарядка»: стоимость −60 энергии',
+    },
+  },
+  {
+    id: 'l021',
+    name: 'Эгида последней надежды',
+    rarity: 'legendary',
+    stats: [
+      { type: 'endurance', value: 220 },
+      { type: 'armor', value: 4000 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'lastHope',
+      modType: 'effectBoost',
+      value: 2,
+      description: '«Блок последней надежды»: длительность +2 сек',
+    },
+  },
+  {
+    id: 'l022',
+    name: 'Сердце неутомимого',
+    rarity: 'legendary',
+    stats: [
+      { type: 'endurance', value: 210 },
+      { type: 'hpRegen', value: 12 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'adrenaline',
+      modType: 'cooldownReduction',
+      value: 45,
+      description: '«Адреналин»: время восстановления −45 сек',
+    },
+  },
+  {
+    id: 'l023',
+    name: 'Колчан неистового натиска',
+    rarity: 'legendary',
+    stats: [
+      { type: 'endurance', value: 230 },
+      { type: 'agility', value: 100 },
+      { type: 'coinsPerKill', value: 1 },
+    ],
+    abilityMod: {
+      abilityId: 'adrenaline',
+      modType: 'effectBoost',
+      value: 15,
+      description: '«Адреналин»: +15 бесплатных стрел',
+    },
+  },
+  {
+    id: 'l024',
+    name: 'Око сокола',
+    rarity: 'legendary',
+    stats: [
+      { type: 'agility', value: 220 },
+      { type: 'criticalShotChance', value: 0.02 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'eagleEye',
+      modType: 'effectBoost',
+      value: 5,
+      description: '«Зоркость»: +5 критических стрел',
+    },
+  },
+  {
+    id: 'l025',
+    name: 'Трофей безупречной охоты',
+    rarity: 'legendary',
+    stats: [
+      { type: 'agility', value: 240 },
+      { type: 'energyPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'killingStreak',
+      modType: 'effectBoost',
+      value: 2,
+      description: '«Череда убийств»: максимум эффектов +2',
+    },
+  },
+  {
+    id: 'l026',
+    name: 'Лук затяжной осады',
+    rarity: 'legendary',
+    stats: [
+      { type: 'agility', value: 200 },
+      { type: 'intellect', value: 110 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'aimedFire',
+      modType: 'effectBoost',
+      value: 2,
+      description:
+        '«Прицельный огонь»: каждый лучник делает ещё 2 выстрела — на 7-й и 9-й секундах.',
     },
   },
 ];

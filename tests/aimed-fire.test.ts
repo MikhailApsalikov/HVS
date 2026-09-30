@@ -251,7 +251,7 @@ describe('aimed fire through session commands', () => {
   it.each([
     null,
     [{ remaining: 0, guaranteedCritical: true }],
-    [{ remaining: 6, guaranteedCritical: false }],
+    [{ remaining: 10, guaranteedCritical: false }],
     [{ remaining: 1, guaranteedCritical: 'yes' }],
   ])('rejects malformed wave queues: %j', (aimedFireWaves) => {
     const saved = snapshot(arena());
@@ -287,7 +287,7 @@ describe('progression and compatibility', () => {
       expect(session.upgradeTalent('aimedFire')).toBe(false);
       expect(session.state.isAbilityUnlocked('aimedFire')).toBe(true);
       expect(talentDescription('aimedFire', 1, session.state.stats)).toContain(
-        '9 критических стрел',
+        'каждые 2 секунды в течение 5 секунд',
       );
     },
   );

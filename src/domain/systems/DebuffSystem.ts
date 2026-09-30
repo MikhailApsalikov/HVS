@@ -45,13 +45,15 @@ export function debuffModifiers(state: GameState): StatModifier[] {
 
 /** Called only after a breach actually removes health. */
 export function applySpiderDebuff(state: GameState, spider: Spider): boolean {
-  if (spider.type === 'golden') state.goldLockTimer = DEBUFFS.goldLock.duration;
+  const duration = (base: number) => state.rules.value('spiderDebuffDuration', base);
+  if (spider.type === 'golden') state.goldLockTimer = duration(DEBUFFS.goldLock.duration);
   else if (spider.type === 'fast')
-    state.healingReductionTimer =
-      DEBUFFS.healingReduction.duration + DEBUFFS.healingReduction.durationPerLevel * state.level;
+    state.healingReductionTimer = duration(
+      DEBUFFS.healingReduction.duration + DEBUFFS.healingReduction.durationPerLevel * state.level,
+    );
   else if (spider.type === 'poisonous') {
     if (state.poisonTimer === 0) state.poisonTickTimer = DEBUFFS.poison.interval;
-    state.poisonTimer = DEBUFFS.poison.duration;
+    state.poisonTimer = duration(DEBUFFS.poison.duration);
     state.poisonDamage = [...state.poisonDamage, spider.damage].slice(-DEBUFFS.poison.maxStacks);
   } else return false;
   return true;
@@ -79,7 +81,7 @@ export function nextDebuffBoundary(state: GameState): number {
   );
 }
 
-/** Session steps stop at every expiry and poison tick, including the final tick at 40s. */
+/** Session steps stop at every expiry and poison tick, including a tick exactly at expiry. */
 export function tickDebuffs(state: GameState, dt: number): boolean {
   const wasGoldLocked = state.goldLockTimer > 0;
   const wasHealingReduced = state.healingReductionTimer > 0;

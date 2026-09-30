@@ -373,7 +373,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'defense',
     column: 2,
     sprite: 'TalentBestDefense',
-    effects: [flat('blockVolleyChance', 0.01)],
+    effects: [flat('blockVolleyChance', 0.006)],
     description: `Когда паук доходит до вас, с вероятностью {blockVolleyChance} выпускает бесплатный «Залп» со всеми улучшениями.\nСрабатывает не чаще одного раза в ${BEST_DEFENSE_COOLDOWN} с и не мешает обычным выстрелам и способностям.`,
   },
   warriorArmor: {
@@ -389,16 +389,26 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'defense',
     column: 1,
     sprite: 'TalentTitanArmor',
-    effects: [percent('armor', 125)],
+    effects: [percent('armor', 75)],
     description: 'Увеличивает броню на {armor}.',
   },
   willToWin: {
     name: 'Воля к победе',
-    branch: 'defense',
+    branch: 'shooting',
     column: 3,
     sprite: 'TalentWillToWin',
-    effects: [flat('levelDuration', -10)],
-    description: 'Сокращает длительность уровня на {levelDuration} с.',
+    effects: [flat('levelDuration', -15), flat('agility', 70), flat('shopDiscount', 4)],
+    description:
+      'Сокращает длительность уровня на {levelDuration} с и увеличивает ловкость на {agility}.\nСнижает цену покупки всех предметов в лавке на {shopDiscount}%. Цена продажи не меняется.',
+  },
+  poisonResistance: {
+    name: 'Устойчивость к ядам',
+    branch: 'defense',
+    column: 3,
+    sprite: 'TalentPoisonResistance',
+    effects: [percent('spiderDebuffDuration', -8)],
+    description:
+      'Сокращает длительность всех дебаффов от дошедших пауков на {spiderDebuffDuration}: яда, потери дохода и ослабленного лечения.',
   },
   adrenaline: {
     name: 'Адреналин',

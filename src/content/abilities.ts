@@ -1,7 +1,6 @@
 import type { AbilityId, TalentId } from '../domain/types.js';
 import type { StatId } from '../domain/rules/stats.js';
-import { AIMED_FIRE_DELAYS } from '../domain/rules/stats.js';
-import { WORLD } from '../domain/rules/world.js';
+import { AIMED_FIRE } from '../domain/rules/stats.js';
 
 interface AbilityDefinition {
   readonly name: string;
@@ -131,7 +130,9 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     sprite: 'AbilityAimedFire',
     unlockLevel: 60,
     talent: 'aimedFire',
-    description: `Через ${AIMED_FIRE_DELAYS[0]} с выпускает ${WORLD.lanes} критических стрел, даже без таланта «Критический выстрел».\nНа ${AIMED_FIRE_DELAYS[1]}-й и ${AIMED_FIRE_DELAYS[2]}-й секунде выпускает ещё по ${WORLD.lanes} стрел с обычным шансом критического выстрела.`,
+    description: `Все лучники стреляют каждые ${AIMED_FIRE.interval} секунды в течение {aimedFire.duration} секунд. Первый выстрел — через ${AIMED_FIRE.firstDelay} секунду.\nПервые стрелы всех лучников гарантированно критические, даже без таланта «Критический выстрел». Последующие используют обычный шанс критического выстрела.`,
+    effectStat: 'aimedFire.waves',
+    effectKind: 'flat',
   },
 };
 /** Stable storage order; the HUD has its own order by level, then keyboard position. */

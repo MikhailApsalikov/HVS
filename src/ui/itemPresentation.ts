@@ -1,6 +1,7 @@
 import type { ItemDefinition, StatType } from '../domain/itemTypes.js';
 import { itemModifiers } from '../domain/rules/itemModifiers.js';
 import { ABILITIES } from '../content/abilities.js';
+import { TALENTS } from '../content/talents.js';
 import { formatStat } from './presenters.js';
 
 export interface ItemFilters {
@@ -66,7 +67,8 @@ export function itemStatLines(item: ItemDefinition): string[] {
 export function itemAbilityDescription(item: ItemDefinition): string | null {
   const effect = itemModifiers(item, 'preview')[item.stats.length];
   if (!effect || !item.abilityMod) return null;
-  const name = `«${ABILITIES[item.abilityMod.abilityId].name}»`;
+  const id = item.abilityMod.abilityId;
+  const name = `«${id === 'killingStreak' ? TALENTS[id].name : ABILITIES[id].name}»`;
   const value = Math.abs(effect.value);
   const amount = (effect.kind === 'percent' ? `${value}%` : formatStat(effect.stat, value)).replace(
     '.',
@@ -74,13 +76,19 @@ export function itemAbilityDescription(item: ItemDefinition): string | null {
   );
   const seconds = `${amount} ${counted(value, 'секунду', 'секунды', 'секунд')}`;
   if (effect.stat.endsWith('.cooldown'))
-    return `Сокращает время восстановления способности ${name} на ${seconds}.`;
+    return `Сокращает время восстановления способности ${name} на ${effect.kind === 'percent' ? amount : seconds}.`;
   if (effect.stat.endsWith('.cost'))
     return `Снижает расход энергии способности ${name} на ${amount}.`;
   if (effect.stat.endsWith('.duration'))
     return `Увеличивает длительность способности ${name} на ${seconds}.`;
-  if (effect.stat === 'volley.lanes')
+  if (
+    effect.stat === 'volley.lanes' ||
+    effect.stat === 'eagleEye.shots' ||
+    effect.stat === 'adrenaline.shots'
+  )
     return `Увеличивает количество стрел, выпускаемых способностью ${name}, на ${amount}.`;
+  if (effect.stat === 'killingStreak.maxStacks')
+    return `Увеличивает максимальное количество эффектов «Череды убийств» на ${amount}.`;
   if (effect.stat === 'heal.amount')
     return `Увеличивает количество здоровья, восстанавливаемого способностью ${name}, на ${amount}.`;
   if (effect.stat === 'prep.restore')

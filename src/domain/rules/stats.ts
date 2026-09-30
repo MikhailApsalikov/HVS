@@ -10,7 +10,10 @@ export const BEST_DEFENSE_COOLDOWN = 3;
 export const CRITICAL_SHOT_POWER = 2;
 export const IMPROVED_CRITICAL_SHOT_POWER = 3;
 export const KILLING_STREAK = { maxStacks: 20, decayInterval: 1.5 } as const;
-export const AIMED_FIRE_DELAYS = [1, 3, 5] as const;
+export const AIMED_FIRE = { firstDelay: 1, interval: 2 } as const;
+export function aimedFireDuration(waves: number): number {
+  return AIMED_FIRE.firstDelay + (waves - 1) * AIMED_FIRE.interval;
+}
 export const BURNER_ENERGY_PER_LEVEL = 2;
 export const GOLDEN_SPIDER_REWARD = { base: 10, perLevel: 1 } as const;
 export const DODGE_CAP = 0.75;
@@ -57,6 +60,8 @@ export const STATS = {
   hpRegen: stat('Восстановление HP/с', 0, decimal),
   healingReceived: stat('Получаемое лечение и регенерация', 1, speed),
   'poison.tickDamage': stat('Урон яда за тик', 0, decimal),
+  spiderDebuffDuration: stat('Длительность дебаффов пауков, с', 0, duration),
+  shopDiscount: stat('Скидка на покупку предметов, %', 0, { ...decimal, max: 100 }),
   energyRegen: stat('Восстановление энергии/с', 8, decimal),
   shootCost: stat('Стоимость выстрела', 35, integer),
   shootCooldown: stat('Перезарядка выстрела, с', 3, duration),
@@ -111,6 +116,8 @@ export const STATS = {
   'volley.lanes': stat('Количество стрел: Залп', 4, { ...integer, max: WORLD.lanes }),
   'aimedFire.cost': stat('Стоимость: Прицельный огонь', 100, integer),
   'aimedFire.cooldown': stat('Перезарядка: Прицельный огонь, с', 100, duration),
+  'aimedFire.waves': stat('Выстрелов каждого лучника: Прицельный огонь', 3, { ...integer, max: 5 }),
+  'aimedFire.duration': stat('Длительность: Прицельный огонь, с', 0, duration),
   'stand.cost': stat('Стоимость: Божественный щит', 15, integer),
   'stand.cooldown': stat('Перезарядка: Божественный щит, с', 180, duration),
   'stand.duration': stat('Длительность: Божественный щит, с', 7, duration),
@@ -129,10 +136,10 @@ export const STATS = {
   'eagleEye.cost': stat('Стоимость: Зоркость', 20, integer),
   'eagleEye.cooldown': stat('Перезарядка: Зоркость, с', 60, duration),
   'eagleEye.duration': stat('Длительность: Зоркость, с', 20, { ...duration, max: 20 }),
-  'eagleEye.shots': stat('Критические выстрелы: Зоркость', 5, integer),
+  'eagleEye.shots': stat('Критические выстрелы: Зоркость', 5, { ...integer, max: 20 }),
   'adrenaline.cooldown': stat('Перезарядка: Адреналин, с', 120, duration),
   'adrenaline.duration': stat('Длительность: Адреналин, с', 20, { ...duration, max: 20 }),
-  'adrenaline.shots': stat('Бесплатные выстрелы: Адреналин', 20, { ...integer, max: 20 }),
+  'adrenaline.shots': stat('Бесплатные выстрелы: Адреналин', 20, { ...integer, max: 35 }),
   'adrenaline.shootCooldownReduction': stat('Сокращение перезарядки выстрела: Адреналин, %', 100, {
     ...integer,
     max: 100,

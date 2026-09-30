@@ -17,12 +17,14 @@ export interface ItemStat {
   readonly value: number;
   readonly kind?: 'flat' | 'percent';
 }
-export interface AbilityMod {
-  readonly abilityId: AbilityId;
-  readonly modType: AbilityModType;
+export type AbilityMod = {
   readonly value: number;
   readonly description: string;
-}
+  readonly kind?: 'flat' | 'percent';
+} & (
+  | { readonly abilityId: AbilityId; readonly modType: AbilityModType }
+  | { readonly abilityId: 'killingStreak'; readonly modType: 'effectBoost' }
+);
 export interface ItemConfig {
   readonly id: string;
   readonly name: string;

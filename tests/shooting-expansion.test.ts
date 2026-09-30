@@ -446,7 +446,7 @@ describe('version eleven saves', () => {
   it.each([
     { eagleEyeTimer: 21 },
     { eagleEyeTimer: -1 },
-    { eagleEyeShots: 6 },
+    { eagleEyeShots: 21 },
     { eagleEyeShots: 1.5 },
     { eagleEyeShots: 0 },
     { eagleEyeTimer: 0 },

@@ -1,6 +1,7 @@
 import type { DifficultyConfig, AbilityId, SpiderType } from '../types.js';
 import {
   STATS,
+  aimedFireDuration,
   BURNER_ENERGY_PER_LEVEL,
   GOLDEN_SPIDER_REWARD,
   PRIMARY_STATS,
@@ -81,6 +82,7 @@ export class GameRules {
   }
   private base(id: StatId): number {
     if (this.bases[id] !== undefined) return this.bases[id];
+    if (id === 'aimedFire.duration') return aimedFireDuration(this.value('aimedFire.waves'));
     if (id === 'prep.overTime') return this.value('prep.energyRegen') * this.value('prep.duration');
     // Keep the previous total, including all bonuses, and defer only the fixed recovery.
     if (id === 'prep.instant') return this.value('prep.restore') - this.value('prep.overTime');

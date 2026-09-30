@@ -95,8 +95,13 @@ describe('new defense talents through session commands', () => {
     expect(talentDescription('bestDefense', 1, session.state.stats)).not.toContain('не изучен');
   });
 
-  it('requires tier six and subtracts ten seconds per will-to-win rank from actual levels', () => {
+  it('requires shooting tier six and subtracts fifteen seconds per will-to-win rank from actual levels', () => {
     const session = defense(49);
+    buy(session, 'hunterMastery', 5);
+    buy(session, 'vampirism', 5);
+    buy(session, 'piercingReward', 8);
+    buy(session, 'criticalShot', 10);
+    buy(session, 'killingStreak', 7);
     expect(session.upgradeTalent('willToWin')).toBe(false);
     session.state.level = 50;
     session.refreshStats();
@@ -104,6 +109,7 @@ describe('new defense talents through session commands', () => {
       tier: 6,
       requiredBranchPoints: 35,
       maxRanks: 5,
+      branch: 'shooting',
     });
     for (let rank = 1; rank <= 5; rank++) {
       buy(session, 'willToWin');
@@ -111,7 +117,7 @@ describe('new defense talents through session commands', () => {
       expect(session.confirmLevelUp()).toBe(true);
       const level = session.state.level;
       expect(session.state.levelTimerMax).toBe(
-        15 + 2 * level - Math.floor(session.state.stats.endurance / 25) - 10 * rank,
+        Math.max(10, 15 + 2 * level - Math.floor(session.state.stats.endurance / 25) - 15 * rank),
       );
       session.tick(session.state.levelTimerMax - 0.01);
       expect(session.state.phase).toBe('playing');
@@ -125,7 +131,7 @@ describe('new defense talents through session commands', () => {
     ]);
     session.refreshStats();
     expect(session.state.rules.levelDuration(55)).toBe(
-      100 - Math.floor(session.state.stats.endurance / 25) - 50,
+      Math.max(10, 100 - Math.floor(session.state.stats.endurance / 25) - 75),
     );
     session.state.character.setBase('endurance', 10000);
     session.state.pendingTalentPoints = 0;
@@ -376,7 +382,7 @@ describe('new defense talents through session commands', () => {
   it.each([
     { adrenalineTimer: 21, adrenalineShots: 20 },
     { adrenalineTimer: -1, adrenalineShots: 20 },
-    { adrenalineTimer: 20, adrenalineShots: 21 },
+    { adrenalineTimer: 20, adrenalineShots: 36 },
     { adrenalineTimer: 20, adrenalineShots: 1.5 },
     { adrenalineTimer: 20, adrenalineShots: 0 },
     { adrenalineTimer: 0, adrenalineShots: 20 },

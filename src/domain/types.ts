@@ -53,6 +53,7 @@ export type TalentId =
   | 'improvedLastHope'
   | 'bestDefense'
   | 'willToWin'
+  | 'poisonResistance'
   | 'adrenaline'
   | 'marauder';
 export type TalentBranch = 'defense' | 'shooting' | 'magic';

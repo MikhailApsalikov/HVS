@@ -5,6 +5,7 @@ import { DIFFICULTIES } from '../content/difficulties.js';
 import { ITEM_MAP } from '../content/items.js';
 import { ABILITIES, ABILITY_ORDER } from '../content/abilities.js';
 import { GameRules } from './rules/GameRules.js';
+import { purchasePrice } from './rules/economy.js';
 import { GameState } from './model/GameState.js';
 import { TalentSystem } from './model/TalentSystem.js';
 import { ItemSystem } from './model/ItemSystem.js';
@@ -114,10 +115,15 @@ export class GameSession {
   buyItem(id: string): boolean {
     if (
       this.state.phase !== 'levelUp' ||
-      !this.items.canBuy(id, this.state.coins, this.state.stats.inventorySlots)
+      !this.items.canBuy(
+        id,
+        this.state.coins,
+        this.state.stats.inventorySlots,
+        this.state.stats.shopDiscount,
+      )
     )
       return false;
-    this.state.coins -= ITEM_MAP.get(id)!.price;
+    this.state.coins -= purchasePrice(ITEM_MAP.get(id)!.price, this.state.stats.shopDiscount);
     this.items.buyItem(id);
     this.refreshStats();
     return true;
@@ -128,6 +134,10 @@ export class GameSession {
     if (!result) return false;
     this.state.coins += result.refund;
     this.refreshStats();
+    this.state.killingStreakStacks = Math.min(
+      this.state.killingStreakStacks,
+      Math.max(this.state.killingStreakMaximum, this.state.stats['prep.stacks']),
+    );
     return true;
   }
   confirmLevelUp(): boolean {

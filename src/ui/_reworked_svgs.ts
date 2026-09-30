@@ -3,6 +3,40 @@ const icon = (art: string): string =>
 
 /** New illustrations in the existing 48px equipment style. */
 export const REWORKED_SVGS: Readonly<Record<string, string>> = {
+  l021: icon(`
+    <path d="M6 9L24 3L42 9V25Q40 37 24 45Q8 37 6 25Z" fill="#354971" stroke="#EBC979" stroke-width="3"/>
+    <path d="M24 9L28 20L38 23L28 27L24 39L20 27L10 23L20 20Z" fill="#F8DE93"/>
+    <circle cx="24" cy="23" r="5" fill="#91DEEA" stroke="#FFF3CC" stroke-width="2"/>
+  `),
+  l022: icon(`
+    <path d="M9 7L24 17L39 7M10 3L24 12L38 3" fill="none" stroke="#E2BE67" stroke-width="3"/>
+    <path d="M24 43Q2 29 9 19Q16 12 24 21Q32 12 39 19Q46 29 24 43Z" fill="#AA3F44" stroke="#FFD685" stroke-width="3"/>
+    <path d="M12 28H19L22 22L26 34L29 27H37" fill="none" stroke="#FFF0BB" stroke-width="2"/>
+  `),
+  l023: icon(`
+    <path d="M14 19L25 44L38 38L29 13Z" fill="#84533E" stroke="#E8BC69" stroke-width="3"/>
+    <path d="M18 23L9 4M23 21L18 2M28 19L27 3" stroke="#EDE0AE" stroke-width="2"/>
+    <path d="M7 4L11 12L14 4M16 2L19 10L22 3M25 3L27 11L31 5" fill="#DF6860"/>
+    <path d="M21 29L29 25M24 36L32 32" stroke="#F6D17C" stroke-width="3"/>
+  `),
+  l024: icon(`
+    <path d="M4 18L16 12L24 5L32 12L44 18L37 35L24 44L11 35Z" fill="#615039" stroke="#EFD07C" stroke-width="2"/>
+    <path d="M8 24Q24 7 40 24Q24 39 8 24Z" fill="#E6E8CA"/>
+    <circle cx="24" cy="24" r="9" fill="#79B8AA"/><circle cx="24" cy="24" r="5" fill="#173E47"/>
+    <circle cx="27" cy="21" r="2" fill="#FFFFFF"/>
+  `),
+  l025: icon(`
+    <path d="M10 4L17 16M38 4L31 16" stroke="#DFC379" stroke-width="3"/>
+    <path d="M24 11L41 22L35 39L24 45L13 39L7 22Z" fill="#3A655D" stroke="#F0CE7D" stroke-width="3"/>
+    <path d="M15 22L24 30L33 22M15 29L24 37L33 29" fill="none" stroke="#F4DC95" stroke-width="3"/>
+    <circle cx="24" cy="18" r="3" fill="#D2F1D0"/>
+  `),
+  l026: icon(`
+    <path d="M13 4Q44 24 13 44" fill="none" stroke="#E8BF6B" stroke-width="5"/>
+    <path d="M13 4L19 24L13 44" fill="none" stroke="#F7E9BB" stroke-width="1.5"/>
+    <path d="M3 24H40M34 18L43 24L34 30" fill="none" stroke="#ABDEE3" stroke-width="3"/>
+    <path d="M26 9L33 11M29 15L36 17M29 33L36 31M26 39L33 37" stroke="#A3D1BC" stroke-width="2"/>
+  `),
   c088: icon(`
     <path d="M10 39L33 16" stroke="#9D784E" stroke-width="5"/>
     <path d="M23 15L41 7L33 26L31 17Z" fill="#D8E5D9" stroke="#587464" stroke-width="2"/>

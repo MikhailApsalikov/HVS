@@ -2492,22 +2492,61 @@ body {
 }
 
 .player-debuffs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  gap: 8px;
+  width: 166px;
+  height: 70px;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  padding: 8px;
+  border: 1px solid #514048;
+  border-radius: 8px;
+  background: #17171c;
 }
-.player-debuffs[hidden],
+.player-debuff-slot {
+  width: 44px;
+  height: 52px;
+}
 .player-debuff[hidden] {
   display: none;
 }
 .player-debuff {
-  padding: 3px 7px;
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: 44px;
+  height: 52px;
+  padding: 2px;
   border: 1px solid #a34b51;
   border-radius: 5px;
   background: #321c25;
   color: #ffd3d6;
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
+  cursor: help;
+}
+.player-debuff:focus-visible {
+  outline: 2px solid #f5d66b;
+  outline-offset: 2px;
+}
+.player-debuff__icon,
+.player-debuff__icon svg {
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+.player-debuff__stacks {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: #172010;
+  font-weight: 700;
+}
+.player-debuff__stacks:empty {
+  display: none;
 }
 .player-debuff--poison {
   border-color: #708e37;

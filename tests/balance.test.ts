@@ -68,12 +68,12 @@ describe('combat balance through session commands', () => {
   );
 
   it.each(['easy', 'normal', 'hard'] as const)(
-    'applies all five armor ranks as independent sources on %s',
+    'applies five warrior and ten titan armor ranks as independent sources on %s',
     (difficulty) => {
       const session = new GameSession(difficulty);
       session.state.level = 50;
       session.state.initialTalentPick = false;
-      session.state.pendingTalentPoints = 11;
+      session.state.pendingTalentPoints = 16;
       session.talents.loadFromSave([
         { id: 'endurance', rank: 7 },
         { id: 'improvedEndurance', rank: 7 },
@@ -93,9 +93,9 @@ describe('combat balance through session commands', () => {
       expect(session.buyItem('e-shield')).toBe(true);
       const flatArmor = baseArmor + 1250 + 10000;
       expect(session.state.stats.armor).toBe(flatArmor);
-      for (let rank = 1; rank <= 5; rank++) {
+      for (let rank = 1; rank <= 10; rank++) {
         expect(session.upgradeTalent('titanArmor')).toBe(true);
-        expect(session.state.stats.armor).toBe(Math.round(flatArmor * (1 + 1.25 * rank)));
+        expect(session.state.stats.armor).toBe(Math.round(flatArmor * (1 + 0.75 * rank)));
       }
       expect(session.upgradeTalent('titanArmor')).toBe(false);
       session.state.character.setModifiers('item:one', [
@@ -106,7 +106,7 @@ describe('combat balance through session commands', () => {
         { stat: 'armor', kind: 'percent', value: 50 },
       ]);
       session.refreshStats();
-      expect(session.state.stats.armor).toBe(Math.round((flatArmor + 40) * 7.25 * 1.2 * 1.5));
+      expect(session.state.stats.armor).toBe(Math.round((flatArmor + 40) * 8.5 * 1.2 * 1.5));
       const data = snapshot(session);
       expect(snapshot(restore(parseSave(data)!))).toEqual(data);
     },

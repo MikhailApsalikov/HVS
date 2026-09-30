@@ -56,7 +56,9 @@ describe('equipment catalog rules', () => {
       expect(dependent[second.type] === first.type || second.type === 'coinsPerKill').toBe(true);
     if (!third) return;
     if (isPrimary(second.type)) {
-      expect(third.type === 'coinsPerKill' || isPrimary(third.type)).toBe(true);
+      // The explicitly requested Blizzard Blade keeps max energy after intellect + agility.
+      if (item.id === 'l004') expect(third).toEqual({ type: 'maxEnergy', value: 80 });
+      else expect(third.type === 'coinsPerKill' || isPrimary(third.type)).toBe(true);
       if (isPrimary(third.type)) {
         expect(third.value / first.value).toBeGreaterThanOrEqual(0.2);
         expect(third.value / first.value).toBeLessThanOrEqual(0.5);

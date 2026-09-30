@@ -2,7 +2,7 @@ import type { ItemDefinition } from '../itemTypes.js';
 import { ITEM_MAP } from '../../content/items.js';
 import { RETIRED_ITEM_REFUNDS } from '../../content/retiredItems.js';
 import { itemModifiers } from '../rules/itemModifiers.js';
-import { salePrice } from '../rules/economy.js';
+import { purchasePrice, salePrice } from '../rules/economy.js';
 import type { StatModifier } from '../rules/stats.js';
 
 export class ItemSystem {
@@ -19,9 +19,14 @@ export class ItemSystem {
   owns(id: string): boolean {
     return this.items.includes(id);
   }
-  canBuy(id: string, coins: number, capacity: number): boolean {
+  canBuy(id: string, coins: number, capacity: number, discount = 0): boolean {
     const item = ITEM_MAP.get(id);
-    return !!item && !this.owns(id) && coins >= item.price && this.hasFreeSlot(capacity);
+    return (
+      !!item &&
+      !this.owns(id) &&
+      coins >= purchasePrice(item.price, discount) &&
+      this.hasFreeSlot(capacity)
+    );
   }
   buyItem(id: string): boolean {
     if (!ITEM_MAP.has(id) || this.owns(id)) return false;
