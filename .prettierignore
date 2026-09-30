@@ -8,3 +8,10 @@ pnpm-lock.yaml
 src/ui/*_svgs.ts
 src/sprites
 documentation/*.txt
+.android-tools
+**/build
+**/.gradle
+**/.cxx
+**/generated
+src/assets/*_svgs.ts
+apps/mobile/android

@@ -1,2 +1,10 @@
+packages:
+  - apps/*
+  - packages/*
+
 allowBuilds:
   esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@shopify/react-native-skia@2.13.1'
+  - react-native-safe-area-context@5.10.1

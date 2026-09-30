@@ -37,3 +37,15 @@ coverage/
 npm-debug.log*
 
 .vite
+
+# Local Android toolchain and native build products
+.android-tools/
+**/.gradle/
+**/.cxx/
+**/build/
+**/local.properties
+**/generated/
+*.apk
+*.aab
+*.keystore
+*.jks

@@ -89,8 +89,9 @@ interface SavedCooldown {
   readonly duration: number;
   readonly remainingCooldown: number;
 }
+export const SAVE_VERSION = 18;
 export interface SaveData {
-  readonly version: 18;
+  readonly version: typeof SAVE_VERSION;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -107,7 +108,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 18,
+    version: SAVE_VERSION,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),

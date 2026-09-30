@@ -14,7 +14,13 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "node scripts/check.mjs"
+    "check": "node scripts/check.mjs",
+    "mobile:assets": "node scripts/mobile-assets.mjs",
+    "mobile:typecheck": "pnpm --filter @hvs/mobile typecheck",
+    "mobile:start": "pnpm mobile:assets && pnpm --filter @hvs/mobile start",
+    "mobile:bundle": "pnpm mobile:assets && pnpm --filter @hvs/mobile bundle",
+    "mobile:apk": "powershell -ExecutionPolicy Bypass -File scripts/android-build.ps1 -Variant preview",
+    "mobile:aab": "powershell -ExecutionPolicy Bypass -File scripts/android-build.ps1 -Variant release"
   },
   "packageManager": "pnpm@11.19.0",
   "engines": {

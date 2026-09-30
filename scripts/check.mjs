@@ -1,7 +1,15 @@
 import { spawnSync } from 'node:child_process';
 
 const checks = [
+  ['Shared mobile assets', 'scripts/mobile-assets.mjs'],
   ['TypeScript', 'node_modules/typescript/bin/tsc', '--noEmit'],
+  [
+    'Android TypeScript',
+    'node_modules/typescript/bin/tsc',
+    '--noEmit',
+    '-p',
+    'apps/mobile/tsconfig.json',
+  ],
   ['Formatting', 'node_modules/prettier/bin/prettier.cjs', '--check', '.'],
   ['Game rules, regressions and coverage', 'node_modules/vitest/vitest.mjs', 'run', '--coverage'],
   ['Production build', 'node_modules/vite/bin/vite.js', 'build'],
