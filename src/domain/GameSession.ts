@@ -180,7 +180,10 @@ export class GameSession {
   }
   activateAbility(id: AbilityId): AbilityResult {
     const result = activateAbility(this.state, id, this.random);
-    if ((id === 'lastHope' || id === 'adrenaline' || id === 'stand') && result === 'activated')
+    if (
+      (id === 'lastHope' || id === 'adrenaline' || id === 'stand' || id === 'eagleEye') &&
+      result === 'activated'
+    )
       this.refreshStats(false);
     return result;
   }

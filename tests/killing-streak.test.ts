@@ -75,7 +75,7 @@ describe('agility dodge and breach effects', () => {
     session.refreshStats();
     expect(session.state.stats).toMatchObject({ agility: 130, dodgeChance: 0.039 });
   });
-  it('burns energy, grants breach energy and gold, and fires an unlearned counter volley on dodge', () => {
+  it('avoids energy burns but grants breach energy and gold, and fires an unlearned counter volley on dodge', () => {
     const session = arena(
       [
         { id: 'endurance', rank: 1 },
@@ -89,12 +89,13 @@ describe('agility dodge and breach effects', () => {
     expect(session.state.isAbilityUnlocked('volley')).toBe(false);
     session.state.getAbility('volley').start(20);
     const hp = session.state.hp;
+    session.state.energy = 80;
     addSpider(session, 'burner', 0, 1, 20);
     session.tick(0.001);
     expect(session.state.hp).toBe(hp);
-    expect(session.state.energy).toBe(10); // 100 − 92 + 2
+    expect(session.state.energy).toBe(82); // 80 + 2 breach energy, without the burn.
     expect(session.drainEvents()).toContainEqual(
-      expect.objectContaining({ type: 'damage', hp: 0, energy: 92, dodged: true }),
+      expect.objectContaining({ type: 'damage', hp: 0, energy: 0, dodged: true }),
     );
     expect(session.state.arrows.size).toBe(4);
     expect(session.state.bestDefenseCooldown).toBe(3);
@@ -498,7 +499,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         },
       };
       const parsed = parseSave(previous)!;
-      expect(parsed.version).toBe(18);
+      expect(parsed.version).toBe(19);
       const session = restore(parsed, () => 0.999999);
       expect(session.state.killingStreakStacks).toBe(2);
       expect(session.state.killingStreakProgress).toBe((20 - rank) / 2);

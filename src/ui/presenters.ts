@@ -268,7 +268,7 @@ export function activeDebuffs(state: GameState) {
       id: 'healingReduction',
       name: DEBUFFS.healingReduction.name,
       timer: state.healingReductionTimer,
-      detail: `Регенерация здоровья и получаемое лечение: ${DEBUFFS.healingReduction.healingPercent}%.`,
+      detail: `Регенерация здоровья и получаемое лечение: ${formatStat('healingReceived', state.stats.healingReceived)} от обычного.`,
     },
     {
       id: 'poison',

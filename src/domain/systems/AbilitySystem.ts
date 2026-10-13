@@ -7,7 +7,7 @@ import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { Arrow } from '../model/Arrow.js';
 import { AIMED_FIRE } from '../rules/stats.js';
 import { createArrow } from './ArrowFactory.js';
-import { clearDebuffs } from './DebuffSystem.js';
+import { clearDebuffs, clearSpiderDebuffs } from './DebuffSystem.js';
 
 type Effect = (state: GameState, random: RandomSource) => void;
 export function fireVolley(state: GameState, random: RandomSource): void {
@@ -55,6 +55,7 @@ const EFFECTS: Record<AbilityId, Effect> = {
     for (const archer of state.archers) archer.start(0);
   },
   eagleEye: (state) => {
+    clearSpiderDebuffs(state);
     state.eagleEyeTimer = state.stats['eagleEye.duration'];
     state.eagleEyeShots = state.stats['eagleEye.shots'];
   },

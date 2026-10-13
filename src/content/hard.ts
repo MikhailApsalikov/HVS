@@ -1,4 +1,5 @@
 import type { DifficultyConfig } from '../domain/types.js';
+import { SPIDER_DAMAGE } from '../domain/rules/stats.js';
 import { normalConfig } from './normal.js';
 
 export const hardConfig: DifficultyConfig = {
@@ -8,8 +9,8 @@ export const hardConfig: DifficultyConfig = {
   startingCoins: 1000,
   spiderSpeedBase: 0.09,
   spiderSpeedStep: 0.005,
-  spiderDamageBase: 20,
-  spiderDamageGrowth: 0.1,
+  spiderDamageBase: SPIDER_DAMAGE.base,
+  spiderDamageGrowth: SPIDER_DAMAGE.growth.hard,
   spawnP0: 0.00065,
   spawnDP: 0.00005265,
 };

@@ -1,4 +1,5 @@
 import { DEBUFFS } from '../../content/debuffs.js';
+import { SPIDERS } from '../../content/spiders.js';
 import type { GameState } from '../model/GameState.js';
 import type { Spider } from '../model/Spider.js';
 import type { StatModifier } from '../rules/stats.js';
@@ -17,7 +18,11 @@ export function debuffModifiers(state: GameState): StatModifier[] {
       source: 'debuff:healingReduction',
       stat: 'healingReceived',
       kind: 'percent',
-      value: DEBUFFS.healingReduction.healingPercent,
+      value: -Math.min(
+        DEBUFFS.healingReduction.maxHealingReductionPercent,
+        Math.max(0, state.level - SPIDERS.fast.unlockLevel + 1) *
+          DEBUFFS.healingReduction.healingPercentPerLevel,
+      ),
     });
   if (state.poisonTimer > 0)
     effects.push(
@@ -53,18 +58,24 @@ export function applySpiderDebuff(state: GameState, spider: Spider): boolean {
     );
   else if (spider.type === 'poisonous') {
     if (state.poisonTimer === 0) state.poisonTickTimer = DEBUFFS.poison.interval;
-    state.poisonTimer = duration(DEBUFFS.poison.duration);
+    state.poisonTimer = duration(
+      DEBUFFS.poison.duration + DEBUFFS.poison.durationPerLevel * state.level,
+    );
     state.poisonDamage = [...state.poisonDamage, spider.damage].slice(-DEBUFFS.poison.maxStacks);
   } else return false;
   return true;
 }
 
-export function clearDebuffs(state: GameState): void {
+export function clearSpiderDebuffs(state: GameState): void {
   state.goldLockTimer = 0;
   state.healingReductionTimer = 0;
   state.poisonTimer = 0;
   state.poisonTickTimer = 0;
   state.poisonDamage = [];
+}
+
+export function clearDebuffs(state: GameState): void {
+  clearSpiderDebuffs(state);
   state.antiAfkIdleTimer = 0;
   state.antiAfkStacks = 0;
   state.antiAfkRecoveryTimer = 0;

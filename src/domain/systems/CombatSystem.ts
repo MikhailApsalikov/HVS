@@ -9,6 +9,7 @@ import { SPIDERS, SPECIAL_SPIDER_ORDER } from '../../content/spiders.js';
 import { Spider } from '../model/Spider.js';
 import { fireVolley } from './AbilitySystem.js';
 import { applySpiderDebuff } from './DebuffSystem.js';
+import { clearPlayerBuffs } from './BuffSystem.js';
 
 /** Returns the time within this tick when a live spider first occupies the field. */
 export function spawnSpiders(state: GameState, dt: number, random: RandomSource): number {
@@ -100,7 +101,7 @@ export function resolveBreaches(
   random: RandomSource,
   emit: EmitEvent,
   onBreach: () => void,
-  onDebuff: () => void,
+  onEffectsChanged: () => void,
 ): void {
   for (const spider of state.spiders.values()) {
     if (spider.dying || spider.y < 1) continue;
@@ -108,6 +109,7 @@ export function resolveBreaches(
     onBreach();
     if (state.isInvulnerable) emit({ type: 'absorb' });
     else {
+      const definition = SPIDERS[spider.type];
       const blocked =
         spider.damage > 0 &&
         state.stats.blockPower > 0 &&
@@ -121,7 +123,8 @@ export function resolveBreaches(
       const blockedDamage = blocked
         ? state.rules.value('incomingDamage', spider.damage) - hp
         : undefined;
-      let dodged = hp > 0 && state.stats.dodgeChance > 0 && random() < state.stats.dodgeChance;
+      const canDodge = hp > 0 || definition.burnsEnergy === true || definition.clearsBuffs === true;
+      let dodged = canDodge && state.stats.dodgeChance > 0 && random() < state.stats.dodgeChance;
       if (hp > 0 && !dodged) {
         if (state.killingStreakStacks > 0) {
           dodged = state.stats.enthusiasmChance > 0 && random() < state.stats.enthusiasmChance;
@@ -130,12 +133,15 @@ export function resolveBreaches(
         if (!dodged) state.killingStreakProgress = 0;
       }
       if (dodged) hp = 0;
-      const energy = SPIDERS[spider.type].burnsEnergy
-        ? Math.min(state.energy, state.stats.burnerEnergy)
-        : 0;
+      const energy =
+        definition.burnsEnergy && !dodged ? Math.min(state.energy, state.stats.burnerEnergy) : 0;
       const previousHp = state.hp;
       state.modifyHp(-hp);
-      if (state.hp < previousHp && applySpiderDebuff(state, spider)) onDebuff();
+      if (state.hp < previousHp && applySpiderDebuff(state, spider)) onEffectsChanged();
+      if (definition.clearsBuffs && !dodged) {
+        clearPlayerBuffs(state);
+        onEffectsChanged();
+      }
       state.modifyEnergy(-energy);
       emit({
         type: 'damage',

@@ -1,5 +1,5 @@
 import type { DifficultyConfig } from '../domain/types.js';
-import { STATS } from '../domain/rules/stats.js';
+import { SPIDER_DAMAGE, STATS } from '../domain/rules/stats.js';
 import { ABILITY_ORDER } from './abilities.js';
 
 export const normalConfig: DifficultyConfig = {
@@ -34,8 +34,8 @@ export const normalConfig: DifficultyConfig = {
 
   spiderSpeedBase: 0.08,
   spiderSpeedStep: 0.004,
-  spiderDamageBase: 20,
-  spiderDamageGrowth: 0.08,
+  spiderDamageBase: SPIDER_DAMAGE.base,
+  spiderDamageGrowth: SPIDER_DAMAGE.growth.normal,
   spiderVariance: 0.3,
 
   spiderChanceGolden: 0.005,

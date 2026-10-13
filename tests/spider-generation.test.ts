@@ -12,6 +12,7 @@ const priority = [
   ['fat', 10],
   ['fast', 20],
   ['poisonous', 8],
+  ['cleanser', 45],
   ['ninja', 35],
 ] as const;
 
@@ -37,15 +38,15 @@ function speciesRolls(type: SpiderType, level: number, roll: number) {
 
 describe('spider generation through session ticks', () => {
   it.each([
-    ['easy', 1, 22],
-    ['easy', 25, 125],
-    ['easy', 50, 320],
-    ['normal', 1, 23],
-    ['normal', 25, 180],
-    ['normal', 50, 500],
-    ['hard', 1, 24],
-    ['hard', 25, 245],
-    ['hard', 50, 720],
+    ['easy', 1, 12],
+    ['easy', 25, 106],
+    ['easy', 50, 303],
+    ['normal', 1, 13],
+    ['normal', 25, 160],
+    ['normal', 50, 490],
+    ['hard', 1, 13],
+    ['hard', 25, 226],
+    ['hard', 50, 723],
   ] as const)('spawns quadratic damage on %s at level %i: %i', (difficulty, level, damage) => {
     const session = encounter(level, speciesRolls('normal', level, 0), difficulty);
     session.tick(0.02);
@@ -53,16 +54,16 @@ describe('spider generation through session ticks', () => {
   });
 
   it.each([
-    ['normal', 0, 350],
-    ['normal', 1, 650],
-    ['fat', 0.5, 500],
-    ['megaFat', 0.5, 500],
-    ['golden', 0.5, 500],
-    ['poisonous', 0.5, 500],
-    ['ninja', 0.5, 500],
-    ['fast', 0, 175],
-    ['burner', 1, 325],
-    ['tank', 1, 6500],
+    ['normal', 0, 343],
+    ['normal', 1, 637],
+    ['fat', 0.5, 490],
+    ['megaFat', 0.5, 490],
+    ['golden', 0.5, 490],
+    ['poisonous', 0.5, 490],
+    ['ninja', 0.5, 490],
+    ['fast', 0, 172],
+    ['burner', 1, 319],
+    ['tank', 1, 6370],
   ] as const)('keeps species and variance modifiers for %s with roll %s', (type, roll, damage) => {
     const rolls = speciesRolls(type, 50, 0);
     rolls[rolls.length - 2] = roll;
@@ -79,8 +80,9 @@ describe('spider generation through session ticks', () => {
     ['fat', [0.99, 0.99, 0.99, 0.99, 0, 0, 0]],
     ['fast', [0.99, 0.99, 0.99, 0.99, 0.99, 0, 0]],
     ['poisonous', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0, 0]],
-    ['ninja', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0]],
-    ['normal', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]],
+    ['cleanser', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0, 0]],
+    ['ninja', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0]],
+    ['normal', [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]],
   ] as const)('chooses %s before every later eligible type', (type, rolls) => {
     const session = encounter(50, [0, ...rolls]);
     session.tick(0.02);
@@ -116,6 +118,9 @@ describe('spider generation through session ticks', () => {
     ['poisonous', 16, 0.02],
     ['poisonous', 23, 0.02],
     ['poisonous', 24, 0.03],
+    ['cleanser', 45, 0.01],
+    ['cleanser', 100, 0.01],
+    ['cleanser', 500, 0.01],
     ['ninja', 35, 0.02],
     ['ninja', 69, 0.02],
     ['ninja', 70, 0.03],
@@ -144,6 +149,8 @@ describe('spider generation through session ticks', () => {
         ['golden', 40, 0.005, 1],
         ['poisonous', 8, 0.01, 1],
         ['poisonous', 16, 0.02, 1],
+        ['cleanser', 45, 0.01, 1],
+        ['cleanser', 500, 0.01, 1],
         ['megaFat', 50, 0.01, 3],
         ['megaFat', 90, 0.02, 3],
       ] as const) {
@@ -213,9 +220,9 @@ describe('spider generation through session ticks', () => {
 
 describe('burner damage and energy', () => {
   it.each([
-    ['easy', 5, 17, 100],
-    ['normal', 25, 90, 140],
-    ['hard', 50, 360, 190],
+    ['easy', 5, 11, 100],
+    ['normal', 25, 80, 140],
+    ['hard', 50, 361, 190],
   ] as const)(
     'spawns and breaches with scaled damage on %s level %i',
     (difficulty, level, damage, energy) => {
@@ -368,7 +375,7 @@ describe('ninja jumps and saved progress', () => {
         spiders: previousSpiders(current).map((spider) => ({ ...spider, hasJumped })),
       };
       const migrated = parseSave(previous)!;
-      expect(migrated.version).toBe(18);
+      expect(migrated.version).toBe(19);
       expect(migrated.state).toEqual(current.state);
       expect(migrated.arrows).toEqual(current.arrows);
       const loaded = restore(migrated, () => 0.999999);

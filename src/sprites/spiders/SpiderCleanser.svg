@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="cleanserBody">
+      <stop stop-color="#bcf3f8"/>
+      <stop offset="1" stop-color="#1b566b"/>
+    </radialGradient>
+  </defs>
+  <g fill="none" stroke="#7abdc9" stroke-width="3" stroke-linecap="round">
+    <path d="M24 25 12 16 7 5 M40 25 52 16 57 5"/>
+    <path d="M21 30 7 24 2 16 M43 30 57 24 62 16"/>
+    <path d="M21 35 8 42 3 51 M43 35 56 42 61 51"/>
+    <path d="M25 39 17 49 15 60 M39 39 47 49 49 60"/>
+  </g>
+  <ellipse cx="32" cy="37" rx="14" ry="17" fill="url(#cleanserBody)" stroke="#d1faff"/>
+  <ellipse cx="32" cy="21" rx="10" ry="10" fill="#315d76"/>
+  <path d="M32 27 35 34 42 37 35 40 32 47 29 40 22 37 29 34Z" fill="#f0ffff"/>
+  <circle cx="27" cy="18" r="3" fill="#e4faff"/>
+  <circle cx="37" cy="18" r="3" fill="#e4faff"/>
+  <path d="M27 26 25 31 M37 26 39 31" stroke="#effdff" stroke-width="2"/>
+  <circle cx="32" cy="51" r="2" fill="#bfe9f5"/>
+</svg>

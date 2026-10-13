@@ -68,14 +68,15 @@ describe('spider debuffs through session commands', () => {
         session.talents.loadFromSave([{ id: 'poisonResistance', rank }]);
         session.refreshStats();
         breach(session, type, 101);
-        const duration = Number(((type === 'fast' ? 17 : 40) * (1 - 0.08 * rank)).toFixed(2));
+        const baseDuration = type === 'fast' ? 34 : type === 'poisonous' ? 45 : 40;
+        const duration = Number((baseDuration * (1 - 0.08 * rank)).toFixed(2));
         expect(activeDebuffs(session.state)[0].timer).toBe(duration);
         if (type === 'golden') expect(session.state.stats.coinsPerSec).toBe(0);
-        if (type === 'fast') expect(session.state.stats.healingReceived).toBe(0.25);
+        if (type === 'fast') expect(session.state.stats.healingReceived).toBe(0.69);
         if (type === 'poisonous') {
-          expect(session.state.stats['poison.tickDamage']).toBe(15.15);
+          expect(session.state.stats['poison.tickDamage']).toBe(12.12);
           expect(activeDebuffs(session.state)[0].detail).toContain(
-            '15.15 здоровья за тик (каждые 2 секунды)',
+            '12.12 здоровья за тик (каждые 2 секунды)',
           );
         }
         const hp = session.state.hp;
@@ -83,7 +84,7 @@ describe('spider debuffs through session commands', () => {
         loaded.tick(duration);
         expect(activeDebuffs(loaded.state)).toEqual([]);
         expect(loaded.state.hp).toBeCloseTo(
-          hp - (type === 'poisonous' ? Math.floor(duration / 2) * 15.15 : 0),
+          hp - (type === 'poisonous' ? Math.floor(duration / 2) * 12.12 : 0),
         );
         expect(loaded.state.stats.healingReceived).toBe(1);
         expect(loaded.state.stats.coinsPerSec).toBeGreaterThan(0);
@@ -98,18 +99,34 @@ describe('spider debuffs through session commands', () => {
     breach(session, 'poisonous', 101);
     session.tick(0.999);
     breach(session, 'poisonous', 202);
-    expect(session.state.poisonTimer).toBe(24);
+    expect(session.state.poisonTimer).toBe(27);
     expect(session.state.poisonTickTimer).toBeCloseTo(1);
     expect(activeDebuffs(session.state)[0]).toMatchObject({ name: 'Яд ×2' });
-    expect(activeDebuffs(session.state)[0].detail).toContain('45.45 здоровья за тик');
+    expect(activeDebuffs(session.state)[0].detail).toContain('36.36 здоровья за тик');
     const hp = session.state.hp;
     session.tick(1);
-    expect(session.state.hp).toBeCloseTo(hp - 45.45);
+    expect(session.state.hp).toBeCloseTo(hp - 36.36);
     session.state.energy = 100;
     expect(session.activateAbility('freeze')).toBe('activated');
     session.tick(20);
-    expect(session.state.poisonTimer).toBe(23);
-    expect(session.state.hp).toBeCloseTo(hp - 45.45);
+    expect(session.state.poisonTimer).toBe(26);
+    expect(session.state.hp).toBeCloseTo(hp - 36.36);
+  });
+
+  it.each([
+    [8, 24],
+    [9, 24.5],
+    [30, 35],
+    [60, 50],
+  ])('poison at level %i lasts %s seconds', (level, duration) => {
+    const session = arena(level);
+    breach(session, 'poisonous', 100);
+    expect(session.state.poisonTimer).toBe(duration);
+    expect(session.state.stats['poison.tickDamage']).toBe(12);
+    const hp = session.state.hp;
+    session.tick(duration);
+    expect(session.state.hp).toBeCloseTo(hp - Math.floor(duration / 2) * 12);
+    expect(activeDebuffs(session.state)).toEqual([]);
   });
 
   it('stops only passive income for 40 seconds, refreshes duration and retains fractional gold', () => {
@@ -143,12 +160,15 @@ describe('spider debuffs through session commands', () => {
   });
 
   it.each([
-    [20, 8],
-    [50, 17],
-    [100, 32],
+    [20, 16, 0.99],
+    [21, 16.6, 0.98],
+    [50, 34, 0.69],
+    [100, 64, 0.19],
+    [119, 75.4, 0],
+    [120, 76, 0],
   ])(
     'uses the current level %i for %i seconds of reduced healing without stacking',
-    (level, duration) => {
+    (level, duration, healingFraction) => {
       const session = arena(level);
       session.state.character.setModifiers('test:regen', []);
       session.state.character.setModifiers('test:vampirism', [
@@ -158,10 +178,16 @@ describe('spider debuffs through session commands', () => {
       const before = session.state.stats;
       breach(session, 'fast');
       expect(session.state.healingReductionTimer).toBe(duration);
-      expect(session.state.stats.healingReceived).toBe(0.25);
-      expect(session.state.stats.hpRegen).toBeCloseTo(before.hpRegen * 0.25);
-      expect(session.state.stats.hpPerKill).toBe(25);
-      expect(session.state.stats['heal.amount']).toBe(Math.round(before['heal.amount'] * 0.25));
+      expect(session.state.stats.healingReceived).toBe(healingFraction);
+      expect(session.state.stats.hpRegen).toBeCloseTo(before.hpRegen * healingFraction);
+      expect(session.state.stats.hpPerKill).toBe(Math.round(100 * healingFraction));
+      expect(session.state.stats['heal.amount']).toBe(
+        Math.round(before['heal.amount'] * healingFraction),
+      );
+      const reducedRegen = session.state.stats.hpRegen;
+      expect(activeDebuffs(session.state)[0].detail).toContain(
+        `${Number((healingFraction * 100).toFixed(1))}% от обычного`,
+      );
       session.state.hp = 1000;
       session.state.energy = session.state.maxEnergy;
       expect(session.activateAbility('heal')).toBe('activated');
@@ -175,15 +201,17 @@ describe('spider debuffs through session commands', () => {
       const beforeKill = session.state.hp;
       session.tick(0.31);
       expect(target.dying).toBe(true);
-      expect(session.state.hp).toBeCloseTo(beforeKill + 25 + session.state.stats.hpRegen * 0.31);
+      expect(session.state.hp).toBeCloseTo(
+        beforeKill + session.state.stats.hpPerKill + session.state.stats.hpRegen * 0.31,
+      );
       breach(session, 'fast');
       expect(session.state.healingReductionTimer).toBe(duration);
-      expect(session.state.stats.healingReceived).toBe(0.25);
+      expect(session.state.stats.healingReceived).toBe(healingFraction);
       const beforeExpiry = session.state.hp;
       session.tick(duration + 1);
       expect(session.state.stats.healingReceived).toBe(1);
       expect(session.state.stats.hpRegen).toBe(before.hpRegen);
-      expect(session.state.hp).toBeCloseTo(beforeExpiry + before.hpRegen * (duration * 0.25 + 1));
+      expect(session.state.hp).toBeCloseTo(beforeExpiry + reducedRegen * duration + before.hpRegen);
     },
   );
 
@@ -230,14 +258,14 @@ describe('spider debuffs through session commands', () => {
     expect(activeDebuffs(loaded.state)).toEqual([]);
   });
 
-  it('deals exactly 20 poison ticks totaling 300% raw damage, ignores defenses and restores armor', () => {
-    const session = arena();
+  it('deals exactly 20 poison ticks totaling 240% raw damage at level 40, ignores defenses and restores armor', () => {
+    const session = arena(40);
     session.talents.loadFromSave([{ id: 'spiderArmor', rank: 10 }]);
     session.refreshStats();
     const armor = session.state.stats.armor;
     breach(session, 'poisonous', 101);
     expect(session.state.stats.armor).toBe(Math.round(armor * 0.25));
-    expect(session.state.stats['poison.tickDamage']).toBe(15.15);
+    expect(session.state.stats['poison.tickDamage']).toBe(12.12);
     const hp = session.state.hp;
     session.state.character.setModifiers('test:defense', [
       { stat: 'incomingDamage', kind: 'percent', value: -100 },
@@ -248,38 +276,43 @@ describe('spider debuffs through session commands', () => {
     session.tick(1.999);
     expect(session.state.hp).toBe(hp);
     session.tick(0.001);
-    expect(session.state.hp).toBeCloseTo(hp - 15.15);
+    expect(session.state.hp).toBeCloseTo(hp - 12.12);
     session.tick(37.999);
-    expect(session.state.hp).toBeCloseTo(hp - 19 * 15.15);
+    expect(session.state.hp).toBeCloseTo(hp - 19 * 12.12);
     expect(session.state.poisonTimer).toBeCloseTo(0.001);
     session.tick(0.001);
-    expect(session.state.hp).toBeCloseTo(hp - 303);
+    expect(session.state.hp).toBeCloseTo(hp - 242.4);
     expect(session.state).toMatchObject({ poisonTimer: 0, poisonTickTimer: 0, poisonDamage: [] });
     expect(session.state.stats.armor).toBe(armor);
     session.tick(4);
-    expect(session.state.hp).toBeCloseTo(hp - 303);
+    expect(session.state.hp).toBeCloseTo(hp - 242.4);
   });
 
-  it('refreshes poison without delaying ticks and replaces the oldest of five damage contributions', () => {
+  it('refreshes poison without delaying ticks and replaces the oldest of ten damage contributions', () => {
     const session = arena();
     const armor = session.state.stats.armor;
     breach(session, 'poisonous', 100);
     session.tick(0.999);
     breach(session, 'poisonous', 200);
-    expect(session.state).toMatchObject({ poisonTimer: 40, poisonDamage: [100, 200] });
+    expect(session.state).toMatchObject({ poisonTimer: 45, poisonDamage: [100, 200] });
     expect(session.state.poisonTickTimer).toBeCloseTo(1);
     const hp = session.state.hp;
     session.tick(1);
-    expect(session.state.hp).toBe(hp - 45);
-    for (const damage of [300, 400, 500, 600]) breach(session, 'poisonous', damage);
-    expect(session.state.poisonDamage).toEqual([200, 300, 400, 500, 600]);
-    expect(session.state.stats['poison.tickDamage']).toBe(300);
+    expect(session.state.hp).toBe(hp - 36);
+    for (const damage of [300, 400, 500, 600, 700, 800, 900, 1000, 1100])
+      breach(session, 'poisonous', damage);
+    expect(session.state.poisonDamage).toEqual([
+      200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100,
+    ]);
+    expect(session.state.stats['poison.tickDamage']).toBe(780);
     expect(session.state.stats.armor).toBe(Math.round(armor * 0.25));
-    expect(activeDebuffs(session.state)[0]).toMatchObject({ name: 'Яд ×5', timer: 40 });
+    expect(activeDebuffs(session.state)[0]).toMatchObject({ name: 'Яд ×10', timer: 45 });
     const before = session.state.hp;
-    session.tick(40);
-    expect(session.state.hp).toBe(before - 20 * 300);
-    expect(activeDebuffs(session.state)).toEqual([]);
+    const loaded = restore(parseSave(snapshot(session))!, () => 0.999999);
+    expect(loaded.state.poisonDamage).toEqual(session.state.poisonDamage);
+    loaded.tick(45);
+    expect(loaded.state.hp).toBe(before - 22 * 780);
+    expect(activeDebuffs(loaded.state)).toEqual([]);
   });
 
   it('keeps debuffs paused during time freeze and level-up, including a save and load', () => {
@@ -300,7 +333,7 @@ describe('spider debuffs through session commands', () => {
     expect(loaded.activateAbility('freeze')).toBe('deactivated');
     const hp = loaded.state.hp;
     loaded.tick(1.3);
-    expect(loaded.state.hp).toBe(hp - 15);
+    expect(loaded.state.hp).toBe(hp - 12);
     loaded.state.levelTimer = 0.1;
     loaded.tick(0.1);
     expect(loaded.state.phase).toBe('levelUp');
@@ -311,7 +344,7 @@ describe('spider debuffs through session commands', () => {
     expect(loaded.confirmLevelUp()).toBe(true);
     expect(loaded.state.poisonTimer).toBe(levelUpSave.state.poisonTimer);
     breach(loaded, 'fast');
-    expect(loaded.state.healingReductionTimer).toBeCloseTo(17.3);
+    expect(loaded.state.healingReductionTimer).toBeCloseTo(34.6);
   });
 
   it('cleanses all debuffs and idle penalty only when divine shield successfully activates', () => {
@@ -352,15 +385,114 @@ describe('spider debuffs through session commands', () => {
       { stat: 'hpRegen', kind: 'flat', value: 100 },
     ]);
     session.refreshStats();
-    session.state.hp = 15;
+    session.state.hp = 12;
     session.state.levelTimer = 2;
     session.tick(10);
     expect(session.state.hp).toBe(0);
     expect(session.state.phase).toBe('gameOver');
   });
+
+  it('eagle eye clears every spider debuff immediately while retaining the idle penalty', () => {
+    const session = arena();
+    session.talents.loadFromSave([{ id: 'eagleEye', rank: 1 }]);
+    session.state.character.setModifiers('test:regen', []);
+    session.refreshStats();
+    const before = session.state.stats;
+    for (const type of ['golden', 'fast', 'poisonous'] as const) breach(session, type);
+    session.state.antiAfkIdleTimer = 2;
+    session.state.antiAfkStacks = 3;
+    session.state.antiAfkRecoveryTimer = 9;
+    session.refreshStats(false);
+    expect(activeDebuffs(session.state)).toHaveLength(3);
+    expect(session.activateAbility('eagleEye')).toBe('activated');
+    expect(activeDebuffs(session.state)).toEqual([]);
+    expect(session.state).toMatchObject({
+      goldLockTimer: 0,
+      healingReductionTimer: 0,
+      poisonTimer: 0,
+      poisonTickTimer: 0,
+      poisonDamage: [],
+      antiAfkIdleTimer: 0,
+      antiAfkStacks: 3,
+      antiAfkRecoveryTimer: 9,
+      eagleEyeTimer: 20,
+      eagleEyeShots: 5,
+    });
+    expect(session.state.stats.hpRegen).toBe(before.hpRegen);
+    expect(session.state.stats.armor).toBe(before.armor);
+    expect(session.state.stats.healingReceived).toBe(1);
+    expect(session.state.stats.coinsPerSec).toBe(before.coinsPerSec);
+    expect(abilityDescription(session.state, 'eagleEye')).toContain(
+      'Снимает все дебаффы от пауков',
+    );
+    const loaded = restore(parseSave(snapshot(session))!, () => 0.999999);
+    expect(loaded.state.poisonDamage).toEqual([]);
+    const hp = loaded.state.hp;
+    loaded.tick(2);
+    expect(loaded.state.hp).toBeCloseTo(hp + before.hpRegen * 2);
+  });
+
+  it.each(['locked', 'energy', 'cooldown'] as const)(
+    'a failed eagle eye activation due to %s retains spider debuffs',
+    (failure) => {
+      const session = arena();
+      if (failure !== 'locked') session.talents.loadFromSave([{ id: 'eagleEye', rank: 1 }]);
+      session.refreshStats();
+      for (const type of ['golden', 'fast', 'poisonous'] as const) breach(session, type);
+      if (failure === 'energy') session.state.energy = 0;
+      if (failure === 'cooldown') session.state.getAbility('eagleEye').start(10);
+      const before = activeDebuffs(session.state);
+      expect(session.activateAbility('eagleEye')).toBe(
+        failure === 'locked'
+          ? 'level_locked'
+          : failure === 'energy'
+            ? 'not_enough_energy'
+            : 'on_cooldown',
+      );
+      expect(activeDebuffs(session.state)).toEqual(before);
+      expect(session.state.eagleEyeActive).toBe(false);
+    },
+  );
 });
 
 describe('debuff save compatibility', () => {
+  it.each([
+    [8, 40, 24],
+    [8, 10, 10],
+    [50, 40, 40],
+  ])(
+    'migrates version 18 poison at level %i from %i to %i remaining seconds only once',
+    (level, previousTimer, expectedTimer) => {
+      const session = arena(level);
+      breach(session, 'golden');
+      breach(session, 'fast');
+      breach(session, 'poisonous', 100);
+      session.tick(0.5);
+      const current = snapshot(session);
+      const previous = {
+        ...current,
+        version: 18,
+        state: {
+          ...current.state,
+          healingReductionTimer: 2 + 0.3 * level,
+          poisonTimer: previousTimer,
+          poisonDamage: [100, 200, 300, 400, 500],
+        },
+      };
+      const parsed = parseSave(previous)!;
+      expect(parsed).not.toBeNull();
+      expect(parsed.version).toBe(19);
+      expect(parsed.state).toEqual({ ...previous.state, poisonTimer: expectedTimer });
+      const loaded = restore(parsed, () => 0.999999);
+      expect(loaded.state.stats['poison.tickDamage']).toBe(180);
+      expect(loaded.state.stats.healingReceived).toBe(level < 20 ? 1 : 0.69);
+      const hp = loaded.state.hp;
+      loaded.tick(current.state.poisonTickTimer);
+      expect(loaded.state.hp).toBeCloseTo(hp - 180);
+      expect(snapshot(restore(parseSave(snapshot(loaded))!))).toEqual(snapshot(loaded));
+    },
+  );
+
   it('migrates version 17 without changing existing timers, projectiles, health or ranks', () => {
     const session = arena();
     session.talents.loadFromSave([{ id: 'healBoost', rank: 3 }]);
@@ -395,14 +527,14 @@ describe('debuff save compatibility', () => {
     { goldLockTimer: undefined },
     { goldLockTimer: -1 },
     { goldLockTimer: 40.01 },
-    { healingReductionTimer: 17.01 },
+    { healingReductionTimer: 34.01 },
     { healingReductionTimer: NaN },
-    { poisonTimer: 40.01 },
+    { poisonTimer: 45.01 },
     { poisonTickTimer: 2.01 },
     { poisonTickTimer: 0 },
     { poisonTimer: 0 },
     { poisonDamage: [] },
-    { poisonDamage: [1, 2, 3, 4, 5, 6] },
+    { poisonDamage: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] },
     { poisonDamage: [-1] },
     { poisonDamage: [Infinity] },
     { poisonDamage: '100' },

@@ -116,7 +116,7 @@ describe('shooting progression and scaling', () => {
       session.state.pendingTalentPoints = 100;
       for (let rank = 0; rank < 5; rank++) expect(session.upgradeTalent('vampirism')).toBe(true);
       expect(session.upgradeTalent('vampirism')).toBe(false);
-      expect(session.state.stats.hpPerKill).toBe(10);
+      expect(session.state.stats.hpPerKill).toBe(5);
       for (let rank = 0; rank < 5; rank++) session.upgradeTalent('hunterMastery');
       session.state.level = 30;
       for (let rank = 0; rank < 5; rank++) session.upgradeTalent('piercingReward');
@@ -148,11 +148,11 @@ describe('shooting progression and scaling', () => {
     },
   );
   it.each([
-    [2, 5, 0.2, 0],
-    [3, 1, 0.2001, 0],
-    [9, 5, 0.2015, 0],
+    [2, 5, 0.2, 5],
+    [3, 1, 0.2001, 1],
+    [9, 5, 0.2015, 5],
     [10, 5, 0.2015, 5],
-    [130, 5, 0.2315, 65],
+    [130, 5, 0.2315, 15],
   ])('scales full agility steps at agility %s and rank %s', (agility, rank, chance, hp) => {
     const session = arena([
       ...critical,
@@ -180,23 +180,29 @@ describe('shooting progression and scaling', () => {
     expect(session.state.stats).toMatchObject({
       agility: 130,
       criticalShotChance: 0.2315,
-      hpPerKill: 65,
+      hpPerKill: 15,
     });
     session.state.character.removeModifiers('test:item');
     session.refreshStats();
     expect(session.state.stats).toMatchObject({
       agility: 124,
       criticalShotChance: 0.2205,
-      hpPerKill: 60,
+      hpPerKill: 15,
     });
     expect(attributeDescription(session.state, 'agility')).toContain(
-      'Каждое убийство восстанавливает 60 здоровья',
+      'Каждое убийство восстанавливает 15 здоровья',
     );
     expect(talentDescription('agileCriticalShot', 5, session.state.stats)).toContain('0.05%');
     expect(talentDescription('improvedCriticalShot', 8, session.state.stats)).toContain('64%');
     expect(talentDescription('improvedCriticalShot', 8, session.state.stats)).toContain(
       'до 3 пауков вместо 2',
     );
+    session.state.character.setBase('agility', 76);
+    session.refreshStats();
+    expect(session.state.stats).toMatchObject({ agility: 99, hpPerKill: 10 });
+    session.state.character.setBase('agility', 77);
+    session.refreshStats();
+    expect(session.state.stats).toMatchObject({ agility: 100, hpPerKill: 15 });
   });
   it('keeps all talent slots unique and every ability key unique', () => {
     const session = arena();
@@ -320,6 +326,45 @@ describe('eagle eye ability', () => {
 });
 
 describe('vampirism and gold', () => {
+  it.each([
+    [0, 1],
+    [49, 1],
+    [50, 2],
+    [99, 2],
+    [100, 3],
+  ])('heals once per rank and each full fifty agility at agility %s', (agility, perRank) => {
+    const session = arena();
+    session.state.character.setBase('agility', agility);
+    session.state.pendingTalentPoints = 5;
+    for (let rank = 1; rank <= 5; rank++) {
+      session.state.phase = 'levelUp';
+      expect(session.upgradeTalent('vampirism')).toBe(true);
+      expect(session.state.stats.hpPerKill).toBe(perRank * rank);
+      session.state.phase = 'playing';
+      session.state.hp = 1;
+      session.state.energy = 100;
+      session.state.archers[0].start(0);
+      addSpider(session, 'normal', 0, 0.9);
+      expect(session.shootLane(0)).toBe('shot');
+      session.tick(0.4);
+      expect(session.state.hp).toBe(1 + perRank * rank);
+      expect(talentDescription('vampirism', rank, session.state.stats)).toBe(
+        `При убийстве паука восстанавливает ${rank} здоровья и дополнительно ${rank} за каждые 50 полных единиц ловкости.`,
+      );
+    }
+    expect(
+      session.state.rules
+        .explain('hpPerKill')
+        .modifiers.filter(({ source }) => source === 'talent:vampirism'),
+    ).toEqual([
+      {
+        source: 'talent:vampirism',
+        stat: 'hpPerKill',
+        kind: 'flat',
+        value: perRank * 5,
+      },
+    ]);
+  });
   it.each(['shot', 'critical', 'volley', 'armageddon'] as const)(
     'heals on each kill from %s, capped by maximum health',
     (source) => {
@@ -338,7 +383,7 @@ describe('vampirism and gold', () => {
         session.activateAbility(source);
       } else session.shootLane(0);
       session.tick(source === 'armageddon' ? 3 : 0.4);
-      expect(session.state.hp).toBe(source === 'critical' ? 70 : 60);
+      expect(session.state.hp).toBe(source === 'critical' ? 60 : 55);
       session.state.hp = 99;
       addSpider(session, 'normal', 1, 0.95);
       session.state.energy = 100;
@@ -432,7 +477,7 @@ describe('version eleven saves', () => {
         talents: [...current.talents, { id: 'volleyMastery', rank: 3 }],
       };
       const parsed = parseSave(old)!;
-      expect(parsed.version).toBe(18);
+      expect(parsed.version).toBe(19);
       const loaded = restore(parsed, () => 0);
       expect(loaded.state.eagleEyeActive).toBe(false);
       expect(loaded.state.getAbility('eagleEye').isReady).toBe(true);

@@ -2,6 +2,7 @@ import type { SpiderType, DifficultyConfig } from '../domain/types.js';
 
 interface SpiderDefinition {
   readonly unlockLevel: number;
+  readonly chance?: number;
   readonly chanceKey?: keyof Pick<
     DifficultyConfig,
     | 'spiderChanceGolden'
@@ -18,6 +19,7 @@ interface SpiderDefinition {
   readonly hits: number;
   readonly chanceGrowth?: { readonly levels: number; readonly percent: number };
   readonly burnsEnergy?: boolean;
+  readonly clearsBuffs?: boolean;
   readonly jumpLevelStep?: number;
 }
 
@@ -61,6 +63,14 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
     damagePercent: 0,
     hits: 1,
   },
+  cleanser: {
+    unlockLevel: 45,
+    chance: 0.01,
+    speedPercent: 0,
+    damagePercent: 0,
+    hits: 1,
+    clearsBuffs: true,
+  },
   ninja: {
     unlockLevel: 35,
     chanceKey: 'spiderChanceNinja',
@@ -96,5 +106,6 @@ export const SPECIAL_SPIDER_ORDER: readonly SpiderType[] = [
   'fat',
   'fast',
   'poisonous',
+  'cleanser',
   'ninja',
 ];

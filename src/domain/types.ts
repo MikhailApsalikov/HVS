@@ -58,7 +58,16 @@ export type TalentId =
   | 'marauder';
 export type TalentBranch = 'defense' | 'shooting' | 'magic';
 export type SpiderType =
-  'normal' | 'golden' | 'megaFat' | 'fat' | 'fast' | 'poisonous' | 'ninja' | 'burner' | 'tank';
+  | 'normal'
+  | 'golden'
+  | 'megaFat'
+  | 'fat'
+  | 'fast'
+  | 'poisonous'
+  | 'cleanser'
+  | 'ninja'
+  | 'burner'
+  | 'tank';
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'levelUp' | 'gameOver';
 
 export type AbilityResult =
@@ -77,6 +86,7 @@ export interface TalentLevelConfig {
 }
 
 export interface DifficultyConfig {
+  readonly easyRegeneration?: boolean;
   readonly armorEffectiveness: number;
   readonly baseHp: number;
   readonly baseEnergy: number;

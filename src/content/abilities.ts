@@ -120,7 +120,7 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     unlockLevel: 20,
     talent: 'eagleEye',
     description:
-      'Следующие {eagleEye.shots} выстрелов лучников будут критическими со 100% вероятностью.\nДействует не более {eagleEye.duration} с и заканчивается при расходовании всех выстрелов.',
+      'Следующие {eagleEye.shots} выстрелов лучников будут критическими со 100% вероятностью.\nСнимает все дебаффы от пауков.\nДействует не более {eagleEye.duration} с и заканчивается при расходовании всех выстрелов.',
     effectStat: 'eagleEye.shots',
     effectKind: 'flat',
   },

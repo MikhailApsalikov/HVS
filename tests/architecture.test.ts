@@ -5,6 +5,7 @@ import { ITEM_CATALOG } from '../src/content/items.js';
 import { RETIRED_ITEM_REFUNDS } from '../src/content/retiredItems.js';
 import { generateItemSvg } from '../src/ui/ItemSpriteGenerator.js';
 import { normalConfig } from '../src/content/normal.js';
+import { SPIDER_DAMAGE } from '../src/domain/rules/stats.js';
 import { SOUND_FILES, MUSIC_FILES } from '../src/infrastructure/audio/catalog.js';
 
 function files(directory: string): string[] {
@@ -72,7 +73,8 @@ describe('legacy feature inventory captured before rewrite', () => {
     const { spiderDamageStep: _linearDamage, ...normalBaseline } = baseline.normal;
     expect(normalConfig).toEqual({
       ...normalBaseline,
-      spiderDamageGrowth: 0.08,
+      spiderDamageBase: 10,
+      spiderDamageGrowth: SPIDER_DAMAGE.growth.normal,
       armorEffectiveness: 1.5,
       spawnP0: 0.0006,
       spawnDP: 0.0000405,

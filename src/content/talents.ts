@@ -140,9 +140,14 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Вампиризм',
     sprite: 'TalentVampirism',
     effects: [],
-    scaling: { attribute: 'agility', step: 10, effect: flat('hpPerKill', 1) },
+    scaling: {
+      attribute: 'agility',
+      step: 50,
+      basePerRank: 1,
+      effect: flat('hpPerKill', 1),
+    },
     description:
-      'При убийстве паука восстанавливает {scaling.value} здоровья за каждые {scaling.step} полных единиц ловкости.',
+      'При убийстве паука восстанавливает {scaling.base} здоровья и дополнительно {scaling.value} за каждые {scaling.step} полных единиц ловкости.',
   },
   improvedPrep: {
     branch: 'magic',

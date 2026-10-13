@@ -90,7 +90,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 18;
+  readonly version: 19;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -107,7 +107,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 18,
+    version: 19,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -269,26 +269,33 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
   if (
-    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].includes(value.version as number) ||
+    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19].includes(
+      value.version as number,
+    ) ||
     !object(value.state)
   )
     return null;
   const state = value.state;
   if (
-    value.version === 18 &&
+    (value.version as number) >= 18 &&
     (!number(state.goldLockTimer) ||
       state.goldLockTimer > DEBUFFS.goldLock.duration ||
       !number(state.healingReductionTimer) ||
       !number(state.level) ||
       state.healingReductionTimer >
-        DEBUFFS.healingReduction.duration +
-          DEBUFFS.healingReduction.durationPerLevel * state.level ||
+        (value.version === 18
+          ? 2 + 0.3 * state.level
+          : DEBUFFS.healingReduction.duration +
+            DEBUFFS.healingReduction.durationPerLevel * state.level) ||
       !number(state.poisonTimer) ||
-      state.poisonTimer > DEBUFFS.poison.duration ||
+      state.poisonTimer >
+        (value.version === 18
+          ? 40
+          : DEBUFFS.poison.duration + DEBUFFS.poison.durationPerLevel * state.level) ||
       !number(state.poisonTickTimer) ||
       state.poisonTickTimer > DEBUFFS.poison.interval ||
       !arrayOf(state.poisonDamage, number) ||
-      state.poisonDamage.length > DEBUFFS.poison.maxStacks ||
+      state.poisonDamage.length > (value.version === 18 ? 5 : DEBUFFS.poison.maxStacks) ||
       state.poisonTimer > 0 !== state.poisonTickTimer > 0 ||
       state.poisonTimer > 0 !== state.poisonDamage.length > 0)
   )
@@ -514,6 +521,18 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
+  if (value.version === 18)
+    return {
+      ...value,
+      version: 19,
+      state: {
+        ...state,
+        poisonTimer: Math.min(
+          state.poisonTimer as number,
+          DEBUFFS.poison.duration + DEBUFFS.poison.durationPerLevel * (state.level as number),
+        ),
+      },
+    } as unknown as SaveData;
   if (value.version === 17) return upgradeDebuffSave(value);
   if ([13, 14, 15, 16].includes(value.version as number)) {
     const session = restore(
@@ -531,7 +550,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
       session.state.stats['killingStreak.interval'];
     return snapshot(session);
   }
-  if (value.version !== 18) {
+  if (value.version !== 19) {
     const previous = upgradeShootingSave({
       ...value,
       spiders: value.spiders.map((entry) => {
@@ -608,7 +627,7 @@ function upgradeShootingSave(value: JsonObject): SaveData {
 function upgradeDebuffSave(value: JsonObject): SaveData {
   return {
     ...value,
-    version: 18,
+    version: 19,
     state: {
       ...(value.state as JsonObject),
       goldLockTimer: 0,

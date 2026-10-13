@@ -16,6 +16,19 @@ export function aimedFireDuration(waves: number): number {
 }
 export const BURNER_ENERGY_PER_LEVEL = 2;
 export const GOLDEN_SPIDER_REWARD = { base: 10, perLevel: 1 } as const;
+/** Rounded quadratic damage growth for each difficulty, with a base of 10. */
+export const SPIDER_DAMAGE = {
+  base: 10,
+  growth: {
+    easy: 0.09,
+    normal: 0.12,
+    hard: 0.15,
+  },
+} as const;
+export const EASY_REGENERATION = {
+  hpRegen: { base: 12, perLevel: 0.4 },
+  energyRegen: { base: 3, perLevel: 0.1 },
+} as const;
 export const DODGE_CAP = 0.75;
 export const ANTI_AFK = {
   unlockLevel: 10,
@@ -89,7 +102,7 @@ export const STATS = {
   spawnInterval: stat('Интервал появления, с', 0.02, { ...duration, min: 0.01 }),
   spiderSpeed: stat('Скорость паука, поля/с', 0, speed),
   permafrostSlow: stat('Замедление: Вечная мерзлота', 0, { ...probability, max: 0.5 }),
-  spiderDamage: stat('Урон паука', 0, integer),
+  spiderDamage: stat('Урон паука', SPIDER_DAMAGE.base, integer),
   burnerEnergy: stat('Сжигание энергии', 90, integer),
   'freeze.cost': stat('Стоимость: Заморозка времени', 50, integer),
   'freeze.cooldown': stat('Перезарядка: Заморозка времени, с', 0, duration),

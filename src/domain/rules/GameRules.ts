@@ -4,6 +4,7 @@ import {
   aimedFireDuration,
   BURNER_ENERGY_PER_LEVEL,
   GOLDEN_SPIDER_REWARD,
+  EASY_REGENERATION,
   PRIMARY_STATS,
   PRIMARY_GROWTH,
   type PrimaryStatId,
@@ -82,6 +83,10 @@ export class GameRules {
   }
   private base(id: StatId): number {
     if (this.bases[id] !== undefined) return this.bases[id];
+    if (this.config.easyRegeneration && (id === 'hpRegen' || id === 'energyRegen')) {
+      const bonus = EASY_REGENERATION[id];
+      return this.config[id] + Math.max(0, bonus.base - bonus.perLevel * this.level);
+    }
     if (id === 'aimedFire.duration') return aimedFireDuration(this.value('aimedFire.waves'));
     if (id === 'prep.overTime') return this.value('prep.energyRegen') * this.value('prep.duration');
     // Keep the previous total, including all bonuses, and defer only the fixed recovery.
@@ -131,9 +136,11 @@ export class GameRules {
   }
   spiderTypeProbability(type: SpiderType, level: number): number {
     const definition = SPIDERS[type];
-    if (level < definition.unlockLevel || !definition.chanceKey) return 0;
+    if (level < definition.unlockLevel) return 0;
     const growth = definition.chanceGrowth;
-    return this.value('spiderTypeProbability', this.config[definition.chanceKey], [
+    const chance =
+      definition.chance ?? (definition.chanceKey ? this.config[definition.chanceKey] : 0);
+    return this.value('spiderTypeProbability', chance, [
       {
         source: `species:${type}:level`,
         kind: 'flat',
