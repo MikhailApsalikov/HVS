@@ -150,7 +150,10 @@ export class HUD {
           : '';
       button.classList.toggle('ability-btn--locked', locked);
       button.classList.toggle('ability-btn--cooldown', cooldown.isOnCooldown);
-      button.classList.toggle('ability-btn--no-energy', state.energy < state.stats[`${id}.cost`]);
+      button.classList.toggle(
+        'ability-btn--no-energy',
+        !state.canSpendEnergy(state.stats[`${id}.cost`], id),
+      );
       button.style.setProperty('--cd-pct', `${cooldown.cooldownFraction * 100}%`);
       (button.querySelector('.ability-btn__lock') as HTMLElement).hidden = !locked;
       button.querySelector('.ability-btn__cd-text')!.textContent = cooldown.isOnCooldown

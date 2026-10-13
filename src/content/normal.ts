@@ -60,6 +60,7 @@ export const normalConfig: DifficultyConfig = {
     improvedCriticalShot: { maxRanks: 8, unlocksAtLevel: 30 },
     agileCriticalShot: { maxRanks: 5, unlocksAtLevel: 30 },
     vampirism: { maxRanks: 5, unlocksAtLevel: 0 },
+    masochism: { maxRanks: 5, unlocksAtLevel: 20 },
     improvedPrep: { maxRanks: 5, unlocksAtLevel: 20 },
     recharge: { maxRanks: 1, unlocksAtLevel: 60 },
     permafrost: { maxRanks: 5, unlocksAtLevel: 20 },

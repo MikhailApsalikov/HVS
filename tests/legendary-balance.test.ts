@@ -27,7 +27,7 @@ function play(session: GameSession) {
 }
 
 describe('will to win in shooting', () => {
-  it('requires shooting investment, adds 70 agility and 4% discount per rank', () => {
+  it('requires shooting investment, adds 70 agility and 6% discount per rank', () => {
     const session = shop();
     session.state.pendingTalentPoints = 100;
     session.talents.loadFromSave([
@@ -51,9 +51,9 @@ describe('will to win in shooting', () => {
     for (let rank = 1; rank <= 5; rank++) {
       expect(session.upgradeTalent('willToWin')).toBe(true);
       expect(session.state.stats.agility).toBe(base.agility + 70 * rank);
-      expect(session.state.stats.shopDiscount).toBe(4 * rank);
+      expect(session.state.stats.shopDiscount).toBe(6 * rank);
       const item = ITEM_MAP.get('c001')!;
-      const price = Math.round(item.price * (1 - 0.04 * rank));
+      const price = Math.round((item.price * (100 - 6 * rank)) / 100);
       session.state.coins = price - 1;
       expect(session.buyItem(item.id)).toBe(false);
       expect(session.state.coins).toBe(price - 1);
@@ -62,7 +62,7 @@ describe('will to win in shooting', () => {
       expect(session.state.coins).toBe(0);
       expect(session.sellItem(0)).toBe(true);
       expect(session.state.coins).toBe(Math.floor(item.price / 2));
-      expect(talentDescription('willToWin', rank, session.state.stats)).toContain(`${4 * rank}%`);
+      expect(talentDescription('willToWin', rank, session.state.stats)).toContain(`${6 * rank}%`);
     }
     expect(session.upgradeTalent('willToWin')).toBe(false);
   });
@@ -71,7 +71,7 @@ describe('will to win in shooting', () => {
     const session = shop();
     session.talents.loadFromSave([{ id: 'willToWin', rank: 5 }]);
     session.refreshStats();
-    const price = Math.round(item.price * 0.8);
+    const price = Math.round((item.price * 70) / 100);
     session.state.coins = price;
     expect(session.items.canBuy(item.id, price, 21, session.state.stats.shopDiscount)).toBe(true);
     expect(session.buyItem(item.id)).toBe(true);
@@ -290,7 +290,7 @@ describe('six new legendary items', () => {
     expect(loaded.talents.getRank('willToWin')).toBe(5);
     expect(loaded.talents.getRank('titanArmor')).toBe(5);
     expect(loaded.talents.getRank('poisonResistance')).toBe(0);
-    expect(loaded.state.stats.shopDiscount).toBe(20);
+    expect(loaded.state.stats.shopDiscount).toBe(30);
     expect(loaded.state.stats['armageddon.cost']).toBe(15);
     expect(loaded.state.getAbility('armageddon').remainingCooldown).toBe(37);
     expect(snapshot(restore(parseSave(snapshot(loaded))!))).toEqual(snapshot(loaded));

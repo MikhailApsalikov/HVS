@@ -49,6 +49,7 @@ export class GameSession {
   refreshStats(grantHealthIncrease = true): void {
     const state = this.state;
     state.killingStreakLearned = this.talents.getRank('killingStreak') > 0;
+    state.masochismRank = this.talents.getRank('masochism');
     state.talentAbilities.clear();
     for (const id of ABILITY_ORDER) {
       const talent = ABILITIES[id].talent;
@@ -159,8 +160,7 @@ export class GameSession {
     const state = this.state;
     const archer = state.archers[lane];
     if (!Number.isInteger(lane) || state.phase !== 'playing' || !archer?.isReady) return 'blocked';
-    if (state.energy < state.currentShootCost) return 'not_enough_energy';
-    state.spendEnergy(state.currentShootCost);
+    if (!state.spendEnergy(state.currentShootCost, 'shoot')) return 'not_enough_energy';
     archer.start(state.stats.shootCooldown);
     if (state.adrenalineActive) {
       state.adrenalineShots -= 1;

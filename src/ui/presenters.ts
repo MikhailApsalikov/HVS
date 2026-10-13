@@ -2,7 +2,12 @@ import type { AbilityId, TalentId } from '../domain/types.js';
 import type { GameState } from '../domain/model/GameState.js';
 import type { PlayerEffect } from '../domain/model/PlayerEffect.js';
 import type { ResolvedStats, StatId, StatModifier, PrimaryStatId } from '../domain/rules/stats.js';
-import { ANTI_AFK, ATTRIBUTE_RULES, STATS } from '../domain/rules/stats.js';
+import {
+  ANTI_AFK,
+  ATTRIBUTE_RULES,
+  STATS,
+  masochismHealthPerEnergy,
+} from '../domain/rules/stats.js';
 import { ABILITIES, ABILITY_ORDER } from '../content/abilities.js';
 import { TALENTS, TALENT_ORDER } from '../content/talents.js';
 import { talentRankEffects, talentEffectValue } from '../domain/model/TalentSystem.js';
@@ -77,6 +82,7 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
   const effects = talentRankEffects(id, rank);
   if (definition.description)
     return fillDescription(definition.description, (key) => {
+      if (key === 'masochismHealthPerEnergy') return String(masochismHealthPerEnergy(rank));
       if (key === 'streakInterval')
         return formatSeconds(talentEffectValue(id, rank, 'killingStreak.interval'));
       if (key === 'streakBaseStacks') return String(STATS['killingStreak.maxStacks'].base);
@@ -199,7 +205,8 @@ export function abilityDescription(state: GameState, id: AbilityId): string {
     ...(cooldown.isOnCooldown
       ? [`Будет готово через ${formatSeconds(cooldown.remainingCooldown)} с`]
       : []),
-    ...(state.energy < state.stats[`${id}.cost`] && !(id === 'freeze' && state.freezeActive)
+    ...(!state.canSpendEnergy(state.stats[`${id}.cost`], id) &&
+    !(id === 'freeze' && state.freezeActive)
       ? ['Недостаточно энергии']
       : []),
   ];
@@ -311,7 +318,7 @@ export function shootDescription(state: GameState, lane: number): string {
         ? `Перезарядка выстрела — ${formatStat('shootCooldown', state.stats.shootCooldown)} с.`
         : '',
     ].join('\n'),
-  )}${state.energy < state.currentShootCost ? '<div class="action-unavailable">Недостаточно энергии</div>' : ''}${state.archers[lane - 1].isOnCooldown ? '<div class="action-unavailable">Выстрел перезаряжается</div>' : ''}`;
+  )}${!state.canSpendEnergy(state.currentShootCost, 'shoot') ? '<div class="action-unavailable">Недостаточно энергии</div>' : ''}${state.archers[lane - 1].isOnCooldown ? '<div class="action-unavailable">Выстрел перезаряжается</div>' : ''}`;
 }
 
 export function killingStreakDescription(state: GameState): string {

@@ -149,6 +149,15 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     description:
       'При убийстве паука восстанавливает {scaling.base} здоровья и дополнительно {scaling.value} за каждые {scaling.step} полных единиц ловкости.',
   },
+  masochism: {
+    branch: 'shooting',
+    column: 3,
+    name: 'Мазохизм',
+    sprite: 'TalentMasochism',
+    effects: [],
+    description:
+      'При нехватке энергии выстрелы, «Залп» и «Прицельный огонь» расходуют здоровье: {masochismHealthPerEnergy} за единицу энергии.\nЗдоровье при этом не опускается ниже половины максимума.',
+  },
   improvedPrep: {
     branch: 'magic',
     name: 'Улучшенная подготовка',
@@ -402,7 +411,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'shooting',
     column: 3,
     sprite: 'TalentWillToWin',
-    effects: [flat('levelDuration', -15), flat('agility', 70), flat('shopDiscount', 4)],
+    effects: [flat('levelDuration', -15), flat('agility', 70), flat('shopDiscount', 6)],
     description:
       'Сокращает длительность уровня на {levelDuration} с и увеличивает ловкость на {agility}.\nСнижает цену покупки всех предметов в лавке на {shopDiscount}%. Цена продажи не меняется.',
   },

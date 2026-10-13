@@ -118,6 +118,7 @@ describe('legacy feature inventory captured before rewrite', () => {
         improvedCriticalShot: { maxRanks: 8, unlocksAtLevel: 30 },
         agileCriticalShot: { maxRanks: 5, unlocksAtLevel: 30 },
         vampirism: { maxRanks: 5, unlocksAtLevel: 0 },
+        masochism: { maxRanks: 5, unlocksAtLevel: 20 },
         volleyMastery: { maxRanks: 5, unlocksAtLevel: 10 },
         titanPreparation: { maxRanks: 5, unlocksAtLevel: 40 },
         aimedFire: { maxRanks: 1, unlocksAtLevel: 60 },

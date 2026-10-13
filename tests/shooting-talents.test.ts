@@ -33,6 +33,35 @@ function buy(session: GameSession, id: TalentId, ranks: number) {
 
 describe('shooting and magic talent progression', () => {
   it.each(['easy', 'normal', 'hard'] as const)(
+    'unlocks five masochism ranks at shooting tier three on %s',
+    (difficulty) => {
+      const session = new GameSession(difficulty);
+      session.state.pendingTalentPoints = 100;
+      session.state.level = 20;
+      expect(session.talents.getTalent('masochism')).toMatchObject({
+        branch: 'shooting',
+        tier: 3,
+        maxRanks: 5,
+        requiredBranchPoints: 14,
+      });
+      expect(TALENTS.masochism.column).toBe(3);
+      expect(TALENTS.masochism.prerequisite).toBeUndefined();
+      expect(session.upgradeTalent('masochism')).toBe(false);
+      buy(session, 'hunterMastery', 5);
+      buy(session, 'vampirism', 5);
+      buy(session, 'improvedAgility', 3);
+      expect(session.upgradeTalent('masochism')).toBe(false);
+      buy(session, 'improvedAgility', 1);
+      session.state.level = 19;
+      expect(session.upgradeTalent('masochism')).toBe(false);
+      session.state.level = 20;
+      buy(session, 'masochism', 5);
+      expect(session.talents.getRank('masochism')).toBe(5);
+      expect(session.upgradeTalent('masochism')).toBe(false);
+    },
+  );
+
+  it.each(['easy', 'normal', 'hard'] as const)(
     'uses the new ranks and tiers on %s',
     (difficulty) => {
       const session = new GameSession(difficulty);

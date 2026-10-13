@@ -1,7 +1,7 @@
 import type { AbilityId, Difficulty, DifficultyConfig, GamePhase } from '../types.js';
 import type { GameRules } from '../rules/GameRules.js';
 import type { ResolvedStats } from '../rules/stats.js';
-import { ANTI_AFK, KILLING_STREAK } from '../rules/stats.js';
+import { ANTI_AFK, KILLING_STREAK, MASOCHISM, masochismHealthPerEnergy } from '../rules/stats.js';
 import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { WORLD } from '../rules/world.js';
 import { clamp } from '../rules/numbers.js';
@@ -43,6 +43,7 @@ export class GameState {
   eagleEyeTimer = 0;
   eagleEyeShots = 0;
   killingStreakLearned = false;
+  masochismRank = 0;
   private streakStacks = 0;
   killingStreakProgress = 0;
   killingStreakDecayProgress = 0;
@@ -205,13 +206,31 @@ export class GameState {
   modifyEnergy(delta: number): void {
     this.energy = clamp(this.energy + delta, 0, this.maxEnergy);
   }
-  /** Only successful player commands count as activity, never enemy energy burns. */
-  spendEnergy(cost: number): void {
+  private energyHealthCost(cost: number, action?: 'shoot' | AbilityId): number {
+    if (this.energy >= cost) return 0;
+    if (action !== 'shoot' && action !== 'volley' && action !== 'aimedFire') return Infinity;
+    const healthPerEnergy = masochismHealthPerEnergy(this.masochismRank);
+    return healthPerEnergy > 0 ? (cost - this.energy) * healthPerEnergy : Infinity;
+  }
+  canSpendEnergy(cost: number, action?: 'shoot' | AbilityId): boolean {
+    if (this.energy >= cost) return true;
+    // Fractional regeneration must not turn an exact half-health payment into a refusal.
+    return (
+      this.hp - this.energyHealthCost(cost, action) >= this.maxHp * MASOCHISM.minHpFraction - 1e-9
+    );
+  }
+  /** Only successful paid player commands count as activity, never enemy energy burns. */
+  spendEnergy(cost: number, action?: 'shoot' | AbilityId): boolean {
+    if (!this.canSpendEnergy(cost, action)) return false;
+    const healthCost = this.energyHealthCost(cost, action);
+    if (healthCost > 0)
+      this.hp = clamp(this.hp - healthCost, this.maxHp * MASOCHISM.minHpFraction, this.maxHp);
     this.modifyEnergy(-cost);
-    if (cost <= 0) return;
+    if (cost <= 0) return true;
     this.antiAfkIdleTimer = 0;
     if (this.antiAfkStacks > 0 && this.antiAfkRecoveryTimer === 0)
       this.antiAfkRecoveryTimer = ANTI_AFK.recoveryDuration;
+    return true;
   }
   get antiAfkEnabled(): boolean {
     return this.level >= ANTI_AFK.unlockLevel;

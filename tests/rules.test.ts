@@ -104,6 +104,7 @@ describe('talent strength and independent sources', () => {
     expect(
       TALENTS[id].effects.length > 0 ||
         TALENTS[id].scaling !== undefined ||
+        id === 'masochism' || // Resource payment is handled by the session's combat commands.
         ABILITY_ORDER.some((ability) => ABILITIES[ability].talent === id),
     ).toBe(true);
   });
@@ -138,7 +139,7 @@ describe('primary attribute sources', () => {
 describe('content contracts', () => {
   it('retains all difficulties, talents, abilities and unique items', () => {
     expect(Object.keys(DIFFICULTIES)).toHaveLength(3);
-    expect(TALENT_ORDER).toHaveLength(43);
+    expect(TALENT_ORDER).toHaveLength(44);
     expect(ABILITY_ORDER).toHaveLength(12);
     expect(new Set(ITEM_CATALOG.map((item) => item.id)).size).toBe(ITEM_CATALOG.length);
   });
