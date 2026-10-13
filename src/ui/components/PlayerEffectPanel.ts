@@ -19,7 +19,6 @@ interface EffectSlot {
 }
 
 interface EffectRow {
-  readonly container: HTMLElement;
   readonly slots: readonly EffectSlot[];
   readonly overflow: HTMLButtonElement;
   group: EffectPanelGroup;
@@ -37,7 +36,6 @@ export class PlayerEffectPanel {
 
   constructor(private readonly sprites: SpriteRegistry) {
     this.container.className = 'player-effects';
-    this.container.hidden = true;
     this.container.setAttribute('role', 'group');
     this.container.setAttribute('aria-label', 'Активные эффекты');
     this.rows = {
@@ -48,11 +46,9 @@ export class PlayerEffectPanel {
 
   render(state: GameState): void {
     const groups = effectPanelGroups(state.activeEffects);
-    this.container.hidden = !state.activeEffects.length;
     for (const kind of ['buff', 'debuff'] as const) {
       const row = this.rows[kind];
       row.group = groups[kind];
-      row.container.hidden = row.group.visible.length === 0;
       row.slots.forEach((slot, index) => {
         const effect = row.group.visible[index] ?? null;
         if (effect?.sprite !== slot.effect?.sprite)
@@ -88,7 +84,6 @@ export class PlayerEffectPanel {
   private createRow(kind: PlayerEffect['kind'], label: string): EffectRow {
     const container = document.createElement('div');
     container.className = `player-effects__row player-effects__row--${kind}`;
-    container.hidden = true;
     container.setAttribute('role', 'group');
     container.setAttribute('aria-label', label);
     const badges = document.createElement('div');
@@ -130,7 +125,7 @@ export class PlayerEffectPanel {
     overflow.type = 'button';
     overflow.className = 'player-effects__overflow';
     overflow.hidden = true;
-    const row: EffectRow = { container, slots, overflow, group: { visible: [], overflow: [] } };
+    const row: EffectRow = { slots, overflow, group: { visible: [], overflow: [] } };
     this.bindTooltip(overflow, () => {
       if (row.group.overflow.length === 0) return '';
       return `<div class="tooltip__title">Ещё эффекты: ${row.group.overflow.length}</div>${row.group.overflow

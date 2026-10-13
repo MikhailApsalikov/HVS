@@ -2581,6 +2581,7 @@ body {
   flex: 0 0 auto;
 }
 .player-effects__row {
+  min-height: 48px;
   color: #ffd3d6;
 }
 .player-effects__row--buff {
@@ -2595,8 +2596,6 @@ body {
   width: 32px;
   height: 48px;
 }
-.player-effects[hidden],
-.player-effects__row[hidden],
 .player-effect-slot[hidden],
 .player-effect[hidden],
 .player-effects__overflow[hidden] {
