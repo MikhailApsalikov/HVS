@@ -19,8 +19,17 @@ export class GameEngine {
   private phaseChanged: ((phase: GamePhase, state: GameState) => void) | null = null;
   private coinDrop: ((id: string, coins: number, jackpot: boolean) => void) | null = null;
   private damage:
-    | ((id: string, hp: number, energy: number, blockedDamage?: number, dodged?: boolean) => void)
+    | ((
+        id: string,
+        hp: number,
+        energy: number,
+        blockedDamage?: number,
+        dodged?: boolean,
+        piercing?: boolean,
+      ) => void)
     | null = null;
+  private resourceGain:
+    ((id: string, hp: number, energy: number, reason: 'kill' | 'breach') => void) | null = null;
   private absorb: (() => void) | null = null;
   constructor(
     private readonly render: (state: GameState) => void,
@@ -37,6 +46,9 @@ export class GameEngine {
   }
   setDamagePopCallback(callback: NonNullable<GameEngine['damage']>): void {
     this.damage = callback;
+  }
+  setResourceGainCallback(callback: NonNullable<GameEngine['resourceGain']>): void {
+    this.resourceGain = callback;
   }
   setAbsorbCallback(callback: () => void): void {
     this.absorb = callback;
@@ -120,7 +132,10 @@ export class GameEngine {
               event.energy,
               event.blockedDamage,
               event.dodged,
+              event.piercing,
             );
+          else if (event.type === 'resourceGain')
+            this.resourceGain?.(event.spiderId, event.hp, event.energy, event.reason);
           else this.absorb?.();
         }
         this.render(state);

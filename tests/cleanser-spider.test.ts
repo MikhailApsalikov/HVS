@@ -138,7 +138,7 @@ describe('cleanser spiders through session ticks', () => {
     applyBuffs(session);
     expect(session.activateAbility('stand')).toBe('activated');
     const hp = session.state.hp;
-    addSpider(session, 'cleanser', 0, 1, damage);
+    const spider = addSpider(session, 'cleanser', 0, 1, damage);
     session.tick(0.001);
     expect(session.state.hp).toBe(hp);
     expect(session.state.prepTimer).toBeGreaterThan(0);
@@ -146,7 +146,16 @@ describe('cleanser spiders through session ticks', () => {
     expect(session.state.adrenalineActive).toBe(true);
     expect(session.state.eagleEyeActive).toBe(true);
     expect(session.state.killingStreakStacks).toBe(8);
-    expect(session.drainEvents()).toEqual([{ type: 'absorb' }]);
+    expect(session.drainEvents()).toEqual([
+      { type: 'absorb' },
+      {
+        type: 'resourceGain',
+        spiderId: spider.id,
+        hp: 0,
+        energy: session.state.stats.energyPerBreach,
+        reason: 'breach',
+      },
+    ]);
   });
 
   it('keeps ongoing attacks, spider debuffs, passive talents and equipment effects', () => {

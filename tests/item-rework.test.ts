@@ -195,7 +195,7 @@ describe('reworked equipment through session commands', () => {
     expect(stats.coinsPerKill).toBe(bonus('coinsPerKill') + Math.floor(stats.endurance / 240));
     expect(stats.energyPerBreach).toBe(Math.floor(stats.endurance / 100));
     expect(stats.criticalShotChance).toBeCloseTo(
-      0.02 + bonus('criticalShotChance') + Math.floor(stats.agility / 130) / 100,
+      0.03 + bonus('criticalShotChance') + Math.floor(stats.agility / 130) / 100,
     );
     const loaded = restore(parseSave(snapshot(session))!);
     expect(loaded.state.stats).toEqual(stats);
@@ -219,19 +219,19 @@ describe('reworked equipment through session commands', () => {
     for (let rank = 0; rank < 2; rank++)
       expect(session.upgradeTalent('improvedAgility')).toBe(true);
     expect(session.upgradeTalent('criticalShot')).toBe(true);
-    expect(session.state.stats.criticalShotChance).toBe(0.05);
+    expect(session.state.stats.criticalShotChance).toBe(0.06);
     const loaded = restore(parseSave(snapshot(session))!);
+    expect(loaded.state.stats.criticalShotChance).toBe(0.06);
+    expect(loaded.sellItem(0)).toBe(true);
     expect(loaded.state.stats.criticalShotChance).toBe(0.05);
     expect(loaded.sellItem(0)).toBe(true);
-    expect(loaded.state.stats.criticalShotChance).toBe(0.04);
-    expect(loaded.sellItem(0)).toBe(true);
-    expect(loaded.state.stats.criticalShotChance).toBe(0.02);
+    expect(loaded.state.stats.criticalShotChance).toBe(0.03);
   });
 
   it.each([
     [0, 0, false],
-    [1, 0.029999, true],
-    [1, 0.03, false],
+    [1, 0.039999, true],
+    [1, 0.04, false],
   ] as const)(
     'uses +1 percentage point for actual arrows only with the talent (rank %s, roll %s)',
     (rank, roll, critical) => {

@@ -90,7 +90,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 19;
+  readonly version: 20;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -107,7 +107,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 19,
+    version: 20,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -269,7 +269,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
   if (
-    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19].includes(
+    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].includes(
       value.version as number,
     ) ||
     !object(value.state)
@@ -522,35 +522,31 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   )
     return null;
   if (value.version === 18)
-    return {
-      ...value,
-      version: 19,
-      state: {
-        ...state,
-        poisonTimer: Math.min(
-          state.poisonTimer as number,
-          DEBUFFS.poison.duration + DEBUFFS.poison.durationPerLevel * (state.level as number),
-        ),
-      },
-    } as unknown as SaveData;
-  if (value.version === 17) return upgradeDebuffSave(value);
+    return upgradeTalentBalanceSave(
+      {
+        ...value,
+        version: 20,
+        state: {
+          ...state,
+          poisonTimer: Math.min(
+            state.poisonTimer as number,
+            DEBUFFS.poison.duration + DEBUFFS.poison.durationPerLevel * (state.level as number),
+          ),
+        },
+      } as unknown as SaveData,
+      18,
+    );
+  if (value.version === 17) return upgradeTalentBalanceSave(upgradeDebuffSave(value), 17);
   if ([13, 14, 15, 16].includes(value.version as number)) {
-    const session = restore(
+    return upgradeTalentBalanceSave(
       upgradeShootingSave({
         ...value,
         state: { ...state, prepTimer: (value.version as number) >= 15 ? state.prepTimer : 0 },
       }),
+      value.version as number,
     );
-    if (value.version !== 13) return snapshot(session);
-    // Version 13 used 38–20 seconds. Preserve the fraction already earned.
-    const previousInterval = 40 - 2 * session.talents.getRank('killingStreak');
-    if (session.state.killingStreakProgress >= previousInterval) return null;
-    session.state.killingStreakProgress =
-      (session.state.killingStreakProgress / previousInterval) *
-      session.state.stats['killingStreak.interval'];
-    return snapshot(session);
   }
-  if (value.version !== 19) {
+  if ((value.version as number) < 13) {
     const previous = upgradeShootingSave({
       ...value,
       spiders: value.spiders.map((entry) => {
@@ -608,7 +604,24 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     session.state.levelTimerMax = duration;
     return snapshot(session);
   }
+  if (value.version === 19)
+    return upgradeTalentBalanceSave({ ...value, version: 20 } as unknown as SaveData, 19);
   return value as unknown as SaveData;
+}
+
+/** Refund removed ranks once and retain earned progress under the new intervals. */
+function upgradeTalentBalanceSave(data: SaveData, previousVersion: number): SaveData | null {
+  const previousRank = Math.min(
+    10,
+    data.talents.reduce((rank, entry) => (entry.id === 'killingStreak' ? entry.rank : rank), 0),
+  );
+  const previousInterval = previousVersion === 13 ? 40 - 2 * previousRank : 20 - previousRank;
+  if (data.state.killingStreakProgress >= previousInterval) return null;
+  const session = restore(data);
+  session.state.killingStreakProgress =
+    (data.state.killingStreakProgress / previousInterval) *
+    session.state.stats['killingStreak.interval'];
+  return snapshot(session);
 }
 
 function upgradeShootingSave(value: JsonObject): SaveData {
@@ -627,7 +640,7 @@ function upgradeShootingSave(value: JsonObject): SaveData {
 function upgradeDebuffSave(value: JsonObject): SaveData {
   return {
     ...value,
-    version: 19,
+    version: 20,
     state: {
       ...(value.state as JsonObject),
       goldLockTimer: 0,

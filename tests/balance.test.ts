@@ -38,7 +38,9 @@ describe('combat balance through session commands', () => {
     const nextEnergy = energy - burned + 3;
     expect(session.drainEvents()).toEqual([
       { type: 'damage', spiderId: first.id, hp: 0, energy: burned },
+      { type: 'resourceGain', spiderId: first.id, hp: 0, energy: 3, reason: 'breach' },
       { type: 'damage', spiderId: second.id, hp: 0, energy: nextEnergy },
+      { type: 'resourceGain', spiderId: second.id, hp: 0, energy: 3, reason: 'breach' },
     ]);
     expect(session.state.energy).toBe(3);
   });

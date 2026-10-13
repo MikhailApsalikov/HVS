@@ -43,9 +43,9 @@ describe('shooting and magic talent progression', () => {
       buy(session, 'improvedAgility', 2);
       expect(session.upgradeTalent('criticalShot')).toBe(false);
       session.state.level = 10;
-      buy(session, 'criticalShot', 10);
+      buy(session, 'criticalShot', 7);
       expect(session.upgradeTalent('criticalShot')).toBe(false);
-      expect(session.state.stats.criticalShotChance).toBe(0.2);
+      expect(session.state.stats.criticalShotChance).toBe(0.21);
       expect(session.talents.canUpgrade('piercingReward', 10)).toBe(true);
       const energyPerKill = session.state.stats.energyPerKill;
       for (let rank = 1; rank <= 8; rank++) {
@@ -92,7 +92,7 @@ describe('shooting and magic talent progression', () => {
     session.state.level = 30;
     buy(session, 'hunterMastery', 5);
     buy(session, 'improvedAgility', 7);
-    buy(session, 'criticalShot', 10);
+    buy(session, 'criticalShot', 7);
     expect(session.talents.getTalent('blizzardMastery').tier).toBe(2);
     buy(session, 'improvedIntellect', 7);
     buy(session, 'hunterArsenal', 2);
@@ -106,16 +106,16 @@ describe('shooting and magic talent progression', () => {
 describe('critical shots through session commands', () => {
   it.each([
     [0, 10000, 0, false],
-    [1, 0, 0.019999, true],
-    [1, 0, 0.02, false],
-    [10, 0, 0.199999, true],
-    [10, 0, 0.2, false],
-    [1, 129, 0.02, false],
-    [1, 130, 0.029999, true],
-    [1, 130, 0.03, false],
-    [2, 260, 0.059999, true],
-    [2, 260, 0.06, false],
-    [10, 100000, 0.999999, true],
+    [1, 0, 0.029999, true],
+    [1, 0, 0.03, false],
+    [7, 0, 0.209999, true],
+    [7, 0, 0.21, false],
+    [1, 129, 0.03, false],
+    [1, 130, 0.039999, true],
+    [1, 130, 0.04, false],
+    [2, 260, 0.079999, true],
+    [2, 260, 0.08, false],
+    [7, 100000, 0.999999, true],
   ])('rank %s, agility %s, roll %s yields critical=%s', (rank, agility, roll, critical) => {
     const { session, random } = combat(rank, roll);
     session.state.character.setBase('agility', agility);
@@ -184,7 +184,7 @@ describe('critical shots through session commands', () => {
   });
 
   it('keeps noncritical arrows limited to one hit against a fat spider', () => {
-    const { session } = combat(10, 0.2);
+    const { session } = combat(7, 0.21);
     const fat = addSpider(session, 'fat', 0, 0.8);
     const behind = addSpider(session, 'normal', 0, 0.5);
     session.shootLane(0);
@@ -195,10 +195,10 @@ describe('critical shots through session commands', () => {
   });
 
   it('allows critical adrenaline shots but excludes both manual and counter volleys', () => {
-    const { session } = combat(10);
+    const { session } = combat(7);
     session.state.level = 60;
     session.talents.loadFromSave([
-      { id: 'criticalShot', rank: 10 },
+      { id: 'criticalShot', rank: 7 },
       { id: 'adrenaline', rank: 1 },
     ]);
     session.state.character.setModifiers('test:counter', [
@@ -242,7 +242,7 @@ describe('agility contribution and tooltips', () => {
     [0, 260, ''],
     [1, 129, ''],
     [1, 130, '+1% к шансу Критического выстрела'],
-    [10, 260, '+2% к шансу Критического выстрела'],
+    [7, 260, '+2% к шансу Критического выстрела'],
   ])('shows only the earned agility bonus at rank %s and agility %s', (rank, agility, expected) => {
     const { session } = combat(rank);
     session.state.character.setBase('agility', agility);
@@ -250,8 +250,8 @@ describe('agility contribution and tooltips', () => {
     const tooltip = attributeDescription(session.state, 'agility');
     if (expected) expect(tooltip).toContain(`>${expected}</p>`);
     else expect(tooltip).not.toContain('Критического выстрела');
-    expect(talentDescription('criticalShot', 1, session.state.stats)).toContain('2%');
-    expect(talentDescription('criticalShot', 10, session.state.stats)).toContain('20%');
+    expect(talentDescription('criticalShot', 1, session.state.stats)).toContain('3%');
+    expect(talentDescription('criticalShot', 7, session.state.stats)).toContain('21%');
     for (const text of [
       talentDescription('criticalShot', 1, session.state.stats),
       shootDescription(session.state, 1),
@@ -276,10 +276,10 @@ describe('agility contribution and tooltips', () => {
     ]);
     session.refreshStats();
     expect(session.state.stats.agility).toBe(130); // (100 + 9 + 9 + 6) × 1.05
-    expect(session.state.stats.criticalShotChance).toBe(0.03);
+    expect(session.state.stats.criticalShotChance).toBe(0.04);
     session.state.character.removeModifiers('test:item');
     session.refreshStats();
-    expect(session.state.stats.criticalShotChance).toBe(0.02);
+    expect(session.state.stats.criticalShotChance).toBe(0.03);
     expect(attributeDescription(session.state, 'agility')).not.toContain('Критического выстрела');
   });
 });
@@ -330,7 +330,7 @@ describe('critical shot saves', () => {
       spiders: previousSpiders(saved),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(19);
+    expect(parsed.version).toBe(20);
     const loaded = restore(parsed);
     expect(loaded.talents.getRank('hunterMastery')).toBe(5);
     expect(loaded.state.stats.shootCost).toBe(25);

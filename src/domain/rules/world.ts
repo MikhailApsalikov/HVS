@@ -11,3 +11,9 @@ export const WORLD = {
   ninjaJumpMin: 0.1,
   ninjaJumpMax: 0.5,
 } as const;
+
+export const PIERCING_STRIKE = {
+  unlockLevel: 61,
+  chancePerLevel: 0.005,
+  damageMultiplier: 4,
+} as const;

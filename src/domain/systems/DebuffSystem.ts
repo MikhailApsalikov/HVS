@@ -98,7 +98,7 @@ export function tickDebuffs(state: GameState, dt: number): boolean {
     state.poisonTimer = remaining(state.poisonTimer);
     state.poisonTickTimer = remaining(state.poisonTickTimer);
     if (state.poisonTickTimer === 0) {
-      state.modifyHp(-state.stats['poison.tickDamage']);
+      state.modifyHp(-Math.min(state.stats['poison.tickDamage'], Math.max(0, state.hp - 1)));
       state.poisonTickTimer = DEBUFFS.poison.interval;
     }
     if (state.poisonTimer === 0) {

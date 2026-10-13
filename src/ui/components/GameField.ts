@@ -98,6 +98,7 @@ export class GameField {
   }
 
   public render(state: GameState): void {
+    this._container.classList.toggle('game-field--paused', state.phase !== 'playing');
     this._renderSpiders(state);
     this._renderArrows(state);
     this._renderArchers(state);
@@ -225,7 +226,35 @@ export class GameField {
     laneEl.appendChild(coinEl);
 
     coinEl.addEventListener('animationend', () => coinEl.remove());
-    this._lastSpiderPositions.delete(spiderId);
+  }
+
+  public showResourceGain(
+    spiderId: string,
+    hp: number,
+    energy: number,
+    reason: 'kill' | 'breach',
+  ): void {
+    const pos = this._lastSpiderPositions.get(spiderId);
+    if (!pos || (hp <= 0 && energy <= 0)) return;
+
+    const laneEl = this._lanes[pos.lane];
+    if (!laneEl) return;
+
+    const el = document.createElement('div');
+    el.className = 'resource-pop';
+    el.style.top = `calc(${pos.y} * 100% ${reason === 'kill' ? '+ 36px' : '- 56px'})`;
+    for (const [kind, amount] of [
+      ['hp', hp],
+      ['energy', energy],
+    ] as const) {
+      if (amount <= 0) continue;
+      const gain = document.createElement('span');
+      gain.className = `resource-pop__${kind}`;
+      gain.textContent = `+${Number(amount.toFixed(1)) || '<0.1'}`;
+      el.appendChild(gain);
+    }
+    laneEl.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
   }
 
   public showDamagePop(
@@ -234,6 +263,7 @@ export class GameField {
     energyBurn: number,
     blockedDamage?: number,
     dodged = false,
+    piercing = false,
   ): void {
     const pos = this._lastSpiderPositions.get(spiderId);
     if (!pos) return;
@@ -245,7 +275,8 @@ export class GameField {
       const el = document.createElement('div');
       el.className = 'damage-pop damage-pop--hp';
       el.classList.toggle('damage-pop--dodge', dodged);
-      el.classList.toggle('damage-pop--heavy', pos.type === 'tank' && !dodged);
+      el.classList.toggle('damage-pop--heavy', pos.type === 'tank' && hpDamage > 0);
+      el.classList.toggle('damage-pop--piercing', piercing && hpDamage > 0);
       el.textContent = dodged ? 'Уклонение' : hpDamage === 0 ? 'Блок' : `-${hpDamage}`;
       if (blockedDamage !== undefined && hpDamage > 0) {
         const block = document.createElement('span');

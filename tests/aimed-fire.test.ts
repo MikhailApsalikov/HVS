@@ -66,7 +66,7 @@ describe('aimed fire through session commands', () => {
     [0.1, true],
     [0.3, false],
   ])('rolls talent critical chance on later waves at roll %s', (roll, critical) => {
-    const session = arena([{ id: 'criticalShot', rank: 10 }], roll);
+    const session = arena([{ id: 'criticalShot', rank: 7 }], roll);
     session.activateAbility('aimedFire');
     session.tick(5);
     expect(
@@ -77,7 +77,7 @@ describe('aimed fire through session commands', () => {
   it('upgrades critical arrows from all waves and leaves archer buffs and cooldowns intact', () => {
     const session = arena(
       [
-        { id: 'criticalShot', rank: 10 },
+        { id: 'criticalShot', rank: 7 },
         { id: 'improvedCriticalShot', rank: 8 },
         { id: 'eagleEye', rank: 1 },
         { id: 'adrenaline', rank: 1 },
@@ -105,7 +105,7 @@ describe('aimed fire through session commands', () => {
 
   it('rolls critical chance independently for each arrow of the later waves', () => {
     let roll = 0;
-    const session = arena([{ id: 'criticalShot', rank: 10 }], () =>
+    const session = arena([{ id: 'criticalShot', rank: 7 }], () =>
       roll++ % 2 === 0 ? 0 : 0.999999,
     );
     session.activateAbility('aimedFire');
@@ -267,9 +267,9 @@ describe('progression and compatibility', () => {
       session.talents.loadFromSave([
         { id: 'hunterMastery', rank: 5 },
         { id: 'improvedAgility', rank: 7 },
-        { id: 'criticalShot', rank: 10 },
+        { id: 'criticalShot', rank: 7 },
         { id: 'piercingReward', rank: 8 },
-        { id: 'killingStreak', rank: 10 },
+        { id: 'killingStreak', rank: 8 },
         { id: 'vampirism', rank: 5 },
       ]);
       session.refreshStats();
@@ -347,7 +347,7 @@ describe('progression and compatibility', () => {
     expect(loaded.state.getAbility('aimedFire').isReady).toBe(true);
     expect(loaded.state.aimedFireWaves).toEqual([]);
     const current = snapshot(loaded);
-    expect(current.version).toBe(19);
+    expect(current.version).toBe(20);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 });

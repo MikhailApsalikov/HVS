@@ -283,11 +283,20 @@ describe('burner damage and energy', () => {
       hp: 0,
       energy: 17,
     });
-    addSpider(session, 'burner', 2, 1, 0);
+    const invulnerableBreach = addSpider(session, 'burner', 2, 1, 0);
     session.state.energy = 100;
     session.state.invulnerableTimer = 1;
     session.tick(0.001);
-    expect(session.drainEvents()).toEqual([{ type: 'absorb' }]);
+    expect(session.drainEvents()).toEqual([
+      { type: 'absorb' },
+      {
+        type: 'resourceGain',
+        spiderId: invulnerableBreach.id,
+        hp: 0,
+        energy: session.state.stats.energyPerBreach,
+        reason: 'breach',
+      },
+    ]);
     expect(session.state.energy).toBe(100 + session.state.stats.energyPerBreach);
   });
 });
@@ -375,7 +384,7 @@ describe('ninja jumps and saved progress', () => {
         spiders: previousSpiders(current).map((spider) => ({ ...spider, hasJumped })),
       };
       const migrated = parseSave(previous)!;
-      expect(migrated.version).toBe(19);
+      expect(migrated.version).toBe(20);
       expect(migrated.state).toEqual(current.state);
       expect(migrated.arrows).toEqual(current.arrows);
       const loaded = restore(migrated, () => 0.999999);

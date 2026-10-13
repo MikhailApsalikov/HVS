@@ -43,7 +43,7 @@ describe('defense talent abilities through session commands', () => {
     }
   });
 
-  it('adds five percentage points per rank but grants fifty plus ten percent endurance block only once', () => {
+  it('adds five percentage points per rank but grants forty plus ten percent endurance block only once', () => {
     const session = new GameSession('normal');
     session.state.level = 10;
     session.state.pendingTalentPoints = 30;
@@ -55,11 +55,11 @@ describe('defense talent abilities through session commands', () => {
     for (let rank = 1; rank <= 8; rank++) {
       buy(session, 'shieldBlock');
       expect(session.state.stats.blockChance).toBeCloseTo(rank * 0.05);
-      expect(session.state.stats.blockPower).toBe(55);
+      expect(session.state.stats.blockPower).toBe(45);
     }
     expect(session.upgradeTalent('shieldBlock')).toBe(false);
     expect(session.state.rules.explain('blockPower').modifiers).toEqual([
-      { source: 'talent:shieldBlock', kind: 'flat', stat: 'blockPower', value: 50 },
+      { source: 'talent:shieldBlock', kind: 'flat', stat: 'blockPower', value: 40 },
       { source: 'attribute:endurance', kind: 'flat', stat: 'blockPower', value: 5.4 },
     ]);
   });
@@ -156,16 +156,16 @@ describe('defense talent abilities through session commands', () => {
     expect(session.activateAbility('lastHope')).toBe('activated');
     expect(session.state.energy).toBe(55);
     expect(session.state.getAbility('lastHope').remainingCooldown).toBe(40);
-    expect(session.state.stats).toMatchObject({ blockChance: 0.9, blockPower: 258 });
+    expect(session.state.stats).toMatchObject({ blockChance: 0.9, blockPower: 248 });
     session.refreshStats();
-    expect(session.state.stats.blockPower).toBe(258);
+    expect(session.state.stats.blockPower).toBe(248);
     session.tick(5.999);
-    expect(session.state.stats.blockPower).toBe(258);
+    expect(session.state.stats.blockPower).toBe(248);
     session.tick(0.0011);
     expect(session.state.lastHopeTimer).toBe(0);
     expect(session.state.stats).toMatchObject({
       blockChance: 0.4,
-      blockPower: Math.round(50 + session.state.stats.endurance * 0.1),
+      blockPower: Math.round(40 + session.state.stats.endurance * 0.1),
     });
   });
 
@@ -393,7 +393,7 @@ describe('defense save compatibility', () => {
       ),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(19);
+    expect(parsed.version).toBe(20);
     const loaded = restore(parsed);
     expect(loaded.state.getAbility('stand').remainingCooldown).toBe(41);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(123);
@@ -424,7 +424,7 @@ describe('defense save compatibility', () => {
     expect(loaded.state.lastHopeTimer).toBe(0);
     expect(loaded.state.stats).toMatchObject({
       blockChance: 0.4,
-      blockPower: Math.round(50 + session.state.stats.endurance * 0.1),
+      blockPower: Math.round(40 + session.state.stats.endurance * 0.1),
     });
     expect(
       parseSave({ ...snapshot(session), state: { ...snapshot(session).state, lastHopeTimer: -1 } }),

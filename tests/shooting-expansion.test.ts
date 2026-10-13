@@ -30,7 +30,7 @@ function arena(talents: { id: TalentId; rank: number }[] = [], roll = 0) {
   session.state.levelTimer = session.state.levelTimerMax = 1000;
   return session;
 }
-const critical = [{ id: 'criticalShot' as const, rank: 10 }];
+const critical = [{ id: 'criticalShot' as const, rank: 7 }];
 const eagle = [...critical, { id: 'eagleEye' as const, rank: 1 }];
 
 describe('projectile strength', () => {
@@ -116,12 +116,12 @@ describe('shooting progression and scaling', () => {
       session.state.pendingTalentPoints = 100;
       for (let rank = 0; rank < 5; rank++) expect(session.upgradeTalent('vampirism')).toBe(true);
       expect(session.upgradeTalent('vampirism')).toBe(false);
-      expect(session.state.stats.hpPerKill).toBe(5);
+      expect(session.state.stats.hpPerKill).toBe(25);
       for (let rank = 0; rank < 5; rank++) session.upgradeTalent('hunterMastery');
       session.state.level = 30;
       for (let rank = 0; rank < 5; rank++) session.upgradeTalent('piercingReward');
       expect(session.upgradeTalent('eagleEye')).toBe(false);
-      for (let rank = 0; rank < 9; rank++) expect(session.upgradeTalent('criticalShot')).toBe(true);
+      for (let rank = 0; rank < 6; rank++) expect(session.upgradeTalent('criticalShot')).toBe(true);
       expect(session.upgradeTalent('eagleEye')).toBe(false);
       expect(session.upgradeTalent('improvedCriticalShot')).toBe(false);
       expect(session.upgradeTalent('agileCriticalShot')).toBe(false);
@@ -148,11 +148,11 @@ describe('shooting progression and scaling', () => {
     },
   );
   it.each([
-    [2, 5, 0.2, 5],
-    [3, 1, 0.2001, 1],
-    [9, 5, 0.2015, 5],
-    [10, 5, 0.2015, 5],
-    [130, 5, 0.2315, 15],
+    [2, 5, 0.21, 25],
+    [3, 1, 0.2101, 5],
+    [9, 5, 0.2115, 25],
+    [10, 5, 0.2115, 25],
+    [130, 5, 0.2415, 35],
   ])('scales full agility steps at agility %s and rank %s', (agility, rank, chance, hp) => {
     const session = arena([
       ...critical,
@@ -179,18 +179,18 @@ describe('shooting progression and scaling', () => {
     session.refreshStats();
     expect(session.state.stats).toMatchObject({
       agility: 130,
-      criticalShotChance: 0.2315,
-      hpPerKill: 15,
+      criticalShotChance: 0.2415,
+      hpPerKill: 35,
     });
     session.state.character.removeModifiers('test:item');
     session.refreshStats();
     expect(session.state.stats).toMatchObject({
       agility: 124,
-      criticalShotChance: 0.2205,
-      hpPerKill: 15,
+      criticalShotChance: 0.2305,
+      hpPerKill: 35,
     });
     expect(attributeDescription(session.state, 'agility')).toContain(
-      'Каждое убийство восстанавливает 15 здоровья',
+      'Каждое убийство восстанавливает 35 здоровья',
     );
     expect(talentDescription('agileCriticalShot', 5, session.state.stats)).toContain('0.05%');
     expect(talentDescription('improvedCriticalShot', 8, session.state.stats)).toContain('64%');
@@ -199,10 +199,10 @@ describe('shooting progression and scaling', () => {
     );
     session.state.character.setBase('agility', 76);
     session.refreshStats();
-    expect(session.state.stats).toMatchObject({ agility: 99, hpPerKill: 10 });
+    expect(session.state.stats).toMatchObject({ agility: 99, hpPerKill: 30 });
     session.state.character.setBase('agility', 77);
     session.refreshStats();
-    expect(session.state.stats).toMatchObject({ agility: 100, hpPerKill: 15 });
+    expect(session.state.stats).toMatchObject({ agility: 100, hpPerKill: 35 });
   });
   it('keeps all talent slots unique and every ability key unique', () => {
     const session = arena();
@@ -327,12 +327,12 @@ describe('eagle eye ability', () => {
 
 describe('vampirism and gold', () => {
   it.each([
-    [0, 1],
-    [49, 1],
-    [50, 2],
-    [99, 2],
-    [100, 3],
-  ])('heals once per rank and each full fifty agility at agility %s', (agility, perRank) => {
+    [0, 5],
+    [49, 5],
+    [50, 6],
+    [99, 6],
+    [100, 7],
+  ])('heals five per rank plus one per full fifty agility at agility %s', (agility, perRank) => {
     const session = arena();
     session.state.character.setBase('agility', agility);
     session.state.pendingTalentPoints = 5;
@@ -349,7 +349,7 @@ describe('vampirism and gold', () => {
       session.tick(0.4);
       expect(session.state.hp).toBe(1 + perRank * rank);
       expect(talentDescription('vampirism', rank, session.state.stats)).toBe(
-        `При убийстве паука восстанавливает ${rank} здоровья и дополнительно ${rank} за каждые 50 полных единиц ловкости.`,
+        `При убийстве паука восстанавливает ${rank * 5} здоровья и дополнительно ${rank} за каждые 50 полных единиц ловкости.`,
       );
     }
     expect(
@@ -383,7 +383,7 @@ describe('vampirism and gold', () => {
         session.activateAbility(source);
       } else session.shootLane(0);
       session.tick(source === 'armageddon' ? 3 : 0.4);
-      expect(session.state.hp).toBe(source === 'critical' ? 60 : 55);
+      expect(session.state.hp).toBe(source === 'critical' ? 100 : 75);
       session.state.hp = 99;
       addSpider(session, 'normal', 1, 0.95);
       session.state.energy = 100;
@@ -477,7 +477,7 @@ describe('version eleven saves', () => {
         talents: [...current.talents, { id: 'volleyMastery', rank: 3 }],
       };
       const parsed = parseSave(old)!;
-      expect(parsed.version).toBe(19);
+      expect(parsed.version).toBe(20);
       const loaded = restore(parsed, () => 0);
       expect(loaded.state.eagleEyeActive).toBe(false);
       expect(loaded.state.getAbility('eagleEye').isReady).toBe(true);

@@ -75,9 +75,7 @@ describe('spider debuffs through session commands', () => {
         if (type === 'fast') expect(session.state.stats.healingReceived).toBe(0.69);
         if (type === 'poisonous') {
           expect(session.state.stats['poison.tickDamage']).toBe(12.12);
-          expect(activeDebuffs(session.state)[0].detail).toContain(
-            '12.12 здоровья за тик (каждые 2 секунды)',
-          );
+          expect(activeDebuffs(session.state)[0].detail).toContain('12 урона раз в 2 секунды');
         }
         const hp = session.state.hp;
         const loaded = restore(parseSave(snapshot(session))!, () => 0.999999);
@@ -102,7 +100,7 @@ describe('spider debuffs through session commands', () => {
     expect(session.state.poisonTimer).toBe(27);
     expect(session.state.poisonTickTimer).toBeCloseTo(1);
     expect(activeDebuffs(session.state)[0]).toMatchObject({ name: 'Яд ×2' });
-    expect(activeDebuffs(session.state)[0].detail).toContain('36.36 здоровья за тик');
+    expect(activeDebuffs(session.state)[0].detail).toContain('36 урона раз в 2 секунды');
     const hp = session.state.hp;
     session.tick(1);
     expect(session.state.hp).toBeCloseTo(hp - 36.36);
@@ -186,7 +184,7 @@ describe('spider debuffs through session commands', () => {
       );
       const reducedRegen = session.state.stats.hpRegen;
       expect(activeDebuffs(session.state)[0].detail).toContain(
-        `${Number((healingFraction * 100).toFixed(1))}% от обычного`,
+        `уменьшены на ${Number(((1 - healingFraction) * 100).toFixed(1))}%`,
       );
       session.state.hp = 1000;
       session.state.energy = session.state.maxEnergy;
@@ -378,16 +376,42 @@ describe('spider debuffs through session commands', () => {
     expect(abilityDescription(session.state, 'stand')).toContain('Снимает все дебаффы');
   });
 
-  it('ends the run when poison kills, before regeneration or completing the level', () => {
+  it('leaves one health after a poison tick and allows the level to complete', () => {
     const session = arena();
     breach(session, 'poisonous', 100);
-    session.state.character.setModifiers('test:regen', [
-      { stat: 'hpRegen', kind: 'flat', value: 100 },
-    ]);
-    session.refreshStats();
     session.state.hp = 12;
     session.state.levelTimer = 2;
     session.tick(10);
+    expect(session.state.hp).toBe(1);
+    expect(session.state.phase).toBe('levelUp');
+  });
+
+  it.each([1, 5, 12, 12.5])('poison cannot kill a player starting at %s health', (hp) => {
+    const session = arena();
+    breach(session, 'poisonous', 100);
+    session.state.hp = hp;
+    session.tick(8);
+    expect(session.state.hp).toBe(1);
+    expect(session.state.phase).toBe('playing');
+    expect(session.state.poisonTimer).toBe(37);
+  });
+
+  it('poison does not revive a player who has already died', () => {
+    const session = arena();
+    breach(session, 'poisonous', 100);
+    session.state.hp = 0;
+    session.tick(2);
+    expect(session.state.hp).toBe(0);
+    expect(session.state.phase).toBe('gameOver');
+  });
+
+  it('poison leaves one health before ordinary damage can kill the player', () => {
+    const session = arena();
+    breach(session, 'poisonous', 100);
+    session.state.hp = 12;
+    session.tick(1.999);
+    addSpider(session, 'normal', 0, 1, 100);
+    session.tick(0.001);
     expect(session.state.hp).toBe(0);
     expect(session.state.phase).toBe('gameOver');
   });
@@ -481,7 +505,7 @@ describe('debuff save compatibility', () => {
       };
       const parsed = parseSave(previous)!;
       expect(parsed).not.toBeNull();
-      expect(parsed.version).toBe(19);
+      expect(parsed.version).toBe(20);
       expect(parsed.state).toEqual({ ...previous.state, poisonTimer: expectedTimer });
       const loaded = restore(parsed, () => 0.999999);
       expect(loaded.state.stats['poison.tickDamage']).toBe(180);

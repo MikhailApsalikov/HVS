@@ -100,7 +100,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 2,
     name: 'Критический выстрел',
     sprite: 'TalentCriticalShot',
-    effects: [flat('criticalShotChance', 0.02)],
+    effects: [flat('criticalShotChance', 0.03)],
     description: `Каждый выстрел, кроме стрел «Залпа», с вероятностью {criticalShotChance} становится критическим.\nКритическая стрела убивает до ${CRITICAL_SHOT_POWER} пауков. Энергия даётся только за первого паука в цепочке.`,
   },
   eagleEye: {
@@ -108,7 +108,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 2,
     name: 'Зоркость',
     sprite: 'AbilityEagleEye',
-    prerequisite: { id: 'criticalShot', rank: 10 },
+    prerequisite: { id: 'criticalShot', rank: 7 },
     effects: [],
   },
   improvedCriticalShot: {
@@ -143,7 +143,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     scaling: {
       attribute: 'agility',
       step: 50,
-      basePerRank: 1,
+      basePerRank: 5,
       effect: flat('hpPerKill', 1),
     },
     description:
@@ -200,7 +200,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     name: 'Череда убийств',
     sprite: 'TalentKillingStreak',
-    effects: [flat('killingStreak.interval', -1)],
+    effects: [flat('killingStreak.interval', -3)],
     description:
       'Каждые {streakInterval} с без урона получаете эффект «Череда убийств»: выстрелы стоят на 1 энергию меньше.\nЭффект складывается до {streakBaseStacks} раз. Урон от паука снимает один эффект.',
   },
@@ -209,7 +209,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     name: 'Увлеченность',
     sprite: 'TalentEnthusiasm',
-    prerequisite: { id: 'killingStreak', rank: 10 },
+    prerequisite: { id: 'killingStreak', rank: 8 },
     effects: [flat('enthusiasmChance', 0.2)],
     description:
       'Дает {enthusiasmChance} вероятности уклониться от урона.\nТребует активной «Череды убийств» и расходует один эффект.',
@@ -352,7 +352,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     sprite: 'TalentShieldBlock',
     column: 2,
     effects: [flat('blockChance', 0.05)],
-    fixedEffects: [flat('blockPower', 50)],
+    fixedEffects: [flat('blockPower', 40)],
     description: `Позволяет заблокировать атаку паука с вероятностью {blockChance}.\nПри блоке поглощает до {blockPower} + ${ATTRIBUTE_RULES.endurance.shieldBlockPerPoint * 100}% от выносливости урона.`,
   },
   lastHope: {
@@ -412,8 +412,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 3,
     sprite: 'TalentPoisonResistance',
     effects: [percent('spiderDebuffDuration', -8)],
-    description:
-      'Сокращает длительность всех дебаффов от дошедших пауков на {spiderDebuffDuration}: яда, потери дохода и ослабленного лечения.',
+    description: 'Сокращает длительность всех дебаффов от пауков на {spiderDebuffDuration}.',
   },
   adrenaline: {
     name: 'Адреналин',

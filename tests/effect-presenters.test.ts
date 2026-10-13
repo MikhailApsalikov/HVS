@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { GameSession } from '../src/domain/GameSession.js';
-import { playerEffectDescription } from '../src/ui/presenters.js';
+import {
+  formatStat,
+  killingStreakDescription,
+  playerEffectDescription,
+} from '../src/ui/presenters.js';
 import { addSpider } from './helpers.js';
 
 function arena() {
@@ -20,7 +24,7 @@ function arena() {
 }
 
 describe('player effect tooltips through session commands', () => {
-  it('describes the active part of all five buffs, their counters and remaining duration', () => {
+  it('describes all five buffs without repeating timers and keeps explicit shot charges current', () => {
     const session = arena();
     session.talents.loadFromSave([
       { id: 'divineShield', rank: 1 },
@@ -37,43 +41,51 @@ describe('player effect tooltips through session commands', () => {
     for (const effect of effects) {
       const html = playerEffectDescription(effect);
       expect(html).toContain(effect.name);
-      expect(html).toContain(`Осталось ${Math.ceil(effect.remaining!)} с.`);
+      expect(html).not.toContain(`Осталось ${Math.ceil(effect.remaining!)} с.`);
     }
     const description = (id: string) =>
       playerEffectDescription(effects.find((effect) => effect.id === id)!);
-    expect(description('prep')).toContain('энергии в секунду');
+    expect(description('prep')).toContain('Восстановление энергии увеличено на 30 в секунду.');
     expect(description('prep')).not.toContain('Мгновенно');
-    expect(description('stand')).toContain('Защищает от урона');
-    expect(description('lastHope')).toContain('Сила блока: +');
-    expect(description('adrenaline')).toContain('Бесплатных выстрелов осталось: 20');
-    expect(description('eagleEye')).toContain('Критических выстрелов осталось: 5');
+    expect(description('stand')).toContain('Неуязвимость');
+    expect(description('lastHope')).toContain('Увеличивает шанс блока на 50% и его силу на');
+    expect(description('adrenaline')).toContain(
+      'Выстрелы лучников бесплатны и без времени восстановления. Осталось — 20.',
+    );
+    expect(description('eagleEye')).toContain(
+      'Выстрелы лучников гарантированно критические. Осталось — 5.',
+    );
 
     expect(session.shootLane(0)).toBe('shot');
     const updated = session.state.activeEffects.find((effect) => effect.id === 'eagleEye')!;
-    expect(playerEffectDescription(updated)).toContain('Критических выстрелов осталось: 4');
+    expect(playerEffectDescription(updated)).toContain('Осталось — 4.');
   });
 
-  it('describes spider penalties, stacked poison and its next tick', () => {
+  it('shows the healing reduction and integer poison damage without timers or stacks', () => {
     const session = arena();
     for (const type of ['golden', 'fast', 'poisonous', 'poisonous'] as const) {
-      addSpider(session, type, 0, 1, 100);
+      addSpider(session, type, 0, 1, 101);
       session.tick(0.001);
     }
     for (const effect of session.state.activeEffects) {
       const html = playerEffectDescription(effect);
       expect(html).toContain(effect.name);
-      expect(html).toContain('Осталось');
+      expect(html).not.toMatch(/Осталось|Стаков|Следующий тик|за тик/);
       if (effect.id === 'goldLock') expect(html).toContain('Награды за пауков сохраняются');
-      if (effect.id === 'healingReduction') expect(html).toContain('получаемое лечение');
+      if (effect.id === 'healingReduction') {
+        expect(html).toContain('Регенерация здоровья и получаемое лечение уменьшены на 41%.');
+        expect(html).not.toContain('59%');
+      }
       if (effect.id === 'poison') {
-        expect(html).toContain('Стаков яда: 2');
-        expect(html).toContain('Следующий тик через 2 с.');
-        expect(html).toContain('Урон игнорирует защиту');
+        expect(effect.details!.tickDamage).toBe(24.24);
+        expect(html).toContain(
+          'Броня уменьшена на 75%. Вы отравлены и получаете 24 урона раз в 2 секунды. Яд не может убить.',
+        );
       }
     }
   });
 
-  it('explains indefinite inactivity and switches to the actual recovery countdown', () => {
+  it('explains inactivity recovery without repeating its counter or countdown', () => {
     const session = arena();
     addSpider(session, 'normal', 8, 0.1);
     session.tick(3);
@@ -81,12 +93,46 @@ describe('player effect tooltips through session commands', () => {
     const html = playerEffectDescription(idle);
     expect(html).toContain('Входящий урон увеличен на 10%');
     expect(html).toContain('После расходования энергии');
-    expect(html).toContain('Действует до восстановления активности.');
+    expect(html).not.toContain('Стаков');
     expect(html).not.toContain('Осталось');
 
     expect(session.shootLane(0)).toBe('shot');
     session.tick(2);
     const recovering = session.state.activeEffects.find((effect) => effect.id === 'antiAfk')!;
-    expect(playerEffectDescription(recovering)).toContain('Осталось 8 с.');
+    expect(recovering.remaining).toBe(8);
+    expect(playerEffectDescription(recovering)).toBe(html);
+  });
+
+  it('explains current streak bonuses without repeating its stack counter or progress timer', () => {
+    const session = arena();
+    session.talents.loadFromSave([
+      { id: 'killingStreak', rank: 8 },
+      { id: 'enthusiasm', rank: 3 },
+      { id: 'improvedKillingStreak', rank: 2 },
+    ]);
+    session.refreshStats();
+    session.tick(session.state.stats['killingStreak.interval'] * 2);
+    const html = killingStreakDescription(session.state);
+    expect(session.state.killingStreakStacks).toBe(2);
+    expect(html).toContain('Стоимость выстрела снижена на 2 энергии.');
+    expect(html).toContain('«Увлечённость»: 60% шанс избежать урона, расходуя один эффект.');
+    expect(html).toContain(
+      `Каждое убийство приближает следующий эффект на ${formatStat('killingStreak.killAdvance', session.state.stats['killingStreak.killAdvance'])} с.`,
+    );
+    expect(html).not.toMatch(/Эффектов:|Следующий эффект через|максимальное количество/);
+    expect(html).not.toContain('Подготовки титана');
+
+    session.talents.loadFromSave([
+      { id: 'killingStreak', rank: 8 },
+      { id: 'titanPreparation', rank: 5 },
+    ]);
+    session.refreshStats();
+    expect(session.activateAbility('prep')).toBe('activated');
+    const titanHtml = killingStreakDescription(session.state);
+    expect(titanHtml).toContain(
+      'Избыток временных эффектов «Подготовки титана» постепенно исчезает.',
+    );
+    expect(titanHtml).toContain('Стоимость выстрела снижена на 20 энергии.');
+    expect(titanHtml).not.toMatch(/Увлечённость|Каждое убийство|Эффектов:|Следующий эффект через/);
   });
 });

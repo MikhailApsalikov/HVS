@@ -19,6 +19,7 @@ interface EffectSlot {
 }
 
 interface EffectRow {
+  readonly container: HTMLElement;
   readonly slots: readonly EffectSlot[];
   readonly overflow: HTMLButtonElement;
   group: EffectPanelGroup;
@@ -36,26 +37,29 @@ export class PlayerEffectPanel {
 
   constructor(private readonly sprites: SpriteRegistry) {
     this.container.className = 'player-effects';
+    this.container.hidden = true;
     this.container.setAttribute('role', 'group');
     this.container.setAttribute('aria-label', 'Активные эффекты');
     this.rows = {
-      buff: this.createRow('buff', 'Баффы'),
-      debuff: this.createRow('debuff', 'Дебаффы'),
+      buff: this.createRow('buff', 'Положительные эффекты'),
+      debuff: this.createRow('debuff', 'Отрицательные эффекты'),
     };
   }
 
   render(state: GameState): void {
     const groups = effectPanelGroups(state.activeEffects);
+    this.container.hidden = !state.activeEffects.length;
     for (const kind of ['buff', 'debuff'] as const) {
       const row = this.rows[kind];
       row.group = groups[kind];
+      row.container.hidden = row.group.visible.length === 0;
       row.slots.forEach((slot, index) => {
         const effect = row.group.visible[index] ?? null;
         if (effect?.sprite !== slot.effect?.sprite)
           slot.icon.innerHTML = effect ? this.sprites.get(effect.sprite) : '';
         slot.effect = effect;
+        slot.container.hidden = !effect;
         slot.button.hidden = !effect;
-        slot.container.classList.toggle('player-effect-slot--occupied', Boolean(effect));
         if (!effect) {
           this.clearAnchor(slot.button);
           return;
@@ -75,10 +79,7 @@ export class PlayerEffectPanel {
       const hiddenCount = row.group.overflow.length;
       row.overflow.hidden = hiddenCount === 0;
       row.overflow.textContent = hiddenCount > 0 ? `+${hiddenCount}` : '';
-      row.overflow.setAttribute(
-        'aria-label',
-        `Ещё ${kind === 'buff' ? 'баффы' : 'дебаффы'}: ${hiddenCount}`,
-      );
+      row.overflow.setAttribute('aria-label', `Ещё эффекты: ${hiddenCount}`);
       if (hiddenCount === 0) this.clearAnchor(row.overflow);
     }
     this.updateTooltip();
@@ -87,16 +88,15 @@ export class PlayerEffectPanel {
   private createRow(kind: PlayerEffect['kind'], label: string): EffectRow {
     const container = document.createElement('div');
     container.className = `player-effects__row player-effects__row--${kind}`;
+    container.hidden = true;
     container.setAttribute('role', 'group');
     container.setAttribute('aria-label', label);
-    const title = document.createElement('div');
-    title.className = 'player-effects__label';
-    title.textContent = label;
     const badges = document.createElement('div');
     badges.className = 'player-effects__badges';
     const slots = Array.from({ length: PLAYER_EFFECT_ROW_CAPACITY }, () => {
       const slotContainer = document.createElement('div');
       slotContainer.className = 'player-effect-slot';
+      slotContainer.hidden = true;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'player-effect';
@@ -130,10 +130,10 @@ export class PlayerEffectPanel {
     overflow.type = 'button';
     overflow.className = 'player-effects__overflow';
     overflow.hidden = true;
-    const row: EffectRow = { slots, overflow, group: { visible: [], overflow: [] } };
+    const row: EffectRow = { container, slots, overflow, group: { visible: [], overflow: [] } };
     this.bindTooltip(overflow, () => {
       if (row.group.overflow.length === 0) return '';
-      return `<div class="tooltip__title">Ещё ${kind === 'buff' ? 'баффы' : 'дебаффы'}: ${row.group.overflow.length}</div>${row.group.overflow
+      return `<div class="tooltip__title">Ещё эффекты: ${row.group.overflow.length}</div>${row.group.overflow
         .map(
           (effect) =>
             `<div class="player-effects__overflow-detail"><span class="player-effects__overflow-icon" aria-hidden="true">${this.sprites.get(effect.sprite)}</span><div>${playerEffectDescription(effect)}</div></div>`,
@@ -141,7 +141,7 @@ export class PlayerEffectPanel {
         .join('')}`;
     });
     badges.append(overflow);
-    container.append(title, badges);
+    container.append(badges);
     this.container.append(container);
     return row;
   }

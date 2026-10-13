@@ -42,7 +42,8 @@ describe('will to win in shooting', () => {
       { id: 'hunterMastery', rank: 5 },
       { id: 'vampirism', rank: 5 },
       { id: 'piercingReward', rank: 8 },
-      { id: 'criticalShot', rank: 10 },
+      { id: 'criticalShot', rank: 7 },
+      { id: 'volleyMastery', rank: 3 },
       { id: 'killingStreak', rank: 7 },
     ]);
     session.refreshStats();
@@ -202,14 +203,14 @@ describe('six new legendary items', () => {
     const session = shop();
     expect(session.buyItem('l025')).toBe(true);
     expect(session.state.killingStreakMaximum).toBe(0);
-    session.talents.loadFromSave([{ id: 'killingStreak', rank: 10 }]);
+    session.talents.loadFromSave([{ id: 'killingStreak', rank: 8 }]);
     session.refreshStats();
     expect(session.state.killingStreakMaximum).toBe(7);
     play(session);
     session.tick(70);
     expect(session.state.killingStreakStacks).toBe(7);
     session.talents.loadFromSave([
-      { id: 'killingStreak', rank: 10 },
+      { id: 'killingStreak', rank: 8 },
       { id: 'improvedKillingStreak', rank: 5 },
     ]);
     session.refreshStats();

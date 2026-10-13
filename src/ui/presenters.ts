@@ -259,32 +259,28 @@ export function coinsDescription(state: GameState): string {
 function playerEffectDetail(effect: PlayerEffect): string {
   switch (effect.id) {
     case 'prep':
-      return `Дополнительно восстанавливает ${formatStat('energyRegen', effect.details!.energyRegen!)} энергии в секунду.`;
+      return `Восстановление энергии увеличено на ${formatStat('energyRegen', effect.details!.energyRegen!)} в секунду.`;
     case 'lastHope':
-      return `Шанс блока: +${percentagePoints(effect.details!.blockChance!)}.\nСила блока: +${formatStat('blockPower', effect.details!.blockPower!)}.`;
+      return `Увеличивает шанс блока на ${formatStat('blockChance', effect.details!.blockChance!)} и его силу на ${formatStat('blockPower', effect.details!.blockPower!)}.`;
     case 'stand':
-      return 'Защищает от урона пауков, выжигания энергии и снятия баффов очистителем.';
+      return 'Неуязвимость';
     case 'adrenaline':
-      return `Выстрелы не расходуют энергию. Перезарядка лучников сокращена на ${formatStat('adrenaline.shootCooldownReduction', effect.details!.shootCooldownReduction!)}%.\nБесплатных выстрелов осталось: ${effect.stacks}.`;
+      return `Выстрелы лучников бесплатны и без времени восстановления. Осталось — ${effect.stacks}.`;
     case 'eagleEye':
-      return `Выстрелы лучников гарантированно критические.\nКритических выстрелов осталось: ${effect.stacks}.`;
+      return `Выстрелы лучников гарантированно критические. Осталось — ${effect.stacks}.`;
     case 'goldLock':
       return 'Пассивный доход отключён. Награды за пауков сохраняются.';
     case 'healingReduction':
-      return `Регенерация здоровья и получаемое лечение: ${formatStat('healingReceived', effect.details!.healingReceived!)} от обычного.`;
+      return `Регенерация здоровья и получаемое лечение уменьшены на ${formatStat('healingReceived', 1 - effect.details!.healingReceived!)}.`;
     case 'poison':
-      return `Броня: ${effect.details!.armorPercent}%.\nВы теряете ${formatStat('poison.tickDamage', effect.details!.tickDamage!)} здоровья за тик (каждые ${effect.details!.tickInterval} секунды). Урон игнорирует защиту.\nСледующий тик через ${formatSeconds(effect.details!.nextTick!)} с.\nСтаков яда: ${effect.stacks}.`;
+      return `Броня уменьшена на ${Math.abs(effect.details!.armorPercent!)}%. Вы отравлены и получаете ${Math.round(effect.details!.tickDamage!)} урона раз в ${effect.details!.tickInterval} секунды. Яд не может убить.`;
     case 'antiAfk':
-      return `Входящий урон увеличен на ${formatStat('incomingDamage', effect.details!.damagePercent!)}%.\nСтаков штрафа: ${effect.stacks}.\nПосле расходования энергии штраф снимается через ${formatSeconds(ANTI_AFK.recoveryDuration)} с, если бездействие не повторится.`;
+      return `Входящий урон увеличен на ${formatStat('incomingDamage', effect.details!.damagePercent!)}%.\nПосле расходования энергии штраф снимается через ${formatSeconds(ANTI_AFK.recoveryDuration)} с, если бездействие не повторится.`;
   }
 }
 
 export function playerEffectDescription(effect: PlayerEffect): string {
-  const duration =
-    effect.remaining === null
-      ? 'Действует до восстановления активности.'
-      : `Осталось ${formatSeconds(effect.remaining)} с.`;
-  return `<div class="tooltip__title">${escapeHtml(effect.name)}</div>${descriptionParagraphs(playerEffectDetail(effect))}<p>${duration}</p>`;
+  return `<div class="tooltip__title">${escapeHtml(effect.name)}</div>${descriptionParagraphs(playerEffectDetail(effect))}`;
 }
 
 export function activeDebuffs(state: GameState) {
@@ -321,13 +317,17 @@ export function shootDescription(state: GameState, lane: number): string {
 export function killingStreakDescription(state: GameState): string {
   return `<div class="tooltip__title">Череда убийств</div>${descriptionParagraphs(
     [
-      `Эффектов: ${state.killingStreakStacks}.`,
+      'Эффекты накапливаются, пока пауки не наносят урон.',
       `Стоимость выстрела снижена на ${state.killingStreakStacks} энергии.`,
+      state.killingStreakStacks > 0 && state.stats.enthusiasmChance > 0
+        ? `«Увлечённость»: ${formatStat('enthusiasmChance', state.stats.enthusiasmChance)} шанс избежать урона, расходуя один эффект.`
+        : '',
+      state.stats['killingStreak.killAdvance'] > 0
+        ? `Каждое убийство приближает следующий эффект на ${formatStat('killingStreak.killAdvance', state.stats['killingStreak.killAdvance'])} с.`
+        : '',
       state.killingStreakExcess > 0
-        ? `«Подготовка титана»: ${state.killingStreakExcess} временных эффектов.`
-        : state.killingStreakFull
-          ? 'Набрано максимальное количество эффектов.'
-          : `Следующий эффект через ${formatSeconds(state.killingStreakRemaining)} с без урона.`,
+        ? 'Избыток временных эффектов «Подготовки титана» постепенно исчезает.'
+        : '',
       'Урон от паука снимает один эффект.',
     ].join('\n'),
   )}`;

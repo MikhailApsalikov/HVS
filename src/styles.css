@@ -3,6 +3,8 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 body {
@@ -627,6 +629,9 @@ body {
 .killing-streak__pips .temporary {
   border-color: #45606e;
   background: #152530;
+}
+.killing-streak__pips .temporary:not(.filled) {
+  visibility: hidden;
 }
 .killing-streak__pips .temporary.filled {
   border-color: #c0f5ff;
@@ -1606,7 +1611,18 @@ body {
 }
 
 .damage-pop--heavy {
+  font-size: 1.85rem;
+  animation-duration: 1.4s;
+}
+
+.damage-pop--piercing {
   font-size: 1.65rem;
+  animation-duration: 1.25s;
+}
+
+.damage-pop--heavy.damage-pop--piercing {
+  font-size: 2.5rem;
+  animation-duration: 1.9s;
 }
 
 .damage-pop__blocked {
@@ -1625,6 +1641,72 @@ body {
   100% {
     opacity: 0;
     transform: translate(-50%, calc(-50% + 50px)) scale(0.7);
+  }
+}
+
+/* Smaller secondary gains stay below coins and above incoming damage. */
+.resource-pop {
+  position: absolute;
+  left: 50%;
+  z-index: 49;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.78rem;
+  line-height: 1;
+  font-weight: 600;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px #000;
+  animation: resource-float 0.75s ease-out forwards;
+}
+
+.resource-pop__hp {
+  color: #84d99c;
+}
+
+.resource-pop__energy {
+  color: var(--energy-color);
+}
+
+@keyframes resource-float {
+  0% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%);
+  }
+  70% {
+    opacity: 0.8;
+    transform: translate(-50%, calc(-50% - 14px));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 20px));
+  }
+}
+
+.game-field--paused .coin-drop,
+.game-field--paused .damage-pop,
+.game-field--paused .resource-pop {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coin-drop,
+  .damage-pop,
+  .resource-pop {
+    animation-name: combat-pop-fade;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes combat-pop-fade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
 
@@ -2493,33 +2575,19 @@ body {
 
 .player-effects {
   display: grid;
-  grid-template-rows: repeat(2, 66px);
-  gap: 8px;
-  width: 206px;
-  height: 154px;
-  box-sizing: border-box;
+  gap: 5px;
+  width: fit-content;
+  max-width: 100%;
   flex: 0 0 auto;
-  padding: 6px;
-  border: 1px solid #514048;
-  border-radius: 8px;
-  background: #17171c;
 }
 .player-effects__row {
-  display: grid;
-  grid-template-rows: 18px 48px;
   color: #ffd3d6;
 }
 .player-effects__row--buff {
   color: #c6eebd;
 }
-.player-effects__label {
-  font-size: 0.68rem;
-  font-weight: 600;
-  line-height: 16px;
-}
 .player-effects__badges {
-  display: grid;
-  grid-template-columns: repeat(5, 32px) 17px;
+  display: flex;
   gap: 3px;
 }
 .player-effect-slot {
@@ -2527,15 +2595,9 @@ body {
   width: 32px;
   height: 48px;
 }
-.player-effect-slot:not(.player-effect-slot--occupied)::before {
-  content: '';
-  display: block;
-  width: 32px;
-  height: 32px;
-  border: 1px dashed #36333d;
-  border-radius: 5px;
-  background: #1c1b23;
-}
+.player-effects[hidden],
+.player-effects__row[hidden],
+.player-effect-slot[hidden],
 .player-effect[hidden],
 .player-effects__overflow[hidden] {
   display: none;

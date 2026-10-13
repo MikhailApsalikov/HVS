@@ -100,7 +100,8 @@ describe('new defense talents through session commands', () => {
     buy(session, 'hunterMastery', 5);
     buy(session, 'vampirism', 5);
     buy(session, 'piercingReward', 8);
-    buy(session, 'criticalShot', 10);
+    buy(session, 'criticalShot', 7);
+    buy(session, 'improvedAgility', 3);
     buy(session, 'killingStreak', 7);
     expect(session.upgradeTalent('willToWin')).toBe(false);
     session.state.level = 50;
@@ -375,7 +376,7 @@ describe('new defense talents through session commands', () => {
     expect(loaded.state.adrenalineShots).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(0);
     const current = snapshot(loaded);
-    expect(current.version).toBe(19);
+    expect(current.version).toBe(20);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 
@@ -400,19 +401,17 @@ describe('tenfold base passive income', () => {
   ] as const)('%s has a base of %s and retains separate bonuses', (difficulty, base) => {
     const session = new GameSession(difficulty, () => 0.999999);
     expect(session.state.config.coinsPerSec).toBe(base);
-    expect(session.state.stats.coinsPerSec).toBe(base + 0.07);
+    expect(session.state.stats.coinsPerSec).toBe(base);
     session.upgradeTalent('hunterMastery');
     session.confirmLevelUp();
     const coins = session.state.coins;
     session.tick(2.5);
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(
-      coins + (base + 0.07) * 2.5,
-    );
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(coins + base * 2.5);
     session.state.character.setModifiers('income', [
       { stat: 'coinsPerSec', kind: 'flat', value: 2 },
       { stat: 'coinsPerSec', kind: 'percent', value: 50 },
     ]);
     session.refreshStats();
-    expect(session.state.stats.coinsPerSec).toBeCloseTo((base + 2 / 30 + 2) * 1.5);
+    expect(session.state.stats.coinsPerSec).toBeCloseTo((base + 2) * 1.5);
   });
 });

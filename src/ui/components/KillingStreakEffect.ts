@@ -53,14 +53,13 @@ export class KillingStreakEffect {
     this.container.style.setProperty('--streak-strength', String(stacks / maximum));
     this.count.textContent =
       excess > 0 ? String(stacks) : `${stacks}/${state.killingStreakMaximum}`;
-    this.status.textContent =
-      excess > 0 ? `Подготовка титана · +${excess}` : `−${stacks} энергии за выстрел`;
     const timerLabel =
       excess > 0
         ? `Временных эффектов: ${excess}`
         : state.killingStreakFull
           ? 'Максимум эффектов'
           : `Следующий через ${formatSeconds(state.killingStreakRemaining)} с${state.phase !== 'playing' ? ' · Пауза' : ''}`;
+    this.status.textContent = excess > 0 ? `Подготовка титана · +${excess}` : timerLabel;
     this.container.style.setProperty(
       '--streak-progress',
       String(excess > 0 ? state.killingStreakDecayFraction : state.killingStreakFraction),

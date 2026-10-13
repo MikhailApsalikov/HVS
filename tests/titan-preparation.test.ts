@@ -9,7 +9,7 @@ function arena(rank = 5, learned = false) {
   const session = new GameSession('normal', () => 0.999999);
   const talents: { id: TalentId; rank: number }[] = [{ id: 'titanPreparation', rank }];
   if (learned)
-    talents.push({ id: 'killingStreak', rank: 10 }, { id: 'improvedKillingStreak', rank: 5 });
+    talents.push({ id: 'killingStreak', rank: 8 }, { id: 'improvedKillingStreak', rank: 5 });
   session.talents.loadFromSave(talents);
   session.state.level = 40;
   session.state.phase = 'playing';

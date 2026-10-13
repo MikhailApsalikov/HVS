@@ -132,7 +132,7 @@ describe('progression and player commands', () => {
     advance(session, 2.5);
     expect(session.state.hp).toBeCloseTo(52.7, 8);
     expect(session.state.energy).toBeCloseTo(20.4, 8);
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(260.175, 8);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(260, 8);
   });
   it('rejects invalid timestep and blocks commands outside their phase', () => {
     const session = new GameSession('normal');
@@ -393,7 +393,7 @@ describe('enemy types and rewards', () => {
     expect(session.drainEvents()).toEqual([
       { type: 'damage', spiderId: 'spider-1', hp: 1, energy: 92 },
     ]);
-    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(252.035);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(252);
   });
   it('lethal damage takes priority over regeneration and wave completion', () => {
     const session = game();

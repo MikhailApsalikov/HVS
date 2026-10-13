@@ -113,7 +113,7 @@ describe('energy for every spider kill', () => {
   });
 
   it('caps energy from several kills at the maximum without banking the excess', () => {
-    const session = arena([{ id: 'criticalShot', rank: 10 }]);
+    const session = arena([{ id: 'criticalShot', rank: 7 }]);
     addSpider(session, 'normal', 0, 0.8);
     addSpider(session, 'normal', 0, 0.4);
     session.shootLane(0);
@@ -147,7 +147,7 @@ describe('kill energy save migration', () => {
     'migrates version 15 after %s seconds without retaining exclusions or repeating rewards',
     (elapsed) => {
       const session = arena([
-        { id: 'criticalShot', rank: 10 },
+        { id: 'criticalShot', rank: 7 },
         { id: 'improvedCriticalShot', rank: 8 },
         { id: 'killingStreak', rank: 1 },
       ]);
@@ -160,6 +160,10 @@ describe('kill energy save migration', () => {
       const old = {
         ...current,
         version: 15,
+        state: {
+          ...current.state,
+          killingStreakProgress: (current.state.killingStreakProgress / 31) * 19,
+        },
         abilities: current.abilities.slice(0, 11),
         arrows: current.arrows.map((arrow) => ({ ...arrow, kills: 3 - arrow.power })),
         spiders: current.spiders.map((spider, index) => ({
@@ -182,7 +186,7 @@ describe('kill energy save migration', () => {
   );
 
   it.each([9, 10])('still rejects invalid power history in version %s', (version) => {
-    const session = arena([{ id: 'criticalShot', rank: 10 }]);
+    const session = arena([{ id: 'criticalShot', rank: 7 }]);
     session.shootLane(0);
     const saved = snapshot(session);
     for (const invalid of [

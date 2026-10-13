@@ -7,6 +7,75 @@ import { SAVE_KEY, SaveSystem } from '../src/infrastructure/storage/SaveSystem.j
 import { game, advance, addSpider, MemoryStorage } from './helpers.js';
 
 describe('saves and migration', () => {
+  it.each([1, 7, 8, 10])(
+    'migrates version 19 rank %s with one refund and the same earned streak fraction',
+    (rank) => {
+      const data = snapshot(game(50));
+      const previous = {
+        ...data,
+        version: 19,
+        talents: [
+          { id: 'criticalShot', rank: 10 },
+          { id: 'killingStreak', rank },
+          { id: 'eagleEye', rank: 1 },
+          { id: 'enthusiasm', rank: 5 },
+        ],
+        state: {
+          ...data.state,
+          killingStreakStacks: 2,
+          killingStreakProgress: (20 - rank) * 0.75,
+        },
+      };
+      const parsed = parseSave(previous)!;
+      expect(parsed).not.toBeNull();
+      expect(parsed.version).toBe(20);
+      const loaded = restore(parsed, () => 0.999999);
+      expect(loaded.talents.getRank('criticalShot')).toBe(7);
+      expect(loaded.talents.getRank('killingStreak')).toBe(Math.min(rank, 8));
+      expect(loaded.state.pendingTalentPoints).toBe(
+        data.state.pendingTalentPoints + 3 + Math.max(0, rank - 8),
+      );
+      expect(loaded.state.killingStreakStacks).toBe(2);
+      expect(loaded.state.killingStreakFraction).toBe(0.75);
+      expect(loaded.state.isAbilityUnlocked('eagleEye')).toBe(true);
+      expect(loaded.talents.getRank('enthusiasm')).toBe(5);
+      const saved = snapshot(loaded);
+      expect(snapshot(restore(parseSave(saved)!))).toEqual(saved);
+      loaded.tick(loaded.state.killingStreakRemaining);
+      expect(loaded.state.killingStreakStacks).toBe(3);
+    },
+  );
+
+  it('rejects version 19 streak progress at the previous interval', () => {
+    const data = snapshot(game(50));
+    expect(
+      parseSave({
+        ...data,
+        version: 19,
+        talents: [{ id: 'killingStreak', rank: 10 }],
+        state: { ...data.state, killingStreakProgress: 10 },
+      }),
+    ).toBeNull();
+  });
+
+  it('uses the last duplicate talent rank when migrating version 19 progress', () => {
+    const data = snapshot(game(50));
+    const loaded = restore(
+      parseSave({
+        ...data,
+        version: 19,
+        talents: [
+          { id: 'killingStreak', rank: 1 },
+          { id: 'killingStreak', rank: 10 },
+        ],
+        state: { ...data.state, killingStreakProgress: 5 },
+      })!,
+    );
+    expect(loaded.talents.getRank('killingStreak')).toBe(8);
+    expect(loaded.state.killingStreakFraction).toBe(0.5);
+    expect(loaded.state.pendingTalentPoints).toBe(data.state.pendingTalentPoints + 2);
+  });
+
   it('restores a higher-level start during talent selection and after entering combat', () => {
     const session = new GameSession('normal', () => 0.999999, { level: 50, coins: 1000 });
     expect(session.upgradeTalent('endurance')).toBe(true);
@@ -46,7 +115,7 @@ describe('saves and migration', () => {
     };
     const loaded = restore(parseSave(previous)!);
     expect(loaded.talents.getRank('shieldBlock')).toBe(8);
-    expect(loaded.state.stats).toMatchObject({ blockChance: 0.4, blockPower: 64 });
+    expect(loaded.state.stats).toMatchObject({ blockChance: 0.4, blockPower: 54 });
     expect(loaded.state.pendingTalentPoints).toBe(session.state.pendingTalentPoints + 4);
     expect(loaded.state.isAbilityUnlocked('lastHope')).toBe(true);
     expect(loaded.talents.getRank('hunterReward')).toBe(2);
@@ -72,7 +141,7 @@ describe('saves and migration', () => {
         inventory: ['c001', 'c001', 'missing', 'c009', 'c001', 'c009'],
         abilities: data.abilities.slice(0, version < 5 ? 8 : 9),
       })!;
-      expect(parsed.version).toBe(19);
+      expect(parsed.version).toBe(20);
       const loaded = restore(parsed);
       expect(loaded.items.inventory).toEqual(['c001', 'c009']);
       expect(loaded.state.coins).toBe(
@@ -124,7 +193,7 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(19);
+    expect(parsed.version).toBe(20);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
       endurance: 79,

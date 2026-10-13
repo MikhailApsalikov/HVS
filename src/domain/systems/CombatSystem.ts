@@ -3,8 +3,9 @@ import type { EmitEvent } from '../events.js';
 import type { RandomSource } from '../rules/random.js';
 import type { SpiderType } from '../types.js';
 import { randomInt } from '../rules/random.js';
-import { WORLD } from '../rules/world.js';
-import { BEST_DEFENSE_COOLDOWN } from '../rules/stats.js';
+import { PIERCING_STRIKE, WORLD } from '../rules/world.js';
+import { BEST_DEFENSE_COOLDOWN, STATS } from '../rules/stats.js';
+import { calculate, clamp } from '../rules/numbers.js';
 import { SPIDERS, SPECIAL_SPIDER_ORDER } from '../../content/spiders.js';
 import { Spider } from '../model/Spider.js';
 import { fireVolley } from './AbilitySystem.js';
@@ -110,18 +111,37 @@ export function resolveBreaches(
     if (state.isInvulnerable) emit({ type: 'absorb' });
     else {
       const definition = SPIDERS[spider.type];
+      const piercingChance = clamp(
+        (state.level - PIERCING_STRIKE.unlockLevel + 1) * PIERCING_STRIKE.chancePerLevel,
+        0,
+        1,
+      );
+      const piercing = spider.damage > 0 && piercingChance > 0 && random() < piercingChance;
+      const rawDamage = piercing
+        ? calculate(
+            spider.damage,
+            [
+              {
+                source: 'spider:piercingStrike',
+                kind: 'percent',
+                value: (PIERCING_STRIKE.damageMultiplier - 1) * 100,
+              },
+            ],
+            STATS.spiderDamage.policy,
+          ).value
+        : spider.damage;
       const blocked =
-        spider.damage > 0 &&
+        rawDamage > 0 &&
         state.stats.blockPower > 0 &&
         state.stats.blockChance > 0 &&
         random() < state.stats.blockChance;
       let hp = state.rules.value(
         'incomingDamage',
-        spider.damage,
+        rawDamage,
         blocked ? [{ source: 'block', kind: 'flat', value: -state.stats.blockPower }] : [],
       );
       const blockedDamage = blocked
-        ? state.rules.value('incomingDamage', spider.damage) - hp
+        ? state.rules.value('incomingDamage', rawDamage) - hp
         : undefined;
       const canDodge = hp > 0 || definition.burnsEnergy === true || definition.clearsBuffs === true;
       let dodged = canDodge && state.stats.dodgeChance > 0 && random() < state.stats.dodgeChance;
@@ -150,6 +170,14 @@ export function resolveBreaches(
         energy,
         ...(blocked ? { blockedDamage } : {}),
         ...(dodged ? { dodged: true } : {}),
+        ...(piercing ? { piercing: true } : {}),
+        ...(piercing || spider.type === 'tank'
+          ? {
+              rawDamageMultiplier:
+                (1 + definition.damagePercent / 100) *
+                (piercing ? PIERCING_STRIKE.damageMultiplier : 1),
+            }
+          : {}),
       });
       if (blocked) emit({ type: 'absorb' });
     }
@@ -161,7 +189,17 @@ export function resolveBreaches(
       fireVolley(state, random);
       state.bestDefenseCooldown = BEST_DEFENSE_COOLDOWN;
     }
+    const previousEnergy = state.energy;
     state.modifyEnergy(state.stats.energyPerBreach);
+    const gainedEnergy = state.energy - previousEnergy;
+    if (gainedEnergy > 0)
+      emit({
+        type: 'resourceGain',
+        spiderId: spider.id,
+        hp: 0,
+        energy: gainedEnergy,
+        reason: 'breach',
+      });
     spider.startDying();
   }
 }
@@ -178,8 +216,20 @@ export function collectDeadSpiders(
     if (spider.dyingTimer > 0) continue;
     if (!spider.reachedCastle) {
       state.advanceKillingStreak(state.stats['killingStreak.killAdvance']);
+      const previousHp = state.hp;
+      const previousEnergy = state.energy;
       state.modifyEnergy(state.stats.energyPerKill);
       if (state.hp > 0) state.modifyHp(state.stats.hpPerKill);
+      const gainedHp = state.hp - previousHp;
+      const gainedEnergy = state.energy - previousEnergy;
+      if (gainedHp > 0 || gainedEnergy > 0)
+        emit({
+          type: 'resourceGain',
+          spiderId: id,
+          hp: gainedHp,
+          energy: gainedEnergy,
+          reason: 'kill',
+        });
     }
     if (!spider.reachedCastle || state.stats.breachRewardFraction > 0) {
       const base = randomInt(random, WORLD.coinMin, WORLD.coinMax);

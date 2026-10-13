@@ -8,3 +8,5 @@ pnpm-lock.yaml
 src/ui/*_svgs.ts
 src/sprites
 documentation/*.txt
+analysis/results/
+analysis/balance-pilot.json

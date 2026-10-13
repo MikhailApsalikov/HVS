@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { FrameLoop, type FrameScheduler } from '../src/infrastructure/browser/FrameLoop.js';
 import { GameEngine } from '../src/application/GameEngine.js';
 import { SaveSystem } from '../src/infrastructure/storage/SaveSystem.js';
-import { MemoryStorage } from './helpers.js';
+import { addSpider, MemoryStorage } from './helpers.js';
 import {
   abilityDescription,
   attributeDescription,
@@ -180,6 +180,53 @@ describe('application orchestration', () => {
     expect(frames.callbacks.size).toBe(1);
     engine.stopLoop();
     expect(frames.callbacks.size).toBe(0);
+  });
+
+  it('forwards piercing damage and actual kill/breach gains before the next render', () => {
+    const session = game(61);
+    session.talents.loadFromSave([{ id: 'vampirism', rank: 1 }]);
+    session.refreshStats();
+    session.state.energy = 0;
+    session.state.hp = session.state.maxHp - 100;
+    const killed = addSpider(session);
+    killed.startDying();
+    killed.dyingTimer = 0;
+    const breached = addSpider(session, 'tank', 1, 1, 100);
+    const expectedDamage = session.state.rules.value('incomingDamage', 400);
+    const frames = new Frames();
+    const saves = new SaveSystem(new MemoryStorage());
+    saves.save(session);
+    const calls: unknown[][] = [];
+    const engine = new GameEngine(() => calls.push(['render']), saves, new FrameLoop(frames));
+    engine.setDamagePopCallback((...args) => calls.push(['damage', ...args]));
+    engine.setCoinDropCallback((...args) => calls.push(['coin', ...args]));
+    engine.setResourceGainCallback((...args) => calls.push(['gain', ...args]));
+    const absorb = vi.fn();
+    engine.setAbsorbCallback(absorb);
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.999999).mockReturnValueOnce(0);
+    try {
+      expect(engine.loadGame()).toBe(true);
+      frames.advance(0);
+      calls.length = 0;
+      frames.advance(20);
+      expect(calls).toEqual([
+        ['damage', breached.id, expectedDamage, 0, undefined, undefined, true],
+        ['gain', breached.id, 0, session.state.stats.energyPerBreach, 'breach'],
+        [
+          'gain',
+          killed.id,
+          session.state.stats.hpPerKill,
+          session.state.stats.energyPerKill,
+          'kill',
+        ],
+        ['coin', killed.id, expect.any(Number), false],
+        ['render'],
+      ]);
+      expect(absorb).not.toHaveBeenCalled();
+    } finally {
+      random.mockRestore();
+      engine.stopLoop();
+    }
   });
 });
 

@@ -28,7 +28,7 @@ function arena(talents: { id: TalentId; rank: number }[] = [], roll = 0.999999) 
   session.state.levelTimer = session.state.levelTimerMax = 10000;
   return session;
 }
-const streak = [{ id: 'killingStreak' as const, rank: 10 }];
+const streak = [{ id: 'killingStreak' as const, rank: 8 }];
 function hit(session: GameSession, damage = 10) {
   addSpider(session, 'normal', 8, 1, damage);
   session.tick(0.001);
@@ -106,20 +106,17 @@ describe('agility dodge and breach effects', () => {
 });
 
 describe('killing streak through gameplay time', () => {
-  it.each(Array.from({ length: 10 }, (_, i) => i + 1))(
-    'rank %s sets the stack interval',
-    (rank) => {
-      const session = arena([{ id: 'killingStreak', rank }]);
-      const interval = 20 - rank;
-      expect(session.state.stats['killingStreak.interval']).toBe(interval);
-      session.tick(interval - 0.01);
-      expect(session.state.killingStreakStacks).toBe(0);
-      expect(session.state.killingStreakRemaining).toBeCloseTo(0.01);
-      session.tick(0.01);
-      expect(session.state.killingStreakStacks).toBe(1);
-      expect(session.state.killingStreakRemaining).toBe(interval);
-    },
-  );
+  it.each(Array.from({ length: 8 }, (_, i) => i + 1))('rank %s sets the stack interval', (rank) => {
+    const session = arena([{ id: 'killingStreak', rank }]);
+    const interval = 34 - 3 * rank;
+    expect(session.state.stats['killingStreak.interval']).toBe(interval);
+    session.tick(interval - 0.01);
+    expect(session.state.killingStreakStacks).toBe(0);
+    expect(session.state.killingStreakRemaining).toBeCloseTo(0.01);
+    session.tick(0.01);
+    expect(session.state.killingStreakStacks).toBe(1);
+    expect(session.state.killingStreakRemaining).toBe(interval);
+  });
   it('does not accumulate without the talent and starts when learned', () => {
     const session = arena();
     session.tick(100);
@@ -129,11 +126,12 @@ describe('killing streak through gameplay time', () => {
     session.state.pendingTalentPoints = 1;
     session.talents.loadFromSave([
       { id: 'hunterMastery', rank: 5 },
-      { id: 'criticalShot', rank: 9 },
+      { id: 'criticalShot', rank: 7 },
+      { id: 'piercingReward', rank: 2 },
     ]);
     expect(session.upgradeTalent('killingStreak')).toBe(true);
     session.state.phase = 'playing';
-    session.tick(19);
+    session.tick(31);
     expect(session.state.killingStreakStacks).toBe(1);
   });
   it('caps at five, discards time at cap and reduces the actual energy spent', () => {
@@ -145,7 +143,9 @@ describe('killing streak through gameplay time', () => {
     expect(session.state.killingStreakRemaining).toBe(0);
     expect(session.shootLane(0)).toBe('shot');
     expect(session.state.energy).toBe(70);
-    expect(killingStreakDescription(session.state)).toContain('максимальное количество');
+    expect(killingStreakDescription(session.state)).toContain(
+      'Стоимость выстрела снижена на 5 энергии',
+    );
     hit(session);
     expect(session.state.killingStreakStacks).toBe(4);
     expect(session.state.killingStreakRemaining).toBe(10);
@@ -284,7 +284,7 @@ describe('enthusiasm and improved streak', () => {
     'advances for every kill from %s, never from a breach',
     (source) => {
       const session = arena(
-        [...streak, { id: 'improvedKillingStreak', rank: 5 }, { id: 'criticalShot', rank: 10 }],
+        [...streak, { id: 'improvedKillingStreak', rank: 5 }, { id: 'criticalShot', rank: 7 }],
         0,
       );
       session.state.character.setBase('agility', 100);
@@ -321,8 +321,8 @@ describe('enthusiasm and improved streak', () => {
 
 describe('shooting rebalance, tooltips and save compatibility', () => {
   it.each([
-    ['enthusiasm', 'killingStreak', 10, 0],
-    ['enthusiasm', 'killingStreak', 10, 1],
+    ['enthusiasm', 'killingStreak', 8, 0],
+    ['enthusiasm', 'killingStreak', 8, 1],
     ['improvedKillingStreak', 'enthusiasm', 5, 0],
     ['improvedKillingStreak', 'enthusiasm', 5, 1],
   ] as const)(
@@ -333,10 +333,10 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       session.state.pendingTalentPoints = 30;
       session.talents.loadFromSave([
         { id: 'hunterMastery', rank: 5 },
-        { id: 'criticalShot', rank: 10 },
+        { id: 'criticalShot', rank: 7 },
         { id: 'piercingReward', rank: 8 },
         { id: 'improvedAgility', rank: 7 },
-        { id: 'killingStreak', rank: 10 },
+        { id: 'killingStreak', rank: 8 },
         { id: prerequisite, rank: 0 },
         { id, rank: currentRank },
       ]);
@@ -400,7 +400,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         ['volleyMastery', 2, 5],
         ['titanPreparation', 5, 5],
         ['aimedFire', 7, 1],
-        ['killingStreak', 3, 10],
+        ['killingStreak', 3, 8],
         ['enthusiasm', 4, 5],
         ['rapidFire', 5, 7],
         ['improvedKillingStreak', 5, 5],
@@ -410,14 +410,14 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       session.state.pendingTalentPoints = 100;
       session.talents.loadFromSave([
         { id: 'hunterMastery', rank: 5 },
-        { id: 'criticalShot', rank: 10 },
+        { id: 'criticalShot', rank: 7 },
         { id: 'improvedAgility', rank: 7 },
         { id: 'vampirism', rank: 5 },
         { id: 'piercingReward', rank: 8 },
       ]);
       expect(session.upgradeTalent('enthusiasm')).toBe(false);
       expect(session.upgradeTalent('volleyMastery')).toBe(true);
-      for (let i = 0; i < 10; i++) expect(session.upgradeTalent('killingStreak')).toBe(true);
+      for (let i = 0; i < 8; i++) expect(session.upgradeTalent('killingStreak')).toBe(true);
       expect(session.upgradeTalent('killingStreak')).toBe(false);
       for (const id of ['enthusiasm', 'improvedKillingStreak'] as const) {
         for (let i = 0; i < 5; i++) expect(session.upgradeTalent(id)).toBe(true);
@@ -455,8 +455,8 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
   });
   it('describes the bonuses without leaking placeholders or rules internals', () => {
     const session = arena(streak);
-    expect(talentDescription('killingStreak', 1, session.state.stats)).toContain('19 с');
-    expect(talentDescription('killingStreak', 10, session.state.stats)).toContain('10 с');
+    expect(talentDescription('killingStreak', 1, session.state.stats)).toContain('31 с');
+    expect(talentDescription('killingStreak', 8, session.state.stats)).toContain('10 с');
     expect(talentDescription('enthusiasm', 5, session.state.stats)).toContain('100%');
     expect(talentDescription('improvedKillingStreak', 5, session.state.stats)).toContain('0.05 с');
     expect(talentDescription('volleyMastery', 5, session.state.stats)).toContain('20%');
@@ -464,7 +464,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
     expect(talentDescription('agileCriticalShot', 5, session.state.stats)).toContain(
       '10 критических стрел',
     );
-    expect(killingStreakDescription(session.state)).toContain('через 10 с');
+    expect(killingStreakDescription(session.state)).toContain('Эффекты накапливаются');
   });
   it('retains stacks, timer and fifteen eagle-eye charges across save and load', () => {
     const session = arena([
@@ -492,6 +492,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         ...saved,
         version: 13,
         abilities: saved.abilities.slice(0, 11),
+        talents: [{ id: 'killingStreak', rank }],
         state: {
           ...saved.state,
           killingStreakStacks: 2,
@@ -499,15 +500,15 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         },
       };
       const parsed = parseSave(previous)!;
-      expect(parsed.version).toBe(19);
+      expect(parsed.version).toBe(20);
       const session = restore(parsed, () => 0.999999);
       expect(session.state.killingStreakStacks).toBe(2);
-      expect(session.state.killingStreakProgress).toBe((20 - rank) / 2);
+      expect(session.state.killingStreakProgress).toBe((34 - 3 * Math.min(rank, 8)) / 2);
       expect(session.state.killingStreakFraction).toBe(0.5);
       expect(session.state.currentShootCost).toBe(33);
       expect(session.state.coins).toBe(previous.state.coins);
       expect(snapshot(restore(parseSave(snapshot(session))!))).toEqual(snapshot(session));
-      session.tick((20 - rank) / 2);
+      session.tick((34 - 3 * Math.min(rank, 8)) / 2);
       expect(session.state.killingStreakStacks).toBe(3);
       expect(session.state.killingStreakProgress).toBe(0);
     },
@@ -529,7 +530,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         ...saved,
         version: 13,
         abilities: saved.abilities.slice(0, 11),
-        state: { ...saved.state, killingStreakProgress: 20 },
+        state: { ...saved.state, killingStreakProgress: 24 },
       }),
     ).toBeNull();
   });

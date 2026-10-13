@@ -100,8 +100,8 @@ export function bootstrap(root: HTMLElement): () => void {
     field.showCoinDrop(id, coins, jackpot);
     audio.playSfx(SoundEffect.KILL_SPIDER);
   });
-  engine.setDamagePopCallback((id, hp, energy, blockedDamage, dodged) => {
-    field.showDamagePop(id, hp, energy, blockedDamage, dodged);
+  engine.setDamagePopCallback((id, hp, energy, blockedDamage, dodged, piercing) => {
+    field.showDamagePop(id, hp, energy, blockedDamage, dodged, piercing);
     if (hp > 0) audio.playSfx(SoundEffect.PLAYER_TAKE_DAMAGE);
     if (energy > 0) audio.playSfx(SoundEffect.BURNER_DRAIN);
     const state = engine.getState();
@@ -109,6 +109,9 @@ export function bootstrap(root: HTMLElement): () => void {
       audio.playSfx(SoundEffect.LOW_HP_WARNING);
   });
   engine.setAbsorbCallback(() => audio.playSfx(SoundEffect.ABSORB_DAMAGE));
+  engine.setResourceGainCallback((id, hp, energy, reason) => {
+    field.showResourceGain(id, hp, energy, reason);
+  });
   const persist = () => engine.persist();
   window.addEventListener('pagehide', persist);
   audio.playMusic(MusicTrack.MAIN_MENU);
