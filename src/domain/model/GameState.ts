@@ -9,6 +9,7 @@ import { Cooldown } from './Cooldown.js';
 import { Character } from './Character.js';
 import { Spider } from './Spider.js';
 import { Arrow } from './Arrow.js';
+import { activePlayerEffects, type PlayerEffect } from './PlayerEffect.js';
 
 export type ArmageddonPhase = 'none' | 'charging' | 'firing';
 export interface AimedFireWave {
@@ -79,6 +80,9 @@ export class GameState {
   }
   get maxHp(): number {
     return this.stats.maxHp;
+  }
+  get activeEffects(): readonly PlayerEffect[] {
+    return activePlayerEffects(this);
   }
   get maxEnergy(): number {
     return this.stats.maxEnergy;

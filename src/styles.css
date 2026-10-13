@@ -2491,69 +2491,149 @@ body {
   filter: hue-rotate(25deg);
 }
 
-.player-debuffs {
+.player-effects {
   display: grid;
-  grid-template-columns: repeat(3, 44px);
+  grid-template-rows: repeat(2, 66px);
   gap: 8px;
-  width: 166px;
-  height: 70px;
+  width: 206px;
+  height: 154px;
   box-sizing: border-box;
   flex: 0 0 auto;
-  padding: 8px;
+  padding: 6px;
   border: 1px solid #514048;
   border-radius: 8px;
   background: #17171c;
 }
-.player-debuff-slot {
-  width: 44px;
-  height: 52px;
-}
-.player-debuff[hidden] {
-  display: none;
-}
-.player-debuff {
-  position: relative;
+.player-effects__row {
   display: grid;
-  justify-items: center;
-  width: 44px;
-  height: 52px;
-  padding: 2px;
-  border: 1px solid #a34b51;
-  border-radius: 5px;
-  background: #321c25;
+  grid-template-rows: 18px 48px;
   color: #ffd3d6;
-  font-size: 0.72rem;
-  font-variant-numeric: tabular-nums;
-  cursor: help;
 }
-.player-debuff:focus-visible {
-  outline: 2px solid #f5d66b;
-  outline-offset: 2px;
+.player-effects__row--buff {
+  color: #c6eebd;
 }
-.player-debuff__icon,
-.player-debuff__icon svg {
+.player-effects__label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 16px;
+}
+.player-effects__badges {
+  display: grid;
+  grid-template-columns: repeat(5, 32px) 17px;
+  gap: 3px;
+}
+.player-effect-slot {
+  position: relative;
+  width: 32px;
+  height: 48px;
+}
+.player-effect-slot:not(.player-effect-slot--occupied)::before {
+  content: '';
   display: block;
   width: 32px;
   height: 32px;
+  border: 1px dashed #36333d;
+  border-radius: 5px;
+  background: #1c1b23;
 }
-.player-debuff__stacks {
-  position: absolute;
-  right: 1px;
-  top: 1px;
-  padding: 0 3px;
-  border-radius: 3px;
-  background: #172010;
-  font-weight: 700;
-}
-.player-debuff__stacks:empty {
+.player-effect[hidden],
+.player-effects__overflow[hidden] {
   display: none;
 }
-.player-debuff--poison {
-  border-color: #708e37;
-  background: #23321c;
-  color: #d8efa9;
+.player-effect {
+  display: grid;
+  grid-template-rows: 32px 16px;
+  justify-items: center;
+  width: 32px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: help;
 }
-.player-debuff--goldLock {
-  border-color: #a68836;
-  color: #f6db94;
+.player-effect:focus-visible,
+.player-effects__overflow:focus-visible {
+  outline: 2px solid #f5d66b;
+  outline-offset: 2px;
+  border-radius: 5px;
+}
+.player-effect__artwork {
+  position: relative;
+  display: block;
+  width: 32px;
+  height: 32px;
+  padding: 1px;
+  border: 1px solid #a34b51;
+  border-radius: 5px;
+  background: #321c25;
+}
+.player-effects__row--buff .player-effect__artwork {
+  border-color: #5d8e59;
+  background: #203522;
+}
+.player-effect__icon,
+.player-effect__icon svg {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+.player-effect__timer {
+  display: block;
+  width: 32px;
+  height: 16px;
+  font-size: 0.67rem;
+  line-height: 16px;
+  text-align: center;
+  white-space: nowrap;
+}
+.player-effect__stacks {
+  position: absolute;
+  right: 0;
+  top: 0;
+  min-width: 12px;
+  padding: 0 2px;
+  border-radius: 3px;
+  background: #111820;
+  color: #f8f4df;
+  font-size: 0.63rem;
+  font-weight: 700;
+  line-height: 13px;
+  text-align: center;
+}
+.player-effect__stacks:empty {
+  display: none;
+}
+.player-effects__overflow {
+  align-self: start;
+  width: 17px;
+  height: 32px;
+  padding: 0;
+  border: 1px dotted #6c5967;
+  border-radius: 5px;
+  background: #24202b;
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.59rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: help;
+}
+.player-effects__overflow-detail {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 8px;
+  padding-top: 8px;
+}
+.player-effects__overflow-detail + .player-effects__overflow-detail {
+  margin-top: 8px;
+  border-top: 1px solid #514048;
+}
+.player-effects__overflow-icon,
+.player-effects__overflow-icon svg {
+  display: block;
+  width: 24px;
+  height: 24px;
 }

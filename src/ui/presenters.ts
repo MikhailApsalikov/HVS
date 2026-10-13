@@ -1,10 +1,10 @@
 import type { AbilityId, TalentId } from '../domain/types.js';
 import type { GameState } from '../domain/model/GameState.js';
+import type { PlayerEffect } from '../domain/model/PlayerEffect.js';
 import type { ResolvedStats, StatId, StatModifier, PrimaryStatId } from '../domain/rules/stats.js';
-import { ATTRIBUTE_RULES, STATS } from '../domain/rules/stats.js';
+import { ANTI_AFK, ATTRIBUTE_RULES, STATS } from '../domain/rules/stats.js';
 import { ABILITIES, ABILITY_ORDER } from '../content/abilities.js';
 import { TALENTS, TALENT_ORDER } from '../content/talents.js';
-import { DEBUFFS } from '../content/debuffs.js';
 import { talentRankEffects, talentEffectValue } from '../domain/model/TalentSystem.js';
 
 export function escapeHtml(text: string): string {
@@ -256,27 +256,46 @@ export function coinsDescription(state: GameState): string {
     ].join('\n'),
   )}`;
 }
+function playerEffectDetail(effect: PlayerEffect): string {
+  switch (effect.id) {
+    case 'prep':
+      return `Дополнительно восстанавливает ${formatStat('energyRegen', effect.details!.energyRegen!)} энергии в секунду.`;
+    case 'lastHope':
+      return `Шанс блока: +${percentagePoints(effect.details!.blockChance!)}.\nСила блока: +${formatStat('blockPower', effect.details!.blockPower!)}.`;
+    case 'stand':
+      return 'Защищает от урона пауков, выжигания энергии и снятия баффов очистителем.';
+    case 'adrenaline':
+      return `Выстрелы не расходуют энергию. Перезарядка лучников сокращена на ${formatStat('adrenaline.shootCooldownReduction', effect.details!.shootCooldownReduction!)}%.\nБесплатных выстрелов осталось: ${effect.stacks}.`;
+    case 'eagleEye':
+      return `Выстрелы лучников гарантированно критические.\nКритических выстрелов осталось: ${effect.stacks}.`;
+    case 'goldLock':
+      return 'Пассивный доход отключён. Награды за пауков сохраняются.';
+    case 'healingReduction':
+      return `Регенерация здоровья и получаемое лечение: ${formatStat('healingReceived', effect.details!.healingReceived!)} от обычного.`;
+    case 'poison':
+      return `Броня: ${effect.details!.armorPercent}%.\nВы теряете ${formatStat('poison.tickDamage', effect.details!.tickDamage!)} здоровья за тик (каждые ${effect.details!.tickInterval} секунды). Урон игнорирует защиту.\nСледующий тик через ${formatSeconds(effect.details!.nextTick!)} с.\nСтаков яда: ${effect.stacks}.`;
+    case 'antiAfk':
+      return `Входящий урон увеличен на ${formatStat('incomingDamage', effect.details!.damagePercent!)}%.\nСтаков штрафа: ${effect.stacks}.\nПосле расходования энергии штраф снимается через ${formatSeconds(ANTI_AFK.recoveryDuration)} с, если бездействие не повторится.`;
+  }
+}
+
+export function playerEffectDescription(effect: PlayerEffect): string {
+  const duration =
+    effect.remaining === null
+      ? 'Действует до восстановления активности.'
+      : `Осталось ${formatSeconds(effect.remaining)} с.`;
+  return `<div class="tooltip__title">${escapeHtml(effect.name)}</div>${descriptionParagraphs(playerEffectDetail(effect))}<p>${duration}</p>`;
+}
+
 export function activeDebuffs(state: GameState) {
-  return [
-    {
-      id: 'goldLock',
-      name: DEBUFFS.goldLock.name,
-      timer: state.goldLockTimer,
-      detail: 'Пассивный доход отключён. Награды за пауков сохраняются.',
-    },
-    {
-      id: 'healingReduction',
-      name: DEBUFFS.healingReduction.name,
-      timer: state.healingReductionTimer,
-      detail: `Регенерация здоровья и получаемое лечение: ${formatStat('healingReceived', state.stats.healingReceived)} от обычного.`,
-    },
-    {
-      id: 'poison',
-      name: `${DEBUFFS.poison.name} ×${state.poisonDamage.length}`,
-      timer: state.poisonTimer,
-      detail: `Броня: ${DEBUFFS.poison.armorPercent}%.\nВы теряете ${formatStat('poison.tickDamage', state.stats['poison.tickDamage'])} здоровья за тик (каждые ${DEBUFFS.poison.interval} секунды). Урон игнорирует защиту.\nСледующий тик через ${formatSeconds(state.poisonTickTimer)} с.`,
-    },
-  ].filter(({ timer }) => timer > 0);
+  return state.activeEffects
+    .filter((effect) => effect.kind === 'debuff' && effect.source === 'spider')
+    .map((effect) => ({
+      id: effect.id,
+      name: effect.id === 'poison' ? `${effect.name} ×${effect.stacks}` : effect.name,
+      timer: effect.remaining!,
+      detail: playerEffectDetail(effect),
+    }));
 }
 
 export function shootDescription(state: GameState, lane: number): string {

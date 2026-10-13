@@ -1,6 +1,7 @@
 import { DEBUFFS } from '../../content/debuffs.js';
 import { SPIDERS } from '../../content/spiders.js';
 import type { GameState } from '../model/GameState.js';
+import { clearPlayerEffects } from '../model/PlayerEffect.js';
 import type { Spider } from '../model/Spider.js';
 import type { StatModifier } from '../rules/stats.js';
 
@@ -67,18 +68,11 @@ export function applySpiderDebuff(state: GameState, spider: Spider): boolean {
 }
 
 export function clearSpiderDebuffs(state: GameState): void {
-  state.goldLockTimer = 0;
-  state.healingReductionTimer = 0;
-  state.poisonTimer = 0;
-  state.poisonTickTimer = 0;
-  state.poisonDamage = [];
+  clearPlayerEffects(state, (effect) => effect.kind === 'debuff' && effect.source === 'spider');
 }
 
 export function clearDebuffs(state: GameState): void {
-  clearSpiderDebuffs(state);
-  state.antiAfkIdleTimer = 0;
-  state.antiAfkStacks = 0;
-  state.antiAfkRecoveryTimer = 0;
+  clearPlayerEffects(state, (effect) => effect.kind === 'debuff');
 }
 
 export function nextDebuffBoundary(state: GameState): number {

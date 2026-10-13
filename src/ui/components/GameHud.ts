@@ -14,7 +14,7 @@ import {
 } from '../presenters.js';
 import { TooltipManager } from './TooltipManager.js';
 import { KillingStreakEffect } from './KillingStreakEffect.js';
-import { DebuffPanel } from './DebuffPanel.js';
+import { PlayerEffectPanel } from './PlayerEffectPanel.js';
 
 export class HUD {
   private state: GameState | null = null;
@@ -25,7 +25,7 @@ export class HUD {
   private readonly level = document.createElement('div');
   private readonly attributes = document.createElement('div');
   private readonly abilities = document.createElement('div');
-  private readonly debuffs: DebuffPanel;
+  private readonly effects: PlayerEffectPanel;
   private readonly killingStreak: KillingStreakEffect;
 
   constructor(
@@ -34,7 +34,7 @@ export class HUD {
   ) {
     container.className = 'hud';
     this.killingStreak = new KillingStreakEffect(sprites);
-    this.debuffs = new DebuffPanel(sprites);
+    this.effects = new PlayerEffectPanel(sprites);
     const resources = document.createElement('div');
     resources.className = 'resource-bars';
     for (const [id, label] of [
@@ -108,7 +108,7 @@ export class HUD {
       this.coins,
       this.level,
       this.attributes,
-      this.debuffs.container,
+      this.effects.container,
       this.abilities,
     );
     container.append(content, this.killingStreak.container);
@@ -119,7 +119,7 @@ export class HUD {
   render(state: GameState): void {
     this.state = state;
     this.killingStreak.render(state);
-    this.debuffs.render(state);
+    this.effects.render(state);
     for (const [id, current, max] of [
       ['hp', state.hp, state.maxHp],
       ['energy', state.energy, state.maxEnergy],

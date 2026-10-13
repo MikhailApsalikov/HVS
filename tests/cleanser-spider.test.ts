@@ -48,10 +48,8 @@ function expectBuffsCleared(session: GameSession) {
     adrenalineShots: 0,
     eagleEyeTimer: 0,
     eagleEyeShots: 0,
-    killingStreakStacks: 0,
-    killingStreakProgress: 0,
-    killingStreakDecayProgress: 0,
   });
+  expect(session.state.activeEffects.filter((effect) => effect.kind === 'buff')).toEqual([]);
 }
 
 describe('cleanser spiders through session ticks', () => {
@@ -72,9 +70,11 @@ describe('cleanser spiders through session ticks', () => {
     session.tick(0.001);
     expectBuffsCleared(session);
     expect(session.state.hp).toBe(hp - 100);
+    expect(session.state.killingStreakStacks).toBe(2);
+    expect(session.state.killingStreakProgress).toBe(0);
     expect(session.state.stats).toMatchObject({ shootCooldown, blockChance, blockPower });
     expect(session.state.currentEnergyRegen).toBe(session.state.stats.energyRegen);
-    expect(session.state.currentShootCost).toBe(session.state.stats.shootCost);
+    expect(session.state.currentShootCost).toBe(session.state.stats.shootCost - 2);
     expect(session.talents.toSaveData()).toEqual(talents);
     for (const [id, remaining] of cooldowns)
       expect(session.state.getAbility(id).remainingCooldown).toBeCloseTo(
@@ -90,7 +90,7 @@ describe('cleanser spiders through session ticks', () => {
     session.tick(1);
     expect(session.state.energy).toBe(500);
     expect(session.shootLane(0)).toBe('shot');
-    expect(session.state.energy).toBe(500 - session.state.stats.shootCost);
+    expect(session.state.energy).toBe(500 - session.state.currentShootCost);
   });
 
   it.each(['zero damage', 'full block', 'damage reduction', 'partial block'] as const)(
@@ -114,9 +114,24 @@ describe('cleanser spiders through session ticks', () => {
       expectBuffsCleared(session);
       if (defense === 'partial block') expect(session.state.hp).toBeLessThan(before);
       else expect(session.state.hp).toBe(before);
+      expect(session.state.killingStreakStacks).toBe(defense === 'partial block' ? 7 : 8);
+      expect(session.state.killingStreakDecayProgress).toBeCloseTo(0.501);
       expect(spider.reachedCastle).toBe(true);
     },
   );
+
+  it('keeps kill streak progress when cleansing causes no health damage', () => {
+    const session = arena();
+    applyBuffs(session);
+    session.state.killingStreakStacks = 3;
+    session.state.killingStreakProgress = 4;
+    addSpider(session, 'cleanser', 0, 1, 0);
+    session.tick(0.001);
+    expectBuffsCleared(session);
+    expect(session.state.killingStreakStacks).toBe(3);
+    expect(session.state.killingStreakProgress).toBeCloseTo(4.001);
+    expect(session.state.killingStreakDecayProgress).toBe(0);
+  });
 
   it.each([0, 100])('divine shield protects buffs from a cleanser with %i damage', (damage) => {
     const session = arena();
@@ -165,6 +180,8 @@ describe('cleanser spiders through session ticks', () => {
     expect(session.state.poisonDamage).toEqual([100]);
     expect(session.state.maxEnergy).toBe(maxEnergy);
     expect(session.state.killingStreakLearned).toBe(true);
+    expect(session.state.killingStreakStacks).toBe(8);
+    expect(session.state.killingStreakDecayProgress).toBeCloseTo(0.501);
   });
 
   it('round-trips a cleanser before the breach and removes buffs after loading', () => {
@@ -179,6 +196,8 @@ describe('cleanser spiders through session ticks', () => {
     cleanser.y = 1;
     loaded.tick(0.001);
     expectBuffsCleared(loaded);
+    expect(loaded.state.killingStreakStacks).toBe(7);
+    expect(loaded.state.killingStreakDecayProgress).toBeCloseTo(0.501);
   });
 });
 

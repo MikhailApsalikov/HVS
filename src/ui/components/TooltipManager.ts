@@ -1,6 +1,7 @@
 export class TooltipManager {
   private static _instance: TooltipManager | null = null;
   private readonly _el: HTMLElement;
+  private currentAnchor: HTMLElement | null = null;
 
   private constructor() {
     this._el = document.createElement('div');
@@ -16,6 +17,7 @@ export class TooltipManager {
   }
 
   public show(anchor: HTMLElement, html: string): void {
+    this.currentAnchor = anchor;
     this._el.innerHTML = html;
     this._el.classList.add('game-tooltip--visible');
 
@@ -42,7 +44,13 @@ export class TooltipManager {
     this._el.style.top = `${top}px`;
   }
 
-  public hide(): void {
+  public isShowing(anchor: HTMLElement): boolean {
+    return this.currentAnchor === anchor;
+  }
+
+  public hide(anchor?: HTMLElement): void {
+    if (anchor && !this.isShowing(anchor)) return;
     this._el.classList.remove('game-tooltip--visible');
+    this.currentAnchor = null;
   }
 }
