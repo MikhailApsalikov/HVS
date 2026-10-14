@@ -10,18 +10,6 @@ export type {
 
 const COMMON_ITEMS: readonly ItemConfig[] = [
   {
-    id: 'c-shield',
-    name: 'Деревянный щит',
-    rarity: 'common',
-    stats: [{ type: 'armor', value: 50 }],
-  },
-  {
-    id: 'c022',
-    name: 'Лечебный настой',
-    rarity: 'common',
-    stats: [{ type: 'hpRegen', value: 1 }],
-  },
-  {
     id: 'c046',
     name: 'Рунный щит',
     rarity: 'common',
@@ -32,24 +20,6 @@ const COMMON_ITEMS: readonly ItemConfig[] = [
     name: 'Адамантовый щит',
     rarity: 'common',
     stats: [{ type: 'armor', value: 900 }],
-  },
-  {
-    id: 'c001',
-    name: 'Аптечные бинты',
-    rarity: 'common',
-    stats: [{ type: 'endurance', value: 5 }],
-  },
-  {
-    id: 'c001-agility',
-    name: 'Перчатки стрелка',
-    rarity: 'common',
-    stats: [{ type: 'agility', value: 5 }],
-  },
-  {
-    id: 'c001-intellect',
-    name: 'Записки ученика',
-    rarity: 'common',
-    stats: [{ type: 'intellect', value: 5 }],
   },
   {
     id: 'c009',
@@ -100,12 +70,6 @@ const COMMON_ITEMS: readonly ItemConfig[] = [
     stats: [{ type: 'hpRegen', value: 6 }],
   },
   {
-    id: 'c056',
-    name: 'Энергетическая склянка',
-    rarity: 'common',
-    stats: [{ type: 'maxEnergy', value: 10 }],
-  },
-  {
     id: 'c060',
     name: 'Амулет мудреца',
     rarity: 'common',
@@ -120,6 +84,12 @@ const COMMON_ITEMS: readonly ItemConfig[] = [
   {
     id: 'c068',
     name: 'Стимулятор',
+    rarity: 'common',
+    stats: [{ type: 'energyRegen', value: 0.5 }],
+  },
+  {
+    id: 'c-regen-flow',
+    name: 'Настой ясности',
     rarity: 'common',
     stats: [{ type: 'energyRegen', value: 1 }],
   },
@@ -139,7 +109,25 @@ const COMMON_ITEMS: readonly ItemConfig[] = [
     id: 'c088',
     name: 'Наконечник меткости',
     rarity: 'common',
-    stats: [{ type: 'criticalShotChance', value: 0.01 }],
+    stats: [{ type: 'criticalShotChance', value: 0.02 }],
+  },
+  {
+    id: 'c-crit-focus',
+    name: 'Прицел охотника',
+    rarity: 'common',
+    stats: [{ type: 'criticalShotChance', value: 0.03 }],
+  },
+  {
+    id: 'c-block-charm',
+    name: 'Оберег отражения',
+    rarity: 'common',
+    stats: [{ type: 'blockChance', value: 0.02 }],
+  },
+  {
+    id: 'c-block-bracelet',
+    name: 'Браслет стража',
+    rarity: 'common',
+    stats: [{ type: 'blockChance', value: 0.03 }],
   },
 ];
 
@@ -223,6 +211,12 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     stats: [{ type: 'energyRegen', value: 2 }],
   },
   {
+    id: 'r-regen-potion',
+    name: 'Эликсир сосредоточения',
+    rarity: 'rare',
+    stats: [{ type: 'energyRegen', value: 1.5 }],
+  },
+  {
     id: 'c086',
     name: 'Двойной адреналин',
     rarity: 'rare',
@@ -232,7 +226,37 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     id: 'r018',
     name: 'Серебряный прицел',
     rarity: 'rare',
-    stats: [{ type: 'criticalShotChance', value: 0.02 }],
+    stats: [{ type: 'criticalShotChance', value: 0.04 }],
+  },
+  {
+    id: 'r-block-sigil',
+    name: 'Печать часового',
+    rarity: 'rare',
+    stats: [{ type: 'blockChance', value: 0.04 }],
+  },
+  {
+    id: 'r-block-rune',
+    name: 'Руна бастиона',
+    rarity: 'rare',
+    stats: [{ type: 'blockChance', value: 0.05 }],
+  },
+  {
+    id: 'r-block-vest',
+    name: 'Жилет дозорного',
+    rarity: 'rare',
+    stats: [
+      { type: 'endurance', value: 25 },
+      { type: 'blockChance', value: 0.03 },
+    ],
+  },
+  {
+    id: 'r-block-gauntlets',
+    name: 'Рукавицы бастиона',
+    rarity: 'rare',
+    stats: [
+      { type: 'endurance', value: 50 },
+      { type: 'blockChance', value: 0.05 },
+    ],
   },
   {
     id: 'r-coins',
@@ -317,8 +341,8 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Оберег стрелка',
     rarity: 'rare',
     stats: [
-      { type: 'agility', value: 50 },
-      { type: 'criticalShotChance', value: 0.01 },
+      { type: 'agility', value: 25 },
+      { type: 'criticalShotChance', value: 0.03 },
     ],
   },
   {
@@ -326,8 +350,8 @@ const RARE_ITEMS: readonly ItemConfig[] = [
     name: 'Талисман меткости',
     rarity: 'rare',
     stats: [
-      { type: 'agility', value: 80 },
-      { type: 'criticalShotChance', value: 0.02 },
+      { type: 'agility', value: 50 },
+      { type: 'criticalShotChance', value: 0.05 },
     ],
   },
   {
@@ -445,7 +469,42 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     id: 'e008',
     name: 'Око сокола',
     rarity: 'epic',
-    stats: [{ type: 'criticalShotChance', value: 0.04 }],
+    stats: [{ type: 'criticalShotChance', value: 0.08 }],
+  },
+  {
+    id: 'e-block-heart',
+    name: 'Сердце бастиона',
+    rarity: 'epic',
+    stats: [{ type: 'blockChance', value: 0.08 }],
+  },
+  {
+    id: 'e-block-warden',
+    name: 'Доспех несменного стража',
+    rarity: 'epic',
+    stats: [
+      { type: 'endurance', value: 130 },
+      { type: 'blockChance', value: 0.06 },
+    ],
+  },
+  {
+    id: 'e-block-medic',
+    name: 'Панцирь восстановления',
+    rarity: 'epic',
+    stats: [
+      { type: 'endurance', value: 100 },
+      { type: 'blockChance', value: 0.04 },
+      { type: 'hpRegen', value: 6 },
+    ],
+  },
+  {
+    id: 'e-block-income',
+    name: 'Знак хранителя казны',
+    rarity: 'epic',
+    stats: [
+      { type: 'endurance', value: 140 },
+      { type: 'blockChance', value: 0.03 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
   },
   {
     id: 'e009',
@@ -498,7 +557,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     rarity: 'epic',
     stats: [
       { type: 'agility', value: 130 },
-      { type: 'criticalShotChance', value: 0.03 },
+      { type: 'criticalShotChance', value: 0.06 },
     ],
   },
   {
@@ -524,8 +583,8 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     name: 'Реликвия концентрации',
     rarity: 'epic',
     stats: [
-      { type: 'intellect', value: 150 },
-      { type: 'energyRegen', value: 2 },
+      { type: 'intellect', value: 110 },
+      { type: 'energyRegen', value: 2.5 },
     ],
   },
   {
@@ -602,7 +661,7 @@ const EPIC_ITEMS: readonly ItemConfig[] = [
     stats: [
       { type: 'agility', value: 100 },
       { type: 'energyPerKill', value: 2 },
-      { type: 'criticalShotChance', value: 0.02 },
+      { type: 'criticalShotChance', value: 0.04 },
     ],
   },
   {
@@ -710,6 +769,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
       { type: 'agility', value: 25 },
       { type: 'intellect', value: 25 },
       { type: 'hpRegen', value: 5 },
+      { type: 'blockChance', value: 0.04 },
     ],
     abilityMod: {
       abilityId: 'stand',
@@ -819,7 +879,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     rarity: 'legendary',
     stats: [
       { type: 'agility', value: 200 },
-      { type: 'criticalShotChance', value: 0.03 },
+      { type: 'criticalShotChance', value: 0.05 },
       { type: 'coinsPerKill', value: 2 },
     ],
     abilityMod: {
@@ -978,7 +1038,7 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     rarity: 'legendary',
     stats: [
       { type: 'endurance', value: 220 },
-      { type: 'armor', value: 4000 },
+      { type: 'blockChance', value: 0.06 },
       { type: 'coinsPerKill', value: 2 },
     ],
     abilityMod: {
@@ -1022,11 +1082,11 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
   },
   {
     id: 'l024',
-    name: 'Око сокола',
+    name: 'Взгляд небесного охотника',
     rarity: 'legendary',
     stats: [
       { type: 'agility', value: 220 },
-      { type: 'criticalShotChance', value: 0.02 },
+      { type: 'criticalShotChance', value: 0.03 },
       { type: 'coinsPerKill', value: 2 },
     ],
     abilityMod: {
@@ -1066,6 +1126,21 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
       value: 2,
       description:
         '«Прицельный огонь»: каждый лучник делает ещё 2 выстрела — на 7-й и 9-й секундах.',
+    },
+  },
+  {
+    id: 'l027',
+    name: 'Лук тройного удара',
+    rarity: 'legendary',
+    stats: [
+      { type: 'agility', value: 240 },
+      { type: 'criticalShotChance', value: 0.1 },
+    ],
+    abilityMod: {
+      abilityId: 'improvedCriticalShot',
+      modType: 'effectBoost',
+      value: 0.36,
+      description: 'Увеличивает шанс тройного критического выстрела на 36%.',
     },
   },
 ];

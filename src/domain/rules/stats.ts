@@ -141,7 +141,7 @@ export const STATS = {
   'lastHope.cost': stat('Стоимость: Блок последней надежды', 45, integer),
   'lastHope.cooldown': stat('Перезарядка: Блок последней надежды, с', 40, duration),
   'lastHope.duration': stat('Длительность: Блок последней надежды, с', 6, duration),
-  'lastHope.blockChance': stat('Прибавка к шансу блока', 0.5, probability),
+  'lastHope.blockChance': stat('Прибавка к шансу блока', 0.4, probability),
   'lastHope.blockPower': stat('Прибавка к силе блока от выносливости', 0, integer),
   'armageddon.cost': stat('Стоимость: Армагеддон', 100, integer),
   'armageddon.cooldown': stat('Перезарядка: Армагеддон, с', 180, duration),

@@ -139,7 +139,7 @@ describe('legacy feature inventory captured before rewrite', () => {
         permafrost: { maxRanks: 5, unlocksAtLevel: 20 },
         dutyBound: { maxRanks: 5, unlocksAtLevel: 40 },
         divineShield: { maxRanks: 1, unlocksAtLevel: 30 },
-        shieldBlock: { maxRanks: 8, unlocksAtLevel: 10 },
+        shieldBlock: { maxRanks: 7, unlocksAtLevel: 10 },
         lastHope: { maxRanks: 1, unlocksAtLevel: 20 },
         improvedLastHope: { maxRanks: 5, unlocksAtLevel: 30 },
         bestDefense: { maxRanks: 10, unlocksAtLevel: 40 },

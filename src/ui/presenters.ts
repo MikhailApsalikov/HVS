@@ -219,6 +219,7 @@ export function resourceDescription(state: GameState, id: string): string {
     return `<div class="tooltip__title">Здоровье</div>${descriptionParagraphs(
       [
         state.stats.hpRegen > 0 ? `Восстанавливается ${value('hpRegen')} в секунду.` : '',
+        state.rules.shieldBlockLearned ? `Общий шанс блока — ${value('blockChance')}.` : '',
         `Получаемое лечение и регенерация: ${value('healingReceived')}.`,
         state.stats.damageFactor < 1
           ? `Общее снижение урона - ${formatStat('damageFactor', 1 - state.stats.damageFactor)}.`
@@ -307,6 +308,14 @@ export function shootDescription(state: GameState, lane: number): string {
       'Выпускает стрелу, которая поражает первого паука на этой линии.',
       state.currentShootCost > 0
         ? `Выстрел расходует ${formatStat('shootCost', state.currentShootCost)} энергии.`
+        : '',
+      (state.rules.criticalShotLearned || state.eagleEyeActive) &&
+      state.currentCriticalShotChance > 0
+        ? `Общий шанс критического выстрела — ${formatStat('criticalShotChance', state.currentCriticalShotChance)}.`
+        : '',
+      (state.rules.criticalShotLearned || state.eagleEyeActive) &&
+      state.currentImprovedCriticalShotChance > 0
+        ? `Шанс тройного крита среди критических выстрелов — ${formatStat('improvedCriticalShotChance', state.currentImprovedCriticalShotChance)}.`
         : '',
       state.eagleEyeActive
         ? `«Зоркость»: осталось ${state.eagleEyeShots} критических выстрелов.`

@@ -236,12 +236,13 @@ describe('primary attributes through the session API', () => {
     session.state.pendingTalentPoints = 2;
     session.upgradeTalent('improvedEndurance');
     session.upgradeTalent('improvedEndurance');
-    session.buyItem('c001');
+    session.state.coins = 1000;
+    expect(session.buyItem('c009')).toBe(true);
     expect(session.state.stats).toMatchObject({
-      endurance: 35,
-      maxHp: 100,
-      armor: 70,
-      hpRegen: 1.4,
+      endurance: 57,
+      maxHp: 270,
+      armor: 114,
+      hpRegen: 2.28,
     });
   });
 });

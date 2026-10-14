@@ -29,7 +29,7 @@ function defense(level = 60, random = () => 0.999999): GameSession {
   buy(session, 'greed', 5);
   buy(session, 'warriorArmor', 5);
   buy(session, 'spiderArmor', 10);
-  buy(session, 'shieldBlock', 8);
+  buy(session, 'shieldBlock', 7);
   session.state.levelTimer = session.state.levelTimerMax = session.state.rules.levelDuration(level);
   return session;
 }
@@ -376,7 +376,7 @@ describe('new defense talents through session commands', () => {
     expect(loaded.state.adrenalineShots).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(0);
     const current = snapshot(loaded);
-    expect(current.version).toBe(20);
+    expect(current.version).toBe(21);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 

@@ -80,7 +80,7 @@ describe('combat balance through session commands', () => {
         { id: 'endurance', rank: 7 },
         { id: 'improvedEndurance', rank: 7 },
         { id: 'spiderArmor', rank: 10 },
-        { id: 'shieldBlock', rank: 8 },
+        { id: 'shieldBlock', rank: 7 },
         { id: 'greed', rank: 3 },
         { id: 'magicArmor', rank: 2 },
       ]);

@@ -5,7 +5,6 @@ import { parseSave, restore, snapshot } from '../src/domain/save.js';
 
 describe('armor equipment through session commands', () => {
   it.each([
-    ['c-shield', 'common', 50, 50],
     ['c046', 'common', 300, 300],
     ['c055', 'common', 900, 900],
     ['r009', 'rare', 2500, 2500],

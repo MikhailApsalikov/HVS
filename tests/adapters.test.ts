@@ -124,7 +124,7 @@ describe('application orchestration', () => {
     (search) => {
       const session = new GameSession('normal', () => 0.999999, { level: 7, coins: 300 });
       session.upgradeTalent('endurance');
-      session.buyItem('c001');
+      expect(session.buyItem('c046')).toBe(true);
       const saves = new SaveSystem(new MemoryStorage());
       saves.save(session);
       const engine = new GameEngine(
@@ -143,7 +143,7 @@ describe('application orchestration', () => {
         initialTalentPick: true,
       });
       expect(engine.getTalentSystem()!.getRank('endurance')).toBe(1);
-      expect(engine.getItemSystem()!.inventory).toEqual(['c001']);
+      expect(engine.getItemSystem()!.inventory).toEqual(['c046']);
       engine.stopLoop();
     },
   );
@@ -164,7 +164,8 @@ describe('application orchestration', () => {
     frames.advance(0);
     expect(phases).toHaveBeenCalledWith('levelUp', engine.getState());
     expect(engine.upgradeTalent('endurance')).toBe(true);
-    expect(engine.buyItem('c001')).toBe(true);
+    engine.getState()!.coins = 1000;
+    expect(engine.buyItem('c046')).toBe(true);
     expect(engine.sellItem(0)).toBe(true);
     expect(engine.confirmLevelUp()).toBe(true);
     frames.advance(16.67);

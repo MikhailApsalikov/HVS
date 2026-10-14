@@ -28,7 +28,7 @@ describe('saves and migration', () => {
       };
       const parsed = parseSave(previous)!;
       expect(parsed).not.toBeNull();
-      expect(parsed.version).toBe(20);
+      expect(parsed.version).toBe(21);
       const loaded = restore(parsed, () => 0.999999);
       expect(loaded.talents.getRank('criticalShot')).toBe(7);
       expect(loaded.talents.getRank('killingStreak')).toBe(Math.min(rank, 8));
@@ -79,7 +79,7 @@ describe('saves and migration', () => {
   it('restores a higher-level start during talent selection and after entering combat', () => {
     const session = new GameSession('normal', () => 0.999999, { level: 50, coins: 1000 });
     expect(session.upgradeTalent('endurance')).toBe(true);
-    expect(session.buyItem('c001')).toBe(true);
+    expect(session.buyItem('c009')).toBe(true);
     const data = snapshot(session);
     const parsed = parseSave(JSON.parse(JSON.stringify(data)));
     expect(parsed).not.toBeNull();
@@ -114,9 +114,9 @@ describe('saves and migration', () => {
       ],
     };
     const loaded = restore(parseSave(previous)!);
-    expect(loaded.talents.getRank('shieldBlock')).toBe(8);
-    expect(loaded.state.stats).toMatchObject({ blockChance: 0.4, blockPower: 54 });
-    expect(loaded.state.pendingTalentPoints).toBe(session.state.pendingTalentPoints + 4);
+    expect(loaded.talents.getRank('shieldBlock')).toBe(7);
+    expect(loaded.state.stats).toMatchObject({ blockChance: 0.42, blockPower: 54 });
+    expect(loaded.state.pendingTalentPoints).toBe(session.state.pendingTalentPoints + 5);
     expect(loaded.state.isAbilityUnlocked('lastHope')).toBe(true);
     expect(loaded.talents.getRank('hunterReward')).toBe(2);
     expect(loaded.talents.getRank('greed')).toBe(0);
@@ -138,19 +138,19 @@ describe('saves and migration', () => {
           { id: 'hunterArsenal', rank: 2 },
           { id: 'healBoost', rank: 2 },
         ],
-        inventory: ['c001', 'c001', 'missing', 'c009', 'c001', 'c009'],
+        inventory: ['c015', 'c015', 'missing', 'c009', 'c015', 'c009'],
         abilities: data.abilities.slice(0, version < 5 ? 8 : 9),
       })!;
-      expect(parsed.version).toBe(20);
+      expect(parsed.version).toBe(21);
       const loaded = restore(parsed);
-      expect(loaded.items.inventory).toEqual(['c001', 'c009']);
+      expect(loaded.items.inventory).toEqual(['c015', 'c009']);
       expect(loaded.state.coins).toBe(
-        data.state.coins + ITEM_MAP.get('c001')!.price * 2 + ITEM_MAP.get('c009')!.price,
+        data.state.coins + ITEM_MAP.get('c015')!.price * 2 + ITEM_MAP.get('c009')!.price,
       );
       expect(loaded.talents.getRank('healBoost')).toBe(2);
       expect(loaded.talents.branchPoints('defense')).toBe(2);
       loaded.state.phase = 'levelUp';
-      expect(loaded.buyItem('c001')).toBe(false);
+      expect(loaded.buyItem('c015')).toBe(false);
       const saved = snapshot(loaded);
       expect(snapshot(restore(parseSave(saved)!))).toEqual(saved);
     },
@@ -167,11 +167,11 @@ describe('saves and migration', () => {
       pendingTalentPoints: 0,
       record: 1,
       talents: [],
-      inventory: ['c001', 'c001'],
+      inventory: ['c015', 'c015'],
     })!;
     const loaded = restore(data);
-    expect(loaded.items.inventory).toEqual(['c001']);
-    expect(loaded.state.coins).toBe(5 + ITEM_MAP.get('c001')!.price);
+    expect(loaded.items.inventory).toEqual(['c015']);
+    expect(loaded.state.coins).toBe(5 + ITEM_MAP.get('c015')!.price);
     expect(snapshot(restore(parseSave(snapshot(loaded))!))).toEqual(snapshot(loaded));
   });
   it('migrates version 3 bases, equipment, branch ranks and timer without losing the run', () => {
@@ -193,7 +193,7 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(20);
+    expect(parsed.version).toBe(21);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
       endurance: 79,
@@ -274,14 +274,14 @@ describe('saves and migration', () => {
       pendingTalentPoints: 1,
       record: 21,
       talents: [{ id: 'tireless', rank: 2 }],
-      inventory: ['c001'],
+      inventory: ['c009'],
     });
     expect(data).not.toBeNull();
     const loaded = restore(data!);
     expect(loaded.state.coins).toBe(123);
     expect(loaded.state.stats.energyRegen).toBe(10.54);
     expect(loaded.state.phase).toBe('levelUp');
-    expect(loaded.state.maxHp).toBe(590);
+    expect(loaded.state.maxHp).toBe(790);
     loaded.upgradeTalent('agility');
     loaded.confirmLevelUp();
     expect(loaded.state.level).toBe(21);

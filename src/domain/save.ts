@@ -90,7 +90,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 20;
+  readonly version: 21;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -107,7 +107,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 20,
+    version: 21,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -269,7 +269,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
   if (
-    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].includes(
+    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21].includes(
       value.version as number,
     ) ||
     !object(value.state)
@@ -525,7 +525,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     return upgradeTalentBalanceSave(
       {
         ...value,
-        version: 20,
+        version: 21,
         state: {
           ...state,
           poisonTimer: Math.min(
@@ -605,7 +605,9 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     return snapshot(session);
   }
   if (value.version === 19)
-    return upgradeTalentBalanceSave({ ...value, version: 20 } as unknown as SaveData, 19);
+    return upgradeTalentBalanceSave({ ...value, version: 21 } as unknown as SaveData, 19);
+  if (value.version === 20)
+    return snapshot(restore({ ...value, version: 21 } as unknown as SaveData));
   return value as unknown as SaveData;
 }
 
@@ -640,7 +642,7 @@ function upgradeShootingSave(value: JsonObject): SaveData {
 function upgradeDebuffSave(value: JsonObject): SaveData {
   return {
     ...value,
-    version: 20,
+    version: 21,
     state: {
       ...(value.state as JsonObject),
       goldLockTimer: 0,

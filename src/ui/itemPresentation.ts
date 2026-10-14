@@ -47,6 +47,7 @@ const STAT_NAMES: Record<Exclude<StatType, 'coinsPerKill'>, string> = {
   maxEnergy: 'максимальной энергии',
   energyPerKill: 'энергии за убийство',
   criticalShotChance: 'шанса критического выстрела',
+  blockChance: 'шанса блока',
 };
 
 export function itemStatLines(item: ItemDefinition): string[] {
@@ -68,7 +69,7 @@ export function itemAbilityDescription(item: ItemDefinition): string | null {
   const effect = itemModifiers(item, 'preview')[item.stats.length];
   if (!effect || !item.abilityMod) return null;
   const id = item.abilityMod.abilityId;
-  const name = `«${id === 'killingStreak' ? TALENTS[id].name : ABILITIES[id].name}»`;
+  const name = `«${id === 'killingStreak' || id === 'improvedCriticalShot' ? TALENTS[id].name : ABILITIES[id].name}»`;
   const value = Math.abs(effect.value);
   const amount = (effect.kind === 'percent' ? `${value}%` : formatStat(effect.stat, value)).replace(
     '.',
@@ -93,5 +94,7 @@ export function itemAbilityDescription(item: ItemDefinition): string | null {
     return `Увеличивает количество здоровья, восстанавливаемого способностью ${name}, на ${amount}.`;
   if (effect.stat === 'prep.restore')
     return `Увеличивает количество энергии, восстанавливаемой способностью ${name}, на ${amount}.`;
+  if (effect.stat === 'improvedCriticalShotChance')
+    return `Увеличивает шанс тройного крита среди критических выстрелов на ${amount}.`;
   return item.abilityMod.description;
 }

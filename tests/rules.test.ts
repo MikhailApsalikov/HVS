@@ -52,7 +52,7 @@ describe('talent strength and independent sources', () => {
     session.talents.loadFromSave([{ id: 'tireless', rank: 2 }]);
     session.items.buyItem('c068');
     session.refreshStats();
-    expect(session.state.stats.energyRegen).toBe(11.16);
+    expect(session.state.stats.energyRegen).toBe(10.66);
   });
   it('all modifiers of different equipped items work on the same ability', () => {
     const session = new GameSession('normal');

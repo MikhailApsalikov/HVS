@@ -12,22 +12,9 @@ export function createArrow(
   guaranteedCritical = false,
   eagleEyeActive = state.eagleEyeActive,
 ): Arrow {
-  const critical =
-    guaranteedCritical ||
-    (state.stats.criticalShotChance > 0 && random() < state.stats.criticalShotChance);
-  const improvedChance = state.rules.value(
-    'improvedCriticalShotChance',
-    undefined,
-    eagleEyeActive
-      ? [
-          {
-            source: 'ability:eagleEye',
-            kind: 'flat',
-            value: state.stats['eagleEye.improvedCriticalShotChance'],
-          },
-        ]
-      : [],
-  );
+  const criticalChance = state.rules.criticalShotChance();
+  const critical = guaranteedCritical || (criticalChance > 0 && random() < criticalChance);
+  const improvedChance = state.rules.improvedCriticalShotChance(eagleEyeActive);
   const improved = critical && improvedChance > 0 && random() < improvedChance;
   return new Arrow(
     state.newId('arrow'),

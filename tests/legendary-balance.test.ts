@@ -35,7 +35,7 @@ describe('will to win in shooting', () => {
       { id: 'improvedEndurance', rank: 7 },
       { id: 'warriorArmor', rank: 5 },
       { id: 'spiderArmor', rank: 10 },
-      { id: 'shieldBlock', rank: 8 },
+      { id: 'shieldBlock', rank: 7 },
     ]);
     expect(session.upgradeTalent('willToWin')).toBe(false);
     session.talents.loadFromSave([
@@ -52,7 +52,7 @@ describe('will to win in shooting', () => {
       expect(session.upgradeTalent('willToWin')).toBe(true);
       expect(session.state.stats.agility).toBe(base.agility + 70 * rank);
       expect(session.state.stats.shopDiscount).toBe(6 * rank);
-      const item = ITEM_MAP.get('c001')!;
+      const item = ITEM_MAP.get('c009')!;
       const price = Math.round((item.price * (100 - 6 * rank)) / 100);
       session.state.coins = price - 1;
       expect(session.buyItem(item.id)).toBe(false);

@@ -10,7 +10,8 @@ export type StatType =
   | 'armor'
   | 'coinsPerKill'
   | 'energyPerKill'
-  | 'criticalShotChance';
+  | 'criticalShotChance'
+  | 'blockChance';
 export type AbilityModType = 'cooldownReduction' | 'effectBoost' | 'costReduction';
 export interface ItemStat {
   readonly type: StatType;
@@ -24,6 +25,7 @@ export type AbilityMod = {
 } & (
   | { readonly abilityId: AbilityId; readonly modType: AbilityModType }
   | { readonly abilityId: 'killingStreak'; readonly modType: 'effectBoost' }
+  | { readonly abilityId: 'improvedCriticalShot'; readonly modType: 'effectBoost' }
 );
 export interface ItemConfig {
   readonly id: string;

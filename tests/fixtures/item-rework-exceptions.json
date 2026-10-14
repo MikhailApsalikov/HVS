@@ -1,27 +1,5 @@
 [
   {
-    "id": "c-shield",
-    "name": "Деревянный щит",
-    "rarity": "common",
-    "stats": [
-      {
-        "type": "armor",
-        "value": 50
-      }
-    ]
-  },
-  {
-    "id": "c022",
-    "name": "Лечебный настой",
-    "rarity": "common",
-    "stats": [
-      {
-        "type": "hpRegen",
-        "value": 1
-      }
-    ]
-  },
-  {
     "id": "c046",
     "name": "Рунный щит",
     "rarity": "common",
@@ -147,6 +125,10 @@
       {
         "type": "hpRegen",
         "value": 5
+      },
+      {
+        "type": "blockChance",
+        "value": 0.04
       }
     ],
     "abilityMod": {

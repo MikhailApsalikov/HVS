@@ -65,10 +65,10 @@ describe('progression and player commands', () => {
       expect(withMoney.state.level).toBe(1);
       expect(withMoney.state.pendingTalentPoints).toBe(1);
       expect(withMoney.state.coins).toBe(1000);
-      expect(withMoney.buyItem('c001')).toBe(true);
+      expect(withMoney.buyItem('c046')).toBe(true);
       const withoutMoney = new GameSession(difficulty, () => 0.999999, { coins: 0 });
       expect(withoutMoney.state.coins).toBe(0);
-      expect(withoutMoney.buyItem('c001')).toBe(false);
+      expect(withoutMoney.buyItem('c046')).toBe(false);
     },
   );
   it.each([
@@ -143,7 +143,7 @@ describe('progression and player commands', () => {
     expect(session.activateAbility('heal')).toBe('level_locked');
     session.state.phase = 'playing';
     expect(session.upgradeTalent('endurance')).toBe(false);
-    expect(session.buyItem('c001')).toBe(false);
+    expect(session.buyItem('c046')).toBe(false);
     expect(session.sellItem(0)).toBe(false);
   });
   it('enforces money/slots and clamps resources after sale', () => {
@@ -152,19 +152,20 @@ describe('progression and player commands', () => {
     session.refreshStats();
     expect(session.buyItem('missing')).toBe(false);
     expect(session.buyItem('c015')).toBe(false);
-    expect(session.buyItem('c001')).toBe(true);
-    expect(session.state.maxHp).toBe(150);
-    expect(session.state.hp).toBe(150);
-    expect(session.buyItem('c001')).toBe(false);
+    session.state.coins = 1000;
+    expect(session.buyItem('c009')).toBe(true);
+    expect(session.state.maxHp).toBe(350);
+    expect(session.state.hp).toBe(350);
+    expect(session.buyItem('c009')).toBe(false);
     expect(session.sellItem(-1)).toBe(false);
     expect(session.sellItem(0.5)).toBe(false);
     expect(session.sellItem(0)).toBe(true);
     expect(session.state.hp).toBe(100);
     expect(session.state.maxHp).toBe(100);
-    expect(session.state.coins).toBe(231);
+    expect(session.state.coins).toBe(752);
     expect(session.sellItem(0)).toBe(false);
     session.state.coins = 1000;
-    session.buyItem('c056');
+    expect(session.buyItem('c060')).toBe(true);
     session.state.energy = 110;
     session.sellItem(0);
     expect(session.state.energy).toBe(100);

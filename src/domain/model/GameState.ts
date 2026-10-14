@@ -181,6 +181,12 @@ export class GameState {
   get eagleEyeActive(): boolean {
     return this.eagleEyeTimer > 0 && this.eagleEyeShots > 0;
   }
+  get currentCriticalShotChance(): number {
+    return this.rules.criticalShotChance(this.eagleEyeActive);
+  }
+  get currentImprovedCriticalShotChance(): number {
+    return this.rules.improvedCriticalShotChance(this.eagleEyeActive);
+  }
   abilityActiveTimer(id: AbilityId): number {
     if (id === 'prep') return this.prepTimer;
     if (id === 'lastHope') return this.lastHopeTimer;

@@ -1,5 +1,11 @@
 /** Full purchase prices at removal, used only to refund retired equipment on load. */
 export const RETIRED_ITEM_REFUNDS: Readonly<Record<string, number>> = {
+  c001: 38,
+  'c001-agility': 38,
+  'c001-intellect': 38,
+  c056: 43,
+  'c-shield': 50,
+  c022: 91,
   c003: 101,
   c005: 192,
   c012: 672,

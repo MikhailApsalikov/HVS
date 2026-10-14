@@ -8,8 +8,8 @@ interface PriceRule {
   readonly curve: (value: number) => number;
 }
 const quadratic = (n: number) => n * n;
-const cubic = (n: number) => n * n * n;
 const logarithmic = (n: number) => n * Math.log2(n + 1);
+const quadraticLogarithmic = (n: number) => n * n * Math.log2(n + 1);
 const PRICES: Record<StatType, PriceRule> = {
   endurance: { unit: 5, base: 38.4, curve: logarithmic },
   agility: { unit: 5, base: 38.4, curve: logarithmic },
@@ -18,9 +18,10 @@ const PRICES: Record<StatType, PriceRule> = {
   armor: { unit: 1, base: 1, curve: (n) => n },
   coinsPerKill: { unit: 1, base: 480, curve: quadratic },
   maxEnergy: { unit: 10, base: 43.2, curve: quadratic },
-  criticalShotChance: { unit: 0.01, base: 600, curve: quadratic },
-  energyRegen: { unit: 1, base: 480, curve: cubic },
-  energyPerKill: { unit: 1, base: 480, curve: cubic },
+  criticalShotChance: { unit: 0.01, base: 150, curve: quadratic },
+  blockChance: { unit: 0.01, base: 150, curve: quadratic },
+  energyRegen: { unit: 0.5, base: 3840 / quadraticLogarithmic(4), curve: quadraticLogarithmic },
+  energyPerKill: { unit: 1, base: 3840 / quadraticLogarithmic(2), curve: quadraticLogarithmic },
 };
 const RARITY_PERCENT: Record<ItemRarity, number> = { common: 0, rare: 15, epic: 33, legendary: 74 };
 

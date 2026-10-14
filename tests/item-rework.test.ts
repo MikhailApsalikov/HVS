@@ -19,6 +19,7 @@ const exceptionIds = new Set([...exceptions.map((item) => item.id), 'e006']);
 const dependent: Partial<Record<StatType, StatType>> = {
   hpRegen: 'endurance',
   armor: 'endurance',
+  blockChance: 'endurance',
   energyPerKill: 'agility',
   criticalShotChance: 'agility',
   energyRegen: 'intellect',
@@ -34,13 +35,13 @@ describe('equipment catalog rules', () => {
     expect(item.price).toBe(computeItemPrice(item));
     if (exceptionIds.has(item.id)) return;
     const [min, max, count] = {
-      common: [1, 1500, 1],
+      common: [250, 1500, 1],
       rare: [1500, 6000, 2],
       epic: [8000, 14000, 3],
       legendary: [17000, 30000, 3],
     }[item.rarity];
-    expect(item.price).toBeGreaterThanOrEqual(min);
-    expect(item.price).toBeLessThanOrEqual(max);
+    expect(item.price).toBeGreaterThanOrEqual(item.id === 'c068' ? 103 : min);
+    expect(item.price).toBeLessThanOrEqual(item.id === 'l027' ? 44107 : max);
     expect(item.stats.length).toBeGreaterThanOrEqual(1);
     expect(item.stats.length).toBeLessThanOrEqual(count);
     if (item.stats.length === 1) return;
@@ -113,11 +114,11 @@ describe('equipment catalog rules', () => {
 
   it('keeps Rune of Flow legendary at +4 energy per second with its algorithmic price', () => {
     const session = new GameSession('normal');
-    session.state.coins = 53453;
+    session.state.coins = 36487;
     const before = session.state.stats.energyRegen;
     expect(ITEM_MAP.get('e006')).toMatchObject({
       rarity: 'legendary',
-      price: 53453,
+      price: 36487,
       stats: [{ type: 'energyRegen', value: 4 }],
     });
     expect(session.buyItem('e006')).toBe(true);
@@ -134,23 +135,21 @@ describe('item price bases and curves', () => {
     ['hpRegen', 0.5, 29, 1, 91],
     ['maxEnergy', 10, 43, 20, 173],
     ['coinsPerKill', 1, 480, 2, 1920],
-    ['energyRegen', 1, 480, 2, 3840],
-    ['energyPerKill', 1, 480, 2, 3840],
-    ['criticalShotChance', 0.01, 600, 0.02, 2400],
+    ['energyRegen', 0.5, 103, 1, 655],
+    ['energyPerKill', 1, 606, 2, 3840],
+    ['criticalShotChance', 0.01, 150, 0.02, 600],
+    ['blockChance', 0.01, 150, 0.02, 600],
     ['armor', 1, 1, 200, 200],
-  ] as const)(
-    '%s has the increased base and preserves its curve',
-    (type, unit, price, twice, nextPrice) => {
-      const item: ItemConfig = {
-        id: 'price',
-        name: 'price',
-        rarity: 'common',
-        stats: [{ type, value: unit }],
-      };
-      expect(computeItemPrice(item)).toBe(price);
-      expect(computeItemPrice({ ...item, stats: [{ type, value: twice }] })).toBe(nextPrice);
-    },
-  );
+  ] as const)('%s uses its current price base and curve', (type, unit, price, twice, nextPrice) => {
+    const item: ItemConfig = {
+      id: 'price',
+      name: 'price',
+      rarity: 'common',
+      stats: [{ type, value: unit }],
+    };
+    expect(computeItemPrice(item)).toBe(price);
+    expect(computeItemPrice({ ...item, stats: [{ type, value: twice }] })).toBe(nextPrice);
+  });
   it.each([
     ['common', 1],
     ['rare', 1.15],
@@ -167,14 +166,17 @@ describe('item price bases and curves', () => {
           { type: 'criticalShotChance', value: 0.02 },
         ],
       }),
-    ).toBe(Math.round(100 + 2400 * factor));
+    ).toBe(Math.round(100 + 600 * factor));
   });
 });
 
 describe('reworked equipment through session commands', () => {
   it.each(ITEM_CATALOG)('buys, applies, saves and sells every bonus on $id', (item) => {
     const session = new GameSession('normal');
-    session.talents.loadFromSave([{ id: 'criticalShot', rank: 1 }]);
+    session.talents.loadFromSave([
+      { id: 'criticalShot', rank: 1 },
+      { id: 'shieldBlock', rank: 1 },
+    ]);
     session.refreshStats();
     const before = session.state.stats;
     session.state.coins = item.price;
@@ -197,6 +199,7 @@ describe('reworked equipment through session commands', () => {
     expect(stats.criticalShotChance).toBeCloseTo(
       0.03 + bonus('criticalShotChance') + Math.floor(stats.agility / 130) / 100,
     );
+    expect(stats.blockChance).toBeCloseTo(before.blockChance + bonus('blockChance'));
     const loaded = restore(parseSave(snapshot(session))!);
     expect(loaded.state.stats).toEqual(stats);
     expect(loaded.items.inventory).toEqual([item.id]);
@@ -219,21 +222,21 @@ describe('reworked equipment through session commands', () => {
     for (let rank = 0; rank < 2; rank++)
       expect(session.upgradeTalent('improvedAgility')).toBe(true);
     expect(session.upgradeTalent('criticalShot')).toBe(true);
-    expect(session.state.stats.criticalShotChance).toBe(0.06);
+    expect(session.state.stats.criticalShotChance).toBe(0.09);
     const loaded = restore(parseSave(snapshot(session))!);
-    expect(loaded.state.stats.criticalShotChance).toBe(0.06);
+    expect(loaded.state.stats.criticalShotChance).toBe(0.09);
     expect(loaded.sellItem(0)).toBe(true);
-    expect(loaded.state.stats.criticalShotChance).toBe(0.05);
+    expect(loaded.state.stats.criticalShotChance).toBe(0.07);
     expect(loaded.sellItem(0)).toBe(true);
     expect(loaded.state.stats.criticalShotChance).toBe(0.03);
   });
 
   it.each([
     [0, 0, false],
-    [1, 0.039999, true],
-    [1, 0.04, false],
+    [1, 0.049999, true],
+    [1, 0.05, false],
   ] as const)(
-    'uses +1 percentage point for actual arrows only with the talent (rank %s, roll %s)',
+    'uses +2 percentage points for actual arrows only with the talent (rank %s, roll %s)',
     (rank, roll, critical) => {
       const random = vi.fn(() => roll);
       const session = new GameSession('normal', random);

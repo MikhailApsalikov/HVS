@@ -22,6 +22,8 @@ import { armorReduction, attributeModifiers } from './attributes.js';
 export class GameRules {
   private readonly modifiers = new Map<StatId, readonly StatModifier[]>();
   readonly attributeEffects: Readonly<Record<PrimaryStatId, readonly StatModifier[]>>;
+  readonly criticalShotLearned: boolean;
+  readonly shieldBlockLearned: boolean;
   constructor(
     readonly config: DifficultyConfig,
     effects: readonly StatModifier[] = [],
@@ -31,13 +33,19 @@ export class GameRules {
     const criticalShotLearned = effects.some(
       (effect) => effect.source === 'talent:criticalShot' && effect.value > 0,
     );
+    const shieldBlockLearned = effects.some(
+      (effect) => effect.source === 'talent:shieldBlock' && effect.value > 0,
+    );
+    this.criticalShotLearned = criticalShotLearned;
+    this.shieldBlockLearned = shieldBlockLearned;
     const allEffects: StatModifier[] = [
-      ...effects.filter(
-        (effect) =>
-          criticalShotLearned ||
-          effect.stat !== 'criticalShotChance' ||
-          !effect.source.startsWith('item:'),
-      ),
+      ...effects.filter((effect) => {
+        if (!effect.source.startsWith('item:')) return true;
+        if (effect.stat === 'blockChance') return shieldBlockLearned;
+        if (effect.stat === 'criticalShotChance' || effect.stat === 'improvedCriticalShotChance')
+          return criticalShotLearned;
+        return true;
+      }),
       ...PRIMARY_STATS.map((stat): StatModifier => ({
         source: 'character:level',
         stat,
@@ -57,7 +65,7 @@ export class GameRules {
         intellect: this.value('intellect'),
       },
       criticalShotLearned,
-      effects.some((effect) => effect.source === 'talent:shieldBlock' && effect.value > 0),
+      shieldBlockLearned,
     );
     for (const modifier of Object.values(this.attributeEffects).flat())
       this.modifiers.set(modifier.stat, [...this.modifiers.get(modifier.stat)!, modifier]);
@@ -119,6 +127,24 @@ export class GameRules {
   }
   value(id: StatId, base?: number, additional: readonly Modifier[] = []): number {
     return this.explain(id, base, additional).value;
+  }
+  criticalShotChance(eagleEyeActive = false): number {
+    return eagleEyeActive ? 1 : this.value('criticalShotChance');
+  }
+  improvedCriticalShotChance(eagleEyeActive = false): number {
+    return this.value(
+      'improvedCriticalShotChance',
+      undefined,
+      eagleEyeActive
+        ? [
+            {
+              source: 'ability:eagleEye',
+              kind: 'flat',
+              value: this.value('eagleEye.improvedCriticalShotChance'),
+            },
+          ]
+        : [],
+    );
   }
   snapshot(): ResolvedStats {
     return Object.fromEntries(

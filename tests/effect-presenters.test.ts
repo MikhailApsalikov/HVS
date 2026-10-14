@@ -48,7 +48,7 @@ describe('player effect tooltips through session commands', () => {
     expect(description('prep')).toContain('Восстановление энергии увеличено на 30 в секунду.');
     expect(description('prep')).not.toContain('Мгновенно');
     expect(description('stand')).toContain('Неуязвимость');
-    expect(description('lastHope')).toContain('Увеличивает шанс блока на 50% и его силу на');
+    expect(description('lastHope')).toContain('Увеличивает шанс блока на 40% и его силу на');
     expect(description('adrenaline')).toContain(
       'Выстрелы лучников бесплатны и без времени восстановления. Осталось — 20.',
     );

@@ -84,7 +84,7 @@ export const normalConfig: DifficultyConfig = {
     warriorArmor: { maxRanks: 5, unlocksAtLevel: 10 },
     titanArmor: { maxRanks: 10, unlocksAtLevel: 50 },
     divineShield: { maxRanks: 1, unlocksAtLevel: 30 },
-    shieldBlock: { maxRanks: 8, unlocksAtLevel: 10 },
+    shieldBlock: { maxRanks: 7, unlocksAtLevel: 10 },
     lastHope: { maxRanks: 1, unlocksAtLevel: 20 },
     improvedLastHope: { maxRanks: 5, unlocksAtLevel: 30 },
     bestDefense: { maxRanks: 10, unlocksAtLevel: 40 },

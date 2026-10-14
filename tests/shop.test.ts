@@ -11,12 +11,17 @@ import {
 
 const item = (id: string) => ITEM_MAP.get(id)!;
 
-describe('whole item bonuses and common price steps', () => {
-  it('offers at most three distinct common price steps per stat, with no fractional bonuses', () => {
+describe('item bonus precision and common price steps', () => {
+  it('offers at most three distinct common price steps per stat, with half steps only for energy regeneration', () => {
     for (const equipment of ITEM_CATALOG) {
       for (const stat of equipment.stats) {
-        const amount = stat.type === 'criticalShotChance' ? stat.value * 100 : stat.value;
-        expect(Number.isInteger(amount), `${equipment.name}: ${stat.type}`).toBe(true);
+        const amount =
+          stat.type === 'criticalShotChance' || stat.type === 'blockChance'
+            ? stat.value * 100
+            : stat.type === 'energyRegen'
+              ? stat.value * 2
+              : stat.value;
+        expect(amount, `${equipment.name}: ${stat.type}`).toBeCloseTo(Math.round(amount), 10);
       }
     }
     const common = ITEM_CATALOG.filter((equipment) => equipment.rarity === 'common');
@@ -30,7 +35,7 @@ describe('whole item bonuses and common price steps', () => {
       }
     }
     for (const stat of ['armor', 'endurance', 'agility', 'intellect', 'hpRegen', 'maxEnergy']) {
-      expect(common.filter((equipment) => equipment.stats[0].type === stat)).toHaveLength(3);
+      expect(common.filter((equipment) => equipment.stats[0].type === stat)).toHaveLength(2);
     }
   });
 
@@ -39,7 +44,7 @@ describe('whole item bonuses and common price steps', () => {
     ['c030', 'hpRegen', 6, 1279],
     ['e003', 'hpRegen', 30, 13630],
     ['e005', 'maxEnergy', 150, 12928],
-    ['e006', 'energyRegen', 4, 53453],
+    ['e006', 'energyRegen', 4, 36487],
   ] as const)(
     'applies the corrected %s bonus and price through purchase and reload',
     (id, stat, bonus, price) => {
@@ -77,7 +82,7 @@ describe('whole item bonuses and common price steps', () => {
 });
 
 describe('shop sorting and combined filters', () => {
-  it('sorts the whole catalog by actual price, preserves input order and includes the expensive rune last', () => {
+  it('sorts the whole catalog by actual price and preserves input order', () => {
     const input = [...ITEM_CATALOG].reverse();
     const before = [...input];
     const sorted = filterAndSortItems(input, { name: '', stat: '' });
@@ -86,7 +91,7 @@ describe('shop sorting and combined filters', () => {
     expect(sorted.map((equipment) => equipment.price)).toEqual(
       sorted.map((equipment) => equipment.price).sort((a, b) => a - b),
     );
-    expect(sorted.at(-1)?.id).toBe('e006');
+    expect(sorted.at(-1)?.id).toBe('l027');
   });
   it('matches partial names without case, edge whitespace or е/ё distinctions', () => {
     expect(
@@ -118,7 +123,7 @@ describe('shop sorting and combined filters', () => {
       filterAndSortItems(ITEM_CATALOG, { name: 'залп', stat: 'coinsPerKill' }).map(
         (equipment) => equipment.id,
       ),
-    ).toEqual(['l007', 'l008']);
+    ).toEqual(['l008', 'l007']);
     expect(
       filterAndSortItems([item('c015'), item('c055')], { name: '', stat: 'armor' }).map(
         (equipment) => equipment.id,
@@ -140,10 +145,10 @@ describe('item tooltip wording and order', () => {
     ['c015-agility', ['+50 ловкости']],
     ['c015-intellect', ['+50 интеллекта']],
     ['c030', ['+6 здоровья в секунду']],
-    ['c068', ['+1 энергии в секунду']],
+    ['c068', ['+0,5 энергии в секунду']],
     ['c078', ['+1 энергии за убийство']],
     ['e005', ['+150 максимальной энергии']],
-    ['c088', ['+1% шанса критического выстрела']],
+    ['c088', ['+2% шанса критического выстрела']],
     ['c096', ['+1 монета за убийство']],
     ['r-coins', ['+2 монеты за убийство']],
     ['l007', ['+200 выносливости', '+20 здоровья в секунду', '+1 монета за убийство']],
@@ -156,6 +161,7 @@ describe('item tooltip wording and order', () => {
         '+25 ловкости',
         '+25 интеллекта',
         '+5 здоровья в секунду',
+        '+4% шанса блока',
       ],
     ],
   ] as const)('%s has natural stat lines, with armor first', (id, lines) => {

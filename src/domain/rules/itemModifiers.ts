@@ -17,6 +17,8 @@ export function itemModifiers(
   if (!mod || !includeAbility) return modifiers;
   if (mod.abilityId === 'killingStreak') {
     modifiers.push({ source, stat: 'killingStreak.maxStacks', kind: 'flat', value: mod.value });
+  } else if (mod.abilityId === 'improvedCriticalShot') {
+    modifiers.push({ source, stat: 'improvedCriticalShotChance', kind: 'flat', value: mod.value });
   } else if (mod.modType === 'costReduction' || mod.modType === 'cooldownReduction') {
     modifiers.push({
       source,
