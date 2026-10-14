@@ -12,6 +12,7 @@ import { ItemSystem } from './model/ItemSystem.js';
 import { createArrow } from './systems/ArrowFactory.js';
 import { activateAbility, tickAbilities, tickAimedFire } from './systems/AbilitySystem.js';
 import { tickAntiAfk } from './systems/AntiAfkSystem.js';
+import { buffModifiers, nextBuffBoundary, tickBuffs } from './systems/BuffSystem.js';
 import { debuffModifiers, nextDebuffBoundary, tickDebuffs } from './systems/DebuffSystem.js';
 import {
   spawnSpiders,
@@ -59,6 +60,7 @@ export class GameSession {
       ...this.talents.getModifiers(state.level),
       ...this.items.getModifiers(),
       ...state.character.getModifiers(),
+      ...buffModifiers(state),
       ...debuffModifiers(state),
     ];
     if (state.antiAfkDamagePercent > 0)
@@ -199,6 +201,7 @@ export class GameSession {
       const step = Math.min(
         remaining,
         nextDebuffBoundary(this.state),
+        nextBuffBoundary(this.state),
         ...this.state.aimedFireWaves.map((wave) => wave.remaining),
       );
       this.tickStep(step);
@@ -211,6 +214,7 @@ export class GameSession {
     const emit = (event: GameEvent) => this.events.push(event);
     const hpRegeneration = state.stats.hpRegen * dt;
     const passiveCoins = state.stats.coinsPerSec * dt;
+    if (tickBuffs(state, dt)) this.refreshStats(false);
     if (tickDebuffs(state, dt)) this.refreshStats(false);
     if (state.hp <= 0) {
       state.phase = 'gameOver';
@@ -242,7 +246,7 @@ export class GameSession {
       },
       () => this.refreshStats(false),
     );
-    collectDeadSpiders(state, dt, this.random, emit);
+    collectDeadSpiders(state, dt, this.random, emit, () => this.refreshStats(false));
     // Death wins over regeneration and simultaneous completion of a level.
     if (state.hp <= 0) {
       state.phase = 'gameOver';

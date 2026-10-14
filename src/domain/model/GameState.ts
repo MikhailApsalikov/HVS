@@ -36,6 +36,7 @@ export class GameState {
   freezeActive = false;
   invulnerableTimer = 0;
   goldLockTimer = 0;
+  hunterRewardTimer = 0;
   healingReductionTimer = 0;
   poisonTimer = 0;
   poisonTickTimer = 0;

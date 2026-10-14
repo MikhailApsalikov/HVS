@@ -7,6 +7,96 @@ import { SAVE_KEY, SaveSystem } from '../src/infrastructure/storage/SaveSystem.j
 import { game, advance, addSpider, MemoryStorage } from './helpers.js';
 
 describe('saves and migration', () => {
+  it.each([19, 20, 21])(
+    'migrates version %s poison duration while preserving its stacks and next tick',
+    (version) => {
+      const session = game(50);
+      session.state.character.setModifiers('test:regen', [
+        { stat: 'hpRegen', kind: 'percent', value: -100 },
+      ]);
+      session.refreshStats();
+      const data = snapshot(session);
+      const { hunterRewardTimer: _timer, ...previousState } = data.state;
+      const parsed = parseSave({
+        ...data,
+        version,
+        state: {
+          ...previousState,
+          poisonTimer: 45,
+          poisonTickTimer: 0.7,
+          poisonDamage: [20, 40],
+        },
+      });
+      expect(parsed).not.toBeNull();
+      expect(parsed!.version).toBe(22);
+      const loaded = restore(parsed!, () => 0.999999);
+      expect(loaded.state).toMatchObject({
+        hunterRewardTimer: 0,
+        poisonTimer: 31.5,
+        poisonTickTimer: 0.7,
+        poisonDamage: [20, 40],
+      });
+      const hp = loaded.state.hp;
+      const damage = loaded.state.stats['poison.tickDamage'];
+      loaded.tick(0.7);
+      expect(loaded.state.hp).toBeCloseTo(hp - damage);
+      expect(loaded.state.poisonTickTimer).toBe(2);
+      expect(loaded.state.poisonDamage).toEqual([20, 40]);
+      const saved = snapshot(loaded);
+      expect(snapshot(restore(parseSave(saved)!))).toEqual(saved);
+    },
+  );
+
+  it.each([3, 17, 18, 19, 20, 21])(
+    'ignores a supplied hunter reward timer in version %s',
+    (version) => {
+      const data = snapshot(game(50));
+      const loaded = restore(
+        parseSave({
+          ...data,
+          version,
+          abilities: version === 3 ? data.abilities.slice(0, 8) : data.abilities,
+          state: { ...data.state, hunterRewardTimer: 15 },
+        })!,
+      );
+      expect(loaded.state.hunterRewardTimer).toBe(0);
+    },
+  );
+
+  it('restores hunter reward bonuses until their timer expires or a cleanser removes them', () => {
+    const session = game(50);
+    session.talents.loadFromSave([{ id: 'hunterReward', rank: 5 }]);
+    session.state.character.setModifiers('test:arena', [
+      { stat: 'spawnProbability', kind: 'percent', value: -100 },
+      { stat: 'shootCost', kind: 'percent', value: -100 },
+      { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
+    ]);
+    session.refreshStats();
+    const { armor, coinsPerSec } = session.state.stats;
+    addSpider(session, 'golden', 0, 0.9);
+    expect(session.shootLane(0)).toBe('shot');
+    session.tick(0.01);
+    session.tick(0.31);
+    expect(session.state.hunterRewardTimer).toBe(15);
+    session.tick(3.5);
+    const saved = snapshot(session);
+    const parsed = parseSave(JSON.parse(JSON.stringify(saved)))!;
+    const loaded = restore(parsed, () => 0.999999);
+    expect(snapshot(loaded)).toEqual(saved);
+    expect(loaded.state.stats).toEqual(session.state.stats);
+    expect(loaded.state.stats.coinsPerSec).toBeCloseTo(coinsPerSec * 1.5);
+    expect(loaded.state.stats.armor).toBeCloseTo(armor * 1.5);
+    loaded.tick(loaded.state.hunterRewardTimer);
+    expect(loaded.state.hunterRewardTimer).toBe(0);
+    expect(loaded.state.stats).toMatchObject({ armor, coinsPerSec });
+
+    const cleansed = restore(parsed, () => 0.999999);
+    addSpider(cleansed, 'cleanser', 0, 1, 0);
+    cleansed.tick(0.001);
+    expect(cleansed.state.hunterRewardTimer).toBe(0);
+    expect(cleansed.state.stats).toMatchObject({ armor, coinsPerSec });
+  });
+
   it.each([1, 7, 8, 10])(
     'migrates version 19 rank %s with one refund and the same earned streak fraction',
     (rank) => {
@@ -28,7 +118,7 @@ describe('saves and migration', () => {
       };
       const parsed = parseSave(previous)!;
       expect(parsed).not.toBeNull();
-      expect(parsed.version).toBe(21);
+      expect(parsed.version).toBe(22);
       const loaded = restore(parsed, () => 0.999999);
       expect(loaded.talents.getRank('criticalShot')).toBe(7);
       expect(loaded.talents.getRank('killingStreak')).toBe(Math.min(rank, 8));
@@ -141,7 +231,7 @@ describe('saves and migration', () => {
         inventory: ['c015', 'c015', 'missing', 'c009', 'c015', 'c009'],
         abilities: data.abilities.slice(0, version < 5 ? 8 : 9),
       })!;
-      expect(parsed.version).toBe(21);
+      expect(parsed.version).toBe(22);
       const loaded = restore(parsed);
       expect(loaded.items.inventory).toEqual(['c015', 'c009']);
       expect(loaded.state.coins).toBe(
@@ -193,7 +283,7 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(21);
+    expect(parsed.version).toBe(22);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
       endurance: 79,
@@ -325,6 +415,12 @@ describe('saves and migration', () => {
     ['initialTalentPick', 'yes'],
     ['coinAccumulator', 2],
     ['spawnAccumulator', 2],
+    ['hunterRewardTimer', undefined],
+    ['hunterRewardTimer', null],
+    ['hunterRewardTimer', -1],
+    ['hunterRewardTimer', NaN],
+    ['hunterRewardTimer', Infinity],
+    ['hunterRewardTimer', 15.001],
   ])('rejects invalid state field %s = %s', (field, value) => {
     const data = structuredClone(snapshot(game()));
     Object.assign(data.state, { [field]: value });

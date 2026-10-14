@@ -26,6 +26,7 @@ export function aimedFireDuration(waves: number): number {
 }
 export const BURNER_ENERGY_PER_LEVEL = 2;
 export const GOLDEN_SPIDER_REWARD = { base: 10, perLevel: 1 } as const;
+export const HUNTER_REWARD = { duration: 15, incomePercent: 50, armorPercent: 50 } as const;
 /** Rounded quadratic damage growth for each difficulty, with a base of 10. */
 export const SPIDER_DAMAGE = {
   base: 10,
@@ -104,6 +105,7 @@ export const STATS = {
   energyPerKill: stat('Энергия за убийство', 0, integer),
   energyPerBreach: stat('Энергия за прорыв', 0, integer),
   jackpotChance: stat('Шанс тройной награды', 0, probability),
+  goldenJackpotChance: stat('Шанс тройной награды за золотого паука', 0, probability),
   breachRewardFraction: stat('Доля награды за дошедшего паука', 0, probability),
   inventorySlots: stat('Слоты инвентаря', 1, integer),
   levelDuration: stat('Длительность уровня, с', 0, { ...duration, min: 10 }),

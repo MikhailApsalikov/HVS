@@ -1,5 +1,6 @@
 import { ABILITIES } from './abilities.js';
 import { DEBUFFS } from './debuffs.js';
+import { TALENTS } from './talents.js';
 import type { PlayerEffectId, PlayerEffectMetadata } from '../domain/model/PlayerEffect.js';
 
 export const PLAYER_EFFECTS = {
@@ -36,6 +37,13 @@ export const PLAYER_EFFECTS = {
     sprite: ABILITIES.eagleEye.sprite,
     kind: 'buff',
     source: 'ability',
+    removableByCleanser: true,
+  },
+  hunterReward: {
+    name: TALENTS.hunterReward.name,
+    sprite: TALENTS.hunterReward.sprite,
+    kind: 'buff',
+    source: 'talent',
     removableByCleanser: true,
   },
   goldLock: {

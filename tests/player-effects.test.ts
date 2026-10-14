@@ -176,6 +176,7 @@ describe('player effect entities through session commands', () => {
     expect(state.activeEffects[1].details).toEqual({
       healingReceived: state.stats.healingReceived,
     });
+    expect(state.activeEffects[0].details).toEqual({ incomePercent: -63 });
     const poison = state.activeEffects[2];
     expect(poison).toMatchObject({
       name: 'Яд',
@@ -183,7 +184,7 @@ describe('player effect entities through session commands', () => {
       remaining: state.poisonTimer,
       stacks: 2,
       details: {
-        armorPercent: DEBUFFS.poison.armorPercent,
+        armorPercent: -100,
         tickDamage: state.stats['poison.tickDamage'],
         tickInterval: DEBUFFS.poison.interval,
         nextTick: state.poisonTickTimer,
@@ -257,7 +258,7 @@ describe('player effect entities through session commands', () => {
       session.tick(0.001);
     }
     const saved = snapshot(session);
-    expect(saved.version).toBe(21);
+    expect(saved.version).toBe(22);
     expect(saved.state).not.toHaveProperty('activeEffects');
     const loaded = restore(parseSave(JSON.parse(JSON.stringify(saved)))!, () => 0.999999);
     expect(loaded.state.activeEffects).toEqual(session.state.activeEffects);

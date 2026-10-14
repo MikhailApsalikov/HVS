@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { GameSession } from '../src/domain/GameSession.js';
 import {
   formatStat,
+  coinsDescription,
   killingStreakDescription,
   playerEffectDescription,
+  talentDescription,
 } from '../src/ui/presenters.js';
 import { addSpider } from './helpers.js';
 
@@ -71,7 +73,11 @@ describe('player effect tooltips through session commands', () => {
       const html = playerEffectDescription(effect);
       expect(html).toContain(effect.name);
       expect(html).not.toMatch(/Осталось|Стаков|Следующий тик|за тик/);
-      if (effect.id === 'goldLock') expect(html).toContain('Награды за пауков сохраняются');
+      if (effect.id === 'goldLock') {
+        expect(html).toContain('Пассивный доход уменьшен на 63%.');
+        expect(html).toContain('Награды за пауков сохраняются');
+        expect(coinsDescription(session.state)).toContain('Пассивный доход уменьшен на 63%');
+      }
       if (effect.id === 'healingReduction') {
         expect(html).toContain('Регенерация здоровья и получаемое лечение уменьшены на 41%.');
         expect(html).not.toContain('59%');
@@ -79,10 +85,48 @@ describe('player effect tooltips through session commands', () => {
       if (effect.id === 'poison') {
         expect(effect.details!.tickDamage).toBe(24.24);
         expect(html).toContain(
-          'Броня уменьшена на 75%. Вы отравлены и получаете 24 урона раз в 2 секунды. Яд не может убить.',
+          'Броня уменьшена на 100%. Вы отравлены и получаете 24 урона раз в 2 секунды. Яд не может убить.',
         );
       }
     }
+  });
+
+  it('describes the hunter reward buff and golden jackpot chance using session effects', () => {
+    const session = arena();
+    session.talents.loadFromSave([{ id: 'hunterReward', rank: 5 }]);
+    session.state.character.setModifiers('test:shooting', [
+      { stat: 'shootCooldown', kind: 'percent', value: -100 },
+      { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
+    ]);
+    session.refreshStats();
+    const spider = addSpider(session, 'golden', 0, 0.9);
+    expect(session.shootLane(0)).toBe('shot');
+    session.tick(0.31);
+    expect(session.drainEvents()).toContainEqual(
+      expect.objectContaining({ type: 'coinDrop', spiderId: spider.id, jackpot: true }),
+    );
+    const buff = session.state.activeEffects.find((effect) => effect.id === 'hunterReward')!;
+    expect(buff).toMatchObject({
+      name: 'Награда охотника',
+      sprite: 'TalentHunterReward',
+      kind: 'buff',
+      source: 'talent',
+      removableByCleanser: true,
+      stacks: null,
+      details: { incomePercent: 50, armorPercent: 50 },
+    });
+    expect(playerEffectDescription(buff)).toContain(
+      'Пассивный доход увеличен на 50% и броня увеличена на 50%. Снимается очистителем.',
+    );
+    expect(coinsDescription(session.state)).toContain(
+      'Вероятность тройной награды за золотого паука — 100%.',
+    );
+    const talent = talentDescription('hunterReward', 5, session.state.stats);
+    expect(talent).toContain('100%');
+    expect(talent).toContain('35%');
+    expect(talent).toContain('15');
+    expect(talent).toContain('50%');
+    expect(talentDescription('hunterReward', 1, session.state.stats)).toContain('20%');
   });
 
   it('explains inactivity recovery without repeating its counter or countdown', () => {

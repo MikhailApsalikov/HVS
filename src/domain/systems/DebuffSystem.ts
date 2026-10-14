@@ -3,6 +3,7 @@ import { SPIDERS } from '../../content/spiders.js';
 import type { GameState } from '../model/GameState.js';
 import { clearPlayerEffects } from '../model/PlayerEffect.js';
 import type { Spider } from '../model/Spider.js';
+import { goldIncomePercent, poisonArmorPercent, poisonDuration } from '../rules/debuffs.js';
 import type { StatModifier } from '../rules/stats.js';
 
 export function debuffModifiers(state: GameState): StatModifier[] {
@@ -12,7 +13,7 @@ export function debuffModifiers(state: GameState): StatModifier[] {
       source: 'debuff:goldLock',
       stat: 'coinsPerSec',
       kind: 'percent',
-      value: DEBUFFS.goldLock.incomePercent,
+      value: -goldIncomePercent(state.level),
     });
   if (state.healingReductionTimer > 0)
     effects.push({
@@ -31,7 +32,7 @@ export function debuffModifiers(state: GameState): StatModifier[] {
         source: 'debuff:poison',
         stat: 'armor',
         kind: 'percent',
-        value: DEBUFFS.poison.armorPercent,
+        value: -poisonArmorPercent(state),
       },
       {
         source: 'debuff:poison',
@@ -59,9 +60,7 @@ export function applySpiderDebuff(state: GameState, spider: Spider): boolean {
     );
   else if (spider.type === 'poisonous') {
     if (state.poisonTimer === 0) state.poisonTickTimer = DEBUFFS.poison.interval;
-    state.poisonTimer = duration(
-      DEBUFFS.poison.duration + DEBUFFS.poison.durationPerLevel * state.level,
-    );
+    state.poisonTimer = duration(poisonDuration(state.level));
     state.poisonDamage = [...state.poisonDamage, spider.damage].slice(-DEBUFFS.poison.maxStacks);
   } else return false;
   return true;

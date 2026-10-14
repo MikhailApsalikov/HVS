@@ -4,7 +4,7 @@ import type { RandomSource } from '../rules/random.js';
 import type { SpiderType } from '../types.js';
 import { randomInt } from '../rules/random.js';
 import { PIERCING_STRIKE, WORLD } from '../rules/world.js';
-import { BEST_DEFENSE_COOLDOWN, STATS } from '../rules/stats.js';
+import { BEST_DEFENSE_COOLDOWN, HUNTER_REWARD, STATS } from '../rules/stats.js';
 import { calculate, clamp } from '../rules/numbers.js';
 import { SPIDERS, SPECIAL_SPIDER_ORDER } from '../../content/spiders.js';
 import { Spider } from '../model/Spider.js';
@@ -209,6 +209,7 @@ export function collectDeadSpiders(
   dt: number,
   random: RandomSource,
   emit: EmitEvent,
+  onEffectsChanged: () => void,
 ): void {
   for (const [id, spider] of state.spiders) {
     if (!spider.dying) continue;
@@ -233,15 +234,21 @@ export function collectDeadSpiders(
     }
     if (!spider.reachedCastle || state.stats.breachRewardFraction > 0) {
       const base = randomInt(random, WORLD.coinMin, WORLD.coinMax);
-      const jackpot = random() < state.stats.jackpotChance;
+      const goldenKill = !spider.reachedCastle && spider.type === 'golden';
+      const jackpot =
+        random() < (goldenKill ? state.stats.goldenJackpotChance : state.stats.jackpotChance);
       const coins = state.rules.killReward(
         base,
         jackpot,
         spider.reachedCastle ? state.stats.breachRewardFraction : 1,
-        !spider.reachedCastle && spider.type === 'golden',
+        goldenKill,
       );
       state.coins += coins;
       emit({ type: 'coinDrop', spiderId: id, coins, jackpot });
+      if (goldenKill && jackpot) {
+        state.hunterRewardTimer = HUNTER_REWARD.duration;
+        onEffectsChanged();
+      }
     }
     state.spiders.delete(id);
   }

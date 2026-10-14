@@ -225,7 +225,7 @@ describe('version 20 shield rank migration through session restoration', () => {
       ),
     });
     expect(parsed).not.toBeNull();
-    expect(parsed!.version).toBe(21);
+    expect(parsed!.version).toBe(22);
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('shieldBlock')).toBe(7);
     expect(loaded.talents.getRank('improvedLastHope')).toBe(3);

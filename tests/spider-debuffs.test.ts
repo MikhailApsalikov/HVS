@@ -67,11 +67,12 @@ describe('spider debuffs through session commands', () => {
         const session = arena();
         session.talents.loadFromSave([{ id: 'poisonResistance', rank }]);
         session.refreshStats();
+        const income = session.state.stats.coinsPerSec;
         breach(session, type, 101);
-        const baseDuration = type === 'fast' ? 34 : type === 'poisonous' ? 45 : 40;
+        const baseDuration = type === 'fast' ? 34 : type === 'poisonous' ? 31.5 : 40;
         const duration = Number((baseDuration * (1 - 0.08 * rank)).toFixed(2));
         expect(activeDebuffs(session.state)[0].timer).toBe(duration);
-        if (type === 'golden') expect(session.state.stats.coinsPerSec).toBe(0);
+        if (type === 'golden') expect(session.state.stats.coinsPerSec).toBeCloseTo(income * 0.67);
         if (type === 'fast') expect(session.state.stats.healingReceived).toBe(0.69);
         if (type === 'poisonous') {
           expect(session.state.stats['poison.tickDamage']).toBe(12.12);
@@ -97,7 +98,7 @@ describe('spider debuffs through session commands', () => {
     breach(session, 'poisonous', 101);
     session.tick(0.999);
     breach(session, 'poisonous', 202);
-    expect(session.state.poisonTimer).toBe(27);
+    expect(session.state.poisonTimer).toBe(18.9);
     expect(session.state.poisonTickTimer).toBeCloseTo(1);
     expect(activeDebuffs(session.state)[0]).toMatchObject({ name: 'Яд ×2' });
     expect(activeDebuffs(session.state)[0].detail).toContain('36 урона раз в 2 секунды');
@@ -107,15 +108,15 @@ describe('spider debuffs through session commands', () => {
     session.state.energy = 100;
     expect(session.activateAbility('freeze')).toBe('activated');
     session.tick(20);
-    expect(session.state.poisonTimer).toBe(26);
+    expect(session.state.poisonTimer).toBeCloseTo(17.9);
     expect(session.state.hp).toBeCloseTo(hp - 36.36);
   });
 
   it.each([
-    [8, 24],
-    [9, 24.5],
-    [30, 35],
-    [60, 50],
+    [8, 10.5],
+    [9, 11],
+    [30, 21.5],
+    [60, 36.5],
   ])('poison at level %i lasts %s seconds', (level, duration) => {
     const session = arena(level);
     breach(session, 'poisonous', 100);
@@ -127,34 +128,83 @@ describe('spider debuffs through session commands', () => {
     expect(activeDebuffs(session.state)).toEqual([]);
   });
 
-  it('stops only passive income for 40 seconds, refreshes duration and retains fractional gold', () => {
+  it('reduces passive income for 40 seconds, refreshes duration and retains kill rewards and fractional gold', () => {
     const session = arena();
     const rate = session.state.stats.coinsPerSec;
     session.state.coinAccumulator = 0.4;
     breach(session, 'golden');
     const { coins, coinAccumulator } = session.state;
-    expect(session.state.stats.coinsPerSec).toBe(0);
+    const reducedRate = session.state.stats.coinsPerSec;
+    expect(reducedRate).toBeCloseTo(rate * 0.67);
     expect(coinsDescription(session.state)).toContain('40 с');
     session.tick(10);
-    expect(session.state).toMatchObject({ coins, coinAccumulator, goldLockTimer: 30 });
+    expect(session.state.goldLockTimer).toBe(30);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(
+      coins + coinAccumulator + reducedRate * 10,
+    );
     const target = addSpider(session, 'normal', 1, 0.9);
     expect(session.shootLane(1)).toBe('shot');
     session.tick(0.31);
     expect(target.dying).toBe(true);
     const rewards = session.drainEvents().filter((event) => event.type === 'coinDrop');
     expect(rewards).toHaveLength(1);
-    expect(session.state.coins).toBe(coins + rewards[0].coins);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(
+      coins + coinAccumulator + reducedRate * 10.31 + rewards[0].coins,
+    );
     breach(session, 'golden');
     expect(session.state.goldLockTimer).toBe(40);
-    const before = session.state.coins;
+    const before = session.state.coins + session.state.coinAccumulator;
     session.tick(40);
-    expect(session.state.coins).toBe(before);
-    expect(session.state.coinAccumulator).toBe(coinAccumulator);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(
+      before + reducedRate * 40,
+    );
     expect(session.state.stats.coinsPerSec).toBe(rate);
     session.tick(1);
     expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(
-      before + coinAccumulator + rate,
+      before + reducedRate * 40 + rate,
     );
+  });
+
+  it.each([
+    [40, 0.97],
+    [41, 0.94],
+    [50, 0.67],
+    [72, 0.01],
+    [73, 0],
+    [100, 0],
+  ])('golden debuff at level %i retains %s of passive income', (level, fraction) => {
+    const session = arena(level);
+    const income = session.state.stats.coinsPerSec;
+    breach(session, 'golden');
+    expect(session.state.stats.coinsPerSec).toBeCloseTo(income * fraction);
+    expect(session.state.goldLockTimer).toBe(40);
+    const total = session.state.coins + session.state.coinAccumulator;
+    const reducedRate = session.state.stats.coinsPerSec;
+    session.tick(40);
+    expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(
+      total + reducedRate * 40,
+    );
+    expect(session.state.stats.coinsPerSec).toBe(income);
+  });
+
+  it.each([
+    [8, 1, 1],
+    [8, 2, 2],
+    [9, 3, 6],
+    [17, 10, 100],
+    [50, 2, 86],
+    [50, 3, 100],
+    [107, 1, 100],
+    [120, 1, 100],
+  ])('poison at level %i with %i stacks reduces armor by %i%%', (level, stacks, percent) => {
+    const session = arena(level);
+    const armor = session.state.stats.armor;
+    for (let stack = 0; stack < stacks; stack++) breach(session, 'poisonous');
+    expect(session.state.poisonDamage).toHaveLength(stacks);
+    expect(session.state.stats.armor).toBe(Math.round(armor * (1 - percent / 100)));
+    expect(activeDebuffs(session.state)[0].detail).toContain(`Броня уменьшена на ${percent}%`);
+    session.tick(session.state.poisonTimer);
+    expect(session.state.stats.armor).toBe(armor);
   });
 
   it.each([
@@ -280,13 +330,13 @@ describe('spider debuffs through session commands', () => {
     expect(activeDebuffs(loaded.state)).toEqual([]);
   });
 
-  it('deals exactly 20 poison ticks totaling 240% raw damage at level 40, ignores defenses and restores armor', () => {
-    const session = arena(40);
+  it('deals exactly 13 poison ticks totaling 156% raw damage at level 39, ignores defenses and restores armor', () => {
+    const session = arena(39);
     session.talents.loadFromSave([{ id: 'spiderArmor', rank: 10 }]);
     session.refreshStats();
     const armor = session.state.stats.armor;
     breach(session, 'poisonous', 101);
-    expect(session.state.stats.armor).toBe(Math.round(armor * 0.25));
+    expect(session.state.stats.armor).toBe(Math.round(armor * 0.68));
     expect(session.state.stats['poison.tickDamage']).toBe(12.12);
     const hp = session.state.hp;
     session.state.character.setModifiers('test:defense', [
@@ -299,24 +349,23 @@ describe('spider debuffs through session commands', () => {
     expect(session.state.hp).toBe(hp);
     session.tick(0.001);
     expect(session.state.hp).toBeCloseTo(hp - 12.12);
-    session.tick(37.999);
-    expect(session.state.hp).toBeCloseTo(hp - 19 * 12.12);
+    session.tick(23.999);
+    expect(session.state.hp).toBeCloseTo(hp - 12 * 12.12);
     expect(session.state.poisonTimer).toBeCloseTo(0.001);
     session.tick(0.001);
-    expect(session.state.hp).toBeCloseTo(hp - 242.4);
+    expect(session.state.hp).toBeCloseTo(hp - 157.56);
     expect(session.state).toMatchObject({ poisonTimer: 0, poisonTickTimer: 0, poisonDamage: [] });
     expect(session.state.stats.armor).toBe(armor);
     session.tick(4);
-    expect(session.state.hp).toBeCloseTo(hp - 242.4);
+    expect(session.state.hp).toBeCloseTo(hp - 157.56);
   });
 
   it('refreshes poison without delaying ticks and replaces the oldest of ten damage contributions', () => {
     const session = arena();
-    const armor = session.state.stats.armor;
     breach(session, 'poisonous', 100);
     session.tick(0.999);
     breach(session, 'poisonous', 200);
-    expect(session.state).toMatchObject({ poisonTimer: 45, poisonDamage: [100, 200] });
+    expect(session.state).toMatchObject({ poisonTimer: 31.5, poisonDamage: [100, 200] });
     expect(session.state.poisonTickTimer).toBeCloseTo(1);
     const hp = session.state.hp;
     session.tick(1);
@@ -327,13 +376,13 @@ describe('spider debuffs through session commands', () => {
       200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100,
     ]);
     expect(session.state.stats['poison.tickDamage']).toBe(780);
-    expect(session.state.stats.armor).toBe(Math.round(armor * 0.25));
-    expect(activeDebuffs(session.state)[0]).toMatchObject({ name: 'Яд ×10', timer: 45 });
+    expect(session.state.stats.armor).toBe(0);
+    expect(activeDebuffs(session.state)[0]).toMatchObject({ name: 'Яд ×10', timer: 31.5 });
     const before = session.state.hp;
     const loaded = restore(parseSave(snapshot(session))!, () => 0.999999);
     expect(loaded.state.poisonDamage).toEqual(session.state.poisonDamage);
-    loaded.tick(45);
-    expect(loaded.state.hp).toBe(before - 22 * 780);
+    loaded.tick(31.5);
+    expect(loaded.state.hp).toBe(before - 15 * 780);
     expect(activeDebuffs(loaded.state)).toEqual([]);
   });
 
@@ -417,7 +466,7 @@ describe('spider debuffs through session commands', () => {
     session.tick(8);
     expect(session.state.hp).toBe(1);
     expect(session.state.phase).toBe('playing');
-    expect(session.state.poisonTimer).toBe(37);
+    expect(session.state.poisonTimer).toBe(23.5);
   });
 
   it('poison does not revive a player who has already died', () => {
@@ -505,9 +554,9 @@ describe('spider debuffs through session commands', () => {
 
 describe('debuff save compatibility', () => {
   it.each([
-    [8, 40, 24],
+    [8, 40, 10.5],
     [8, 10, 10],
-    [50, 40, 40],
+    [50, 40, 31.5],
   ])(
     'migrates version 18 poison at level %i from %i to %i remaining seconds only once',
     (level, previousTimer, expectedTimer) => {
@@ -529,7 +578,7 @@ describe('debuff save compatibility', () => {
       };
       const parsed = parseSave(previous)!;
       expect(parsed).not.toBeNull();
-      expect(parsed.version).toBe(21);
+      expect(parsed.version).toBe(22);
       expect(parsed.state).toEqual({ ...previous.state, poisonTimer: expectedTimer });
       const loaded = restore(parsed, () => 0.999999);
       expect(loaded.state.stats['poison.tickDamage']).toBe(180);
@@ -577,7 +626,7 @@ describe('debuff save compatibility', () => {
     { goldLockTimer: 40.01 },
     { healingReductionTimer: 34.01 },
     { healingReductionTimer: NaN },
-    { poisonTimer: 45.01 },
+    { poisonTimer: 31.51 },
     { poisonTickTimer: 2.01 },
     { poisonTickTimer: 0 },
     { poisonTimer: 0 },

@@ -1,5 +1,10 @@
 export const DEBUFFS = {
-  goldLock: { name: 'Потеря дохода', duration: 40, incomePercent: -100 },
+  goldLock: {
+    name: 'Потеря дохода',
+    duration: 40,
+    incomePercentPerLevel: 3,
+    maxIncomeReductionPercent: 100,
+  },
   healingReduction: {
     name: 'Ослабленное лечение',
     duration: 4,
@@ -9,11 +14,12 @@ export const DEBUFFS = {
   },
   poison: {
     name: 'Яд',
-    duration: 20,
+    duration: 10,
     durationPerLevel: 0.5,
     interval: 2,
     damagePercent: 12,
-    armorPercent: -75,
+    armorPercentPerLevel: 1,
+    maxArmorReductionPercent: 100,
     maxStacks: 10,
   },
 } as const;

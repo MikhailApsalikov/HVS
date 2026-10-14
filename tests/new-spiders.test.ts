@@ -165,12 +165,12 @@ describe('golden spider rewards through session commands', () => {
       session.tick(0.31);
       // Base roll + greed (5) + wallet (1) + endurance (1); only that sum receives +25%.
       const normalCoins = jackpot ? 30 : 13;
-      const bonus = jackpot ? 300 : 100;
+      const goldenCoins = jackpot ? 330 : 338;
       expect(rewards(session)).toEqual([
         { type: 'coinDrop', spiderId: normal.id, coins: normalCoins, jackpot },
-        { type: 'coinDrop', spiderId: golden.id, coins: normalCoins + bonus, jackpot },
+        { type: 'coinDrop', spiderId: golden.id, coins: goldenCoins, jackpot: true },
       ]);
-      expect(session.state.coins).toBe(before + 2 * normalCoins + bonus);
+      expect(session.state.coins).toBe(before + normalCoins + goldenCoins);
     },
   );
 

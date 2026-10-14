@@ -4,6 +4,7 @@ import { GameSession } from './GameSession.js';
 import type { GameState } from './model/GameState.js';
 import { Spider } from './model/Spider.js';
 import { Arrow } from './model/Arrow.js';
+import { poisonDuration } from './rules/debuffs.js';
 import { ABILITY_ORDER } from '../content/abilities.js';
 import {
   ANTI_AFK,
@@ -13,6 +14,7 @@ import {
   PRIMARY_STATS,
   STATS,
   KILLING_STREAK,
+  HUNTER_REWARD,
   aimedFireDuration,
 } from './rules/stats.js';
 import { TALENTS } from '../content/talents.js';
@@ -35,6 +37,7 @@ const STATE_FIELDS = [
   'levelTimerMax',
   'freezeActive',
   'invulnerableTimer',
+  'hunterRewardTimer',
   'goldLockTimer',
   'healingReductionTimer',
   'poisonTimer',
@@ -90,7 +93,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 21;
+  readonly version: 22;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -107,7 +110,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 21,
+    version: 22,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -131,6 +134,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   state.eagleEyeTimer = data.state.eagleEyeTimer;
   state.eagleEyeShots = data.state.eagleEyeShots;
   state.antiAfkStacks = data.state.antiAfkStacks;
+  state.hunterRewardTimer = data.state.hunterRewardTimer;
   state.goldLockTimer = data.state.goldLockTimer;
   state.healingReductionTimer = data.state.healingReductionTimer;
   state.poisonTimer = data.state.poisonTimer;
@@ -269,13 +273,18 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
   if (
-    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21].includes(
+    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].includes(
       value.version as number,
     ) ||
     !object(value.state)
   )
     return null;
   const state = value.state;
+  if (
+    value.version === 22 &&
+    (!number(state.hunterRewardTimer) || state.hunterRewardTimer > HUNTER_REWARD.duration)
+  )
+    return null;
   if (
     (value.version as number) >= 18 &&
     (!number(state.goldLockTimer) ||
@@ -291,7 +300,9 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
       state.poisonTimer >
         (value.version === 18
           ? 40
-          : DEBUFFS.poison.duration + DEBUFFS.poison.durationPerLevel * state.level) ||
+          : value.version === 22
+            ? poisonDuration(state.level)
+            : 20 + 0.5 * state.level) ||
       !number(state.poisonTickTimer) ||
       state.poisonTickTimer > DEBUFFS.poison.interval ||
       !arrayOf(state.poisonDamage, number) ||
@@ -521,21 +532,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     )
   )
     return null;
-  if (value.version === 18)
-    return upgradeTalentBalanceSave(
-      {
-        ...value,
-        version: 21,
-        state: {
-          ...state,
-          poisonTimer: Math.min(
-            state.poisonTimer as number,
-            DEBUFFS.poison.duration + DEBUFFS.poison.durationPerLevel * (state.level as number),
-          ),
-        },
-      } as unknown as SaveData,
-      18,
-    );
+  if (value.version === 18) return upgradeTalentBalanceSave(upgradeHunterRewardSave(value), 18);
   if (value.version === 17) return upgradeTalentBalanceSave(upgradeDebuffSave(value), 17);
   if ([13, 14, 15, 16].includes(value.version as number)) {
     return upgradeTalentBalanceSave(
@@ -604,10 +601,9 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     session.state.levelTimerMax = duration;
     return snapshot(session);
   }
-  if (value.version === 19)
-    return upgradeTalentBalanceSave({ ...value, version: 21 } as unknown as SaveData, 19);
-  if (value.version === 20)
-    return snapshot(restore({ ...value, version: 21 } as unknown as SaveData));
+  if (value.version === 19) return upgradeTalentBalanceSave(upgradeHunterRewardSave(value), 19);
+  if (value.version === 20 || value.version === 21)
+    return snapshot(restore(upgradeHunterRewardSave(value)));
   return value as unknown as SaveData;
 }
 
@@ -642,14 +638,29 @@ function upgradeShootingSave(value: JsonObject): SaveData {
 function upgradeDebuffSave(value: JsonObject): SaveData {
   return {
     ...value,
-    version: 21,
+    version: 22,
     state: {
       ...(value.state as JsonObject),
+      hunterRewardTimer: 0,
       goldLockTimer: 0,
       healingReductionTimer: 0,
       poisonTimer: 0,
       poisonTickTimer: 0,
       poisonDamage: [],
+    },
+  } as unknown as SaveData;
+}
+
+/** Keep legacy poison stacks and tick rhythm while shortening its remaining duration. */
+function upgradeHunterRewardSave(value: JsonObject): SaveData {
+  const state = value.state as JsonObject;
+  return {
+    ...value,
+    version: 22,
+    state: {
+      ...state,
+      hunterRewardTimer: 0,
+      poisonTimer: Math.min(state.poisonTimer as number, poisonDuration(state.level as number)),
     },
   } as unknown as SaveData;
 }

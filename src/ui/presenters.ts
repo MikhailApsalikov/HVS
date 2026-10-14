@@ -45,6 +45,7 @@ export function formatStat(id: StatId, value: number): string {
     id === 'blizzard.slow' ||
     id === 'permafrostSlow' ||
     id === 'jackpotChance' ||
+    id === 'goldenJackpotChance' ||
     id === 'breachRewardFraction' ||
     id === 'spawnProbability'
   )
@@ -58,6 +59,7 @@ export function describeModifier(modifier: Omit<StatModifier, 'source'>): string
   const points =
     kind === 'flat' &&
     (stat === 'jackpotChance' ||
+      stat === 'goldenJackpotChance' ||
       stat === 'blizzard.slow' ||
       stat === 'blockChance' ||
       stat === 'blockVolleyChance')
@@ -252,13 +254,16 @@ export function coinsDescription(state: GameState): string {
     [
       state.stats.coinsPerSec > 0 ? `${value('coinsPerSec')} монет в секунду.` : '',
       state.goldLockTimer > 0
-        ? `Пассивный доход заблокирован: ещё ${formatSeconds(state.goldLockTimer)} с.`
+        ? `Пассивный доход уменьшен на ${Math.abs(state.activeEffects.find((effect) => effect.id === 'goldLock')!.details!.incomePercent!)}%: ещё ${formatSeconds(state.goldLockTimer)} с.`
         : '',
       state.stats.coinsPerKill > 0
         ? `За каждого убитого паука награда увеличена на +${value('coinsPerKill')}.`
         : '',
       state.stats.jackpotChance > 0
         ? `Вероятность тройной награды — ${value('jackpotChance')}.`
+        : '',
+      state.stats.goldenJackpotChance > 0
+        ? `Вероятность тройной награды за золотого паука — ${value('goldenJackpotChance')}.`
         : '',
       state.stats.breachRewardFraction > 0
         ? `Дошедший паук приносит ${value('breachRewardFraction')} награды за его убийство.`
@@ -278,8 +283,10 @@ function playerEffectDetail(effect: PlayerEffect): string {
       return `Выстрелы лучников бесплатны и без времени восстановления. Осталось — ${effect.stacks}.`;
     case 'eagleEye':
       return `Выстрелы лучников гарантированно критические. Осталось — ${effect.stacks}.`;
+    case 'hunterReward':
+      return `Пассивный доход увеличен на ${effect.details!.incomePercent}% и броня увеличена на ${effect.details!.armorPercent}%. Снимается очистителем.`;
     case 'goldLock':
-      return 'Пассивный доход отключён. Награды за пауков сохраняются.';
+      return `Пассивный доход уменьшен на ${Math.abs(effect.details!.incomePercent!)}%. Награды за пауков сохраняются.`;
     case 'healingReduction':
       return `Регенерация здоровья и получаемое лечение уменьшены на ${formatStat('healingReceived', 1 - effect.details!.healingReceived!)}.`;
     case 'poison':

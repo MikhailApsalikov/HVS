@@ -1,5 +1,7 @@
 import { PLAYER_EFFECTS } from '../../content/playerEffects.js';
 import { DEBUFFS } from '../../content/debuffs.js';
+import { HUNTER_REWARD } from '../rules/stats.js';
+import { goldIncomePercent, poisonArmorPercent } from '../rules/debuffs.js';
 import type { GameState } from './GameState.js';
 
 export type PlayerEffectId =
@@ -8,12 +10,13 @@ export type PlayerEffectId =
   | 'stand'
   | 'adrenaline'
   | 'eagleEye'
+  | 'hunterReward'
   | 'goldLock'
   | 'healingReduction'
   | 'poison'
   | 'antiAfk';
 export type PlayerEffectKind = 'buff' | 'debuff';
-export type PlayerEffectSource = 'ability' | 'spider' | 'inactivity';
+export type PlayerEffectSource = 'ability' | 'talent' | 'spider' | 'inactivity';
 
 export interface PlayerEffectMetadata {
   readonly name: string;
@@ -30,6 +33,7 @@ export interface PlayerEffectDetails {
   readonly shootCooldownReduction: number;
   readonly healingReceived: number;
   readonly armorPercent: number;
+  readonly incomePercent: number;
   readonly tickDamage: number;
   readonly tickInterval: number;
   readonly nextTick: number;
@@ -101,8 +105,23 @@ const LIFECYCLES: Readonly<Record<PlayerEffectId, EffectLifecycle>> = {
       state.eagleEyeShots = 0;
     },
   },
+  hunterReward: {
+    read: (state) => ({
+      remaining: state.hunterRewardTimer,
+      details: {
+        incomePercent: HUNTER_REWARD.incomePercent,
+        armorPercent: HUNTER_REWARD.armorPercent,
+      },
+    }),
+    clear: (state) => {
+      state.hunterRewardTimer = 0;
+    },
+  },
   goldLock: {
-    read: (state) => ({ remaining: state.goldLockTimer }),
+    read: (state) => ({
+      remaining: state.goldLockTimer,
+      details: { incomePercent: -goldIncomePercent(state.level) },
+    }),
     clear: (state) => {
       state.goldLockTimer = 0;
     },
@@ -121,7 +140,7 @@ const LIFECYCLES: Readonly<Record<PlayerEffectId, EffectLifecycle>> = {
       remaining: state.poisonTimer,
       stacks: state.poisonDamage.length,
       details: {
-        armorPercent: DEBUFFS.poison.armorPercent,
+        armorPercent: -poisonArmorPercent(state),
         tickDamage: state.stats['poison.tickDamage'],
         tickInterval: DEBUFFS.poison.interval,
         nextTick: state.poisonTickTimer,

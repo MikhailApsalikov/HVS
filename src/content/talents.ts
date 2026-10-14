@@ -4,6 +4,7 @@ import {
   ATTRIBUTE_RULES,
   BEST_DEFENSE_COOLDOWN,
   CRITICAL_SHOT_POWER,
+  HUNTER_REWARD,
   IMPROVED_CRITICAL_SHOT_POWER,
 } from '../domain/rules/stats.js';
 import { ABILITY_ORDER } from './abilities.js';
@@ -288,8 +289,8 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     sprite: 'TalentHunterReward',
     prerequisite: { id: 'greed', rank: 5 },
     column: 3,
-    effects: [flat('jackpotChance', 0.07)],
-    description: 'С вероятностью {jackpotChance} вы получаете тройную награду за убитого паука.',
+    effects: [flat('jackpotChance', 0.07), flat('goldenJackpotChance', 0.2)],
+    description: `С вероятностью {jackpotChance} вы получаете тройную награду за убитого паука; для золотого паука шанс — {goldenJackpotChance}.\nТройная награда за убийство золотого паука даёт «Награду охотника» на ${HUNTER_REWARD.duration} с: +${HUNTER_REWARD.incomePercent}% пассивного золота и +${HUNTER_REWARD.armorPercent}% брони. Бафф снимается очистителем.`,
   },
   greed: {
     branch: 'defense',
