@@ -11,6 +11,14 @@ const attacks = [
   { action: 'volley', cost: 100 },
   { action: 'aimedFire', cost: 100 },
 ] as const;
+const ranks = [
+  { rank: 1, healthPerEnergy: 25, minHpFraction: 0.9 },
+  { rank: 2, healthPerEnergy: 20, minHpFraction: 0.8 },
+  { rank: 3, healthPerEnergy: 15, minHpFraction: 0.7 },
+  { rank: 4, healthPerEnergy: 10, minHpFraction: 0.6 },
+  { rank: 5, healthPerEnergy: 5, minHpFraction: 0.5 },
+] as const;
+const rankedAttacks = attacks.flatMap((attack) => ranks.map((rank) => ({ ...attack, ...rank })));
 
 function arena(rank = 5, talents: { id: TalentId; rank: number }[] = []) {
   const session = new GameSession('normal', () => 0.999999, { level: 60 });
@@ -50,18 +58,17 @@ function expectAttack(session: GameSession, action: Attack) {
 
 describe('masochism through session commands', () => {
   it.each(attacks)('$action pays the missing energy at every rank', ({ action, cost }) => {
-    for (const [rank, healthPerEnergy] of [
-      [1, 25],
-      [2, 20],
-      [3, 15],
-      [4, 10],
-      [5, 5],
-    ]) {
+    for (const { rank, healthPerEnergy } of ranks) {
       const session = arena(rank);
-      expect(session.state.maxHp).toBe(5000);
+      session.state.character.setModifiers('test:health', [
+        { stat: 'maxHp', kind: 'flat', value: 20000 },
+      ]);
+      session.refreshStats();
+      expect(session.state.maxHp).toBe(25000);
+      expect(session.state.hp).toBe(25000);
       expectAttack(session, action);
       expect(session.state.energy).toBe(0);
-      expect(session.state.hp).toBe(5000 - cost * healthPerEnergy);
+      expect(session.state.hp).toBe(25000 - cost * healthPerEnergy);
       if (action === 'shoot') {
         expect(session.state.arrows.size).toBe(1);
         expect(session.state.archers[0].isOnCooldown).toBe(true);
@@ -72,7 +79,7 @@ describe('masochism through session commands', () => {
           expect(session.state.arrows.size).toBe(0);
           session.tick(5);
           expect(session.state.arrows.size).toBe(27);
-          expect(session.state.hp).toBe(5000 - cost * healthPerEnergy);
+          expect(session.state.hp).toBe(25000 - cost * healthPerEnergy);
           expect(session.state.energy).toBe(0);
         }
       }
@@ -90,21 +97,25 @@ describe('masochism through session commands', () => {
     },
   );
 
-  it.each(attacks)('$action may spend health down to exactly half', ({ action, cost }) => {
-    const session = arena();
-    session.state.energy = 10;
-    session.state.hp = 2500 + (cost - 10) * 5;
-    expectAttack(session, action);
-    expect(session.state.hp).toBe(2500);
-    expect(session.state.energy).toBe(0);
-  });
+  it.each(rankedAttacks)(
+    '$action at rank $rank may spend health down to its exact threshold',
+    ({ action, cost, rank, healthPerEnergy, minHpFraction }) => {
+      const session = arena(rank);
+      const minHp = 5000 * minHpFraction;
+      session.state.energy = cost - 2.5;
+      session.state.hp = minHp + 2.5 * healthPerEnergy;
+      expectAttack(session, action);
+      expect(session.state.hp).toBe(minHp);
+      expect(session.state.energy).toBe(0);
+    },
+  );
 
-  it.each(attacks)(
-    '$action rejects a payment below half without changing anything',
-    ({ action, cost }) => {
-      const session = arena();
-      session.state.energy = 10;
-      session.state.hp = 2500 + (cost - 10) * 5 - 0.001;
+  it.each(rankedAttacks)(
+    '$action at rank $rank rejects a payment below its threshold without changing anything',
+    ({ action, cost, rank, healthPerEnergy, minHpFraction }) => {
+      const session = arena(rank);
+      session.state.energy = cost - 2.5;
+      session.state.hp = 5000 * minHpFraction + 2.5 * healthPerEnergy - 0.001;
       const before = snapshot(session);
       expect(attack(session, action)).toBe('not_enough_energy');
       expect(snapshot(session)).toEqual(before);
@@ -117,18 +128,18 @@ describe('masochism through session commands', () => {
     },
   );
 
-  it('accepts the exact half-health boundary with fractional energy', () => {
+  it('accepts the exact rank-one boundary with fractional energy', () => {
     const session = arena(1);
     session.state.character.setModifiers('test:health', [
       { stat: 'maxHp', kind: 'flat', value: -4900 },
     ]);
     session.refreshStats(false);
     session.state.energy = 34.9;
-    session.state.hp = 52.5;
+    session.state.hp = 92.5;
     expect(session.state.maxHp).toBe(100);
     expect(session.shootLane(0)).toBe('shot');
     expect(session.state.energy).toBe(0);
-    expect(session.state.hp).toBe(50);
+    expect(session.state.hp).toBe(90);
     expect(session.state.arrows.size).toBe(1);
   });
 
@@ -139,20 +150,24 @@ describe('masochism through session commands', () => {
     ]);
     session.refreshStats(false);
     session.state.energy = 34.9;
-    session.state.hp = 52.499;
+    session.state.hp = 92.499;
     const before = snapshot(session);
     expect(session.shootLane(0)).toBe('not_enough_energy');
     expect(snapshot(session)).toEqual(before);
   });
 
-  it.each(attacks)('$action uses energy normally even below half health', ({ action, cost }) => {
-    const session = arena();
-    session.state.energy = cost;
-    session.state.hp = 2499;
-    expectAttack(session, action);
-    expect(session.state.hp).toBe(2499);
-    expect(session.state.energy).toBe(0);
-  });
+  it.each(rankedAttacks)(
+    '$action at rank $rank uses energy normally even below its health threshold',
+    ({ action, cost, rank, minHpFraction }) => {
+      const session = arena(rank);
+      const hp = 5000 * minHpFraction - 1;
+      session.state.energy = cost;
+      session.state.hp = hp;
+      expectAttack(session, action);
+      expect(session.state.hp).toBe(hp);
+      expect(session.state.energy).toBe(0);
+    },
+  );
 
   it.each(attacks)('$action cannot replace energy without the talent', ({ action }) => {
     const session = arena(0);
@@ -162,21 +177,26 @@ describe('masochism through session commands', () => {
     expect(snapshot(session)).toEqual(before);
   });
 
-  it('uses the current maximum health after a health bonus changes', () => {
-    const session = arena();
-    session.state.character.setModifiers('test:health', [
-      { stat: 'maxHp', kind: 'flat', value: 5000 },
-    ]);
-    session.refreshStats(false);
-    session.state.hp = 5100;
-    expect(session.state.maxHp).toBe(10000);
-    const before = snapshot(session);
-    expect(session.shootLane(0)).toBe('not_enough_energy');
-    expect(snapshot(session)).toEqual(before);
-    session.state.hp = 5175;
-    expect(session.shootLane(0)).toBe('shot');
-    expect(session.state.hp).toBe(5000);
-  });
+  it.each(ranks)(
+    'rank $rank uses the current maximum health after a health bonus changes',
+    ({ rank, healthPerEnergy, minHpFraction }) => {
+      const session = arena(rank);
+      session.state.character.setModifiers('test:health', [
+        { stat: 'maxHp', kind: 'flat', value: 5000 },
+      ]);
+      session.refreshStats(false);
+      const minHp = 10000 * minHpFraction;
+      const healthCost = 35 * healthPerEnergy;
+      session.state.hp = minHp + healthCost - 1;
+      expect(session.state.maxHp).toBe(10000);
+      const before = snapshot(session);
+      expect(session.shootLane(0)).toBe('not_enough_energy');
+      expect(snapshot(session)).toEqual(before);
+      session.state.hp = minHp + healthCost;
+      expect(session.shootLane(0)).toBe('shot');
+      expect(session.state.hp).toBe(minHp);
+    },
+  );
 
   it('pays only the final reduced costs, including killing-streak discounts', () => {
     const session = arena(5, [
@@ -318,9 +338,9 @@ describe('masochism through session commands', () => {
 describe('masochism saves', () => {
   it('preserves rank, paid resources, cooldowns and pending waves through save/load', () => {
     const session = arena(2);
-    session.state.energy = 12.5;
+    session.state.energy = 87.5;
     expect(session.activateAbility('aimedFire')).toBe('activated');
-    expect(session.state.hp).toBe(3250);
+    expect(session.state.hp).toBe(4750);
     const saved = snapshot(session);
     expect(saved.version).toBe(21);
     const parsed = parseSave(JSON.parse(JSON.stringify(saved)));
@@ -332,9 +352,9 @@ describe('masochism saves', () => {
     session.tick(5);
     expect(snapshot(loaded)).toEqual(snapshot(session));
     expect(loaded.shootLane(0)).toBe('shot');
-    expect(loaded.state.hp).toBe(2550);
+    expect(loaded.state.hp).toBe(4050);
     expect(loaded.shootLane(1)).toBe('not_enough_energy');
-    expect(loaded.state.hp).toBe(2550);
+    expect(loaded.state.hp).toBe(4050);
     expect(loaded.state.energy).toBe(0);
   });
 

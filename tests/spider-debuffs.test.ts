@@ -213,6 +213,30 @@ describe('spider debuffs through session commands', () => {
     },
   );
 
+  it.each([
+    [74, 3, 19, 16],
+    [75, 1, 7, 5],
+  ])(
+    'rounds vampirism at agility %i and rank %i only after reduced healing',
+    (agility, rank, normalHealing, reducedHealing) => {
+      const session = arena(39);
+      session.talents.loadFromSave([{ id: 'vampirism', rank }]);
+      session.state.character.setBase('agility', agility - 38);
+      session.refreshStats();
+      expect(session.state.stats.agility).toBe(agility);
+      expect(session.state.stats.hpPerKill).toBe(normalHealing);
+      breach(session, 'fast');
+      expect(session.state.stats.healingReceived).toBe(0.8);
+      expect(session.state.stats.hpPerKill).toBe(reducedHealing);
+      session.state.hp = 1000;
+      const target = addSpider(session, 'normal', 1, 0.9);
+      expect(session.shootLane(1)).toBe('shot');
+      session.tick(0.31);
+      expect(target.dying).toBe(true);
+      expect(session.state.hp).toBe(1000 + reducedHealing);
+    },
+  );
+
   it.each(['golden', 'fast', 'poisonous'] as const)(
     '%s applies only on health loss, including after partial block',
     (type) => {

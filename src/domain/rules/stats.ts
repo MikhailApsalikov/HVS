@@ -11,9 +11,15 @@ export const CRITICAL_SHOT_POWER = 2;
 export const IMPROVED_CRITICAL_SHOT_POWER = 3;
 export const KILLING_STREAK = { maxStacks: 20, decayInterval: 1.5 } as const;
 export const AIMED_FIRE = { firstDelay: 1, interval: 2 } as const;
-export const MASOCHISM = { healthPerEnergy: [25, 20, 15, 10, 5], minHpFraction: 0.5 } as const;
+export const MASOCHISM = {
+  healthPerEnergy: [25, 20, 15, 10, 5],
+  minHpFraction: [0.9, 0.8, 0.7, 0.6, 0.5],
+} as const;
 export function masochismHealthPerEnergy(rank: number): number {
   return MASOCHISM.healthPerEnergy[rank - 1] ?? 0;
+}
+export function masochismMinHpFraction(rank: number): number {
+  return MASOCHISM.minHpFraction[rank - 1] ?? 1;
 }
 export function aimedFireDuration(waves: number): number {
   return AIMED_FIRE.firstDelay + (waves - 1) * AIMED_FIRE.interval;

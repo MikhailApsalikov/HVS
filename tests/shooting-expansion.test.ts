@@ -116,7 +116,7 @@ describe('shooting progression and scaling', () => {
       session.state.pendingTalentPoints = 100;
       for (let rank = 0; rank < 5; rank++) expect(session.upgradeTalent('vampirism')).toBe(true);
       expect(session.upgradeTalent('vampirism')).toBe(false);
-      expect(session.state.stats.hpPerKill).toBe(25);
+      expect(session.state.stats.hpPerKill).toBe(27);
       for (let rank = 0; rank < 5; rank++) session.upgradeTalent('hunterMastery');
       session.state.level = 30;
       for (let rank = 0; rank < 5; rank++) session.upgradeTalent('piercingReward');
@@ -150,20 +150,23 @@ describe('shooting progression and scaling', () => {
   it.each([
     [2, 5, 0.21, 25],
     [3, 1, 0.2101, 5],
-    [9, 5, 0.2115, 25],
-    [10, 5, 0.2115, 25],
-    [130, 5, 0.2415, 35],
-  ])('scales full agility steps at agility %s and rank %s', (agility, rank, chance, hp) => {
-    const session = arena([
-      ...critical,
-      { id: 'agileCriticalShot', rank },
-      { id: 'vampirism', rank },
-    ]);
-    session.state.character.setBase('agility', agility);
-    session.refreshStats();
-    expect(session.state.stats.criticalShotChance).toBe(chance);
-    expect(session.state.stats.hpPerKill).toBe(hp);
-  });
+    [9, 5, 0.2115, 26],
+    [10, 5, 0.2115, 26],
+    [130, 5, 0.2415, 38],
+  ])(
+    'uses each talent’s agility scaling at agility %s and rank %s',
+    (agility, rank, chance, hp) => {
+      const session = arena([
+        ...critical,
+        { id: 'agileCriticalShot', rank },
+        { id: 'vampirism', rank },
+      ]);
+      session.state.character.setBase('agility', agility);
+      session.refreshStats();
+      expect(session.state.stats.criticalShotChance).toBe(chance);
+      expect(session.state.stats.hpPerKill).toBe(hp);
+    },
+  );
   it('uses final agility and recalculates scaling after stat changes', () => {
     const session = arena([
       ...critical,
@@ -180,17 +183,17 @@ describe('shooting progression and scaling', () => {
     expect(session.state.stats).toMatchObject({
       agility: 130,
       criticalShotChance: 0.2415,
-      hpPerKill: 35,
+      hpPerKill: 38,
     });
     session.state.character.removeModifiers('test:item');
     session.refreshStats();
     expect(session.state.stats).toMatchObject({
       agility: 124,
       criticalShotChance: 0.2305,
-      hpPerKill: 35,
+      hpPerKill: 37,
     });
     expect(attributeDescription(session.state, 'agility')).toContain(
-      'Каждое убийство восстанавливает 35 здоровья',
+      'Каждое убийство восстанавливает 37 здоровья',
     );
     expect(talentDescription('agileCriticalShot', 5, session.state.stats)).toContain('0.05%');
     expect(talentDescription('improvedCriticalShot', 8, session.state.stats)).toContain('64%');
@@ -199,7 +202,7 @@ describe('shooting progression and scaling', () => {
     );
     session.state.character.setBase('agility', 76);
     session.refreshStats();
-    expect(session.state.stats).toMatchObject({ agility: 99, hpPerKill: 30 });
+    expect(session.state.stats).toMatchObject({ agility: 99, hpPerKill: 35 });
     session.state.character.setBase('agility', 77);
     session.refreshStats();
     expect(session.state.stats).toMatchObject({ agility: 100, hpPerKill: 35 });
@@ -327,44 +330,52 @@ describe('eagle eye ability', () => {
 
 describe('vampirism and gold', () => {
   it.each([
-    [0, 5],
-    [49, 5],
-    [50, 6],
-    [99, 6],
-    [100, 7],
-  ])('heals five per rank plus one per full fifty agility at agility %s', (agility, perRank) => {
-    const session = arena();
-    session.state.character.setBase('agility', agility);
-    session.state.pendingTalentPoints = 5;
-    for (let rank = 1; rank <= 5; rank++) {
-      session.state.phase = 'levelUp';
-      expect(session.upgradeTalent('vampirism')).toBe(true);
-      expect(session.state.stats.hpPerKill).toBe(perRank * rank);
-      session.state.phase = 'playing';
-      session.state.hp = 1;
-      session.state.energy = 100;
-      session.state.archers[0].start(0);
-      addSpider(session, 'normal', 0, 0.9);
-      expect(session.shootLane(0)).toBe('shot');
-      session.tick(0.4);
-      expect(session.state.hp).toBe(1 + perRank * rank);
-      expect(talentDescription('vampirism', rank, session.state.stats)).toBe(
-        `При убийстве паука восстанавливает ${rank * 5} здоровья и дополнительно ${rank} за каждые 50 полных единиц ловкости.`,
-      );
-    }
-    expect(
-      session.state.rules
-        .explain('hpPerKill')
-        .modifiers.filter(({ source }) => source === 'talent:vampirism'),
-    ).toEqual([
-      {
-        source: 'talent:vampirism',
-        stat: 'hpPerKill',
-        kind: 'flat',
-        value: perRank * 5,
-      },
-    ]);
-  });
+    [0, [5, 10, 15, 20, 25]],
+    [24, [5, 11, 16, 22, 27]],
+    [25, [6, 11, 17, 22, 28]],
+    [49, [6, 12, 18, 24, 30]],
+    [50, [6, 12, 18, 24, 30]],
+    [74, [6, 13, 19, 26, 32]],
+    [75, [7, 13, 20, 26, 33]],
+    [99, [7, 14, 21, 28, 35]],
+    [100, [7, 14, 21, 28, 35]],
+  ] as const)(
+    'rounds continuous healing only after applying rank at agility %s',
+    (agility, heals) => {
+      const session = arena();
+      session.state.character.setBase('agility', agility);
+      session.state.pendingTalentPoints = 5;
+      for (let rank = 1; rank <= 5; rank++) {
+        session.state.phase = 'levelUp';
+        expect(session.upgradeTalent('vampirism')).toBe(true);
+        const healing = heals[rank - 1];
+        expect(session.state.stats.hpPerKill).toBe(healing);
+        session.state.phase = 'playing';
+        session.state.hp = 1;
+        session.state.energy = 100;
+        session.state.archers[0].start(0);
+        addSpider(session, 'normal', 0, 0.9);
+        expect(session.shootLane(0)).toBe('shot');
+        session.tick(0.4);
+        expect(session.state.hp).toBe(1 + healing);
+        expect(talentDescription('vampirism', rank, session.state.stats)).toBe(
+          `При убийстве паука восстанавливает ${rank * 5} здоровья и дополнительно ${rank} за каждые 50 единиц ловкости.\nПрибавка от ловкости рассчитывается точно; итоговое лечение округляется до целого.`,
+        );
+      }
+      expect(
+        session.state.rules
+          .explain('hpPerKill')
+          .modifiers.filter(({ source }) => source === 'talent:vampirism'),
+      ).toEqual([
+        {
+          source: 'talent:vampirism',
+          stat: 'hpPerKill',
+          kind: 'flat',
+          value: (5 + agility / 50) * 5,
+        },
+      ]);
+    },
+  );
   it.each(['shot', 'critical', 'volley', 'armageddon'] as const)(
     'heals on each kill from %s, capped by maximum health',
     (source) => {
@@ -383,7 +394,7 @@ describe('vampirism and gold', () => {
         session.activateAbility(source);
       } else session.shootLane(0);
       session.tick(source === 'armageddon' ? 3 : 0.4);
-      expect(session.state.hp).toBe(source === 'critical' ? 100 : 75);
+      expect(session.state.hp).toBe(source === 'critical' ? 100 : 77);
       session.state.hp = 99;
       addSpider(session, 'normal', 1, 0.95);
       session.state.energy = 100;

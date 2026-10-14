@@ -23,6 +23,7 @@ interface TalentDefinition {
   readonly scaling?: {
     readonly attribute: PrimaryStatId;
     readonly step: number;
+    readonly mode?: 'steps' | 'continuous';
     readonly effect: Effect;
     readonly basePerRank?: number;
   };
@@ -144,10 +145,11 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
       attribute: 'agility',
       step: 50,
       basePerRank: 5,
+      mode: 'continuous',
       effect: flat('hpPerKill', 1),
     },
     description:
-      'При убийстве паука восстанавливает {scaling.base} здоровья и дополнительно {scaling.value} за каждые {scaling.step} полных единиц ловкости.',
+      'При убийстве паука восстанавливает {scaling.base} здоровья и дополнительно {scaling.value} за каждые {scaling.step} единиц ловкости.\nПрибавка от ловкости рассчитывается точно; итоговое лечение округляется до целого.',
   },
   masochism: {
     branch: 'shooting',
@@ -156,7 +158,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     sprite: 'TalentMasochism',
     effects: [],
     description:
-      'При нехватке энергии выстрелы, «Залп» и «Прицельный огонь» расходуют здоровье: {masochismHealthPerEnergy} за единицу энергии.\nЗдоровье при этом не опускается ниже половины максимума.',
+      'При нехватке энергии выстрелы, «Залп» и «Прицельный огонь» расходуют здоровье: {masochismHealthPerEnergy} за единицу энергии.\nЗдоровье при этом не опускается ниже {masochismMinHpPercent}% максимума.',
   },
   improvedPrep: {
     branch: 'magic',

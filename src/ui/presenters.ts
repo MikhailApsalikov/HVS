@@ -7,6 +7,7 @@ import {
   ATTRIBUTE_RULES,
   STATS,
   masochismHealthPerEnergy,
+  masochismMinHpFraction,
 } from '../domain/rules/stats.js';
 import { ABILITIES, ABILITY_ORDER } from '../content/abilities.js';
 import { TALENTS, TALENT_ORDER } from '../content/talents.js';
@@ -83,6 +84,7 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
   if (definition.description)
     return fillDescription(definition.description, (key) => {
       if (key === 'masochismHealthPerEnergy') return String(masochismHealthPerEnergy(rank));
+      if (key === 'masochismMinHpPercent') return String(masochismMinHpFraction(rank) * 100);
       if (key === 'streakInterval')
         return formatSeconds(talentEffectValue(id, rank, 'killingStreak.interval'));
       if (key === 'streakBaseStacks') return String(STATS['killingStreak.maxStacks'].base);

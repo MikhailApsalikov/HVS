@@ -114,6 +114,7 @@ export class TalentSystem {
   getScalingModifiers(stats: ResolvedStats): StatModifier[] {
     return this.talents.flatMap(({ id, rank }) => {
       const scaling = TALENTS[id].scaling;
+      const steps = scaling ? stats[scaling.attribute] / scaling.step : 0;
       return scaling && rank > 0
         ? [
             {
@@ -121,7 +122,8 @@ export class TalentSystem {
               source: `talent:${id}`,
               value:
                 ((scaling.basePerRank ?? 0) +
-                  Math.floor(stats[scaling.attribute] / scaling.step) * scaling.effect.value) *
+                  (scaling.mode === 'continuous' ? steps : Math.floor(steps)) *
+                    scaling.effect.value) *
                 rank,
             },
           ]
