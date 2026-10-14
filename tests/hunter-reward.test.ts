@@ -140,13 +140,13 @@ describe('hunter reward through session commands', () => {
     addSpider(session, 'golden', 1, 1, 100);
     addSpider(session, 'poisonous', 2, 1, 100);
     session.tick(0.001);
-    // At level 50, golden reduces income by 33%; one poison stack reduces armor by 43%.
-    expect(session.state.stats).toMatchObject({ armor: 86, coinsPerSec: 4.02 });
+    // At level 50, golden reduces income by 33%; one poison stack reduces armor by 21.5%.
+    expect(session.state.stats).toMatchObject({ armor: 118, coinsPerSec: 4.02 });
     expect(session.state.hunterRewardTimer).toBeGreaterThan(0);
     addSpider(session, 'cleanser', 3, 1, 0);
     session.tick(0.001);
     expect(session.state.hunterRewardTimer).toBe(0);
-    expect(session.state.stats).toMatchObject({ armor: 57, coinsPerSec: 2.68 });
+    expect(session.state.stats).toMatchObject({ armor: 79, coinsPerSec: 2.68 });
     expect(session.state.poisonDamage).toHaveLength(1);
     expect(session.state.goldLockTimer).toBeGreaterThan(0);
     expect(session.state.poisonTimer).toBeGreaterThan(0);

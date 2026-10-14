@@ -85,7 +85,7 @@ describe('player effect tooltips through session commands', () => {
       if (effect.id === 'poison') {
         expect(effect.details!.tickDamage).toBe(24.24);
         expect(html).toContain(
-          'Броня уменьшена на 100%. Вы отравлены и получаете 24 урона раз в 2 секунды. Яд не может убить.',
+          'Броня уменьшена на 53%. Вы отравлены и получаете 24 урона раз в 2 секунды. Яд не может убить.',
         );
       }
     }

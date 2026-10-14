@@ -18,7 +18,7 @@ export const DEBUFFS = {
     durationPerLevel: 0.5,
     interval: 2,
     damagePercent: 12,
-    armorPercentPerLevel: 1,
+    armorPercentPerLevel: 0.5,
     maxArmorReductionPercent: 100,
     maxStacks: 10,
   },

@@ -184,7 +184,7 @@ describe('player effect entities through session commands', () => {
       remaining: state.poisonTimer,
       stacks: 2,
       details: {
-        armorPercent: -100,
+        armorPercent: -53,
         tickDamage: state.stats['poison.tickDamage'],
         tickInterval: DEBUFFS.poison.interval,
         nextTick: state.poisonTickTimer,

@@ -188,15 +188,18 @@ describe('spider debuffs through session commands', () => {
   });
 
   it.each([
-    [8, 1, 1],
-    [8, 2, 2],
-    [9, 3, 6],
-    [17, 10, 100],
-    [50, 2, 86],
-    [50, 3, 100],
-    [107, 1, 100],
-    [120, 1, 100],
-  ])('poison at level %i with %i stacks reduces armor by %i%%', (level, stacks, percent) => {
+    [8, 1, 0.5],
+    [8, 2, 1],
+    [9, 3, 3],
+    [17, 10, 50],
+    [26, 10, 95],
+    [27, 10, 100],
+    [50, 2, 43],
+    [50, 3, 64.5],
+    [206, 1, 99.5],
+    [207, 1, 100],
+    [220, 1, 100],
+  ])('poison at level %i with %i stacks reduces armor by %s%%', (level, stacks, percent) => {
     const session = arena(level);
     const armor = session.state.stats.armor;
     for (let stack = 0; stack < stacks; stack++) breach(session, 'poisonous');
@@ -336,7 +339,7 @@ describe('spider debuffs through session commands', () => {
     session.refreshStats();
     const armor = session.state.stats.armor;
     breach(session, 'poisonous', 101);
-    expect(session.state.stats.armor).toBe(Math.round(armor * 0.68));
+    expect(session.state.stats.armor).toBe(Math.round(armor * 0.84));
     expect(session.state.stats['poison.tickDamage']).toBe(12.12);
     const hp = session.state.hp;
     session.state.character.setModifiers('test:defense', [
