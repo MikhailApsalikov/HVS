@@ -54,6 +54,43 @@ describe('spider generation through session ticks', () => {
   });
 
   it.each([
+    ['easy', 1, 0.0392, 0.056, 0.0728],
+    ['easy', 50, 0.12152, 0.1736, 0.22568],
+    ['easy', 100, 0.20552, 0.2936, 0.38168],
+    ['normal', 1, 0.0448, 0.064, 0.0832],
+    ['normal', 50, 0.15456, 0.2208, 0.28704],
+    ['normal', 100, 0.26656, 0.3808, 0.49504],
+    ['hard', 1, 0.0504, 0.072, 0.0936],
+    ['hard', 50, 0.1876, 0.268, 0.3484],
+    ['hard', 100, 0.3276, 0.468, 0.6084],
+  ] as const)(
+    'reduces every eligible species speed by 20 percent on %s at level %i',
+    (difficulty, level, minimumSpeed, averageSpeed, maximumSpeed) => {
+      for (const [type, unlock] of [['normal', 1], ...priority] as const) {
+        if (level < unlock) continue;
+        for (const [roll, speed] of [
+          [0, minimumSpeed],
+          [0.5, averageSpeed],
+          [1, maximumSpeed],
+        ] as const) {
+          const rolls = speciesRolls(type, level, 0);
+          rolls[rolls.length - 3] = roll;
+          const session = encounter(level, rolls, difficulty);
+          session.tick(0.02);
+          expect(session.state.spiders.size).toBe(1);
+          const spider = [...session.state.spiders.values()][0];
+          const speciesMultiplier = type === 'fast' ? 3 : type === 'tank' ? 0.6 : 1;
+          expect(spider.type).toBe(type);
+          expect(spider.speed).toBeCloseTo(speed * speciesMultiplier, 6);
+          const before = spider.y;
+          session.tick(0.1);
+          expect(spider.y - before).toBeCloseTo(speed * speciesMultiplier * 0.1, 6);
+        }
+      }
+    },
+  );
+
+  it.each([
     ['normal', 0, 343],
     ['normal', 1, 637],
     ['fat', 0.5, 490],

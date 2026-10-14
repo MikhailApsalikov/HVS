@@ -5,8 +5,8 @@ import { addSpider, game } from './helpers.js';
 
 describe('combat balance through session commands', () => {
   it.each([
-    ['tank', 15, 0.0816, 784],
-    ['fast', 20, 0.468, 58],
+    ['tank', 15, 0.06528, 784],
+    ['fast', 20, 0.3744, 58],
   ] as const)('spawns %s with its new multiplier', (type, level, speed, damage) => {
     const rolls = type === 'tank' ? [0, 0, 0.5, 0.5, 0.5] : [0, 0.99, 0.99, 0.99, 0, 0.5, 0.5, 0.5];
     let roll = 0;

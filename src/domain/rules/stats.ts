@@ -27,6 +27,12 @@ export function aimedFireDuration(waves: number): number {
 export const BURNER_ENERGY_PER_LEVEL = 2;
 export const GOLDEN_SPIDER_REWARD = { base: 10, perLevel: 1 } as const;
 export const HUNTER_REWARD = { duration: 15, incomePercent: 50, armorPercent: 50 } as const;
+/** Linear speed growth in fields per second for each difficulty. */
+export const SPIDER_SPEED = {
+  easy: { base: 0.056, perLevel: 0.0024 },
+  normal: { base: 0.064, perLevel: 0.0032 },
+  hard: { base: 0.072, perLevel: 0.004 },
+} as const;
 /** Rounded quadratic damage growth for each difficulty, with a base of 10. */
 export const SPIDER_DAMAGE = {
   base: 10,

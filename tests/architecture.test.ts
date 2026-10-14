@@ -73,6 +73,8 @@ describe('legacy feature inventory captured before rewrite', () => {
     const { spiderDamageStep: _linearDamage, ...normalBaseline } = baseline.normal;
     expect(normalConfig).toEqual({
       ...normalBaseline,
+      spiderSpeedBase: 0.064,
+      spiderSpeedStep: 0.0032,
       spiderDamageBase: 10,
       spiderDamageGrowth: SPIDER_DAMAGE.growth.normal,
       armorEffectiveness: 1.5,
