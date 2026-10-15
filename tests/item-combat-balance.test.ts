@@ -209,7 +209,8 @@ describe('version 20 shield rank migration through session restoration', () => {
     learn(session, 'endurance', 7);
     learn(session, 'shieldBlock', 7);
     learn(session, 'lastHope');
-    learn(session, 'improvedEndurance', 6);
+    learn(session, 'improvedEndurance', 5);
+    learn(session, 'greed');
     learn(session, 'improvedLastHope', 3);
     expect(session.buyItem('l021')).toBe(true);
     play(session);

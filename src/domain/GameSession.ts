@@ -20,6 +20,7 @@ import {
 import { TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK } from './rules/stats.js';
 import { buffModifiers, nextBuffBoundary, tickBuffs } from './systems/BuffSystem.js';
 import {
+  clearSpiderDebuffs,
   debuffAgilityDodgeModifiers,
   debuffModifiers,
   nextDebuffBoundary,
@@ -73,9 +74,17 @@ export class GameSession {
       ...this.items.getModifiers(),
       ...state.character.getModifiers(),
       ...buffModifiers(state),
-      ...debuffModifiers(state),
       ...learningModifiers(state),
     ];
+    const rules = new GameRules(state.config, effects, state.character.base, state.level);
+    const scaling = this.talents.getScalingModifiers(rules.snapshot());
+    const resistance = rules.value(
+      'spiderDebuffResistance',
+      undefined,
+      scaling.filter((effect) => effect.stat === 'spiderDebuffResistance'),
+    );
+    if (resistance === 1) clearSpiderDebuffs(state);
+    effects.push(...scaling, ...debuffModifiers(state, resistance));
     if (
       !state.activeEffects.some((effect) => effect.kind === 'debuff' && effect.source === 'spider')
     )
@@ -92,16 +101,7 @@ export class GameSession {
         kind: 'percent',
         value: state.antiAfkDamagePercent,
       });
-    const agilityDodgeModifiers = debuffAgilityDodgeModifiers(state);
-    const rules = new GameRules(
-      state.config,
-      effects,
-      state.character.base,
-      state.level,
-      agilityDodgeModifiers,
-    );
-    const scaling = this.talents.getScalingModifiers(rules.snapshot());
-    effects.push(...scaling);
+    const agilityDodgeModifiers = debuffAgilityDodgeModifiers(state, resistance);
     if (state.adrenalineActive) {
       effects.push({
         source: 'ability:adrenaline',

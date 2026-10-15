@@ -36,7 +36,8 @@ describe('spider debuffs through session commands', () => {
     session.state.pendingTalentPoints = 100;
     session.talents.loadFromSave([
       { id: 'endurance', rank: 7 },
-      { id: 'improvedEndurance', rank: 7 },
+      { id: 'improvedEndurance', rank: 5 },
+      { id: 'greed', rank: 2 },
       { id: 'warriorArmor', rank: 5 },
       { id: 'spiderArmor', rank: 10 },
       { id: 'shieldBlock', rank: 5 },

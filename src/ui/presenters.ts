@@ -24,6 +24,9 @@ export function escapeHtml(text: string): string {
 export function formatSeconds(value: number): string {
   return String(Math.ceil(Math.max(0, value)));
 }
+function formatPercent(value: number): string {
+  return `${Number(value.toFixed(4))}%`;
+}
 export function formatStat(id: StatId, value: number): string {
   if (
     id.endsWith('.cooldown') ||
@@ -33,7 +36,7 @@ export function formatStat(id: StatId, value: number): string {
     id === 'spawnInterval'
   )
     return value < 0 ? `-${formatSeconds(-value)}` : formatSeconds(value);
-  if (id === 'damageFactor' || id === 'armorReduction' || id === 'healingReceived')
+  if (id === 'damageFactor' || id === 'armorReduction')
     return `${Number((value * 100).toFixed(1))}%`;
   if (
     id === 'blockChance' ||
@@ -46,12 +49,14 @@ export function formatStat(id: StatId, value: number): string {
     id === 'lastHope.blockChance' ||
     id === 'blizzard.slow' ||
     id === 'permafrostSlow' ||
+    id === 'spiderDebuffResistance' ||
+    id === 'healingReceived' ||
     id === 'jackpotChance' ||
     id === 'goldenJackpotChance' ||
     id === 'breachRewardFraction' ||
     id === 'spawnProbability'
   )
-    return `${Number((value * 100).toFixed(4))}%`;
+    return formatPercent(value * 100);
   return String(Number(value.toFixed(STATS[id].policy.digits)));
 }
 export function describeModifier(modifier: Omit<StatModifier, 'source'>): string {
@@ -110,6 +115,12 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
         return formatStat(definition.scaling!.effect.stat, definition.scaling!.basePerRank! * rank);
       if (key === 'scaling.value')
         return formatStat(definition.scaling!.effect.stat, definition.scaling!.effect.value * rank);
+      if (key.startsWith('scaling.')) {
+        const effect = definition.scaling!.additionalEffects!.find(
+          ({ stat }) => stat === key.slice('scaling.'.length),
+        )!;
+        return formatStat(effect.stat, effect.value * rank);
+      }
       const effect = effects.find(({ stat }) => stat === key)!;
       const amount = Math.abs(effect.value);
       if (effect.kind === 'percent') return `${Number(amount.toFixed(4))}%`;
@@ -142,6 +153,7 @@ const ATTRIBUTE_EFFECT_TEXT: Partial<Record<StatId, string>> = {
   'heal.amount': '«Лечение» восстанавливает на {value} здоровья больше.',
   'prep.restore': '«Подготовка» восстанавливает на {value} энергии больше.',
   permafrostSlow: 'Снижает скорость передвижения пауков на {value}.',
+  spiderDebuffResistance: 'Снижает эффективность дебаффов пауков на {value}.',
 };
 function attributeEffectDescription(effect: StatModifier): string {
   const value =
@@ -168,11 +180,13 @@ export function attributeDescription(state: GameState, id: PrimaryStatId | 'armo
   for (const talentId of TALENT_ORDER) {
     const { scaling, name } = TALENTS[talentId];
     if (scaling?.attribute !== id) continue;
-    for (const modifier of state.rules.explain(scaling.effect.stat).modifiers) {
-      if (modifier.source === `talent:${talentId}` && modifier.value !== 0)
-        contributions.push(
-          `Благодаря таланту «${name}»: ${attributeEffectDescription({ ...modifier, stat: scaling.effect.stat, value: scaling.effect.stat === 'permafrostSlow' ? state.stats.permafrostSlow : modifier.value })}`,
-        );
+    for (const effect of [scaling.effect, ...(scaling.additionalEffects ?? [])]) {
+      for (const modifier of state.rules.explain(effect.stat).modifiers) {
+        if (modifier.source === `talent:${talentId}` && modifier.value !== 0)
+          contributions.push(
+            `Благодаря таланту «${name}»: ${attributeEffectDescription({ ...modifier, stat: effect.stat, value: effect.stat === 'permafrostSlow' || effect.stat === 'spiderDebuffResistance' ? state.stats[effect.stat] : modifier.value })}`,
+          );
+      }
     }
   }
   return `${title}${descriptionParagraphs(contributions.join('\n'))}`;
@@ -263,7 +277,7 @@ export function coinsDescription(state: GameState): string {
     [
       state.stats.coinsPerSec > 0 ? `${value('coinsPerSec')} монет в секунду.` : '',
       state.goldLockTimer > 0
-        ? `Пассивный доход уменьшен на ${Math.abs(state.activeEffects.find((effect) => effect.id === 'goldLock')!.details!.incomePercent!)}%: ещё ${formatSeconds(state.goldLockTimer)} с.`
+        ? `Пассивный доход уменьшен на ${formatPercent(Math.abs(state.activeEffects.find((effect) => effect.id === 'goldLock')!.details!.incomePercent!))}: ещё ${formatSeconds(state.goldLockTimer)} с.`
         : '',
       state.stats.coinsPerKill > 0
         ? `За каждого убитого паука награда увеличена на +${value('coinsPerKill')}.`
@@ -300,13 +314,13 @@ function playerEffectDetail(effect: PlayerEffect): string {
     case 'hunterReward':
       return `Пассивный доход увеличен на ${effect.details!.incomePercent}% и броня увеличена на ${effect.details!.armorPercent}%. Снимается очистителем.`;
     case 'goldLock':
-      return `Пассивный доход уменьшен на ${Math.abs(effect.details!.incomePercent!)}%. Награды за пауков сохраняются.`;
+      return `Пассивный доход уменьшен на ${formatPercent(Math.abs(effect.details!.incomePercent!))}. Награды за пауков сохраняются.`;
     case 'healingReduction':
       return `Регенерация здоровья и получаемое лечение уменьшены на ${formatStat('healingReceived', 1 - effect.details!.healingReceived!)}.`;
     case 'poison':
-      return `Броня уменьшена на ${Math.abs(effect.details!.armorPercent!)}%. Вы отравлены и получаете ${Math.round(effect.details!.tickDamage!)} урона раз в ${effect.details!.tickInterval} секунды. Яд не может убить.`;
+      return `Броня уменьшена на ${formatPercent(Math.abs(effect.details!.armorPercent!))}. Вы отравлены и получаете ${Math.round(effect.details!.tickDamage!)} урона раз в ${effect.details!.tickInterval} секунды. Яд не может убить.`;
     case 'disorientation':
-      return `Шанс блока уменьшен на ${effect.details!.blockReductionPercent}%. Шанс уклонения от ловкости уменьшен на ${effect.details!.agilityDodgeReductionPercent}%.`;
+      return `Шанс блока уменьшен на ${formatPercent(effect.details!.blockReductionPercent!)}. Шанс уклонения от ловкости уменьшен на ${formatPercent(effect.details!.agilityDodgeReductionPercent!)}.`;
     case 'antiAfk':
       return `Входящий урон увеличен на ${formatStat('incomingDamage', effect.details!.damagePercent!)}%.\nПосле расходования энергии штраф снимается через ${formatSeconds(ANTI_AFK.recoveryDuration)} с, если бездействие не повторится.`;
   }

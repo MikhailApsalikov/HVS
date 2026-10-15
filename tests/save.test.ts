@@ -7,6 +7,37 @@ import { SAVE_KEY, SaveSystem } from '../src/infrastructure/storage/SaveSystem.j
 import { game, advance, addSpider, MemoryStorage } from './helpers.js';
 
 describe('saves and migration', () => {
+  it('refunds retired armor and primary attribute ranks from version 23 exactly once', () => {
+    const previous = {
+      ...snapshot(game(20)),
+      talents: [
+        { id: 'magicArmor', rank: 7 },
+        { id: 'improvedEndurance', rank: 7 },
+        { id: 'improvedAgility', rank: 7 },
+        { id: 'improvedIntellect', rank: 7 },
+      ],
+    };
+    expect(previous.version).toBe(23);
+    const parsed = parseSave(previous)!;
+    expect(parsed).not.toBeNull();
+    const loaded = restore(parsed, () => 0.999999);
+    for (const id of [
+      'magicArmor',
+      'improvedEndurance',
+      'improvedAgility',
+      'improvedIntellect',
+    ] as const)
+      expect(loaded.talents.getRank(id)).toBe(5);
+    expect(loaded.state.pendingTalentPoints).toBe(previous.state.pendingTalentPoints + 8);
+    expect(loaded.state.level).toBe(20);
+    loaded.state.phase = 'levelUp';
+    expect(loaded.upgradeTalent('magicArmor')).toBe(false);
+    const saved = snapshot(loaded);
+    expect(saved.version).toBe(23);
+    expect(saved.talents.find(({ id }) => id === 'magicArmor')?.rank).toBe(5);
+    expect(snapshot(restore(parseSave(saved)!, () => 0.999999))).toEqual(saved);
+  });
+
   it.each([19, 20, 21])(
     'migrates version %s poison duration while preserving its stacks and next tick',
     (version) => {

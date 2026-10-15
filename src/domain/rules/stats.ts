@@ -99,6 +99,7 @@ export const STATS = {
   healingReceived: stat('Получаемое лечение и регенерация', 1, speed),
   'poison.tickDamage': stat('Урон яда за тик', 0, decimal),
   spiderDebuffDuration: stat('Длительность дебаффов пауков, с', 0, duration),
+  spiderDebuffResistance: stat('Сопротивление дебаффам пауков', 0, probability),
   shopDiscount: stat('Скидка на покупку предметов, %', 0, { ...decimal, max: 100 }),
   energyRegen: stat('Восстановление энергии/с', 8, decimal),
   shootCost: stat('Стоимость выстрела', 35, integer),

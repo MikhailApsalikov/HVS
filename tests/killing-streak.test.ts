@@ -338,7 +338,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         { id: 'hunterMastery', rank: 5 },
         { id: 'criticalShot', rank: 7 },
         { id: 'piercingReward', rank: 8 },
-        { id: 'improvedAgility', rank: 7 },
+        { id: 'improvedAgility', rank: 5 },
         { id: 'killingStreak', rank: 8 },
         { id: prerequisite, rank: 0 },
         { id, rank: currentRank },
@@ -414,7 +414,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       session.talents.loadFromSave([
         { id: 'hunterMastery', rank: 5 },
         { id: 'criticalShot', rank: 7 },
-        { id: 'improvedAgility', rank: 7 },
+        { id: 'improvedAgility', rank: 5 },
         { id: 'vampirism', rank: 5 },
         { id: 'piercingReward', rank: 8 },
       ]);

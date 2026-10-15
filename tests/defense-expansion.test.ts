@@ -25,7 +25,7 @@ function defense(level = 60, random = () => 0.999999): GameSession {
     { stat: 'coinsPerSec', kind: 'percent', value: -100 },
   ]);
   buy(session, 'endurance', 7);
-  buy(session, 'improvedEndurance', 7);
+  buy(session, 'improvedEndurance', 5);
   buy(session, 'greed', 5);
   buy(session, 'warriorArmor', 5);
   buy(session, 'spiderArmor', 10);
@@ -231,10 +231,11 @@ describe('new defense talents through session commands', () => {
     buy(session, 'bestDefense', 10);
     buy(session, 'adrenaline');
     buy(session, 'agility', 5);
-    buy(session, 'improvedIntellect', 7);
+    buy(session, 'improvedIntellect', 5);
     buy(session, 'hunterArsenal', 5);
     buy(session, 'tireless', 5);
-    buy(session, 'magicArmor', 6);
+    buy(session, 'improvedPrep', 3);
+    buy(session, 'magicArmor', 5);
     buy(session, 'quickInstinct', 2);
     session.refreshStats();
     session.state.phase = 'playing';

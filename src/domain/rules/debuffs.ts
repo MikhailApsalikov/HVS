@@ -9,19 +9,39 @@ export function poisonDuration(level: number): number {
   );
 }
 
-export function poisonArmorPercent(state: Pick<GameState, 'level' | 'poisonDamage'>): number {
-  return Math.min(
-    DEBUFFS.poison.maxArmorReductionPercent,
-    Math.max(0, state.level - SPIDERS.poisonous.unlockLevel + 1) *
-      DEBUFFS.poison.armorPercentPerLevel *
-      state.poisonDamage.length,
+export function poisonArmorPercent(
+  state: Pick<GameState, 'level' | 'poisonDamage'>,
+  resistance = 0,
+): number {
+  return (
+    (1 - resistance) *
+    Math.min(
+      DEBUFFS.poison.maxArmorReductionPercent,
+      Math.max(0, state.level - SPIDERS.poisonous.unlockLevel + 1) *
+        DEBUFFS.poison.armorPercentPerLevel *
+        state.poisonDamage.length,
+    )
   );
 }
 
-export function goldIncomePercent(level: number): number {
-  return Math.min(
-    DEBUFFS.goldLock.maxIncomeReductionPercent,
-    Math.max(0, level - SPIDERS.golden.unlockLevel + 1) * DEBUFFS.goldLock.incomePercentPerLevel,
+export function goldIncomePercent(level: number, resistance = 0): number {
+  return (
+    (1 - resistance) *
+    Math.min(
+      DEBUFFS.goldLock.maxIncomeReductionPercent,
+      Math.max(0, level - SPIDERS.golden.unlockLevel + 1) * DEBUFFS.goldLock.incomePercentPerLevel,
+    )
+  );
+}
+
+export function healingReductionPercent(level: number, resistance = 0): number {
+  return (
+    (1 - resistance) *
+    Math.min(
+      DEBUFFS.healingReduction.maxHealingReductionPercent,
+      Math.max(0, level - SPIDERS.fast.unlockLevel + 1) *
+        DEBUFFS.healingReduction.healingPercentPerLevel,
+    )
   );
 }
 
@@ -33,10 +53,17 @@ export function disorientationDuration(level: number): number {
   );
 }
 
-export function disorientationPercent(level: number, target: 'block' | 'agilityDodge'): number {
-  return Math.min(
-    DEBUFFS.disorientation.maxReductionPercent,
-    Math.max(0, level - DEBUFFS.disorientation.unlockLevel + 1) *
-      DEBUFFS.disorientation[`${target}PercentPerLevel`],
+export function disorientationPercent(
+  level: number,
+  target: 'block' | 'agilityDodge',
+  resistance = 0,
+): number {
+  return (
+    (1 - resistance) *
+    Math.min(
+      DEBUFFS.disorientation.maxReductionPercent,
+      Math.max(0, level - DEBUFFS.disorientation.unlockLevel + 1) *
+        DEBUFFS.disorientation[`${target}PercentPerLevel`],
+    )
   );
 }

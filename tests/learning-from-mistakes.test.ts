@@ -55,7 +55,7 @@ describe('learning from mistakes through session commands', () => {
       expect(session.upgradeTalent('learningFromMistakes')).toBe(false);
       session.talents.loadFromSave([
         { id: 'hunterMastery', rank: 5 },
-        { id: 'improvedAgility', rank: 10 },
+        { id: 'improvedAgility', rank: 5 },
         { id: 'piercingReward', rank: 8 },
         { id: 'criticalShot', rank: 7 },
         { id: 'vampirism', rank: 5 },

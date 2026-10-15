@@ -14,7 +14,7 @@ function defense(random = () => 0.999999): GameSession {
   session.state.initialTalentPick = false;
   session.state.pendingTalentPoints = 100;
   buy(session, 'endurance', 7);
-  buy(session, 'improvedEndurance', 7);
+  buy(session, 'improvedEndurance', 5);
   buy(session, 'warriorArmor', 5);
   buy(session, 'spiderArmor', 9);
   buy(session, 'greed', 5);
@@ -151,16 +151,16 @@ describe('defense talent abilities through session commands', () => {
       { stat: 'endurance', kind: 'flat', value: 10 },
     ]);
     session.refreshStats();
-    expect(session.state.stats.endurance).toBe(594); // (40 + 39 × (3 + 7) + 10) × 1.35
+    expect(session.state.stats.endurance).toBe(453); // (40 + 39 × (3 + 5) + 10) × 1.25
     session.state.phase = 'playing';
     expect(session.activateAbility('lastHope')).toBe('activated');
     expect(session.state.energy).toBe(55);
     expect(session.state.getAbility('lastHope').remainingCooldown).toBe(40);
-    expect(session.state.stats).toMatchObject({ blockChance: 0.82, blockPower: 129 });
+    expect(session.state.stats).toMatchObject({ blockChance: 0.82, blockPower: 108 });
     session.refreshStats();
-    expect(session.state.stats.blockPower).toBe(129);
+    expect(session.state.stats.blockPower).toBe(108);
     session.tick(5.999);
-    expect(session.state.stats.blockPower).toBe(129);
+    expect(session.state.stats.blockPower).toBe(108);
     session.tick(0.0011);
     expect(session.state.lastHopeTimer).toBe(0);
     expect(session.state.stats).toMatchObject({
@@ -203,10 +203,11 @@ describe('defense talent abilities through session commands', () => {
     buy(session, 'lastHope');
     buy(session, 'improvedLastHope', 5);
     buy(session, 'agility', 5);
-    buy(session, 'improvedIntellect', 7);
+    buy(session, 'improvedIntellect', 5);
     buy(session, 'tireless', 5);
     buy(session, 'improvedPrep', 5);
-    buy(session, 'magicArmor', 6);
+    buy(session, 'hunterArsenal', 3);
+    buy(session, 'magicArmor', 5);
     buy(session, 'quickInstinct', 2);
     expect(session.state.stats['lastHope.cooldown']).toBe(13.8); // 40 × .97 − 25
   });
@@ -228,14 +229,14 @@ describe('damage blocking and counter volleys', () => {
     const before = session.state.hp;
     const spider = addSpider(session, 'normal', 0, 1, 201);
     session.tick(0.001);
-    const damage = blocked ? 3 : 99; // Block absorbs 96 after the damage reductions.
+    const damage = blocked ? 17 : 99; // Block absorbs 82 after the damage reductions.
     expect(session.state.hp).toBe(before - damage);
     expect(session.drainEvents()).toContainEqual({
       type: 'damage',
       spiderId: spider.id,
       hp: damage,
       energy: 0,
-      ...(blocked ? { blockedDamage: 96 } : {}),
+      ...(blocked ? { blockedDamage: 82 } : {}),
     });
   });
 

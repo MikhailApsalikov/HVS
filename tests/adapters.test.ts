@@ -246,10 +246,10 @@ describe('presentation uses the actual resolved stats', () => {
     expect(attributeDescription(session.state, 'armor')).toBe(
       '<p class="tooltip__effect">Снижает урон от пауков на 43.3%</p>',
     );
-    session.talents.loadFromSave([{ id: 'magicArmor', rank: 7 }]);
+    session.talents.loadFromSave([{ id: 'magicArmor', rank: 5 }]);
     session.refreshStats();
     expect(attributeDescription(session.state, 'intellect')).toContain(
-      'Благодаря таланту «Магическая броня»: Увеличивает броню на 1512 единиц.',
+      'Благодаря таланту «Магическая броня»: Увеличивает броню на 6750 единиц.',
     );
     session.state.character.setModifiers('test:no-armor', [
       { stat: 'armor', kind: 'percent', value: -100 },
@@ -279,8 +279,8 @@ describe('presentation uses the actual resolved stats', () => {
     const { stats } = game().state;
     expect(talentDescription('tireless', 2, stats)).toContain('дополнительно 2 энергии');
     expect(talentDescription('improvedEndurance', 2, stats)).toContain('выносливость на 10%');
-    expect(talentDescription('magicArmor', 7, stats)).toContain(
-      'Каждая единица интеллекта даёт 28 брони',
+    expect(talentDescription('magicArmor', 5, stats)).toContain(
+      'Каждая единица интеллекта даёт 125 брони',
     );
     expect(talentDescription('blizzardMastery', 1, stats)).toContain('7 процентных пунктов');
     expect(escapeHtml('<script>"&\'')).toBe('&lt;script&gt;&quot;&amp;&#39;');

@@ -1,5 +1,4 @@
 import { DEBUFFS } from '../../content/debuffs.js';
-import { SPIDERS } from '../../content/spiders.js';
 import type { GameState } from '../model/GameState.js';
 import { clearPlayerEffects } from '../model/PlayerEffect.js';
 import type { Spider } from '../model/Spider.js';
@@ -7,38 +6,35 @@ import {
   disorientationDuration,
   disorientationPercent,
   goldIncomePercent,
+  healingReductionPercent,
   poisonArmorPercent,
   poisonDuration,
 } from '../rules/debuffs.js';
 import type { Modifier } from '../rules/numbers.js';
 import type { StatModifier } from '../rules/stats.js';
 
-export function debuffModifiers(state: GameState): StatModifier[] {
+export function debuffModifiers(state: GameState, resistance: number): StatModifier[] {
   const effects: StatModifier[] = [];
   if (state.disorientationTimer > 0)
     effects.push({
       source: 'debuff:disorientation',
       stat: 'blockChance',
       kind: 'percent',
-      value: -disorientationPercent(state.level, 'block'),
+      value: -disorientationPercent(state.level, 'block', resistance),
     });
   if (state.goldLockTimer > 0)
     effects.push({
       source: 'debuff:goldLock',
       stat: 'coinsPerSec',
       kind: 'percent',
-      value: -goldIncomePercent(state.level),
+      value: -goldIncomePercent(state.level, resistance),
     });
   if (state.healingReductionTimer > 0)
     effects.push({
       source: 'debuff:healingReduction',
       stat: 'healingReceived',
       kind: 'percent',
-      value: -Math.min(
-        DEBUFFS.healingReduction.maxHealingReductionPercent,
-        Math.max(0, state.level - SPIDERS.fast.unlockLevel + 1) *
-          DEBUFFS.healingReduction.healingPercentPerLevel,
-      ),
+      value: -healingReductionPercent(state.level, resistance),
     });
   if (state.poisonTimer > 0)
     effects.push(
@@ -46,7 +42,7 @@ export function debuffModifiers(state: GameState): StatModifier[] {
         source: 'debuff:poison',
         stat: 'armor',
         kind: 'percent',
-        value: -poisonArmorPercent(state),
+        value: -poisonArmorPercent(state, resistance),
       },
       {
         source: 'debuff:poison',
@@ -60,18 +56,27 @@ export function debuffModifiers(state: GameState): StatModifier[] {
         kind: 'percent',
         value: DEBUFFS.poison.damagePercent - 100,
       },
+      {
+        source: 'spiderDebuffResistance',
+        stat: 'poison.tickDamage',
+        kind: 'percent',
+        value: -resistance * 100,
+      },
     );
   return effects;
 }
 
 /** This penalty affects only the dodge chance contributed by agility. */
-export function debuffAgilityDodgeModifiers(state: GameState): readonly Modifier[] {
+export function debuffAgilityDodgeModifiers(
+  state: GameState,
+  resistance: number,
+): readonly Modifier[] {
   return state.disorientationTimer > 0
     ? [
         {
           source: 'debuff:disorientation',
           kind: 'percent',
-          value: -disorientationPercent(state.level, 'agilityDodge'),
+          value: -disorientationPercent(state.level, 'agilityDodge', resistance),
         },
       ]
     : [];
@@ -79,6 +84,7 @@ export function debuffAgilityDodgeModifiers(state: GameState): readonly Modifier
 
 /** Called only after a breach actually removes health. */
 export function applySpiderDebuff(state: GameState, spider: Spider): boolean {
+  if (state.stats.spiderDebuffResistance === 1) return false;
   const duration = (base: number) => state.rules.value('spiderDebuffDuration', base);
   if (spider.type === 'golden') state.goldLockTimer = duration(DEBUFFS.goldLock.duration);
   else if (spider.type === 'ninja' && state.level >= DEBUFFS.disorientation.unlockLevel)

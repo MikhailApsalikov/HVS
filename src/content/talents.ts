@@ -27,6 +27,7 @@ interface TalentDefinition {
     readonly step: number;
     readonly mode?: 'steps' | 'continuous';
     readonly effect: Effect;
+    readonly additionalEffects?: readonly Effect[];
     readonly basePerRank?: number;
   };
 }
@@ -349,8 +350,14 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'magic',
     sprite: 'TalentMagicArmor',
     effects: [],
-    scaling: { attribute: 'intellect', step: 1, effect: flat('armor', 4) },
-    description: 'Каждая единица интеллекта даёт {scaling.value} брони.',
+    scaling: {
+      attribute: 'intellect',
+      step: 1,
+      effect: flat('armor', 25),
+      additionalEffects: [flat('spiderDebuffResistance', 0.0001)],
+    },
+    description:
+      'Каждая единица интеллекта даёт {scaling.value} брони и снижает эффективность дебаффов пауков на {scaling.spiderDebuffResistance}.\nПри снижении эффективности на 100% вы становитесь невосприимчивы к дебаффам пауков.',
   },
   divineShield: {
     name: 'Божественный щит',

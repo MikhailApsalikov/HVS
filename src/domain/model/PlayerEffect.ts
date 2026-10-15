@@ -145,7 +145,9 @@ const LIFECYCLES: Readonly<Record<PlayerEffectId, EffectLifecycle>> = {
   goldLock: {
     read: (state) => ({
       remaining: state.goldLockTimer,
-      details: { incomePercent: -goldIncomePercent(state.level) },
+      details: {
+        incomePercent: -goldIncomePercent(state.level, state.stats.spiderDebuffResistance),
+      },
     }),
     clear: (state) => {
       state.goldLockTimer = 0;
@@ -165,7 +167,7 @@ const LIFECYCLES: Readonly<Record<PlayerEffectId, EffectLifecycle>> = {
       remaining: state.poisonTimer,
       stacks: state.poisonDamage.length,
       details: {
-        armorPercent: -poisonArmorPercent(state),
+        armorPercent: -poisonArmorPercent(state, state.stats.spiderDebuffResistance),
         tickDamage: state.stats['poison.tickDamage'],
         tickInterval: DEBUFFS.poison.interval,
         nextTick: state.poisonTickTimer,
@@ -181,8 +183,16 @@ const LIFECYCLES: Readonly<Record<PlayerEffectId, EffectLifecycle>> = {
     read: (state) => ({
       remaining: state.disorientationTimer,
       details: {
-        blockReductionPercent: disorientationPercent(state.level, 'block'),
-        agilityDodgeReductionPercent: disorientationPercent(state.level, 'agilityDodge'),
+        blockReductionPercent: disorientationPercent(
+          state.level,
+          'block',
+          state.stats.spiderDebuffResistance,
+        ),
+        agilityDodgeReductionPercent: disorientationPercent(
+          state.level,
+          'agilityDodge',
+          state.stats.spiderDebuffResistance,
+        ),
       },
     }),
     clear: (state) => {

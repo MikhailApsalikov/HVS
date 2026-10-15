@@ -116,17 +116,14 @@ export class TalentSystem {
       const scaling = TALENTS[id].scaling;
       const steps = scaling ? stats[scaling.attribute] / scaling.step : 0;
       return scaling && rank > 0
-        ? [
-            {
-              ...scaling.effect,
-              source: `talent:${id}`,
-              value:
-                ((scaling.basePerRank ?? 0) +
-                  (scaling.mode === 'continuous' ? steps : Math.floor(steps)) *
-                    scaling.effect.value) *
-                rank,
-            },
-          ]
+        ? [scaling.effect, ...(scaling.additionalEffects ?? [])].map((effect, index) => ({
+            ...effect,
+            source: `talent:${id}`,
+            value:
+              ((index === 0 ? (scaling.basePerRank ?? 0) : 0) +
+                (scaling.mode === 'continuous' ? steps : Math.floor(steps)) * effect.value) *
+              rank,
+          }))
         : [];
     });
   }

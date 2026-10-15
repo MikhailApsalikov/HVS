@@ -48,8 +48,12 @@ describe('greed and hunter rewards through session commands', () => {
     session.state.level = 20;
     session.state.initialTalentPick = false;
     session.state.pendingTalentPoints = 30;
-    for (const id of ['endurance', 'improvedEndurance'] as const)
-      for (let rank = 0; rank < 7; rank++) expect(session.upgradeTalent(id)).toBe(true);
+    for (const [id, ranks] of [
+      ['endurance', 7],
+      ['improvedEndurance', 5],
+      ['shieldBlock', 2],
+    ] as const)
+      for (let rank = 0; rank < ranks; rank++) expect(session.upgradeTalent(id)).toBe(true);
     for (let rank = 0; rank < 5; rank++) {
       const points = session.state.pendingTalentPoints;
       expect(session.upgradeTalent('hunterReward')).toBe(false);
@@ -64,7 +68,7 @@ describe('greed and hunter rewards through session commands', () => {
     expect(session.drainEvents()).toContainEqual({
       type: 'coinDrop',
       spiderId: spider.id,
-      coins: 21,
+      coins: 18,
       jackpot: true,
     });
   });

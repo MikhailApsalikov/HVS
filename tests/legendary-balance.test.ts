@@ -32,7 +32,7 @@ describe('will to win in shooting', () => {
     session.state.pendingTalentPoints = 100;
     session.talents.loadFromSave([
       { id: 'endurance', rank: 7 },
-      { id: 'improvedEndurance', rank: 7 },
+      { id: 'improvedEndurance', rank: 5 },
       { id: 'warriorArmor', rank: 5 },
       { id: 'spiderArmor', rank: 10 },
       { id: 'shieldBlock', rank: 7 },

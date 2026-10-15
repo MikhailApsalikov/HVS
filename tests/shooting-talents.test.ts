@@ -120,10 +120,10 @@ describe('shooting and magic talent progression', () => {
     expect(session.state.stats.energyRegen).toBe(13.34);
     session.state.level = 30;
     buy(session, 'hunterMastery', 5);
-    buy(session, 'improvedAgility', 7);
+    buy(session, 'improvedAgility', 5);
     buy(session, 'criticalShot', 7);
     expect(session.talents.getTalent('blizzardMastery').tier).toBe(2);
-    buy(session, 'improvedIntellect', 7);
+    buy(session, 'improvedIntellect', 5);
     buy(session, 'hunterArsenal', 2);
     buy(session, 'blizzardMastery', 1);
     expect(session.state.stats['blizzard.slow']).toBe(0.47);

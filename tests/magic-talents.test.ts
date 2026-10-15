@@ -23,12 +23,13 @@ describe('magic talent update through session commands', () => {
       session.state.phase = 'levelUp';
       session.state.pendingTalentPoints = 100;
       session.talents.loadFromSave([
-        { id: 'improvedIntellect', rank: 7 },
+        { id: 'improvedIntellect', rank: 5 },
         { id: 'agility', rank: 5 },
         { id: 'hunterArsenal', rank: 5 },
         { id: 'tireless', rank: 5 },
         { id: 'blizzardMastery', rank: 6 },
-        { id: 'magicArmor', rank: 7 },
+        { id: 'magicArmor', rank: 5 },
+        { id: 'improvedPrep', rank: 2 },
         { id: 'quickInstinct', rank: 9 },
       ]);
       expect(session.upgradeTalent('recharge')).toBe(false);
@@ -68,15 +69,15 @@ describe('magic talent update through session commands', () => {
     session.state.level = 20;
     session.state.pendingTalentPoints = 6;
     session.talents.loadFromSave([
-      { id: 'improvedIntellect', rank: 7 },
+      { id: 'improvedIntellect', rank: 5 },
       { id: 'agility', rank: 5 },
-      { id: 'hunterArsenal', rank: 2 },
+      { id: 'hunterArsenal', rank: 4 },
     ]);
     session.refreshStats();
-    expect(session.state.stats.intellect).toBe(252);
+    expect(session.state.stats.intellect).toBe(186);
     for (let rank = 1; rank <= 5; rank++) {
       expect(session.upgradeTalent('permafrost')).toBe(true);
-      expect(session.state.stats.permafrostSlow).toBeCloseTo(0.022 * rank);
+      expect(session.state.stats.permafrostSlow).toBeCloseTo(0.019 * rank);
       expect(session.state.rules.explain('permafrostSlow').modifiers).toHaveLength(1);
     }
     expect(session.upgradeTalent('permafrost')).toBe(false);
@@ -84,11 +85,11 @@ describe('magic talent update through session commands', () => {
       { stat: 'intellect', kind: 'flat', value: 20 },
     ]);
     session.refreshStats();
-    expect(session.state.stats.intellect).toBe(279);
-    expect(session.state.stats.permafrostSlow).toBe(0.115);
+    expect(session.state.stats.intellect).toBe(211);
+    expect(session.state.stats.permafrostSlow).toBe(0.1);
     session.state.character.removeModifiers('test:intellect');
     session.refreshStats();
-    expect(session.state.stats.permafrostSlow).toBe(0.11);
+    expect(session.state.stats.permafrostSlow).toBe(0.095);
   });
 
   it.each([

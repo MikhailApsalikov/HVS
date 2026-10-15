@@ -78,7 +78,7 @@ describe('combat balance through session commands', () => {
       session.state.pendingTalentPoints = 16;
       session.talents.loadFromSave([
         { id: 'endurance', rank: 7 },
-        { id: 'improvedEndurance', rank: 7 },
+        { id: 'improvedEndurance', rank: 5 },
         { id: 'spiderArmor', rank: 10 },
         { id: 'shieldBlock', rank: 7 },
         { id: 'greed', rank: 3 },

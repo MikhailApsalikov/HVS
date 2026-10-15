@@ -1,6 +1,7 @@
 import type { Difficulty, TalentId } from './types.js';
 import type { PrimaryStatId, StatModifier } from './rules/stats.js';
 import { GameSession } from './GameSession.js';
+import { clearSpiderDebuffs } from './systems/DebuffSystem.js';
 import type { GameState } from './model/GameState.js';
 import { Spider } from './model/Spider.js';
 import { Arrow } from './model/Arrow.js';
@@ -164,6 +165,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   session.refreshStats(false);
   Object.assign(state, Object.fromEntries(STATE_FIELDS.map((key) => [key, data.state[key]])));
   state.poisonDamage = [...data.state.poisonDamage];
+  if (state.stats.spiderDebuffResistance === 1) clearSpiderDebuffs(state);
   if (!state.antiAfkEnabled) {
     state.antiAfkIdleTimer = 0;
     state.antiAfkStacks = 0;

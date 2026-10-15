@@ -266,7 +266,7 @@ describe('progression and compatibility', () => {
       const session = new GameSession(difficulty, () => 0.999999, { level: 60 });
       session.talents.loadFromSave([
         { id: 'hunterMastery', rank: 5 },
-        { id: 'improvedAgility', rank: 7 },
+        { id: 'improvedAgility', rank: 5 },
         { id: 'criticalShot', rank: 7 },
         { id: 'piercingReward', rank: 8 },
         { id: 'killingStreak', rank: 8 },
