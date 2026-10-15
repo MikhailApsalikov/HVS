@@ -1858,12 +1858,12 @@ body {
 .shield-overlay__readout {
   position: absolute;
   bottom: 10px;
-  left: 75%;
+  left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 6px;
-  max-width: calc(50% - 20px);
+  max-width: calc(100% - 20px);
   padding: 4px 8px;
   border: 1px solid #e0ba5d99;
   border-radius: 8px;
@@ -1933,8 +1933,11 @@ body {
 }
 
 .stand-shield-overlay .shield-overlay__readout {
-  left: 25%;
   border-color: #fff1a9;
+}
+
+.game-field__effects:has(.stand-shield-overlay.active) .last-hope-overlay .shield-overlay__readout {
+  display: none;
 }
 
 @keyframes divine-radiance {

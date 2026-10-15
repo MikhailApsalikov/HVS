@@ -58,13 +58,24 @@ describe('combined field effect layout', () => {
     }
   });
 
-  it('gives both shields and both ammunition counters separate fixed readouts', () => {
+  it('centers both shield readouts and gives divine shield visual priority', () => {
     expect(declarations('.shield-overlay__readout')).toMatchObject({
       bottom: '10px',
-      left: '75%',
-      'max-width': 'calc(50% - 20px)',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      'max-width': 'calc(100% - 20px)',
     });
-    expect(declarations('.stand-shield-overlay .shield-overlay__readout').left).toBe('25%');
+    expect(declarations('.stand-shield-overlay .shield-overlay__readout')).not.toHaveProperty(
+      'left',
+    );
+    expect(
+      declarations(
+        '.game-field__effects:has(.stand-shield-overlay.active) .last-hope-overlay .shield-overlay__readout',
+      ),
+    ).toEqual({ display: 'none' });
+  });
+
+  it('gives both ammunition counters separate fixed readouts', () => {
     expect(declarations('.adrenaline-overlay__badge')).toMatchObject({
       bottom: '78px',
       right: '14px',
