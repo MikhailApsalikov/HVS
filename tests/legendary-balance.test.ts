@@ -27,7 +27,7 @@ function play(session: GameSession) {
 }
 
 describe('will to win in shooting', () => {
-  it('requires shooting investment, adds 70 agility and 6% discount per rank', () => {
+  it('requires shooting investment and adds a 6% discount per rank without changing agility', () => {
     const session = shop();
     session.state.pendingTalentPoints = 100;
     session.talents.loadFromSave([
@@ -50,7 +50,7 @@ describe('will to win in shooting', () => {
     const base = session.state.stats;
     for (let rank = 1; rank <= 5; rank++) {
       expect(session.upgradeTalent('willToWin')).toBe(true);
-      expect(session.state.stats.agility).toBe(base.agility + 70 * rank);
+      expect(session.state.stats.agility).toBe(base.agility);
       expect(session.state.stats.shopDiscount).toBe(6 * rank);
       const item = ITEM_MAP.get('c009')!;
       const price = Math.round((item.price * (100 - 6 * rank)) / 100);
@@ -63,6 +63,7 @@ describe('will to win in shooting', () => {
       expect(session.sellItem(0)).toBe(true);
       expect(session.state.coins).toBe(Math.floor(item.price / 2));
       expect(talentDescription('willToWin', rank, session.state.stats)).toContain(`${6 * rank}%`);
+      expect(talentDescription('willToWin', rank, session.state.stats)).not.toContain('ловкость');
     }
     expect(session.upgradeTalent('willToWin')).toBe(false);
   });

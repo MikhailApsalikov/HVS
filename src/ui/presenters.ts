@@ -8,6 +8,8 @@ import {
   STATS,
   masochismHealthPerEnergy,
   masochismMinHpFraction,
+  LEARNING_FROM_MISTAKES,
+  TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK,
 } from '../domain/rules/stats.js';
 import { ABILITIES, ABILITY_ORDER } from '../content/abilities.js';
 import { TALENTS, TALENT_ORDER } from '../content/talents.js';
@@ -85,6 +87,10 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
   const effects = talentRankEffects(id, rank);
   if (definition.description)
     return fillDescription(definition.description, (key) => {
+      if (key === 'learningShieldDuration')
+        return String(Number((LEARNING_FROM_MISTAKES.shieldDurationPerRank * rank).toFixed(2)));
+      if (key === 'titanDamageReduction')
+        return String(TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK * rank);
       if (key === 'masochismHealthPerEnergy') return String(masochismHealthPerEnergy(rank));
       if (key === 'masochismMinHpPercent') return String(masochismMinHpFraction(rank) * 100);
       if (key === 'streakInterval')
@@ -205,6 +211,9 @@ export function abilityDescription(state: GameState, id: AbilityId): string {
     : `Требуется уровень ${ability.unlockLevel}`;
   const cooldown = state.getAbility(id);
   const reasons = [
+    ...(id === 'stand' && state.exhaustionTimer > 0
+      ? ['Нельзя получить эффекты неуязвимости во время «Истощения».']
+      : []),
     ...(!state.isAbilityUnlocked(id) ? [unlock] : []),
     ...(cooldown.isOnCooldown
       ? [`Будет готово через ${formatSeconds(cooldown.remainingCooldown)} с`]
@@ -279,6 +288,11 @@ function playerEffectDetail(effect: PlayerEffect): string {
       return `Увеличивает шанс блока на ${formatStat('blockChance', effect.details!.blockChance!)} и его силу на ${formatStat('blockPower', effect.details!.blockPower!)}.`;
     case 'stand':
       return 'Неуязвимость';
+    case 'learningShield':
+    case 'fatalShield':
+      return 'Неуязвимость. Фиксированная длительность, нельзя продлить.';
+    case 'exhaustion':
+      return `Нельзя получить эффекты неуязвимости. Ловкость снижена на ${LEARNING_FROM_MISTAKES.exhaustionAgilityPercent}%`;
     case 'adrenaline':
       return `Выстрелы лучников бесплатны и без времени восстановления. Осталось — ${effect.stacks}.`;
     case 'eagleEye':
@@ -291,6 +305,8 @@ function playerEffectDetail(effect: PlayerEffect): string {
       return `Регенерация здоровья и получаемое лечение уменьшены на ${formatStat('healingReceived', 1 - effect.details!.healingReceived!)}.`;
     case 'poison':
       return `Броня уменьшена на ${Math.abs(effect.details!.armorPercent!)}%. Вы отравлены и получаете ${Math.round(effect.details!.tickDamage!)} урона раз в ${effect.details!.tickInterval} секунды. Яд не может убить.`;
+    case 'disorientation':
+      return `Шанс блока уменьшен на ${effect.details!.blockReductionPercent}%. Шанс уклонения от ловкости уменьшен на ${effect.details!.agilityDodgeReductionPercent}%.`;
     case 'antiAfk':
       return `Входящий урон увеличен на ${formatStat('incomingDamage', effect.details!.damagePercent!)}%.\nПосле расходования энергии штраф снимается через ${formatSeconds(ANTI_AFK.recoveryDuration)} с, если бездействие не повторится.`;
   }

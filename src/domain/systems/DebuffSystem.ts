@@ -3,11 +3,25 @@ import { SPIDERS } from '../../content/spiders.js';
 import type { GameState } from '../model/GameState.js';
 import { clearPlayerEffects } from '../model/PlayerEffect.js';
 import type { Spider } from '../model/Spider.js';
-import { goldIncomePercent, poisonArmorPercent, poisonDuration } from '../rules/debuffs.js';
+import {
+  disorientationDuration,
+  disorientationPercent,
+  goldIncomePercent,
+  poisonArmorPercent,
+  poisonDuration,
+} from '../rules/debuffs.js';
+import type { Modifier } from '../rules/numbers.js';
 import type { StatModifier } from '../rules/stats.js';
 
 export function debuffModifiers(state: GameState): StatModifier[] {
   const effects: StatModifier[] = [];
+  if (state.disorientationTimer > 0)
+    effects.push({
+      source: 'debuff:disorientation',
+      stat: 'blockChance',
+      kind: 'percent',
+      value: -disorientationPercent(state.level, 'block'),
+    });
   if (state.goldLockTimer > 0)
     effects.push({
       source: 'debuff:goldLock',
@@ -50,10 +64,25 @@ export function debuffModifiers(state: GameState): StatModifier[] {
   return effects;
 }
 
+/** This penalty affects only the dodge chance contributed by agility. */
+export function debuffAgilityDodgeModifiers(state: GameState): readonly Modifier[] {
+  return state.disorientationTimer > 0
+    ? [
+        {
+          source: 'debuff:disorientation',
+          kind: 'percent',
+          value: -disorientationPercent(state.level, 'agilityDodge'),
+        },
+      ]
+    : [];
+}
+
 /** Called only after a breach actually removes health. */
 export function applySpiderDebuff(state: GameState, spider: Spider): boolean {
   const duration = (base: number) => state.rules.value('spiderDebuffDuration', base);
   if (spider.type === 'golden') state.goldLockTimer = duration(DEBUFFS.goldLock.duration);
+  else if (spider.type === 'ninja' && state.level >= DEBUFFS.disorientation.unlockLevel)
+    state.disorientationTimer = duration(disorientationDuration(state.level));
   else if (spider.type === 'fast')
     state.healingReductionTimer = duration(
       DEBUFFS.healingReduction.duration + DEBUFFS.healingReduction.durationPerLevel * state.level,
@@ -79,6 +108,7 @@ export function nextDebuffBoundary(state: GameState): number {
     ...[
       state.goldLockTimer,
       state.healingReductionTimer,
+      state.disorientationTimer,
       state.poisonTimer,
       state.poisonTickTimer,
     ].filter((timer) => timer > 0),
@@ -89,10 +119,12 @@ export function nextDebuffBoundary(state: GameState): number {
 export function tickDebuffs(state: GameState, dt: number): boolean {
   const wasGoldLocked = state.goldLockTimer > 0;
   const wasHealingReduced = state.healingReductionTimer > 0;
+  const wasDisoriented = state.disorientationTimer > 0;
   const wasPoisoned = state.poisonTimer > 0;
   const remaining = (timer: number) => (timer - dt > 1e-9 ? timer - dt : 0);
   state.goldLockTimer = remaining(state.goldLockTimer);
   state.healingReductionTimer = remaining(state.healingReductionTimer);
+  state.disorientationTimer = remaining(state.disorientationTimer);
   if (wasPoisoned) {
     state.poisonTimer = remaining(state.poisonTimer);
     state.poisonTickTimer = remaining(state.poisonTickTimer);
@@ -108,6 +140,7 @@ export function tickDebuffs(state: GameState, dt: number): boolean {
   return (
     (wasGoldLocked && state.goldLockTimer === 0) ||
     (wasHealingReduced && state.healingReductionTimer === 0) ||
+    (wasDisoriented && state.disorientationTimer === 0) ||
     (wasPoisoned && state.poisonTimer === 0)
   );
 }

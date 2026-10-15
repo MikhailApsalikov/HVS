@@ -23,6 +23,8 @@ export function tickAntiAfk(state: GameState, dt: number, occupiedAt: number): b
     refillTime,
     occupiedAt,
     state.invulnerableTimer,
+    state.learningShieldTimer,
+    state.fatalShieldTimer,
     state.lastHopeTimer,
     state.adrenalineActive ? state.adrenalineTimer : 0,
   );

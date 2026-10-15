@@ -20,15 +20,18 @@ export class StandShieldOverlay {
   }
 
   private _createDOM(parent: HTMLElement, spriteRegistry: SpriteRegistry): void {
+    const readout = document.createElement('div');
+    readout.className = 'shield-overlay__readout';
     const shieldIcon = document.createElement('div');
     shieldIcon.className = 'shield-overlay__icon';
     shieldIcon.innerHTML = spriteRegistry.get('Shield');
-    this._container.appendChild(shieldIcon);
+    readout.appendChild(shieldIcon);
 
     this._timerText = document.createElement('div');
     this._timerText.className = 'shield-overlay__timer';
     this._timerText.textContent = '0 с';
-    this._container.appendChild(this._timerText);
+    readout.appendChild(this._timerText);
+    this._container.appendChild(readout);
 
     parent.appendChild(this._container);
   }

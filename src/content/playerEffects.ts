@@ -4,6 +4,28 @@ import { TALENTS } from './talents.js';
 import type { PlayerEffectId, PlayerEffectMetadata } from '../domain/model/PlayerEffect.js';
 
 export const PLAYER_EFFECTS = {
+  learningShield: {
+    name: ABILITIES.stand.name,
+    sprite: ABILITIES.stand.sprite,
+    kind: 'buff',
+    source: 'talent',
+    removableByCleanser: false,
+  },
+  fatalShield: {
+    name: ABILITIES.stand.name,
+    sprite: ABILITIES.stand.sprite,
+    kind: 'buff',
+    source: 'talent',
+    removableByCleanser: false,
+  },
+  exhaustion: {
+    name: 'Истощение',
+    sprite: 'TalentMasochism',
+    kind: 'debuff',
+    source: 'talent',
+    removableByCleanser: false,
+    undispellable: true,
+  },
   prep: {
     name: ABILITIES.prep.name,
     sprite: ABILITIES.prep.sprite,
@@ -63,6 +85,13 @@ export const PLAYER_EFFECTS = {
   poison: {
     name: DEBUFFS.poison.name,
     sprite: 'DebuffPoison',
+    kind: 'debuff',
+    source: 'spider',
+    removableByCleanser: false,
+  },
+  disorientation: {
+    name: DEBUFFS.disorientation.name,
+    sprite: 'DebuffDisorientation',
     kind: 'debuff',
     source: 'spider',
     removableByCleanser: false,

@@ -2,14 +2,17 @@ import {
   ARMOR_RULES,
   ATTRIBUTE_RULES,
   DODGE_CAP,
+  STATS,
   type PrimaryStatId,
   type StatModifier,
 } from './stats.js';
+import { calculate, type Modifier } from './numbers.js';
 
 export function attributeModifiers(
   values: Readonly<Record<PrimaryStatId, number>>,
   criticalShotLearned = false,
   shieldBlockLearned = false,
+  agilityDodgeModifiers: readonly Modifier[] = [],
 ): Readonly<Record<PrimaryStatId, readonly StatModifier[]>> {
   const { endurance: e, agility: a, intellect: i } = values;
   const { endurance: er, agility: ar, intellect: ir } = ATTRIBUTE_RULES;
@@ -36,7 +39,15 @@ export function attributeModifiers(
         : []),
     ],
     agility: [
-      effect('agility', 'dodgeChance', Math.min(DODGE_CAP, a * ar.dodgePerPoint)),
+      effect(
+        'agility',
+        'dodgeChance',
+        calculate(
+          Math.min(DODGE_CAP, Math.max(0, a - ar.dodgeThreshold) * ar.dodgePerPoint),
+          agilityDodgeModifiers,
+          STATS.dodgeChance.policy,
+        ).value,
+      ),
       effect('agility', 'shootCooldown', -shotPercent, 'percent'),
       effect('agility', 'arrowSpeed', shotPercent, 'percent'),
       effect('agility', 'volley.cooldown', -volleyPercent, 'percent'),

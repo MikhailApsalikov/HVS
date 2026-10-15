@@ -12,11 +12,11 @@ const attacks = [
   { action: 'aimedFire', cost: 100 },
 ] as const;
 const ranks = [
-  { rank: 1, healthPerEnergy: 25, minHpFraction: 0.9 },
-  { rank: 2, healthPerEnergy: 20, minHpFraction: 0.8 },
-  { rank: 3, healthPerEnergy: 15, minHpFraction: 0.7 },
-  { rank: 4, healthPerEnergy: 10, minHpFraction: 0.6 },
-  { rank: 5, healthPerEnergy: 5, minHpFraction: 0.5 },
+  { rank: 1, healthPerEnergy: 10, minHpFraction: 0.9 },
+  { rank: 2, healthPerEnergy: 9, minHpFraction: 0.8 },
+  { rank: 3, healthPerEnergy: 8, minHpFraction: 0.7 },
+  { rank: 4, healthPerEnergy: 7, minHpFraction: 0.6 },
+  { rank: 5, healthPerEnergy: 6, minHpFraction: 0.5 },
 ] as const;
 const rankedAttacks = attacks.flatMap((attack) => ranks.map((rank) => ({ ...attack, ...rank })));
 
@@ -93,7 +93,7 @@ describe('masochism through session commands', () => {
       session.state.energy = 12.5;
       expectAttack(session, action);
       expect(session.state.energy).toBe(0);
-      expect(session.state.hp).toBe(5000 - (cost - 12.5) * 15);
+      expect(session.state.hp).toBe(5000 - (cost - 12.5) * 8);
     },
   );
 
@@ -135,7 +135,7 @@ describe('masochism through session commands', () => {
     ]);
     session.refreshStats(false);
     session.state.energy = 34.9;
-    session.state.hp = 92.5;
+    session.state.hp = 91;
     expect(session.state.maxHp).toBe(100);
     expect(session.shootLane(0)).toBe('shot');
     expect(session.state.energy).toBe(0);
@@ -150,7 +150,7 @@ describe('masochism through session commands', () => {
     ]);
     session.refreshStats(false);
     session.state.energy = 34.9;
-    session.state.hp = 92.499;
+    session.state.hp = 90.999;
     const before = snapshot(session);
     expect(session.shootLane(0)).toBe('not_enough_energy');
     expect(snapshot(session)).toEqual(before);
@@ -214,12 +214,12 @@ describe('masochism through session commands', () => {
     session.state.energy = 2;
     expect(session.state.currentShootCost).toBe(10); // 35 * .8 - 10 - 3 - 5.
     expect(session.shootLane(0)).toBe('shot');
-    expect(session.state.hp).toBe(4960); // Eight missing energy at five health each.
+    expect(session.state.hp).toBe(4952); // Eight missing energy at six health each.
     expect(session.state.killingStreakStacks).toBe(5);
     expect(session.activateAbility('volley')).toBe('activated');
-    expect(session.state.hp).toBe(4710); // 50 energy.
+    expect(session.state.hp).toBe(4652); // 50 energy.
     expect(session.activateAbility('aimedFire')).toBe('activated');
-    expect(session.state.hp).toBe(4410); // 60 energy.
+    expect(session.state.hp).toBe(4292); // 60 energy.
     expect(session.state.energy).toBe(0);
   });
 
@@ -236,7 +236,7 @@ describe('masochism through session commands', () => {
     session.state.hp = 5000;
     expect(session.activateAbility('volley')).toBe('activated');
     expect(session.activateAbility('aimedFire')).toBe('activated');
-    expect(session.state.hp).toBe(4000);
+    expect(session.state.hp).toBe(3800);
     expect(session.state.adrenalineShots).toBe(19);
   });
 
@@ -338,11 +338,11 @@ describe('masochism through session commands', () => {
 describe('masochism saves', () => {
   it('preserves rank, paid resources, cooldowns and pending waves through save/load', () => {
     const session = arena(2);
-    session.state.energy = 87.5;
+    session.state.energy = 25;
     expect(session.activateAbility('aimedFire')).toBe('activated');
-    expect(session.state.hp).toBe(4750);
+    expect(session.state.hp).toBe(4325);
     const saved = snapshot(session);
-    expect(saved.version).toBe(22);
+    expect(saved.version).toBe(23);
     const parsed = parseSave(JSON.parse(JSON.stringify(saved)));
     expect(parsed).not.toBeNull();
     const loaded = restore(parsed!, () => 0.999999);
@@ -352,9 +352,9 @@ describe('masochism saves', () => {
     session.tick(5);
     expect(snapshot(loaded)).toEqual(snapshot(session));
     expect(loaded.shootLane(0)).toBe('shot');
-    expect(loaded.state.hp).toBe(4050);
+    expect(loaded.state.hp).toBe(4010);
     expect(loaded.shootLane(1)).toBe('not_enough_energy');
-    expect(loaded.state.hp).toBe(4050);
+    expect(loaded.state.hp).toBe(4010);
     expect(loaded.state.energy).toBe(0);
   });
 
@@ -366,7 +366,7 @@ describe('masochism saves', () => {
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('masochism')).toBe(0);
     const normalized = snapshot(loaded);
-    expect(normalized.version).toBe(22);
+    expect(normalized.version).toBe(23);
     expect(normalized.state).toEqual(existing.state);
     expect(normalized.talents.filter(({ id }) => id !== 'masochism')).toEqual(existing.talents);
     expect(loaded.shootLane(0)).toBe('not_enough_energy');

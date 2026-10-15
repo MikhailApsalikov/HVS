@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GameField } from '../src/ui/components/GameField.js';
 import type { SpriteRegistry } from '../src/ui/SpriteRegistry.js';
+import { StandShieldOverlay } from '../src/ui/overlays/StandShieldOverlay.js';
 import { addSpider, game } from './helpers.js';
 
 class ElementDouble {
@@ -21,7 +22,9 @@ class ElementDouble {
       this.className = [...names].join(' ');
     },
     remove: (name: string) => this.classList.toggle(name, false),
+    add: (name: string) => this.classList.toggle(name, true),
   };
+  setAttribute(): void {}
   appendChild(child: ElementDouble): void {
     child.remove();
     child.parent = this;
@@ -69,6 +72,46 @@ function lane(index = 0): ElementDouble {
 }
 
 describe('combat feedback without a browser', () => {
+  it('keeps simultaneous defensive effects inside a separate layer above the lanes', () => {
+    const effects = field.getEffectsContainer() as unknown as ElementDouble;
+    const lanesArea = container.children[0];
+    const archersRow = field.getArchersRow() as unknown as ElementDouble;
+    const fieldChildren = [...container.children];
+    const laneElements = lanesArea.children.filter((element) => element.className === 'lane');
+    const sprites = { get: () => '<svg></svg>' } as unknown as SpriteRegistry;
+    const shield = new StandShieldOverlay(effects as unknown as HTMLElement, sprites);
+    const block = new StandShieldOverlay(effects as unknown as HTMLElement, sprites, 'lastHope');
+
+    shield.show();
+    block.show();
+    shield.updateTimer(5);
+    block.updateTimer(12);
+    expect(shield.isVisible()).toBe(true);
+    expect(block.isVisible()).toBe(true);
+    expect(effects.children.map((effect) => effect.className)).toEqual([
+      'shield-overlay stand-shield-overlay active',
+      'shield-overlay last-hope-overlay active',
+    ]);
+    expect(effects.children.map((effect) => effect.children[0].className)).toEqual([
+      'shield-overlay__readout',
+      'shield-overlay__readout',
+    ]);
+    expect(effects.children.map((effect) => effect.children[0].children[1].textContent)).toEqual([
+      '5 с',
+      '12 с',
+    ]);
+
+    block.hide();
+    shield.hide();
+    block.show();
+    expect(lanesArea.children).toEqual([...laneElements, effects]);
+    expect(container.children).toEqual(fieldChildren);
+    expect(container.children).toEqual([lanesArea, archersRow]);
+    field.reset();
+    expect(effects.children).toHaveLength(2);
+    expect(laneElements.every((element) => element.children.length === 0)).toBe(true);
+  });
+
   it.each([
     ['normal', false, false],
     ['normal', true, false],

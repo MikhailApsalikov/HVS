@@ -35,9 +35,15 @@ export class GameState {
   initialTalentPick = true;
   freezeActive = false;
   invulnerableTimer = 0;
+  learningFromMistakesRank = 0;
+  learningShieldTimer = 0;
+  fatalShieldTimer = 0;
+  learningShieldCooldown = 0;
+  exhaustionTimer = 0;
   goldLockTimer = 0;
   hunterRewardTimer = 0;
   healingReductionTimer = 0;
+  disorientationTimer = 0;
   poisonTimer = 0;
   poisonTickTimer = 0;
   poisonDamage: readonly number[] = [];
@@ -95,7 +101,10 @@ export class GameState {
     return this.stats.maxEnergy;
   }
   get isInvulnerable(): boolean {
-    return this.invulnerableTimer > 0;
+    return (
+      this.fatalShieldTimer > 0 ||
+      (this.exhaustionTimer === 0 && (this.invulnerableTimer > 0 || this.learningShieldTimer > 0))
+    );
   }
   get blizzardActive(): boolean {
     return this.blizzardTimer > 0;

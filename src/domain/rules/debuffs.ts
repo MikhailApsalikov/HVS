@@ -24,3 +24,19 @@ export function goldIncomePercent(level: number): number {
     Math.max(0, level - SPIDERS.golden.unlockLevel + 1) * DEBUFFS.goldLock.incomePercentPerLevel,
   );
 }
+
+export function disorientationDuration(level: number): number {
+  return (
+    DEBUFFS.disorientation.duration +
+    Math.max(0, level - DEBUFFS.disorientation.unlockLevel) *
+      DEBUFFS.disorientation.durationPerLevel
+  );
+}
+
+export function disorientationPercent(level: number, target: 'block' | 'agilityDodge'): number {
+  return Math.min(
+    DEBUFFS.disorientation.maxReductionPercent,
+    Math.max(0, level - DEBUFFS.disorientation.unlockLevel + 1) *
+      DEBUFFS.disorientation[`${target}PercentPerLevel`],
+  );
+}

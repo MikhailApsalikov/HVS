@@ -29,6 +29,7 @@ export class GameRules {
     effects: readonly StatModifier[] = [],
     private readonly bases: StatBases = {},
     readonly level = 1,
+    agilityDodgeModifiers: readonly Modifier[] = [],
   ) {
     const criticalShotLearned = effects.some(
       (effect) => effect.source === 'talent:criticalShot' && effect.value > 0,
@@ -66,6 +67,7 @@ export class GameRules {
       },
       criticalShotLearned,
       shieldBlockLearned,
+      agilityDodgeModifiers,
     );
     for (const modifier of Object.values(this.attributeEffects).flat())
       this.modifiers.set(modifier.stat, [...this.modifiers.get(modifier.stat)!, modifier]);

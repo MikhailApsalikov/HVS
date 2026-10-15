@@ -15,6 +15,7 @@ import {
 import { TooltipManager } from './TooltipManager.js';
 import { KillingStreakEffect } from './KillingStreakEffect.js';
 import { PlayerEffectPanel } from './PlayerEffectPanel.js';
+import { abilityButtonAvailability } from '../abilityButtonModel.js';
 
 export class HUD {
   private state: GameState | null = null;
@@ -140,8 +141,10 @@ export class HUD {
     });
     for (const [id, button] of this.buttons) {
       const cooldown = state.getAbility(id);
-      const locked = !state.isAbilityUnlocked(id);
-      button.parentElement!.hidden = Boolean(ABILITIES[id].talent) && locked;
+      const availability = abilityButtonAvailability(state, id);
+      const locked = availability.locked;
+      button.parentElement!.hidden = availability.hidden;
+      button.disabled = locked;
       const activeTimer = state.abilityActiveTimer(id);
       button.classList.toggle('ability-btn--active', activeTimer > 0);
       button.querySelector('.ability-btn__effect-text')!.textContent =

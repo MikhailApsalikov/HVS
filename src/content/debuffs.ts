@@ -22,4 +22,13 @@ export const DEBUFFS = {
     maxArmorReductionPercent: 100,
     maxStacks: 10,
   },
+  disorientation: {
+    name: 'Дезориентация',
+    unlockLevel: 55,
+    duration: 10,
+    durationPerLevel: 3,
+    blockPercentPerLevel: 3,
+    agilityDodgePercentPerLevel: 1,
+    maxReductionPercent: 100,
+  },
 } as const;

@@ -18,11 +18,11 @@ function arena(rank = 5) {
 
 describe('masochism presentation through session commands', () => {
   it.each([
-    [1, 25, 90],
-    [2, 20, 80],
-    [3, 15, 70],
-    [4, 10, 60],
-    [5, 5, 50],
+    [1, 10, 90],
+    [2, 9, 80],
+    [3, 8, 70],
+    [4, 7, 60],
+    [5, 6, 50],
   ])(
     'describes rank %s with its current health cost and threshold',
     (rank, healthCost, minHpPercent) => {

@@ -7,12 +7,20 @@ const duration = { digits: 2, min: 0 } as const;
 const speed = { digits: 6, min: 0 } as const;
 const probability = { digits: 6, min: 0, max: 1 } as const;
 export const BEST_DEFENSE_COOLDOWN = 3;
+export const LEARNING_FROM_MISTAKES = {
+  shieldDurationPerRank: 0.15,
+  shieldCooldown: 4,
+  fatalShieldDuration: 5,
+  exhaustionDuration: 300,
+  exhaustionAgilityPercent: 15,
+} as const;
+export const TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK = 2;
 export const CRITICAL_SHOT_POWER = 2;
 export const IMPROVED_CRITICAL_SHOT_POWER = 3;
 export const KILLING_STREAK = { maxStacks: 20, decayInterval: 1.5 } as const;
 export const AIMED_FIRE = { firstDelay: 1, interval: 2 } as const;
 export const MASOCHISM = {
-  healthPerEnergy: [25, 20, 15, 10, 5],
+  healthPerEnergy: [10, 9, 8, 7, 6],
   minHpFraction: [0.9, 0.8, 0.7, 0.6, 0.5],
 } as const;
 export function masochismHealthPerEnergy(rank: number): number {
@@ -198,9 +206,10 @@ export const ATTRIBUTE_RULES = {
     incomePerStep: 0.1,
     armorPerPoint: 2,
     shieldBlockPerPoint: 0.1,
-    lastHopeBlockPerPoint: 0.25,
+    lastHopeBlockPerPoint: 0.05,
   },
   agility: {
+    dodgeThreshold: 100,
     dodgePerPoint: 0.0003,
     shotStep: 12,
     volleyStep: 18,

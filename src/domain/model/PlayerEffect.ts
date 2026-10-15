@@ -1,19 +1,23 @@
 import { PLAYER_EFFECTS } from '../../content/playerEffects.js';
 import { DEBUFFS } from '../../content/debuffs.js';
 import { HUNTER_REWARD } from '../rules/stats.js';
-import { goldIncomePercent, poisonArmorPercent } from '../rules/debuffs.js';
+import { disorientationPercent, goldIncomePercent, poisonArmorPercent } from '../rules/debuffs.js';
 import type { GameState } from './GameState.js';
 
 export type PlayerEffectId =
   | 'prep'
   | 'lastHope'
   | 'stand'
+  | 'learningShield'
+  | 'fatalShield'
+  | 'exhaustion'
   | 'adrenaline'
   | 'eagleEye'
   | 'hunterReward'
   | 'goldLock'
   | 'healingReduction'
   | 'poison'
+  | 'disorientation'
   | 'antiAfk';
 export type PlayerEffectKind = 'buff' | 'debuff';
 export type PlayerEffectSource = 'ability' | 'talent' | 'spider' | 'inactivity';
@@ -24,6 +28,7 @@ export interface PlayerEffectMetadata {
   readonly kind: PlayerEffectKind;
   readonly source: PlayerEffectSource;
   readonly removableByCleanser: boolean;
+  readonly undispellable?: boolean;
 }
 
 export interface PlayerEffectDetails {
@@ -38,6 +43,8 @@ export interface PlayerEffectDetails {
   readonly tickInterval: number;
   readonly nextTick: number;
   readonly damagePercent: number;
+  readonly blockReductionPercent: number;
+  readonly agilityDodgeReductionPercent: number;
 }
 
 /** A player status; timers and charges remain the authoritative session state. */
@@ -60,6 +67,24 @@ interface EffectLifecycle {
 }
 
 const LIFECYCLES: Readonly<Record<PlayerEffectId, EffectLifecycle>> = {
+  learningShield: {
+    read: (state) => ({ remaining: state.learningShieldTimer }),
+    clear: (state) => {
+      state.learningShieldTimer = 0;
+    },
+  },
+  fatalShield: {
+    read: (state) => ({ remaining: state.fatalShieldTimer }),
+    clear: (state) => {
+      state.fatalShieldTimer = 0;
+    },
+  },
+  exhaustion: {
+    read: (state) => ({ remaining: state.exhaustionTimer }),
+    clear: (state) => {
+      state.exhaustionTimer = 0;
+    },
+  },
   prep: {
     read: (state) => ({
       remaining: state.prepTimer,
@@ -152,6 +177,18 @@ const LIFECYCLES: Readonly<Record<PlayerEffectId, EffectLifecycle>> = {
       state.poisonDamage = [];
     },
   },
+  disorientation: {
+    read: (state) => ({
+      remaining: state.disorientationTimer,
+      details: {
+        blockReductionPercent: disorientationPercent(state.level, 'block'),
+        agilityDodgeReductionPercent: disorientationPercent(state.level, 'agilityDodge'),
+      },
+    }),
+    clear: (state) => {
+      state.disorientationTimer = 0;
+    },
+  },
   antiAfk: {
     read: (state) => ({
       remaining: state.antiAfkRecoveryTimer > 0 ? state.antiAfkRecoveryTimer : null,
@@ -181,5 +218,6 @@ export function clearPlayerEffects(
   matches: (effect: PlayerEffectMetadata) => boolean,
 ): void {
   for (const id of Object.keys(PLAYER_EFFECTS) as PlayerEffectId[])
-    if (matches(PLAYER_EFFECTS[id])) LIFECYCLES[id].clear(state);
+    if (!(PLAYER_EFFECTS[id] as PlayerEffectMetadata).undispellable && matches(PLAYER_EFFECTS[id]))
+      LIFECYCLES[id].clear(state);
 }

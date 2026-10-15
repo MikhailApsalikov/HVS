@@ -242,6 +242,16 @@ body {
   min-height: 0;
 }
 
+.game-field__effects {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  container-type: inline-size;
+}
+
 .lane {
   flex: 1;
   position: relative;
@@ -1515,7 +1525,7 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 60px;
+  bottom: 0;
   pointer-events: none;
   z-index: 100;
   animation: armageddon-pulse 0.3s ease-in-out infinite alternate;
@@ -1826,13 +1836,10 @@ body {
 .shield-overlay {
   display: none;
   position: absolute;
-  bottom: 60px;
+  bottom: 0;
   left: 0;
   right: 0;
   height: 56px;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
   pointer-events: none;
   z-index: 80;
   background: linear-gradient(
@@ -1845,12 +1852,29 @@ body {
 }
 
 .shield-overlay.active {
+  display: block;
+}
+
+.shield-overlay__readout {
+  position: absolute;
+  bottom: 10px;
+  left: 75%;
+  transform: translateX(-50%);
   display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(50% - 20px);
+  padding: 4px 8px;
+  border: 1px solid #e0ba5d99;
+  border-radius: 8px;
+  background: #2b221bcc;
 }
 
 .shield-overlay__icon {
   width: 40px;
   height: 40px;
+  flex: 0 1 40px;
+  min-width: 0;
   animation: shield-pulse 1.5s ease-in-out infinite alternate;
 }
 
@@ -1860,14 +1884,14 @@ body {
 }
 
 .shield-overlay__timer {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   color: #ffd700;
   text-shadow:
     1px 1px 3px rgba(0, 0, 0, 0.8),
     0 0 12px rgba(255, 200, 50, 0.6);
   font-family: 'Georgia', 'Times New Roman', serif;
-  min-width: 56px;
+  white-space: nowrap;
   text-align: center;
 }
 
@@ -1897,8 +1921,6 @@ body {
 }
 
 .stand-shield-overlay .shield-overlay__icon {
-  width: 56px;
-  height: 56px;
   filter: brightness(1.6) drop-shadow(0 0 16px #fff1a9);
   animation: divine-radiance 1.5s ease-in-out infinite alternate;
 }
@@ -1910,8 +1932,9 @@ body {
     0 0 16px #ffcf50;
 }
 
-.game-field:has(.last-hope-overlay.active) .stand-shield-overlay {
-  bottom: 124px;
+.stand-shield-overlay .shield-overlay__readout {
+  left: 25%;
+  border-color: #fff1a9;
 }
 
 @keyframes divine-radiance {
@@ -1944,7 +1967,7 @@ body {
 .adrenaline-overlay {
   display: none;
   position: absolute;
-  inset: auto 0 60px;
+  inset: auto 0 0;
   height: 110px;
   z-index: 81;
   pointer-events: none;
@@ -1969,11 +1992,13 @@ body {
 .adrenaline-overlay__badge {
   position: absolute;
   right: 14px;
-  bottom: 12px;
+  bottom: 78px;
+  width: min(238px, calc(50% - 20px));
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 14px 9px 9px;
+  gap: 8px;
+  padding: 6px 8px;
   border: 1px solid #ed985f;
   border-radius: 12px 3px 12px 3px;
   background: linear-gradient(130deg, #542313f5, #201216f5);
@@ -1986,14 +2011,20 @@ body {
 .adrenaline-overlay__icon,
 .adrenaline-overlay__icon svg {
   display: block;
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
+}
+
+.adrenaline-overlay__icon {
+  flex: 0 0 32px;
 }
 
 .adrenaline-overlay__readout {
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .adrenaline-overlay__label {
@@ -2001,6 +2032,8 @@ body {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #ebbc99;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .adrenaline-overlay__count {
@@ -2014,10 +2047,11 @@ body {
 
 .adrenaline-overlay__timer {
   border-left: 1px solid #c17c4b77;
-  padding-left: 10px;
+  padding-left: 8px;
   color: #edbc9a;
   font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .adrenaline-overlay__sparks {
@@ -2043,16 +2077,44 @@ body {
   animation-play-state: paused;
 }
 
-.game-field:has(.adrenaline-overlay.active) .last-hope-overlay {
-  bottom: 170px;
-}
+@container (max-width: 420px) {
+  .adrenaline-overlay__badge {
+    gap: 6px;
+    padding: 4px 6px;
+  }
 
-.game-field:has(.adrenaline-overlay.active) .stand-shield-overlay {
-  bottom: 170px;
-}
+  .adrenaline-overlay__icon,
+  .adrenaline-overlay__icon svg {
+    width: 24px;
+    height: 24px;
+  }
 
-.game-field:has(.adrenaline-overlay.active):has(.last-hope-overlay.active) .stand-shield-overlay {
-  bottom: 234px;
+  .adrenaline-overlay__icon {
+    flex-basis: 24px;
+  }
+
+  .adrenaline-overlay__label {
+    display: none;
+  }
+
+  .adrenaline-overlay__count {
+    font-size: 1.5rem;
+  }
+
+  .adrenaline-overlay__timer {
+    padding-left: 6px;
+    font-size: 0.7rem;
+  }
+
+  .shield-overlay__icon {
+    width: 24px;
+    height: 24px;
+    flex-basis: 24px;
+  }
+
+  .shield-overlay__timer {
+    font-size: 1.1rem;
+  }
 }
 
 @keyframes adrenaline-pulse {
@@ -2102,7 +2164,7 @@ body {
 
 .preparation-overlay__streams {
   position: absolute;
-  inset: auto 0 60px;
+  inset: auto 0 0;
   height: 130px;
   overflow: hidden;
   background: radial-gradient(ellipse at 50% 100%, #f7d95744, transparent 70%);

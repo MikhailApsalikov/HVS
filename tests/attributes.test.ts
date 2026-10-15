@@ -98,6 +98,14 @@ describe('primary attributes through the session API', () => {
     [239, 'energyPerKill', 0],
     [240, 'energyPerKill', 1],
     [480, 'energyPerKill', 2],
+    [0, 'dodgeChance', 0],
+    [99, 'dodgeChance', 0],
+    [100, 'dodgeChance', 0],
+    [101, 'dodgeChance', 0.0003],
+    [102, 'dodgeChance', 0.0006],
+    [2599, 'dodgeChance', 0.7497],
+    [2600, 'dodgeChance', 0.75],
+    [10000, 'dodgeChance', 0.75],
   ] as const)('agility %s resolves %s to %s at its threshold', (value, stat, expected) => {
     const session = new GameSession('normal');
     session.state.character.setBase('agility', value);
@@ -280,7 +288,7 @@ describe('armor and talent branches', () => {
     expect(session.state.stats.hpRegen).toBeCloseTo(before.hpRegen + 5);
   });
 
-  it('reduces spider damage by six percent per rank as one talent source', () => {
+  it('reduces spider damage by five percent per rank as one talent source', () => {
     const session = new GameSession('normal', () => 0.999999);
     session.state.level = 10;
     session.state.level = 20;
@@ -301,7 +309,7 @@ describe('armor and talent branches', () => {
       expect(session.drainEvents()).toContainEqual({
         type: 'damage',
         spiderId: spider.id,
-        hp: 100 - 6 * rank,
+        hp: 100 - 5 * rank,
         energy: 0,
       });
     }
@@ -407,10 +415,10 @@ describe('armor and talent branches', () => {
     expect(session.drainEvents()).toContainEqual({
       type: 'damage',
       spiderId: 'spider-1',
-      hp: 100,
+      hp: 125,
       energy: 0,
     });
-    expect(session.state.stats.damageFactor).toBe(0.1);
+    expect(session.state.stats.damageFactor).toBe(0.125);
   });
 
   it('requires level and spending in the specific branch for every new rank', () => {

@@ -37,19 +37,22 @@ function hit(session: GameSession, damage = 10) {
 
 describe('agility dodge and breach effects', () => {
   it.each([
-    [1, 0.0003],
-    [100, 0.03],
-    [2499, 0.7497],
-    [2500, 0.75],
+    [1, 0],
+    [100, 0],
+    [101, 0.0003],
+    [200, 0.03],
+    [2599, 0.7497],
+    [2600, 0.75],
     [10000, 0.75],
   ])('%s agility grants %s dodge chance', (agility, chance) => {
     const session = arena();
     session.state.character.setBase('agility', agility);
     session.refreshStats();
     expect(session.state.stats.dodgeChance).toBe(chance);
-    expect(attributeDescription(session.state, 'agility')).toContain(
-      `Дает ${chance * 100}% вероятности уклониться от урона.`,
-    );
+    const description = attributeDescription(session.state, 'agility');
+    if (chance > 0)
+      expect(description).toContain(`Дает ${chance * 100}% вероятности уклониться от урона.`);
+    else expect(description).not.toContain('вероятности уклониться');
   });
   it.each([
     [0.029999, true],
@@ -57,7 +60,7 @@ describe('agility dodge and breach effects', () => {
     [0.999999, false],
   ])('checks dodge boundary %s', (roll, dodged) => {
     const session = arena([], roll);
-    session.state.character.setBase('agility', 100);
+    session.state.character.setBase('agility', 200);
     session.refreshStats();
     expect(hit(session)).toMatchObject({
       hp: dodged ? 0 : 10,
@@ -73,7 +76,7 @@ describe('agility dodge and breach effects', () => {
       { stat: 'agility', kind: 'flat', value: 6 },
     ]);
     session.refreshStats();
-    expect(session.state.stats).toMatchObject({ agility: 130, dodgeChance: 0.039 });
+    expect(session.state.stats).toMatchObject({ agility: 130, dodgeChance: 0.009 });
   });
   it('avoids energy burns but grants breach energy and gold, and fires an unlearned counter volley on dodge', () => {
     const session = arena(
@@ -84,7 +87,7 @@ describe('agility dodge and breach effects', () => {
       ],
       0,
     );
-    session.state.character.setBase('agility', 100);
+    session.state.character.setBase('agility', 200);
     session.refreshStats();
     expect(session.state.isAbilityUnlocked('volley')).toBe(false);
     session.state.getAbility('volley').start(20);
@@ -500,7 +503,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         },
       };
       const parsed = parseSave(previous)!;
-      expect(parsed.version).toBe(22);
+      expect(parsed.version).toBe(23);
       const session = restore(parsed, () => 0.999999);
       expect(session.state.killingStreakStacks).toBe(2);
       expect(session.state.killingStreakProgress).toBe((34 - 3 * Math.min(rank, 8)) / 2);

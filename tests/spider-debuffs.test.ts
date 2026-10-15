@@ -581,7 +581,7 @@ describe('debuff save compatibility', () => {
       };
       const parsed = parseSave(previous)!;
       expect(parsed).not.toBeNull();
-      expect(parsed.version).toBe(22);
+      expect(parsed.version).toBe(23);
       expect(parsed.state).toEqual({ ...previous.state, poisonTimer: expectedTimer });
       const loaded = restore(parsed, () => 0.999999);
       expect(loaded.state.stats['poison.tickDamage']).toBe(180);

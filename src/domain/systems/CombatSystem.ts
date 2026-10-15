@@ -11,6 +11,7 @@ import { Spider } from '../model/Spider.js';
 import { fireVolley } from './AbilitySystem.js';
 import { applySpiderDebuff } from './DebuffSystem.js';
 import { clearPlayerBuffs } from './BuffSystem.js';
+import { protectFromBreach, shieldAfterBreach } from './LearningFromMistakesSystem.js';
 
 /** Returns the time within this tick when a live spider first occupies the field. */
 export function spawnSpiders(state: GameState, dt: number, random: RandomSource): number {
@@ -156,12 +157,21 @@ export function resolveBreaches(
       const energy =
         definition.burnsEnergy && !dodged ? Math.min(state.energy, state.stats.burnerEnergy) : 0;
       const previousHp = state.hp;
+      const previousFatalShield = state.fatalShieldTimer;
+      hp = protectFromBreach(state, hp);
       state.modifyHp(-hp);
-      if (state.hp < previousHp && applySpiderDebuff(state, spider)) onEffectsChanged();
+      const lostHealth = state.hp < previousHp;
+      if (lostHealth) applySpiderDebuff(state, spider);
       if (definition.clearsBuffs && !dodged) {
         clearPlayerBuffs(state);
-        onEffectsChanged();
       }
+      if (lostHealth) shieldAfterBreach(state);
+      if (
+        lostHealth ||
+        previousFatalShield !== state.fatalShieldTimer ||
+        (definition.clearsBuffs && !dodged)
+      )
+        onEffectsChanged();
       state.modifyEnergy(-energy);
       emit({
         type: 'damage',

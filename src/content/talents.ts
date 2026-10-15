@@ -6,6 +6,7 @@ import {
   CRITICAL_SHOT_POWER,
   HUNTER_REWARD,
   IMPROVED_CRITICAL_SHOT_POWER,
+  LEARNING_FROM_MISTAKES,
 } from '../domain/rules/stats.js';
 import { ABILITY_ORDER } from './abilities.js';
 
@@ -54,7 +55,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     prerequisite: { id: 'warriorArmor', rank: 5 },
     name: 'Защита от пауков',
     sprite: 'TalentArmor',
-    effects: [percent('incomingDamage', -6)],
+    effects: [percent('incomingDamage', -5)],
     description: 'Снижает урон от атак пауков на {incomingDamage}.',
   },
   tireless: {
@@ -407,16 +408,25 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     sprite: 'TalentTitanArmor',
     effects: [percent('armor', 75)],
-    description: 'Увеличивает броню на {armor}.',
+    description:
+      'Увеличивает броню на {armor}.\nЕсли на вас нет дебаффов от пауков, дополнительно снижает урон от пауков на {titanDamageReduction}%.',
+  },
+  learningFromMistakes: {
+    name: 'Обучение на ошибках',
+    branch: 'shooting',
+    column: 1,
+    sprite: 'AbilityStand',
+    effects: [],
+    description: `Получая урон от паука, вы снимаете все дебаффы от пауков и становитесь неуязвимы на {learningShieldDuration} с. Срабатывает не чаще раза в ${LEARNING_FROM_MISTAKES.shieldCooldown} с.\nСмертельный удар оставляет вам 1 здоровья и даёт ${LEARNING_FROM_MISTAKES.fatalShieldDuration} с неуязвимости, даже если первый эффект ещё восстанавливается.\nПосле спасения вы получаете «Истощение» на ${LEARNING_FROM_MISTAKES.exhaustionDuration / 60} минут: ловкость снижена на ${LEARNING_FROM_MISTAKES.exhaustionAgilityPercent}%, талант и получение неуязвимости недоступны. «Истощение» нельзя снять.\nДлительность неуязвимости от таланта нельзя увеличить.`,
   },
   willToWin: {
     name: 'Воля к победе',
     branch: 'shooting',
     column: 3,
     sprite: 'TalentWillToWin',
-    effects: [flat('levelDuration', -15), flat('agility', 70), flat('shopDiscount', 6)],
+    effects: [flat('levelDuration', -15), flat('shopDiscount', 6)],
     description:
-      'Сокращает длительность уровня на {levelDuration} с и увеличивает ловкость на {agility}.\nСнижает цену покупки всех предметов в лавке на {shopDiscount}%. Цена продажи не меняется.',
+      'Сокращает длительность уровня на {levelDuration} с.\nСнижает цену покупки всех предметов в лавке на {shopDiscount}%. Цена продажи не меняется.',
   },
   poisonResistance: {
     name: 'Устойчивость к ядам',

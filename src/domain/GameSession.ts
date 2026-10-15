@@ -12,8 +12,19 @@ import { ItemSystem } from './model/ItemSystem.js';
 import { createArrow } from './systems/ArrowFactory.js';
 import { activateAbility, tickAbilities, tickAimedFire } from './systems/AbilitySystem.js';
 import { tickAntiAfk } from './systems/AntiAfkSystem.js';
+import {
+  learningModifiers,
+  nextLearningBoundary,
+  tickLearningFromMistakes,
+} from './systems/LearningFromMistakesSystem.js';
+import { TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK } from './rules/stats.js';
 import { buffModifiers, nextBuffBoundary, tickBuffs } from './systems/BuffSystem.js';
-import { debuffModifiers, nextDebuffBoundary, tickDebuffs } from './systems/DebuffSystem.js';
+import {
+  debuffAgilityDodgeModifiers,
+  debuffModifiers,
+  nextDebuffBoundary,
+  tickDebuffs,
+} from './systems/DebuffSystem.js';
 import {
   spawnSpiders,
   moveSpiders,
@@ -51,6 +62,7 @@ export class GameSession {
     const state = this.state;
     state.killingStreakLearned = this.talents.getRank('killingStreak') > 0;
     state.masochismRank = this.talents.getRank('masochism');
+    state.learningFromMistakesRank = this.talents.getRank('learningFromMistakes');
     state.talentAbilities.clear();
     for (const id of ABILITY_ORDER) {
       const talent = ABILITIES[id].talent;
@@ -62,7 +74,17 @@ export class GameSession {
       ...state.character.getModifiers(),
       ...buffModifiers(state),
       ...debuffModifiers(state),
+      ...learningModifiers(state),
     ];
+    if (
+      !state.activeEffects.some((effect) => effect.kind === 'debuff' && effect.source === 'spider')
+    )
+      effects.push({
+        source: 'talent:titanArmor',
+        stat: 'incomingDamage',
+        kind: 'percent',
+        value: -TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK * this.talents.getRank('titanArmor'),
+      });
     if (state.antiAfkDamagePercent > 0)
       effects.push({
         source: 'effect:antiAfk',
@@ -70,7 +92,14 @@ export class GameSession {
         kind: 'percent',
         value: state.antiAfkDamagePercent,
       });
-    const rules = new GameRules(state.config, effects, state.character.base, state.level);
+    const agilityDodgeModifiers = debuffAgilityDodgeModifiers(state);
+    const rules = new GameRules(
+      state.config,
+      effects,
+      state.character.base,
+      state.level,
+      agilityDodgeModifiers,
+    );
     const scaling = this.talents.getScalingModifiers(rules.snapshot());
     effects.push(...scaling);
     if (state.adrenalineActive) {
@@ -98,7 +127,13 @@ export class GameSession {
       );
     }
     state.applyRules(
-      new GameRules(state.config, effects, state.character.base, state.level),
+      new GameRules(
+        state.config,
+        effects,
+        state.character.base,
+        state.level,
+        agilityDodgeModifiers,
+      ),
       grantHealthIncrease,
     );
     state.killingStreakStacks = state.killingStreakStacks;
@@ -202,6 +237,7 @@ export class GameSession {
         remaining,
         nextDebuffBoundary(this.state),
         nextBuffBoundary(this.state),
+        nextLearningBoundary(this.state),
         ...this.state.aimedFireWaves.map((wave) => wave.remaining),
       );
       this.tickStep(step);
@@ -226,6 +262,7 @@ export class GameSession {
     const adrenalineWasActive = state.adrenalineActive;
     const prepRegeneration = state.stats['prep.energyRegen'] * Math.min(dt, state.prepTimer);
     tickAbilities(state, dt);
+    if (tickLearningFromMistakes(state, dt)) this.refreshStats(false);
     state.tickKillingStreak(dt);
     if (
       (lastHopeWasActive && state.lastHopeTimer === 0) ||

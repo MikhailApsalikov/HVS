@@ -83,7 +83,7 @@ describe('talent strength and independent sources', () => {
     expect(session.upgradeTalent('hunterArsenal')).toBe(true);
     expect(session.buyItem('c055')).toBe(true);
     expect(session.buyItem('c046')).toBe(true);
-    expect(session.state.rules.value('incomingDamage', 1000)).toBe(220); // Armor reaches the 75% cap, then spider protection applies: 1000 × .25 × .88
+    expect(session.state.rules.value('incomingDamage', 1000)).toBe(225); // 1000 × .25 × .90
   });
   it.each(TALENT_ORDER)('validates rank and unlock constraints: %s', (id) => {
     const session = new GameSession('normal');
@@ -105,6 +105,7 @@ describe('talent strength and independent sources', () => {
       TALENTS[id].effects.length > 0 ||
         TALENTS[id].scaling !== undefined ||
         id === 'masochism' || // Resource payment is handled by the session's combat commands.
+        id === 'learningFromMistakes' ||
         ABILITY_ORDER.some((ability) => ABILITIES[ability].talent === id),
     ).toBe(true);
   });
@@ -139,7 +140,7 @@ describe('primary attribute sources', () => {
 describe('content contracts', () => {
   it('retains all difficulties, talents, abilities and unique items', () => {
     expect(Object.keys(DIFFICULTIES)).toHaveLength(3);
-    expect(TALENT_ORDER).toHaveLength(44);
+    expect(TALENT_ORDER).toHaveLength(45);
     expect(ABILITY_ORDER).toHaveLength(12);
     expect(new Set(ITEM_CATALOG.map((item) => item.id)).size).toBe(ITEM_CATALOG.length);
   });

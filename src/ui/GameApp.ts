@@ -65,15 +65,16 @@ export class GameApp {
     this.progression = new LevelUpScreen(document.createElement('div'), sprites);
     const field = this.game.getGameField();
     field.setHud(this.game.getHud());
-    this.freeze = new FreezeOverlay(field.getContainer(), sprites);
-    this.armageddon = new ArmageddonOverlay(field.getContainer(), sprites);
-    this.blizzard = new BlizzardOverlay(field.getContainer());
-    this.shield = new StandShieldOverlay(field.getContainer(), sprites);
-    this.lastHope = new StandShieldOverlay(field.getContainer(), sprites, 'lastHope');
-    this.adrenaline = new AdrenalineOverlay(field.getContainer(), sprites);
-    this.eagleEye = new AdrenalineOverlay(field.getContainer(), sprites, 'eagleEye');
-    this.antiAfk = new AntiAfkOverlay(field.getContainer());
-    this.preparation = new PreparationOverlay(field.getContainer());
+    const effects = field.getEffectsContainer();
+    this.freeze = new FreezeOverlay(effects, sprites);
+    this.armageddon = new ArmageddonOverlay(effects, sprites);
+    this.blizzard = new BlizzardOverlay(effects);
+    this.shield = new StandShieldOverlay(effects, sprites);
+    this.lastHope = new StandShieldOverlay(effects, sprites, 'lastHope');
+    this.adrenaline = new AdrenalineOverlay(effects, sprites);
+    this.eagleEye = new AdrenalineOverlay(effects, sprites, 'eagleEye');
+    this.antiAfk = new AntiAfkOverlay(effects);
+    this.preparation = new PreparationOverlay(effects);
     const wrapper = document.createElement('div');
     wrapper.className = 'app__screens';
     wrapper.append(this.menu.getContainer(), this.game.getContainer(), this.over.getContainer());
@@ -123,7 +124,9 @@ export class GameApp {
     } else this.blizzard.hide();
     if (state.isInvulnerable) {
       this.shield.show();
-      this.shield.updateTimer(state.invulnerableTimer);
+      this.shield.updateTimer(
+        Math.max(state.invulnerableTimer, state.learningShieldTimer, state.fatalShieldTimer),
+      );
     } else this.shield.hide();
     if (state.lastHopeTimer > 0) {
       this.lastHope.show();

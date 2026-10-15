@@ -156,11 +156,11 @@ describe('defense talent abilities through session commands', () => {
     expect(session.activateAbility('lastHope')).toBe('activated');
     expect(session.state.energy).toBe(55);
     expect(session.state.getAbility('lastHope').remainingCooldown).toBe(40);
-    expect(session.state.stats).toMatchObject({ blockChance: 0.82, blockPower: 248 });
+    expect(session.state.stats).toMatchObject({ blockChance: 0.82, blockPower: 129 });
     session.refreshStats();
-    expect(session.state.stats.blockPower).toBe(248);
+    expect(session.state.stats.blockPower).toBe(129);
     session.tick(5.999);
-    expect(session.state.stats.blockPower).toBe(248);
+    expect(session.state.stats.blockPower).toBe(129);
     session.tick(0.0011);
     expect(session.state.lastHopeTimer).toBe(0);
     expect(session.state.stats).toMatchObject({
@@ -228,14 +228,14 @@ describe('damage blocking and counter volleys', () => {
     const before = session.state.hp;
     const spider = addSpider(session, 'normal', 0, 1, 201);
     session.tick(0.001);
-    const damage = blocked ? 0 : 83; // The endurance-scaled block fully absorbs this hit.
+    const damage = blocked ? 3 : 99; // Block absorbs 96 after the damage reductions.
     expect(session.state.hp).toBe(before - damage);
     expect(session.drainEvents()).toContainEqual({
       type: 'damage',
       spiderId: spider.id,
       hp: damage,
       energy: 0,
-      ...(blocked ? { blockedDamage: 83 } : {}),
+      ...(blocked ? { blockedDamage: 96 } : {}),
     });
   });
 
@@ -393,7 +393,7 @@ describe('defense save compatibility', () => {
       ),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(22);
+    expect(parsed.version).toBe(23);
     const loaded = restore(parsed);
     expect(loaded.state.getAbility('stand').remainingCooldown).toBe(41);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(123);

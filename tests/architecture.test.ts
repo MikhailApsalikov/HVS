@@ -107,6 +107,7 @@ describe('legacy feature inventory captured before rewrite', () => {
         greed: { maxRanks: 5, unlocksAtLevel: 0 },
         healBoost: { maxRanks: 5, unlocksAtLevel: 40 },
         willToWin: { maxRanks: 5, unlocksAtLevel: 50 },
+        learningFromMistakes: { maxRanks: 5, unlocksAtLevel: 50 },
         poisonResistance: { maxRanks: 5, unlocksAtLevel: 50 },
         adrenaline: { maxRanks: 1, unlocksAtLevel: 60 },
         marauder: { maxRanks: 3, unlocksAtLevel: 30 },

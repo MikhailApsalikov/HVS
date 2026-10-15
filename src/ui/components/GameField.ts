@@ -22,6 +22,7 @@ export class GameField {
   private _container: HTMLElement;
   private _lanesArea: HTMLElement;
   private _archersRow: HTMLElement;
+  private readonly _effects = document.createElement('div');
   private _lanes: HTMLElement[] = [];
   private _spiderElements: Map<string, HTMLElement> = new Map();
   private _arrowElements: Map<string, HTMLElement> = new Map();
@@ -65,6 +66,8 @@ export class GameField {
       this._lanesArea.appendChild(lane);
       this._lanes.push(lane);
     }
+    this._effects.className = 'game-field__effects';
+    this._lanesArea.appendChild(this._effects);
     this._container.appendChild(this._lanesArea);
 
     this._archersRow.className = 'game-field__archers';
@@ -197,6 +200,10 @@ export class GameField {
 
   public getContainer(): HTMLElement {
     return this._container;
+  }
+
+  public getEffectsContainer(): HTMLElement {
+    return this._effects;
   }
 
   public reset(): void {
