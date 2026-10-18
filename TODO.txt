@@ -22,5 +22,3 @@ http://localhost:5173/?test=23&money=4344
 http://localhost:5173/?test=25&money=4965
 http://localhost:5173/?test=34&money=8331
 http://localhost:5173/?test=54&money=20594
-
-

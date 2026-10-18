@@ -22,8 +22,8 @@ export function attributeModifiers(
     value: number,
     kind: StatModifier['kind'] = 'flat',
   ): StatModifier => ({ source: `attribute:${attribute}`, stat, kind, value });
-  const shotPercent = Math.min(ar.percentCap, Math.floor(a / ar.shotStep));
-  const volleyPercent = Math.min(ar.percentCap, Math.floor(a / ar.volleyStep));
+  const shotPercent = (1 - 2 ** (-a / ar.shotCooldownHalfLife)) * 100;
+  const volleyPercent = Math.min(ar.percentCap, (1 - 2 ** (-a / ar.volleyCooldownHalfLife)) * 100);
   return {
     endurance: [
       effect('endurance', 'maxHp', Math.max(0, e - er.healthThreshold) * er.healthPerPoint),
@@ -49,7 +49,6 @@ export function attributeModifiers(
         ).value,
       ),
       effect('agility', 'shootCooldown', -shotPercent, 'percent'),
-      effect('agility', 'arrowSpeed', shotPercent, 'percent'),
       effect('agility', 'volley.cooldown', -volleyPercent, 'percent'),
       effect('agility', 'aimedFire.cooldown', -volleyPercent, 'percent'),
       effect('agility', 'energyPerKill', Math.floor(a / ar.killEnergyStep)),

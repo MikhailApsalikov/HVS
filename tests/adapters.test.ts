@@ -183,7 +183,7 @@ describe('application orchestration', () => {
     expect(frames.callbacks.size).toBe(0);
   });
 
-  it('forwards piercing damage and actual kill/breach gains before the next render', () => {
+  it('forwards piercing damage and healing while stun suppresses kill and breach energy', () => {
     const session = game(61);
     session.talents.loadFromSave([{ id: 'vampirism', rank: 1 }]);
     session.refreshStats();
@@ -212,14 +212,7 @@ describe('application orchestration', () => {
       frames.advance(20);
       expect(calls).toEqual([
         ['damage', breached.id, expectedDamage, 0, undefined, undefined, true],
-        ['gain', breached.id, 0, session.state.stats.energyPerBreach, 'breach'],
-        [
-          'gain',
-          killed.id,
-          session.state.stats.hpPerKill,
-          session.state.stats.energyPerKill,
-          'kill',
-        ],
+        ['gain', killed.id, session.state.stats.hpPerKill, 0, 'kill'],
         ['coin', killed.id, expect.any(Number), false],
         ['render'],
       ]);

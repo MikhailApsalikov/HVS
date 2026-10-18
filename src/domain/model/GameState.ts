@@ -44,6 +44,7 @@ export class GameState {
   hunterRewardTimer = 0;
   healingReductionTimer = 0;
   disorientationTimer = 0;
+  stunTimer = 0;
   poisonTimer = 0;
   poisonTickTimer = 0;
   poisonDamage: readonly number[] = [];
@@ -104,6 +105,14 @@ export class GameState {
     return (
       this.fatalShieldTimer > 0 ||
       (this.exhaustionTimer === 0 && (this.invulnerableTimer > 0 || this.learningShieldTimer > 0))
+    );
+  }
+  get isStunned(): boolean {
+    return this.stunTimer > 0;
+  }
+  isAbilityBlockedByStun(id: AbilityId): boolean {
+    return (
+      this.isStunned && !ABILITIES[id].clearsSpiderDebuffs && !ABILITIES[id].usableWhileStunned
     );
   }
   get blizzardActive(): boolean {

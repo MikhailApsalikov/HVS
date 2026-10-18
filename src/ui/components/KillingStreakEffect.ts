@@ -51,8 +51,7 @@ export class KillingStreakEffect {
     this.container.classList.toggle('killing-streak--titan', excess > 0);
     this.container.classList.toggle('killing-streak--paused', state.phase !== 'playing');
     this.container.style.setProperty('--streak-strength', String(stacks / maximum));
-    this.count.textContent =
-      excess > 0 ? String(stacks) : `${stacks}/${state.killingStreakMaximum}`;
+    this.count.textContent = `${stacks}/${maximum}`;
     const timerLabel =
       excess > 0
         ? `Временных эффектов: ${excess}`
@@ -64,7 +63,7 @@ export class KillingStreakEffect {
       '--streak-progress',
       String(excess > 0 ? state.killingStreakDecayFraction : state.killingStreakFraction),
     );
-    this.pips.style.setProperty('--streak-columns', String(Math.min(10, maximum)));
+    this.pips.style.setProperty('--streak-columns', String(maximum));
     this.container.setAttribute(
       'aria-label',
       `Череда убийств: ${stacks} из ${maximum}. ${timerLabel}`,

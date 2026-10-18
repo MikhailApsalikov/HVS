@@ -20,7 +20,7 @@ import {
 import { TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK } from './rules/stats.js';
 import { buffModifiers, nextBuffBoundary, tickBuffs } from './systems/BuffSystem.js';
 import {
-  clearSpiderDebuffs,
+  clearResistedSpiderDebuffs,
   debuffAgilityDodgeModifiers,
   debuffModifiers,
   nextDebuffBoundary,
@@ -83,7 +83,7 @@ export class GameSession {
       undefined,
       scaling.filter((effect) => effect.stat === 'spiderDebuffResistance'),
     );
-    if (resistance === 1) clearSpiderDebuffs(state);
+    if (resistance === 1) clearResistedSpiderDebuffs(state);
     effects.push(...scaling, ...debuffModifiers(state, resistance));
     if (
       !state.activeEffects.some((effect) => effect.kind === 'debuff' && effect.source === 'spider')
@@ -196,7 +196,8 @@ export class GameSession {
   shootLane(lane: number): ShootResult {
     const state = this.state;
     const archer = state.archers[lane];
-    if (!Number.isInteger(lane) || state.phase !== 'playing' || !archer?.isReady) return 'blocked';
+    if (!Number.isInteger(lane) || state.phase !== 'playing' || state.isStunned || !archer?.isReady)
+      return 'blocked';
     if (!state.spendEnergy(state.currentShootCost, 'shoot')) return 'not_enough_energy';
     archer.start(state.stats.shootCooldown);
     if (state.adrenalineActive) {

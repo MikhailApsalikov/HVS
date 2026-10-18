@@ -10,14 +10,21 @@ export const BEST_DEFENSE_COOLDOWN = 3;
 export const LEARNING_FROM_MISTAKES = {
   shieldDurationPerRank: 0.15,
   shieldCooldown: 4,
-  fatalShieldDuration: 5,
+  fatalShieldDurations: [1, 2, 4, 7, 10],
+  damageThresholds: [0.1, 0.08, 0.07, 0.06, 0.05],
   exhaustionDuration: 300,
   exhaustionAgilityPercent: 15,
 } as const;
 export const TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK = 2;
 export const CRITICAL_SHOT_POWER = 2;
 export const IMPROVED_CRITICAL_SHOT_POWER = 3;
-export const KILLING_STREAK = { maxStacks: 20, decayInterval: 1.5 } as const;
+export function learningFatalShieldDuration(rank: number): number {
+  return LEARNING_FROM_MISTAKES.fatalShieldDurations[rank - 1] ?? 0;
+}
+export function learningDamageThreshold(rank: number): number {
+  return LEARNING_FROM_MISTAKES.damageThresholds[rank - 1] ?? 1;
+}
+export const KILLING_STREAK = { maxStacks: 10, decayInterval: 1.5 } as const;
 export const AIMED_FIRE = { firstDelay: 1, interval: 2 } as const;
 export const MASOCHISM = {
   healthPerEnergy: [10, 9, 8, 7, 6],
@@ -131,7 +138,7 @@ export const STATS = {
   permafrostSlow: stat('Замедление: Вечная мерзлота', 0, { ...probability, max: 0.5 }),
   spiderDamage: stat('Урон паука', SPIDER_DAMAGE.base, integer),
   burnerEnergy: stat('Сжигание энергии', 90, integer),
-  'freeze.cost': stat('Стоимость: Заморозка времени', 50, integer),
+  'freeze.cost': stat('Стоимость: Заморозка времени', 25, integer),
   'freeze.cooldown': stat('Перезарядка: Заморозка времени, с', 0, duration),
   'blizzard.cost': stat('Стоимость: Вьюга', 40, integer),
   'blizzard.cooldown': stat('Перезарядка: Вьюга, с', 15, duration),
@@ -174,7 +181,7 @@ export const STATS = {
   'recharge.cooldown': stat('Перезарядка: Перезарядка, с', 300, duration),
   'adrenaline.cost': stat('Стоимость: Адреналин', 0, integer),
   'eagleEye.cost': stat('Стоимость: Зоркость', 20, integer),
-  'eagleEye.cooldown': stat('Перезарядка: Зоркость, с', 60, duration),
+  'eagleEye.cooldown': stat('Перезарядка: Зоркость, с', 45, duration),
   'eagleEye.duration': stat('Длительность: Зоркость, с', 20, { ...duration, max: 20 }),
   'eagleEye.shots': stat('Критические выстрелы: Зоркость', 5, { ...integer, max: 20 }),
   'adrenaline.cooldown': stat('Перезарядка: Адреналин, с', 120, duration),
@@ -212,8 +219,8 @@ export const ATTRIBUTE_RULES = {
   agility: {
     dodgeThreshold: 100,
     dodgePerPoint: 0.0003,
-    shotStep: 12,
-    volleyStep: 18,
+    shotCooldownHalfLife: 800,
+    volleyCooldownHalfLife: 1200,
     percentCap: 70,
     killEnergyStep: 240,
     criticalShotStep: 130,

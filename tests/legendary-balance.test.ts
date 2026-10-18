@@ -11,7 +11,6 @@ function shop() {
   session.state.character.setModifiers('test:arena', [
     { stat: 'inventorySlots', kind: 'flat', value: 20 },
     { stat: 'spawnProbability', kind: 'percent', value: -100 },
-    { stat: 'arrowSpeed', kind: 'percent', value: -100 },
     { stat: 'maxEnergy', kind: 'flat', value: 1000 },
   ]);
   session.refreshStats();
@@ -41,9 +40,10 @@ describe('will to win in shooting', () => {
     session.talents.loadFromSave([
       { id: 'hunterMastery', rank: 5 },
       { id: 'vampirism', rank: 5 },
-      { id: 'piercingReward', rank: 8 },
-      { id: 'criticalShot', rank: 7 },
-      { id: 'volleyMastery', rank: 3 },
+      { id: 'piercingReward', rank: 7 },
+      { id: 'criticalShot', rank: 5 },
+      { id: 'volleyMastery', rank: 5 },
+      { id: 'improvedAgility', rank: 1 },
       { id: 'killingStreak', rank: 7 },
     ]);
     session.refreshStats();
@@ -131,7 +131,7 @@ describe('updated legendary equipment through session purchases', () => {
       { id: 'quickInstinct', rank: 10 },
     ]);
     expect(session.buyItem('l009')).toBe(true);
-    const agilityReduction = Math.min(70, Math.floor(session.state.stats.agility / 18));
+    const agilityReduction = Math.min(70, (1 - 2 ** (-session.state.stats.agility / 1200)) * 100);
     const cooldown = Math.round(36 * (1 - agilityReduction / 100) * 0.8 * 0.85 * 0.8 * 100) / 100;
     play(session);
     expect(session.activateAbility('volley')).toBe('activated');
@@ -216,8 +216,8 @@ describe('six new legendary items', () => {
     ]);
     session.refreshStats();
     session.tick(50);
-    expect(session.state.killingStreakStacks).toBe(12);
-    expect(session.state.killingStreakMaximum).toBe(12);
+    expect(session.state.killingStreakStacks).toBe(10);
+    expect(session.state.killingStreakMaximum).toBe(10);
     session.state.phase = 'levelUp';
     expect(session.sellItem(0)).toBe(true);
     expect(session.state.killingStreakStacks).toBe(10);
@@ -235,18 +235,16 @@ describe('six new legendary items', () => {
     expect(session.activateAbility('aimedFire')).toBe('activated');
     const loaded = restore(parseSave(snapshot(session))!, () => 0.999999);
     loaded.tick(5);
-    expect(loaded.state.arrows.size).toBe(27);
+    expect(loaded.state.arrows.size).toBe(18);
     loaded.tick(1.999);
-    expect(loaded.state.arrows.size).toBe(27);
+    expect(loaded.state.arrows.size).toBe(9);
     loaded.tick(0.001);
-    expect(loaded.state.arrows.size).toBe(36);
+    expect(loaded.state.arrows.size).toBe(18);
     loaded.tick(1.999);
-    expect(loaded.state.arrows.size).toBe(36);
+    expect(loaded.state.arrows.size).toBe(9);
     loaded.tick(0.001);
-    expect(loaded.state.arrows.size).toBe(45);
-    expect([...loaded.state.arrows.values()].slice(27).every((arrow) => !arrow.critical)).toBe(
-      true,
-    );
+    expect(loaded.state.arrows.size).toBe(18);
+    expect([...loaded.state.arrows.values()].every((arrow) => !arrow.critical)).toBe(true);
     expect(loaded.state.aimedFireWaves).toEqual([]);
   });
 

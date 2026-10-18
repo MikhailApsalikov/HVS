@@ -9,7 +9,7 @@ import { calculate, clamp } from '../rules/numbers.js';
 import { SPIDERS, SPECIAL_SPIDER_ORDER } from '../../content/spiders.js';
 import { Spider } from '../model/Spider.js';
 import { fireVolley } from './AbilitySystem.js';
-import { applySpiderDebuff } from './DebuffSystem.js';
+import { applySpiderDebuff, applyPiercingStun } from './DebuffSystem.js';
 import { clearPlayerBuffs } from './BuffSystem.js';
 import { protectFromBreach, shieldAfterBreach } from './LearningFromMistakesSystem.js';
 
@@ -162,10 +162,11 @@ export function resolveBreaches(
       state.modifyHp(-hp);
       const lostHealth = state.hp < previousHp;
       if (lostHealth) applySpiderDebuff(state, spider);
+      if (lostHealth && piercing) applyPiercingStun(state);
       if (definition.clearsBuffs && !dodged) {
         clearPlayerBuffs(state);
       }
-      if (lostHealth) shieldAfterBreach(state);
+      if (lostHealth) shieldAfterBreach(state, previousHp - state.hp);
       if (
         lostHealth ||
         previousFatalShield !== state.fatalShieldTimer ||

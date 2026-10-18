@@ -6,6 +6,30 @@ import type { TalentId } from '../src/domain/types.js';
 import { addSpider, game } from './helpers.js';
 
 describe('primary attributes through the session API', () => {
+  it('ignores every arrow-speed modifier while retaining cooldown bonuses on all arrow sources', () => {
+    const session = game(60);
+    session.talents.loadFromSave([
+      { id: 'rapidFire', rank: 7 },
+      { id: 'aimedFire', rank: 1 },
+    ]);
+    session.state.character.setBase('agility', 1541);
+    session.state.character.setModifiers('item:speed', [
+      { stat: 'arrowSpeed', kind: 'percent', value: 10000 },
+      { stat: 'arrowSpeed', kind: 'flat', value: 100 },
+      { stat: 'maxEnergy', kind: 'flat', value: 1000 },
+      { stat: 'spawnProbability', kind: 'percent', value: -100 },
+    ]);
+    session.refreshStats();
+    session.state.energy = session.state.maxEnergy;
+    expect(session.state.stats.shootCooldown).toBe(0.38);
+    session.shootLane(0);
+    session.activateAbility('volley');
+    session.activateAbility('aimedFire');
+    session.tick(1);
+    expect([...session.state.arrows.values()]).toHaveLength(14);
+    expect([...session.state.arrows.values()].every(({ speed }) => speed === 0.333333)).toBe(true);
+    expect(session.state.rules.explain('arrowSpeed').modifiers).toEqual([]);
+  });
   it('starts with first-level bases and applies growth once on each completed level', () => {
     const session = new GameSession('normal', () => 0.999999);
     expect(session.state.stats).toMatchObject({
@@ -17,9 +41,9 @@ describe('primary attributes through the session API', () => {
       maxEnergy: 100,
       hpRegen: 1.08,
       energyRegen: 8.16,
-      shootCooldown: 2.97,
-      arrowSpeed: 0.336667,
-      'volley.cooldown': 35.64,
+      shootCooldown: 2.94,
+      arrowSpeed: 0.333333,
+      'volley.cooldown': 35.52,
       'heal.amount': 182,
       'prep.restore': 266,
       coinsPerSec: 4,
@@ -82,19 +106,24 @@ describe('primary attributes through the session API', () => {
   });
 
   it.each([
-    [11, 'shootCooldown', 3],
+    [11, 'shootCooldown', 2.97],
     [12, 'shootCooldown', 2.97],
-    [23, 'shootCooldown', 2.97],
+    [23, 'shootCooldown', 2.94],
     [24, 'shootCooldown', 2.94],
-    [839, 'shootCooldown', 0.93],
-    [840, 'shootCooldown', 0.9],
+    [800, 'shootCooldown', 1.5],
+    [1600, 'shootCooldown', 0.75],
+    [2400, 'shootCooldown', 0.38],
+    [3200, 'shootCooldown', 0.19],
     [11, 'arrowSpeed', 0.333333],
-    [12, 'arrowSpeed', 0.336667],
-    [840, 'arrowSpeed', 0.566667],
-    [17, 'volley.cooldown', 36],
-    [18, 'volley.cooldown', 35.64],
-    [1259, 'volley.cooldown', 11.16],
-    [1260, 'volley.cooldown', 10.8],
+    [12, 'arrowSpeed', 0.333333],
+    [10000, 'arrowSpeed', 0.333333],
+    [17, 'volley.cooldown', 35.65],
+    [18, 'volley.cooldown', 35.63],
+    [1200, 'volley.cooldown', 18],
+    [2400, 'volley.cooldown', 10.8],
+    [10000, 'volley.cooldown', 10.8],
+    [1200, 'aimedFire.cooldown', 50],
+    [2400, 'aimedFire.cooldown', 30],
     [239, 'energyPerKill', 0],
     [240, 'energyPerKill', 1],
     [480, 'energyPerKill', 2],
@@ -113,9 +142,9 @@ describe('primary attributes through the session API', () => {
     expect(session.state.stats[stat]).toBe(expected);
   });
 
-  it('caps agility alone and applies rapid fire independently to real shots and volleys', () => {
+  it('keeps shots uncapped and caps ability reductions, applying rapid fire independently', () => {
     const session = game(20);
-    session.state.character.setBase('agility', 10000);
+    session.state.character.setBase('agility', 3200 - 19);
     session.talents.loadFromSave([
       { id: 'rapidFire', rank: 7 },
 
@@ -123,12 +152,12 @@ describe('primary attributes through the session API', () => {
     ]);
     session.refreshStats();
     expect(session.shootLane(0)).toBe('shot');
-    expect(session.state.archers[0].duration).toBe(0.46);
-    expect([...session.state.arrows.values()][0].speed).toBe(0.844333);
+    expect(session.state.archers[0].duration).toBe(0.1);
+    expect([...session.state.arrows.values()][0].speed).toBe(0.333333);
     session.state.energy = session.state.maxEnergy;
     expect(session.activateAbility('volley')).toBe('activated');
     expect(session.state.getAbility('volley').duration).toBe(5.34);
-    expect([...session.state.arrows.values()].every((arrow) => arrow.speed === 0.844333)).toBe(
+    expect([...session.state.arrows.values()].every((arrow) => arrow.speed === 0.333333)).toBe(
       true,
     );
   });

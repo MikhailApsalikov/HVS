@@ -247,11 +247,11 @@ describe('all abilities', () => {
     advance(session, 2);
     expect(session.state.levelTimer).toBe(timer);
     expect(spider.y).toBe(0.4);
-    expect(session.state.energy).toBe(50);
+    expect(session.state.energy).toBe(75);
     expect(session.activateAbility('heal')).toBe('level_locked');
     expect(session.activateAbility('freeze')).toBe('deactivated');
     expect(session.state.phase).toBe('playing');
-    expect(session.state.energy).toBe(50);
+    expect(session.state.energy).toBe(75);
   });
   it('slows existing spiders, then removes the slow', () => {
     const session = game(20);

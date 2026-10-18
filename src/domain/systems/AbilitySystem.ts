@@ -94,6 +94,7 @@ export function activateAbility(
     return 'deactivated';
   }
   if (state.phase !== 'playing' || !state.isAbilityUnlocked(id)) return 'level_locked';
+  if (state.isAbilityBlockedByStun(id)) return 'stunned';
   if (id === 'stand' && state.exhaustionTimer > 0) return 'level_locked';
   const ability = state.getAbility(id);
   if (ability.isOnCooldown) return 'on_cooldown';

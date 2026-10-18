@@ -81,8 +81,9 @@
   "l015": {
     "abilityId": "freeze",
     "modType": "costReduction",
-    "value": 45,
-    "description": "«Заморозка»: стоимость −45 энергии"
+    "kind": "percent",
+    "value": 100,
+    "description": "«Заморозка времени» не расходует энергию"
   },
   "l016": {
     "abilityId": "heal",

@@ -4,12 +4,49 @@ import { GameSession } from '../src/domain/GameSession.js';
 import { ITEM_MAP } from '../src/content/items.js';
 import { TALENT_ORDER } from '../src/content/talents.js';
 import { SAVE_KEY, SaveSystem } from '../src/infrastructure/storage/SaveSystem.js';
-import { game, advance, addSpider, MemoryStorage } from './helpers.js';
+import { game, advance, addNearbySpider as addSpider, MemoryStorage } from './helpers.js';
 
 describe('saves and migration', () => {
+  it.each([2, 5])('migrates version 23 ranks, fixed flight and titan rank %i once', (rank) => {
+    const session = game(55);
+    session.shootLane(0);
+    const saved = snapshot(session);
+    const previous = {
+      ...saved,
+      version: 23,
+      talents: [
+        { id: 'criticalShot', rank: 7 },
+        { id: 'piercingReward', rank: 8 },
+        { id: 'titanPreparation', rank },
+        { id: 'learningFromMistakes', rank: 1 },
+      ],
+      state: {
+        ...saved.state,
+        killingStreakStacks: rank * 4,
+        killingStreakDecayProgress: 0.5,
+        fatalShieldTimer: 4,
+        exhaustionTimer: 299,
+      },
+      arrows: saved.arrows.map((arrow) => ({ ...arrow, speed: 10 })),
+    };
+    const parsed = parseSave(previous)!;
+    expect(parsed).not.toBeNull();
+    const loaded = restore(parsed);
+    expect(loaded.talents.getRank('criticalShot')).toBe(5);
+    expect(loaded.talents.getRank('piercingReward')).toBe(7);
+    expect(loaded.state.pendingTalentPoints).toBe(saved.state.pendingTalentPoints + 3);
+    expect(loaded.state.killingStreakStacks).toBe(rank * 2);
+    expect(loaded.state.killingStreakDecayProgress).toBe(0.5);
+    expect(loaded.state.fatalShieldTimer).toBe(1);
+    expect([...loaded.state.arrows.values()][0]).toMatchObject({ speed: 0.333333, y: 1 });
+    const current = snapshot(loaded);
+    expect(snapshot(restore(parseSave(current)!))).toEqual(current);
+  });
+
   it('refunds retired armor and primary attribute ranks from version 23 exactly once', () => {
     const previous = {
       ...snapshot(game(20)),
+      version: 23,
       talents: [
         { id: 'magicArmor', rank: 7 },
         { id: 'improvedEndurance', rank: 7 },
@@ -33,7 +70,7 @@ describe('saves and migration', () => {
     loaded.state.phase = 'levelUp';
     expect(loaded.upgradeTalent('magicArmor')).toBe(false);
     const saved = snapshot(loaded);
-    expect(saved.version).toBe(23);
+    expect(saved.version).toBe(25);
     expect(saved.talents.find(({ id }) => id === 'magicArmor')?.rank).toBe(5);
     expect(snapshot(restore(parseSave(saved)!, () => 0.999999))).toEqual(saved);
   });
@@ -59,7 +96,7 @@ describe('saves and migration', () => {
         },
       });
       expect(parsed).not.toBeNull();
-      expect(parsed!.version).toBe(23);
+      expect(parsed!.version).toBe(25);
       const loaded = restore(parsed!, () => 0.999999);
       expect(loaded.state).toMatchObject({
         hunterRewardTimer: 0,
@@ -100,7 +137,6 @@ describe('saves and migration', () => {
     session.state.character.setModifiers('test:arena', [
       { stat: 'spawnProbability', kind: 'percent', value: -100 },
       { stat: 'shootCost', kind: 'percent', value: -100 },
-      { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
     ]);
     session.refreshStats();
     const { armor, coinsPerSec } = session.state.stats;
@@ -149,12 +185,12 @@ describe('saves and migration', () => {
       };
       const parsed = parseSave(previous)!;
       expect(parsed).not.toBeNull();
-      expect(parsed.version).toBe(23);
+      expect(parsed.version).toBe(25);
       const loaded = restore(parsed, () => 0.999999);
-      expect(loaded.talents.getRank('criticalShot')).toBe(7);
+      expect(loaded.talents.getRank('criticalShot')).toBe(5);
       expect(loaded.talents.getRank('killingStreak')).toBe(Math.min(rank, 8));
       expect(loaded.state.pendingTalentPoints).toBe(
-        data.state.pendingTalentPoints + 3 + Math.max(0, rank - 8),
+        data.state.pendingTalentPoints + 5 + Math.max(0, rank - 8),
       );
       expect(loaded.state.killingStreakStacks).toBe(2);
       expect(loaded.state.killingStreakFraction).toBe(0.75);
@@ -262,7 +298,7 @@ describe('saves and migration', () => {
         inventory: ['c015', 'c015', 'missing', 'c009', 'c015', 'c009'],
         abilities: data.abilities.slice(0, version < 5 ? 8 : 9),
       })!;
-      expect(parsed.version).toBe(23);
+      expect(parsed.version).toBe(25);
       const loaded = restore(parsed);
       expect(loaded.items.inventory).toEqual(['c015', 'c009']);
       expect(loaded.state.coins).toBe(
@@ -314,7 +350,7 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(23);
+    expect(parsed.version).toBe(25);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
       endurance: 79,

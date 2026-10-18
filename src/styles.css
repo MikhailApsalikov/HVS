@@ -332,9 +332,15 @@ body {
   pointer-events: none;
 }
 
-.archer-btn:hover:not(.archer-btn--cooldown) {
+.archer-btn:hover:not(.archer-btn--cooldown):not(:disabled) {
   background: #5c5c5c;
   border-color: #8b7355;
+}
+
+.archer-btn:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.8);
+  opacity: 0.6;
 }
 
 /* === Spider & Arrow === */
@@ -418,6 +424,21 @@ body {
   transform-origin: top;
   pointer-events: none;
   animation: critical-arrow-trail 0.3s ease-in-out infinite alternate;
+}
+
+.arrow--triple svg {
+  transform: scale(1.3);
+  filter: brightness(2) drop-shadow(0 0 7px #efffff) drop-shadow(0 0 18px #22edff);
+}
+
+.arrow--triple::after {
+  width: 14px;
+  height: 150px;
+  background: linear-gradient(#efffff, #29eaffbb 45%, transparent);
+  box-shadow:
+    -18px 8px 9px #48eaff,
+    18px 8px 9px #48eaff,
+    0 0 22px #c5ffff;
 }
 
 @keyframes critical-arrow-trail {

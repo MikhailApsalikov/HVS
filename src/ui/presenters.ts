@@ -9,6 +9,8 @@ import {
   masochismHealthPerEnergy,
   masochismMinHpFraction,
   LEARNING_FROM_MISTAKES,
+  learningDamageThreshold,
+  learningFatalShieldDuration,
   TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK,
 } from '../domain/rules/stats.js';
 import { ABILITIES, ABILITY_ORDER } from '../content/abilities.js';
@@ -94,6 +96,9 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
     return fillDescription(definition.description, (key) => {
       if (key === 'learningShieldDuration')
         return String(Number((LEARNING_FROM_MISTAKES.shieldDurationPerRank * rank).toFixed(2)));
+      if (key === 'learningDamageThreshold')
+        return String(Number((learningDamageThreshold(rank) * 100).toFixed(2)));
+      if (key === 'learningFatalShieldDuration') return String(learningFatalShieldDuration(rank));
       if (key === 'titanDamageReduction')
         return String(TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK * rank);
       if (key === 'masochismHealthPerEnergy') return String(masochismHealthPerEnergy(rank));
@@ -101,13 +106,6 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
       if (key === 'streakInterval')
         return formatSeconds(talentEffectValue(id, rank, 'killingStreak.interval'));
       if (key === 'streakBaseStacks') return String(STATS['killingStreak.maxStacks'].base);
-      if (key === 'eagleEyeImprovedChance')
-        return formatStat(
-          'improvedCriticalShotChance',
-          talentEffectValue(id, rank, 'improvedCriticalShotChance', [
-            'eagleEye.improvedCriticalShotChance',
-          ]),
-        );
       if (key === 'scaling.step') return String(definition.scaling!.step);
       if (key === 'scaling.percent')
         return String(Number((definition.scaling!.effect.value * rank * 100).toFixed(4)));
@@ -144,16 +142,19 @@ const ATTRIBUTE_EFFECT_TEXT: Partial<Record<StatId, string>> = {
   'killingStreak.killAdvance':
     'Каждое убийство приближает следующий эффект «Череды убийств» на {value} с.',
   armor: 'Увеличивает броню на {value} единиц.',
-  shootCooldown: 'Сокращает перезарядку выстрела и увеличивает скорость стрел на {value}.',
+  shootCooldown: 'Сокращает перезарядку выстрела на {value}.',
   'volley.cooldown': 'Сокращает перезарядку «Залпа» и «Прицельного огня» на {value}.',
   energyPerKill: 'Каждый убитый паук восстанавливает дополнительно {value} энергии.',
   criticalShotChance: '+{value} к шансу Критического выстрела',
+  improvedCriticalShotChance: '+{value} к шансу тройного критического выстрела.',
+  'eagleEye.improvedCriticalShotChance':
+    'Во время «Зоркости» дополнительно +{value} к шансу тройного критического выстрела.',
   maxEnergy: 'Увеличивает максимальный запас энергии на {value} единиц.',
   energyRegen: 'Восстанавливает дополнительно {value} энергии каждую секунду.',
   'heal.amount': '«Лечение» восстанавливает на {value} здоровья больше.',
   'prep.restore': '«Подготовка» восстанавливает на {value} энергии больше.',
   permafrostSlow: 'Снижает скорость передвижения пауков на {value}.',
-  spiderDebuffResistance: 'Снижает эффективность дебаффов пауков на {value}.',
+  spiderDebuffResistance: 'Снижает эффективность дебаффов пауков, кроме «Оглушения», на {value}.',
 };
 function attributeEffectDescription(effect: StatModifier): string {
   const value =
@@ -225,6 +226,7 @@ export function abilityDescription(state: GameState, id: AbilityId): string {
     : `Требуется уровень ${ability.unlockLevel}`;
   const cooldown = state.getAbility(id);
   const reasons = [
+    ...(state.isAbilityBlockedByStun(id) ? ['Недоступно во время «Оглушения».'] : []),
     ...(id === 'stand' && state.exhaustionTimer > 0
       ? ['Нельзя получить эффекты неуязвимости во время «Истощения».']
       : []),
@@ -321,6 +323,8 @@ function playerEffectDetail(effect: PlayerEffect): string {
       return `Броня уменьшена на ${formatPercent(Math.abs(effect.details!.armorPercent!))}. Вы отравлены и получаете ${Math.round(effect.details!.tickDamage!)} урона раз в ${effect.details!.tickInterval} секунды. Яд не может убить.`;
     case 'disorientation':
       return `Шанс блока уменьшен на ${formatPercent(effect.details!.blockReductionPercent!)}. Шанс уклонения от ловкости уменьшен на ${formatPercent(effect.details!.agilityDodgeReductionPercent!)}.`;
+    case 'stun':
+      return 'Нельзя стрелять, блокировать атаки и получать энергию за убийства и прорывы. Доступны «Заморозка времени» и способности, снимающие дебаффы от пауков. «Магическая броня» не защищает от оглушения.';
     case 'antiAfk':
       return `Входящий урон увеличен на ${formatStat('incomingDamage', effect.details!.damagePercent!)}%.\nПосле расходования энергии штраф снимается через ${formatSeconds(ANTI_AFK.recoveryDuration)} с, если бездействие не повторится.`;
   }
@@ -345,6 +349,7 @@ export function shootDescription(state: GameState, lane: number): string {
   return `<div class="tooltip__title">Лучник ${lane}</div>${descriptionParagraphs(
     [
       'Выпускает стрелу, которая поражает первого паука на этой линии.',
+      ...(state.isStunned ? ['Нельзя стрелять во время «Оглушения».'] : []),
       state.currentShootCost > 0
         ? `Выстрел расходует ${formatStat('shootCost', state.currentShootCost)} энергии.`
         : '',

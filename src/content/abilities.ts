@@ -9,6 +9,8 @@ interface AbilityDefinition {
   readonly sprite: string;
   readonly unlockLevel: number;
   readonly talent?: TalentId;
+  readonly clearsSpiderDebuffs?: boolean;
+  readonly usableWhileStunned?: boolean;
   readonly description: string;
   readonly effectStat?: StatId;
   readonly effectKind?: 'flat' | 'percent';
@@ -20,6 +22,7 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     key: 'Q',
     sprite: 'AbilityFreeze',
     unlockLevel: 4,
+    usableWhileStunned: true,
     description: 'Останавливает время. Повторное нажатие возобновляет игру.',
   },
   blizzard: {
@@ -66,6 +69,7 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     sprite: 'AbilityStand',
     unlockLevel: 30,
     talent: 'divineShield',
+    clearsSpiderDebuffs: true,
     description:
       'Снимает все дебаффы, включая штраф за бездействие, и делает вас неуязвимым на {stand.duration} секунд.',
     effectStat: 'stand.duration',
@@ -119,6 +123,7 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     sprite: 'AbilityEagleEye',
     unlockLevel: 20,
     talent: 'eagleEye',
+    clearsSpiderDebuffs: true,
     description:
       'Следующие {eagleEye.shots} выстрелов лучников будут критическими со 100% вероятностью.\nСнимает все дебаффы от пауков.\nДействует не более {eagleEye.duration} с и заканчивается при расходовании всех выстрелов.',
     effectStat: 'eagleEye.shots',

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GameSession } from '../src/domain/GameSession.js';
 import { parseSave, restore, snapshot } from '../src/domain/save.js';
 import { activeDebuffs, abilityDescription, coinsDescription } from '../src/ui/presenters.js';
-import { addSpider } from './helpers.js';
+import { addNearbySpider as addSpider } from './helpers.js';
 
 function arena(level = 50) {
   const session = new GameSession('normal', () => 0.999999, { level });
@@ -11,7 +11,6 @@ function arena(level = 50) {
     { stat: 'maxHp', kind: 'flat', value: 100000 },
     { stat: 'energyRegen', kind: 'percent', value: -100 },
     { stat: 'dodgeChance', kind: 'percent', value: -100 },
-    { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
     { stat: 'shootCost', kind: 'percent', value: -100 },
   ]);
   session.state.character.setModifiers('test:regen', [
@@ -268,8 +267,8 @@ describe('spider debuffs through session commands', () => {
   );
 
   it.each([
-    [74, 3, 19, 16],
-    [75, 1, 7, 5],
+    [74, 3, 21, 16],
+    [75, 1, 7, 6],
   ])(
     'rounds vampirism at agility %i and rank %i only after reduced healing',
     (agility, rank, normalHealing, reducedHealing) => {
@@ -582,7 +581,7 @@ describe('debuff save compatibility', () => {
       };
       const parsed = parseSave(previous)!;
       expect(parsed).not.toBeNull();
-      expect(parsed.version).toBe(23);
+      expect(parsed.version).toBe(25);
       expect(parsed.state).toEqual({ ...previous.state, poisonTimer: expectedTimer });
       const loaded = restore(parsed, () => 0.999999);
       expect(loaded.state.stats['poison.tickDamage']).toBe(180);

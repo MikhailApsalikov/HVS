@@ -1,4 +1,9 @@
 export const DEBUFFS = {
+  stun: {
+    name: 'Оглушение',
+    duration: 1,
+    durationPerLevel: 0.1,
+  },
   goldLock: {
     name: 'Потеря дохода',
     duration: 40,

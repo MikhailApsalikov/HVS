@@ -14,6 +14,7 @@ function arena(rank = 5, extra: { id: TalentId; rank: number }[] = []) {
   const session = new GameSession('normal', () => 0.999999, { level: 55 });
   session.talents.loadFromSave([{ id: 'learningFromMistakes', rank }, ...extra]);
   session.state.character.setModifiers('arena', [
+    ...(rank > 0 ? [{ stat: 'endurance' as const, kind: 'percent' as const, value: -100 }] : []),
     { stat: 'armor', kind: 'percent', value: -100 },
     { stat: 'hpRegen', kind: 'percent', value: -100 },
     { stat: 'energyRegen', kind: 'percent', value: -100 },
@@ -37,6 +38,48 @@ function spiderDebuffs(session: GameSession) {
 }
 
 describe('learning from mistakes through session commands', () => {
+  it.each([
+    [1, 10, 1],
+    [2, 8, 2],
+    [3, 7, 4],
+    [4, 6, 7],
+    [5, 5, 10],
+  ])('rank %i has damage threshold %i and fatal duration %i', (rank, threshold, duration) => {
+    const session = arena(rank);
+    breach(session, 'poisonous', threshold - 1);
+    expect(session.state.learningShieldTimer).toBe(0);
+    expect(session.state.learningShieldCooldown).toBe(0);
+    expect(spiderDebuffs(session)).not.toEqual([]);
+    breach(session, 'normal', threshold);
+    expect(session.state.learningShieldTimer).toBeCloseTo(0.15 * rank);
+    expect(spiderDebuffs(session)).toEqual([]);
+    session.tick(0.15 * rank);
+    breach(session, 'normal', 10000);
+    expect(session.state.hp).toBe(1);
+    expect(session.state.fatalShieldTimer).toBe(duration);
+    session.tick(duration);
+    expect(session.state.isInvulnerable).toBe(false);
+    expect(talentDescription('learningFromMistakes', rank, session.state.stats)).toContain(
+      `${threshold}%`,
+    );
+    expect(talentDescription('learningFromMistakes', rank, session.state.stats)).toContain(
+      `${duration} с неуязвимости`,
+    );
+  });
+
+  it('compares damage after armor and block with maximum health, not current health', () => {
+    const session = arena(5);
+    session.state.character.setModifiers('mitigation', [
+      { stat: 'incomingDamage', kind: 'percent', value: -50 },
+    ]);
+    session.refreshStats();
+    session.state.hp = 20;
+    breach(session, 'normal', 8);
+    expect(session.state.hp).toBe(16);
+    expect(session.state.learningShieldCooldown).toBe(0);
+    breach(session, 'normal', 10);
+    expect(session.state.learningShieldTimer).toBe(0.75);
+  });
   it.each(['easy', 'normal', 'hard'] as const)(
     'opens five ranks at shooting tier six on %s',
     (difficulty) => {
@@ -56,10 +99,11 @@ describe('learning from mistakes through session commands', () => {
       session.talents.loadFromSave([
         { id: 'hunterMastery', rank: 5 },
         { id: 'improvedAgility', rank: 5 },
-        { id: 'piercingReward', rank: 8 },
-        { id: 'criticalShot', rank: 7 },
+        { id: 'piercingReward', rank: 7 },
+        { id: 'criticalShot', rank: 5 },
         { id: 'vampirism', rank: 5 },
         { id: 'volleyMastery', rank: 5 },
+        { id: 'killingStreak', rank: 3 },
       ]);
       for (let rank = 1; rank <= 5; rank++)
         expect(session.upgradeTalent('learningFromMistakes')).toBe(true);
@@ -125,7 +169,7 @@ describe('learning from mistakes through session commands', () => {
       breach(session, type, 10000);
       expect(session.state.hp).toBe(1);
       expect(session.state.phase).toBe('playing');
-      expect(session.state.fatalShieldTimer).toBe(5);
+      expect(session.state.fatalShieldTimer).toBe(1);
       expect(session.state.exhaustionTimer).toBe(300);
       expect(session.state.stats.agility).toBe(Math.round(agility * 0.85));
       expect(spiderDebuffs(session)).toEqual([]);
@@ -139,7 +183,7 @@ describe('learning from mistakes through session commands', () => {
   );
 
   it.each([0.5, 1])(
-    'saves a player at %s health and blocks every shield during exhaustion after its initial five seconds',
+    'saves a player at %s health and blocks every shield during exhaustion after its rank-five protection',
     (health) => {
       const session = arena(5, [
         { id: 'divineShield', rank: 1 },
@@ -148,8 +192,8 @@ describe('learning from mistakes through session commands', () => {
       session.state.hp = health;
       breach(session, 'poisonous', 100000);
       expect(session.state.hp).toBe(1);
-      expect(session.state.fatalShieldTimer).toBe(5);
-      session.tick(5);
+      expect(session.state.fatalShieldTimer).toBe(10);
+      session.tick(10);
       expect(session.state.isInvulnerable).toBe(false);
       const exhaustion = session.state.exhaustionTimer;
       session.state.energy = session.state.maxEnergy;
@@ -188,7 +232,7 @@ describe('learning from mistakes through session commands', () => {
     expect(session.state.stats.agility).toBe(agility);
     breach(session, 'normal', 100000);
     expect(session.state.hp).toBe(1);
-    expect(session.state.fatalShieldTimer).toBe(5);
+    expect(session.state.fatalShieldTimer).toBe(10);
     expect(session.state.exhaustionTimer).toBe(300);
   });
 
@@ -226,7 +270,7 @@ describe('learning from mistakes saves', () => {
     const loaded = restore(parseSave(saved)!, () => 0.999999);
     expect(snapshot(loaded)).toEqual(saved);
     expect(loaded.state.stats.agility).toBe(session.state.stats.agility);
-    loaded.tick(fatal ? 4.9 : 0.65);
+    loaded.tick(fatal ? 9.9 : 0.65);
     expect(loaded.state.isInvulnerable).toBe(false);
   });
 
@@ -260,7 +304,7 @@ describe('learning from mistakes saves', () => {
   it.each([
     { learningShieldTimer: -1 },
     { learningShieldTimer: 0.76 },
-    { fatalShieldTimer: 5.1 },
+    { fatalShieldTimer: 10.1 },
     { learningShieldCooldown: 4.1 },
     { exhaustionTimer: 300.1 },
     { fatalShieldTimer: 5, exhaustionTimer: 0 },

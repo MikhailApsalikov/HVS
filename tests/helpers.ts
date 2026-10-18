@@ -48,6 +48,17 @@ export function addSpider(
   session.state.spiders.set(spider.id, spider);
   return spider;
 }
+/** Short flight paths keep collision tests precise without changing projectile speed. */
+export function addNearbySpider(
+  session: GameSession,
+  type: SpiderType = 'normal',
+  lane = 0,
+  y = 0.5,
+  damage = 20,
+  speed = 0,
+): Spider {
+  return addSpider(session, type, lane, y >= 1 ? y : 0.95 - (0.95 - y) / 30, damage, speed);
+}
 export class MemoryStorage implements StoragePort {
   readonly values = new Map<string, string>();
   getItem(key: string): string | null {

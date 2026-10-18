@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GameSession } from '../src/domain/GameSession.js';
-import { addSpider } from './helpers.js';
+import { addNearbySpider as addSpider } from './helpers.js';
 
 function arena() {
   const session = new GameSession('normal', () => 0.999999, { level: 50 });
@@ -13,7 +13,6 @@ function arena() {
     { stat: 'energyRegen', kind: 'percent', value: -100 },
     { stat: 'shootCost', kind: 'percent', value: -100 },
     { stat: 'shootCooldown', kind: 'percent', value: -100 },
-    { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
     { stat: 'hpPerKill', kind: 'flat', value: 25 },
     { stat: 'energyPerKill', kind: 'flat', value: 11 },
     { stat: 'energyPerBreach', kind: 'flat', value: 7 },

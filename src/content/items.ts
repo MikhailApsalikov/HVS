@@ -964,8 +964,9 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
     abilityMod: {
       abilityId: 'freeze',
       modType: 'costReduction',
-      value: 45,
-      description: '«Заморозка»: стоимость −45 энергии',
+      kind: 'percent',
+      value: 100,
+      description: '«Заморозка времени» не расходует энергию',
     },
   },
   {

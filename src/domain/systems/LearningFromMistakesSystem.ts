@@ -1,5 +1,9 @@
 import type { GameState } from '../model/GameState.js';
-import { LEARNING_FROM_MISTAKES } from '../rules/stats.js';
+import {
+  LEARNING_FROM_MISTAKES,
+  learningDamageThreshold,
+  learningFatalShieldDuration,
+} from '../rules/stats.js';
 import { clearSpiderDebuffs } from './DebuffSystem.js';
 import type { StatModifier } from '../rules/stats.js';
 
@@ -28,13 +32,13 @@ export function protectFromBreach(state: GameState, damage: number): number {
   clearSpiderDebuffs(state);
   state.invulnerableTimer = 0;
   state.learningShieldTimer = 0;
-  state.fatalShieldTimer = LEARNING_FROM_MISTAKES.fatalShieldDuration;
+  state.fatalShieldTimer = learningFatalShieldDuration(state.learningFromMistakesRank);
   state.exhaustionTimer = LEARNING_FROM_MISTAKES.exhaustionDuration;
   if (state.hp < 1) state.modifyHp(1 - state.hp);
   return Math.max(0, state.hp - 1);
 }
 
-export function shieldAfterBreach(state: GameState): void {
+export function shieldAfterBreach(state: GameState, damage: number): void {
   if (state.fatalShieldTimer > 0) {
     clearSpiderDebuffs(state);
     return;
@@ -42,7 +46,8 @@ export function shieldAfterBreach(state: GameState): void {
   if (
     state.learningFromMistakesRank === 0 ||
     state.exhaustionTimer > 0 ||
-    state.learningShieldCooldown > 0
+    state.learningShieldCooldown > 0 ||
+    damage / state.maxHp < learningDamageThreshold(state.learningFromMistakesRank)
   )
     return;
   clearSpiderDebuffs(state);

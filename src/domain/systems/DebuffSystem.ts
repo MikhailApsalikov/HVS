@@ -9,12 +9,16 @@ import {
   healingReductionPercent,
   poisonArmorPercent,
   poisonDuration,
+  stunDuration,
 } from '../rules/debuffs.js';
 import type { Modifier } from '../rules/numbers.js';
 import type { StatModifier } from '../rules/stats.js';
 
 export function debuffModifiers(state: GameState, resistance: number): StatModifier[] {
   const effects: StatModifier[] = [];
+  if (state.isStunned)
+    for (const stat of ['blockChance', 'energyPerKill', 'energyPerBreach'] as const)
+      effects.push({ source: 'debuff:stun', stat, kind: 'percent', value: -100 });
   if (state.disorientationTimer > 0)
     effects.push({
       source: 'debuff:disorientation',
@@ -105,6 +109,20 @@ export function clearSpiderDebuffs(state: GameState): void {
   clearPlayerEffects(state, (effect) => effect.kind === 'debuff' && effect.source === 'spider');
 }
 
+export function clearResistedSpiderDebuffs(state: GameState): void {
+  clearPlayerEffects(
+    state,
+    (effect) => effect.kind === 'debuff' && effect.source === 'spider' && !effect.ignoresMagicArmor,
+  );
+}
+
+export function applyPiercingStun(state: GameState): void {
+  state.stunTimer = Math.max(
+    state.stunTimer,
+    state.rules.value('spiderDebuffDuration', stunDuration(state.level)),
+  );
+}
+
 export function clearDebuffs(state: GameState): void {
   clearPlayerEffects(state, (effect) => effect.kind === 'debuff');
 }
@@ -115,6 +133,7 @@ export function nextDebuffBoundary(state: GameState): number {
       state.goldLockTimer,
       state.healingReductionTimer,
       state.disorientationTimer,
+      state.stunTimer,
       state.poisonTimer,
       state.poisonTickTimer,
     ].filter((timer) => timer > 0),
@@ -126,11 +145,13 @@ export function tickDebuffs(state: GameState, dt: number): boolean {
   const wasGoldLocked = state.goldLockTimer > 0;
   const wasHealingReduced = state.healingReductionTimer > 0;
   const wasDisoriented = state.disorientationTimer > 0;
+  const wasStunned = state.isStunned;
   const wasPoisoned = state.poisonTimer > 0;
   const remaining = (timer: number) => (timer - dt > 1e-9 ? timer - dt : 0);
   state.goldLockTimer = remaining(state.goldLockTimer);
   state.healingReductionTimer = remaining(state.healingReductionTimer);
   state.disorientationTimer = remaining(state.disorientationTimer);
+  state.stunTimer = remaining(state.stunTimer);
   if (wasPoisoned) {
     state.poisonTimer = remaining(state.poisonTimer);
     state.poisonTickTimer = remaining(state.poisonTickTimer);
@@ -147,6 +168,7 @@ export function tickDebuffs(state: GameState, dt: number): boolean {
     (wasGoldLocked && state.goldLockTimer === 0) ||
     (wasHealingReduced && state.healingReductionTimer === 0) ||
     (wasDisoriented && state.disorientationTimer === 0) ||
+    (wasStunned && !state.isStunned) ||
     (wasPoisoned && state.poisonTimer === 0)
   );
 }

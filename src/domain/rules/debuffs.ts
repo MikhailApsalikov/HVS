@@ -1,6 +1,14 @@
 import { DEBUFFS } from '../../content/debuffs.js';
 import { SPIDERS } from '../../content/spiders.js';
 import type { GameState } from '../model/GameState.js';
+import { PIERCING_STRIKE } from './world.js';
+
+export function stunDuration(level: number): number {
+  return (
+    DEBUFFS.stun.duration +
+    DEBUFFS.stun.durationPerLevel * Math.max(0, level - PIERCING_STRIKE.unlockLevel)
+  );
+}
 
 export function poisonDuration(level: number): number {
   return (

@@ -123,7 +123,7 @@ export class GameRules {
     const source = id === 'damageFactor' ? 'incomingDamage' : id;
     return calculate(
       base,
-      [...(this.modifiers.get(source) ?? []), ...additional],
+      id === 'arrowSpeed' ? [] : [...(this.modifiers.get(source) ?? []), ...additional],
       STATS[id].policy,
     );
   }

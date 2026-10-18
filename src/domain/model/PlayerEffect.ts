@@ -18,6 +18,7 @@ export type PlayerEffectId =
   | 'healingReduction'
   | 'poison'
   | 'disorientation'
+  | 'stun'
   | 'antiAfk';
 export type PlayerEffectKind = 'buff' | 'debuff';
 export type PlayerEffectSource = 'ability' | 'talent' | 'spider' | 'inactivity';
@@ -29,6 +30,7 @@ export interface PlayerEffectMetadata {
   readonly source: PlayerEffectSource;
   readonly removableByCleanser: boolean;
   readonly undispellable?: boolean;
+  readonly ignoresMagicArmor?: boolean;
 }
 
 export interface PlayerEffectDetails {
@@ -197,6 +199,12 @@ const LIFECYCLES: Readonly<Record<PlayerEffectId, EffectLifecycle>> = {
     }),
     clear: (state) => {
       state.disorientationTimer = 0;
+    },
+  },
+  stun: {
+    read: (state) => ({ remaining: state.stunTimer }),
+    clear: (state) => {
+      state.stunTimer = 0;
     },
   },
   antiAfk: {

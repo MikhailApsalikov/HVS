@@ -8,7 +8,7 @@ import {
   killingStreakDescription,
   talentDescription,
 } from '../src/ui/presenters.js';
-import { addSpider } from './helpers.js';
+import { addNearbySpider as addSpider } from './helpers.js';
 
 function arena(talents: { id: TalentId; rank: number }[] = [], roll = 0.999999) {
   const session = new GameSession('normal', () => roll);
@@ -19,7 +19,6 @@ function arena(talents: { id: TalentId; rank: number }[] = [], roll = 0.999999) 
     { stat: 'hpRegen', kind: 'percent', value: -100 },
     { stat: 'energyRegen', kind: 'percent', value: -100 },
     { stat: 'coinsPerSec', kind: 'percent', value: -100 },
-    { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
   ]);
   session.refreshStats();
   session.state.phase = 'playing';
@@ -129,8 +128,8 @@ describe('killing streak through gameplay time', () => {
     session.state.pendingTalentPoints = 1;
     session.talents.loadFromSave([
       { id: 'hunterMastery', rank: 5 },
-      { id: 'criticalShot', rank: 7 },
-      { id: 'piercingReward', rank: 2 },
+      { id: 'criticalShot', rank: 5 },
+      { id: 'piercingReward', rank: 4 },
     ]);
     expect(session.upgradeTalent('killingStreak')).toBe(true);
     session.state.phase = 'playing';
@@ -287,7 +286,7 @@ describe('enthusiasm and improved streak', () => {
     'advances for every kill from %s, never from a breach',
     (source) => {
       const session = arena(
-        [...streak, { id: 'improvedKillingStreak', rank: 5 }, { id: 'criticalShot', rank: 7 }],
+        [...streak, { id: 'improvedKillingStreak', rank: 5 }, { id: 'criticalShot', rank: 5 }],
         0,
       );
       session.state.character.setBase('agility', 100);
@@ -336,8 +335,8 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       session.state.pendingTalentPoints = 30;
       session.talents.loadFromSave([
         { id: 'hunterMastery', rank: 5 },
-        { id: 'criticalShot', rank: 7 },
-        { id: 'piercingReward', rank: 8 },
+        { id: 'criticalShot', rank: 5 },
+        { id: 'piercingReward', rank: 7 },
         { id: 'improvedAgility', rank: 5 },
         { id: 'killingStreak', rank: 8 },
         { id: prerequisite, rank: 0 },
@@ -375,7 +374,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         { id: 'improvedCriticalShot', rank: 8 },
         { id: 'adrenaline', rank: 1 },
       ],
-      0.7,
+      0.4,
     );
     session.state.character.setModifiers('test:critical', [
       { stat: 'criticalShotChance', kind: 'flat', value: 1 },
@@ -399,7 +398,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       const session = new GameSession(difficulty);
       expect(session.state.coins).toBe({ easy: 0, normal: 250, hard: 1000 }[difficulty]);
       for (const [id, tier, maxRanks] of [
-        ['piercingReward', 2, 8],
+        ['piercingReward', 2, 7],
         ['volleyMastery', 2, 5],
         ['titanPreparation', 5, 5],
         ['aimedFire', 7, 1],
@@ -413,10 +412,10 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       session.state.pendingTalentPoints = 100;
       session.talents.loadFromSave([
         { id: 'hunterMastery', rank: 5 },
-        { id: 'criticalShot', rank: 7 },
+        { id: 'criticalShot', rank: 5 },
         { id: 'improvedAgility', rank: 5 },
         { id: 'vampirism', rank: 5 },
-        { id: 'piercingReward', rank: 8 },
+        { id: 'piercingReward', rank: 7 },
       ]);
       expect(session.upgradeTalent('enthusiasm')).toBe(false);
       expect(session.upgradeTalent('volleyMastery')).toBe(true);
@@ -449,7 +448,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       'volley.cooldown': 14.69,
       'volley.lanes': 9,
       shootCooldown: 1.53,
-      arrowSpeed: 0.496667,
+      arrowSpeed: 0.333333,
     });
     session.state.level = 8;
     expect(session.activateAbility('volley')).toBe('activated');
@@ -463,7 +462,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
     expect(talentDescription('enthusiasm', 5, session.state.stats)).toContain('100%');
     expect(talentDescription('improvedKillingStreak', 5, session.state.stats)).toContain('0.05 с');
     expect(talentDescription('volleyMastery', 5, session.state.stats)).toContain('20%');
-    expect(talentDescription('improvedCriticalShot', 8, session.state.stats)).toContain('96%');
+    expect(talentDescription('improvedCriticalShot', 8, session.state.stats)).toContain('75%');
     expect(talentDescription('agileCriticalShot', 5, session.state.stats)).toContain(
       '10 критических стрел',
     );
@@ -503,7 +502,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         },
       };
       const parsed = parseSave(previous)!;
-      expect(parsed.version).toBe(23);
+      expect(parsed.version).toBe(25);
       const session = restore(parsed, () => 0.999999);
       expect(session.state.killingStreakStacks).toBe(2);
       expect(session.state.killingStreakProgress).toBe((34 - 3 * Math.min(rank, 8)) / 2);

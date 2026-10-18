@@ -73,7 +73,7 @@ export type SpiderType =
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'levelUp' | 'gameOver';
 
 export type AbilityResult =
-  'activated' | 'deactivated' | 'on_cooldown' | 'not_enough_energy' | 'level_locked';
+  'activated' | 'deactivated' | 'on_cooldown' | 'not_enough_energy' | 'level_locked' | 'stunned';
 
 export type ShootResult = 'shot' | 'not_enough_energy' | 'blocked';
 

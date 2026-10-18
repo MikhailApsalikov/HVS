@@ -1,11 +1,11 @@
 import type { Difficulty, TalentId } from './types.js';
 import type { PrimaryStatId, StatModifier } from './rules/stats.js';
 import { GameSession } from './GameSession.js';
-import { clearSpiderDebuffs } from './systems/DebuffSystem.js';
+import { clearResistedSpiderDebuffs } from './systems/DebuffSystem.js';
 import type { GameState } from './model/GameState.js';
 import { Spider } from './model/Spider.js';
 import { Arrow } from './model/Arrow.js';
-import { disorientationDuration, poisonDuration } from './rules/debuffs.js';
+import { disorientationDuration, poisonDuration, stunDuration } from './rules/debuffs.js';
 import { ABILITY_ORDER } from '../content/abilities.js';
 import {
   ANTI_AFK,
@@ -17,13 +17,14 @@ import {
   KILLING_STREAK,
   HUNTER_REWARD,
   LEARNING_FROM_MISTAKES,
+  learningFatalShieldDuration,
   aimedFireDuration,
 } from './rules/stats.js';
 import { TALENTS } from '../content/talents.js';
 import { SPIDERS } from '../content/spiders.js';
 import { DEBUFFS } from '../content/debuffs.js';
 import { DIFFICULTIES } from '../content/difficulties.js';
-import { WORLD } from './rules/world.js';
+import { PIERCING_STRIKE, WORLD } from './rules/world.js';
 import type { RandomSource } from './rules/random.js';
 
 const STATE_FIELDS = [
@@ -47,6 +48,7 @@ const STATE_FIELDS = [
   'goldLockTimer',
   'healingReductionTimer',
   'disorientationTimer',
+  'stunTimer',
   'poisonTimer',
   'poisonTickTimer',
   'poisonDamage',
@@ -100,7 +102,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 23;
+  readonly version: 25;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -117,7 +119,7 @@ export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   return {
-    version: 23,
+    version: 25,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -149,6 +151,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   state.goldLockTimer = data.state.goldLockTimer;
   state.healingReductionTimer = data.state.healingReductionTimer;
   state.disorientationTimer = data.state.disorientationTimer;
+  state.stunTimer = data.version < 25 ? 0 : data.state.stunTimer;
   state.poisonTimer = data.state.poisonTimer;
   state.poisonTickTimer = data.state.poisonTickTimer;
   state.poisonDamage = [...data.state.poisonDamage];
@@ -163,9 +166,17 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   session.refreshStats(false);
   const duplicateRefund = session.items.loadFromSave(data.inventory, state.stats.inventorySlots);
   session.refreshStats(false);
-  Object.assign(state, Object.fromEntries(STATE_FIELDS.map((key) => [key, data.state[key]])));
+  Object.assign(
+    state,
+    Object.fromEntries(
+      STATE_FIELDS.map((key) => [
+        key,
+        key === 'stunTimer' && data.version < 25 ? 0 : data.state[key],
+      ]),
+    ),
+  );
   state.poisonDamage = [...data.state.poisonDamage];
-  if (state.stats.spiderDebuffResistance === 1) clearSpiderDebuffs(state);
+  if (state.stats.spiderDebuffResistance === 1) clearResistedSpiderDebuffs(state);
   if (!state.antiAfkEnabled) {
     state.antiAfkIdleTimer = 0;
     state.antiAfkStacks = 0;
@@ -209,7 +220,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
     const arrow = new Arrow(
       entry.id,
       entry.lane,
-      entry.speed,
+      state.stats.arrowSpeed,
       entry.fromVolley,
       entry.critical,
       entry.power,
@@ -258,7 +269,20 @@ const lane = (value: unknown) => integer(value) && value < WORLD.lanes;
 /** Validate at the trust boundary. Bad/future saves are left intact in storage. */
 export function parseSave(value: unknown): SaveData | null {
   try {
-    const data = parseSaveUnchecked(value);
+    let data = parseSaveUnchecked(value);
+    if (data && object(value) && (value.version as number) < 24) {
+      const session = restore(data);
+      const state = session.state;
+      state.killingStreakStacks = Math.min(
+        state.killingStreakStacks,
+        Math.max(state.killingStreakMaximum, state.stats['prep.stacks']),
+      );
+      state.fatalShieldTimer = Math.min(
+        state.fatalShieldTimer,
+        learningFatalShieldDuration(state.learningFromMistakesRank),
+      );
+      data = snapshot(session);
+    }
     // Structural validity also has to produce a usable set of game values.
     if (data) {
       const { state } = restore(data);
@@ -286,7 +310,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
   if (
-    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23].includes(
+    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25].includes(
       value.version as number,
     ) ||
     !object(value.state)
@@ -294,11 +318,20 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     return null;
   const state = value.state;
   if (
-    value.version === 23 &&
+    value.version === 25 &&
+    (!number(state.stunTimer) ||
+      !number(state.level) ||
+      state.stunTimer > stunDuration(state.level) ||
+      (state.level < PIERCING_STRIKE.unlockLevel && state.stunTimer > 0))
+  )
+    return null;
+  if (
+    (value.version as number) >= 23 &&
     (!number(state.learningShieldTimer) ||
       state.learningShieldTimer > LEARNING_FROM_MISTAKES.shieldDurationPerRank * 5 ||
       !number(state.fatalShieldTimer) ||
-      state.fatalShieldTimer > LEARNING_FROM_MISTAKES.fatalShieldDuration ||
+      state.fatalShieldTimer >
+        (value.version === 23 ? 5 : Math.max(...LEARNING_FROM_MISTAKES.fatalShieldDurations)) ||
       !number(state.learningShieldCooldown) ||
       state.learningShieldCooldown > LEARNING_FROM_MISTAKES.shieldCooldown ||
       !number(state.exhaustionTimer) ||
@@ -314,7 +347,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   )
     return null;
   if (
-    value.version === 23 &&
+    (value.version as number) >= 23 &&
     (!number(state.disorientationTimer) ||
       !number(state.level) ||
       state.disorientationTimer > disorientationDuration(state.level) ||
@@ -370,7 +403,8 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (
     (value.version as number) >= 13 &&
     (!integer(state.killingStreakStacks) ||
-      state.killingStreakStacks > KILLING_STREAK.maxStacks ||
+      state.killingStreakStacks >
+        ((value.version as number) < 24 ? 20 : KILLING_STREAK.maxStacks) ||
       !number(state.killingStreakProgress))
   )
     return null;
@@ -641,6 +675,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (value.version === 20 || value.version === 21)
     return snapshot(restore(upgradeHunterRewardSave(value)));
   if (value.version === 22) return snapshot(restore(upgradeDisorientationSave(value)));
+  if (value.version === 24) return snapshot(restore(value as unknown as SaveData));
   return value as unknown as SaveData;
 }
 
@@ -675,7 +710,7 @@ function upgradeShootingSave(value: JsonObject): SaveData {
 function upgradeDebuffSave(value: JsonObject): SaveData {
   return {
     ...value,
-    version: 23,
+    version: 25,
     state: {
       ...(value.state as JsonObject),
       hunterRewardTimer: 0,
@@ -686,6 +721,7 @@ function upgradeDebuffSave(value: JsonObject): SaveData {
       goldLockTimer: 0,
       healingReductionTimer: 0,
       disorientationTimer: 0,
+      stunTimer: 0,
       poisonTimer: 0,
       poisonTickTimer: 0,
       poisonDamage: [],
@@ -698,7 +734,7 @@ function upgradeHunterRewardSave(value: JsonObject): SaveData {
   const state = value.state as JsonObject;
   return {
     ...value,
-    version: 23,
+    version: 25,
     state: {
       ...state,
       hunterRewardTimer: 0,
@@ -707,6 +743,7 @@ function upgradeHunterRewardSave(value: JsonObject): SaveData {
       learningShieldCooldown: 0,
       exhaustionTimer: 0,
       disorientationTimer: 0,
+      stunTimer: 0,
       poisonTimer: Math.min(state.poisonTimer as number, poisonDuration(state.level as number)),
     },
   } as unknown as SaveData;
@@ -715,10 +752,11 @@ function upgradeHunterRewardSave(value: JsonObject): SaveData {
 function upgradeDisorientationSave(value: JsonObject): SaveData {
   return {
     ...value,
-    version: 23,
+    version: 25,
     state: {
       ...(value.state as JsonObject),
       disorientationTimer: 0,
+      stunTimer: 0,
       learningShieldTimer: 0,
       fatalShieldTimer: 0,
       learningShieldCooldown: 0,

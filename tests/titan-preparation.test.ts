@@ -24,18 +24,18 @@ function arena(rank = 5, learned = false) {
 }
 
 describe('titan preparation through session commands', () => {
-  it.each([1, 2, 3, 4, 5])('grants four stacks per rank %s without learning the streak', (rank) => {
+  it.each([1, 2, 3, 4, 5])('grants two stacks per rank %s without learning the streak', (rank) => {
     const session = arena(rank);
     expect(session.activateAbility('prep')).toBe('activated');
     expect(session.state.killingStreakLearned).toBe(false);
-    expect(session.state.killingStreakStacks).toBe(rank * 4);
-    expect(session.state.killingStreakExcess).toBe(rank * 4);
+    expect(session.state.killingStreakStacks).toBe(rank * 2);
+    expect(session.state.killingStreakExcess).toBe(rank * 2);
     expect(session.state.killingStreakMaximum).toBe(0);
     const energy = session.state.energy;
     expect(session.shootLane(0)).toBe('shot');
-    expect(session.state.energy).toBe(energy - (35 - rank * 4));
+    expect(session.state.energy).toBe(energy - (35 - rank * 2));
     expect(talentDescription('titanPreparation', rank, session.state.stats)).toContain(
-      `до ${rank * 4}`,
+      `до ${rank * 2}`,
     );
     expect(talentDescription('titanPreparation', rank, session.state.stats)).not.toMatch(
       /1[.,]5|спада|максимум/,
@@ -46,8 +46,8 @@ describe('titan preparation through session commands', () => {
   it.each([
     [10, 10],
     [8, 8],
-    [2, 8],
-    [0, 8],
+    [2, 4],
+    [0, 4],
   ])('rank two changes %s stacks to %s with a cap of ten', (before, after) => {
     const session = arena(2, true);
     session.state.killingStreakStacks = before;
@@ -59,19 +59,24 @@ describe('titan preparation through session commands', () => {
   });
 
   it('decays one excess stack every 1.5 seconds and stops at the learned maximum', () => {
-    const session = arena(5, true);
+    const session = arena(5);
+    session.talents.loadFromSave([
+      { id: 'titanPreparation', rank: 5 },
+      { id: 'killingStreak', rank: 8 },
+    ]);
+    session.refreshStats();
     session.activateAbility('prep');
     session.tick(1.49);
-    expect(session.state.killingStreakStacks).toBe(20);
+    expect(session.state.killingStreakStacks).toBe(10);
     expect(session.state.killingStreakDecayRemaining).toBeCloseTo(0.01);
     session.tick(0.01);
-    expect(session.state.killingStreakStacks).toBe(19);
+    expect(session.state.killingStreakStacks).toBe(9);
     expect(session.state.killingStreakDecayFraction).toBe(1);
     session.tick(13.5);
-    expect(session.state.killingStreakStacks).toBe(10);
+    expect(session.state.killingStreakStacks).toBe(5);
     expect(session.state.killingStreakDecayRemaining).toBe(0);
     session.tick(100);
-    expect(session.state.killingStreakStacks).toBe(10);
+    expect(session.state.killingStreakStacks).toBe(5);
     expect(session.state.killingStreakProgress).toBe(0);
   });
 
@@ -95,13 +100,13 @@ describe('titan preparation through session commands', () => {
     session.activateAbility('prep');
     session.tick(1);
     session.activateAbility('prep');
-    expect(session.state.killingStreakStacks).toBe(20);
+    expect(session.state.killingStreakStacks).toBe(10);
     expect(session.state.killingStreakDecayRemaining).toBeCloseTo(0.5);
     session.tick(0.5);
-    expect(session.state.killingStreakStacks).toBe(19);
+    expect(session.state.killingStreakStacks).toBe(9);
     session.tick(1);
     session.activateAbility('prep');
-    expect(session.state.killingStreakStacks).toBe(20);
+    expect(session.state.killingStreakStacks).toBe(10);
     expect(session.state.killingStreakDecayRemaining).toBe(1.5);
   });
 
@@ -111,20 +116,20 @@ describe('titan preparation through session commands', () => {
     session.tick(1);
     expect(session.activateAbility('freeze')).toBe('activated');
     session.tick(100);
-    expect(session.state.killingStreakStacks).toBe(4);
+    expect(session.state.killingStreakStacks).toBe(2);
     session.activateAbility('freeze');
     session.state.phase = 'levelUp';
     session.tick(100);
     session.state.phase = 'playing';
     addSpider(session, 'normal', 8, 1, 10);
     session.tick(0.01);
-    expect(session.state.killingStreakStacks).toBe(3);
+    expect(session.state.killingStreakStacks).toBe(1);
     expect(session.state.killingStreakDecayRemaining).toBeCloseTo(0.49);
     session.tick(0.49);
-    expect(session.state.killingStreakStacks).toBe(2);
+    expect(session.state.killingStreakStacks).toBe(0);
   });
 
-  it('caps every stack source at twenty, including oversized modifiers and assignments', () => {
+  it('caps every stack source at ten, including oversized modifiers and assignments', () => {
     const session = arena(5, true);
     session.state.character.setModifiers('test:cap', [
       { stat: 'prep.stacks', kind: 'flat', value: 1000 },
@@ -133,17 +138,17 @@ describe('titan preparation through session commands', () => {
     ]);
     session.refreshStats();
     session.activateAbility('prep');
-    expect(session.state.stats['prep.stacks']).toBe(20);
-    expect(session.state.stats['killingStreak.maxStacks']).toBe(20);
-    expect(session.state.killingStreakStacks).toBe(20);
+    expect(session.state.stats['prep.stacks']).toBe(10);
+    expect(session.state.stats['killingStreak.maxStacks']).toBe(10);
+    expect(session.state.killingStreakStacks).toBe(10);
     session.state.killingStreakStacks = 999;
-    expect(session.state.killingStreakStacks).toBe(20);
+    expect(session.state.killingStreakStacks).toBe(10);
     session.state.killingStreakStacks = 0;
     session.tick(250);
-    expect(session.state.killingStreakStacks).toBe(20);
+    expect(session.state.killingStreakStacks).toBe(10);
     addSpider(session).startDying();
     session.tick(0.4);
-    expect(session.state.killingStreakStacks).toBe(20);
+    expect(session.state.killingStreakStacks).toBe(10);
   });
 
   it('keeps energy recovery when no stack change is needed and grants no stacks without the new talent', () => {
@@ -166,7 +171,7 @@ describe('titan preparation through session commands', () => {
     const loaded = restore(parseSave(JSON.parse(JSON.stringify(saved)))!, () => 0.999999);
     expect(snapshot(loaded)).toEqual(saved);
     loaded.tick(0.75);
-    expect(loaded.state.killingStreakStacks).toBe(19);
+    expect(loaded.state.killingStreakStacks).toBe(9);
   });
 
   it.each([

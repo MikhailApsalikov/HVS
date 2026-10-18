@@ -11,7 +11,6 @@ function arena(random = () => 0.999999, difficulty: Difficulty = 'normal'): Game
     { stat: 'hpRegen', kind: 'percent', value: -100 },
     { stat: 'energyRegen', kind: 'percent', value: -100 },
     { stat: 'dodgeChance', kind: 'percent', value: -100 },
-    { stat: 'arrowSpeed', kind: 'percent', value: -100 },
   ]);
   session.refreshStats();
   return session;
@@ -30,8 +29,8 @@ function play(session: GameSession): void {
 
 function criticalTalents(session: GameSession, improvedRanks = 0): void {
   learn(session, 'hunterMastery', 5);
-  learn(session, 'vampirism', 2);
-  learn(session, 'criticalShot', 7);
+  learn(session, 'vampirism', 4);
+  learn(session, 'criticalShot', 5);
   learn(session, 'eagleEye');
   if (improvedRanks > 0) learn(session, 'piercingReward', 6);
   learn(session, 'improvedCriticalShot', improvedRanks);
@@ -112,7 +111,7 @@ describe('item combat balance through session commands', () => {
     expect([...session.state.arrows.values()][0]).toMatchObject({ critical: false, power: 1 });
     session.state.phase = 'levelUp';
     learn(session, 'hunterMastery', 5);
-    learn(session, 'vampirism', 2);
+    learn(session, 'vampirism', 4);
     learn(session, 'criticalShot');
     expect(session.state.rules.criticalShotLearned).toBe(true);
     expect(session.state.currentCriticalShotChance).toBeGreaterThan(0.1);
@@ -144,15 +143,15 @@ describe('item combat balance through session commands', () => {
   it('adds the item bonus to talent strength and the active eagle eye chance', () => {
     const session = arena();
     criticalTalents(session, 1);
-    expect(session.state.currentImprovedCriticalShotChance).toBe(0.08);
+    expect(session.state.currentImprovedCriticalShotChance).toBe(0.041);
     expect(session.buyItem('l027')).toBe(true);
-    expect(session.state.currentImprovedCriticalShotChance).toBe(0.44);
+    expect(session.state.currentImprovedCriticalShotChance).toBe(0.406);
     play(session);
     expect(session.activateAbility('eagleEye')).toBe('activated');
     expect(session.state.currentCriticalShotChance).toBe(1);
-    expect(session.state.currentImprovedCriticalShotChance).toBe(0.48);
+    expect(session.state.currentImprovedCriticalShotChance).toBe(0.4405);
     session.tick(20);
-    expect(session.state.currentImprovedCriticalShotChance).toBe(0.44);
+    expect(session.state.currentImprovedCriticalShotChance).toBe(0.406);
     expect(session.state.currentCriticalShotChance).toBe(session.state.stats.criticalShotChance);
   });
 
@@ -160,10 +159,12 @@ describe('item combat balance through session commands', () => {
     const session = arena(() => 0.999999);
     criticalTalents(session, 8);
     learn(session, 'agileCriticalShot', 5);
-    learn(session, 'piercingReward', 2);
+    learn(session, 'piercingReward', 1);
     learn(session, 'rapidFire', 6);
     learn(session, 'titanPreparation', 5);
     learn(session, 'aimedFire');
+    session.state.character.setBase('agility', 1941);
+    session.refreshStats();
     expect(session.state.currentImprovedCriticalShotChance).toBe(0.64);
     expect(session.buyItem('l027')).toBe(true);
     expect(session.state.currentImprovedCriticalShotChance).toBe(1);
@@ -177,7 +178,7 @@ describe('item combat balance through session commands', () => {
     expect(session.activateAbility('aimedFire')).toBe('activated');
     session.tick(5);
     const arrows = [...session.state.arrows.values()];
-    expect(arrows).toHaveLength(28);
+    expect(arrows).toHaveLength(18);
     expect(arrows.every(({ critical, power }) => critical && power === 3)).toBe(true);
     expect(session.activateAbility('eagleEye')).toBe('activated');
     expect(session.state.currentImprovedCriticalShotChance).toBe(1);
@@ -187,11 +188,11 @@ describe('item combat balance through session commands', () => {
     const session = arena(() => 0);
     learn(session, 'hunterMastery', 5);
     learn(session, 'vampirism', 5);
-    learn(session, 'piercingReward', 8);
+    learn(session, 'piercingReward', 7);
     learn(session, 'volleyMastery', 5);
-    learn(session, 'killingStreak', 5);
+    learn(session, 'killingStreak', 6);
     learn(session, 'rapidFire', 7);
-    learn(session, 'killingStreak', 3);
+    learn(session, 'killingStreak', 2);
     learn(session, 'titanPreparation', 5);
     learn(session, 'aimedFire');
     expect(session.buyItem('l027')).toBe(true);
@@ -226,7 +227,7 @@ describe('version 20 shield rank migration through session restoration', () => {
       ),
     });
     expect(parsed).not.toBeNull();
-    expect(parsed!.version).toBe(23);
+    expect(parsed!.version).toBe(25);
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('shieldBlock')).toBe(7);
     expect(loaded.talents.getRank('improvedLastHope')).toBe(3);

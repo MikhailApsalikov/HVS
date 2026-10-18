@@ -5,7 +5,7 @@ import type { TalentId } from '../src/domain/types.js';
 import { ABILITIES, ABILITY_ORDER, ABILITY_DISPLAY_ORDER } from '../src/content/abilities.js';
 import { TALENTS } from '../src/content/talents.js';
 import { abilityDescription, talentDescription } from '../src/ui/presenters.js';
-import { addSpider } from './helpers.js';
+import { addNearbySpider as addSpider } from './helpers.js';
 
 function arena(
   talents: { id: TalentId; rank: number }[] = [],
@@ -18,7 +18,6 @@ function arena(
   session.state.character.setModifiers('test', [
     { stat: 'spawnProbability', kind: 'percent', value: -100 },
     { stat: 'energyRegen', kind: 'percent', value: -100 },
-    { stat: 'arrowSpeed', kind: 'percent', value: -100 },
   ]);
   session.refreshStats();
   session.state.phase = 'playing';
@@ -52,11 +51,9 @@ describe('aimed fire through session commands', () => {
     session.tick(0.001);
     expect(session.state.arrows.size).toBe(18);
     session.tick(2);
-    expect(session.state.arrows.size).toBe(27);
+    expect(session.state.arrows.size).toBe(18);
     expect(
-      [...session.state.arrows.values()]
-        .slice(9)
-        .every((arrow) => !arrow.critical && arrow.power === 1),
+      [...session.state.arrows.values()].every((arrow) => !arrow.critical && arrow.power === 1),
     ).toBe(true);
     expect(session.state.aimedFireWaves).toEqual([]);
     expect(session.state.energy).toBe(energy - 100);
@@ -66,18 +63,18 @@ describe('aimed fire through session commands', () => {
     [0.1, true],
     [0.3, false],
   ])('rolls talent critical chance on later waves at roll %s', (roll, critical) => {
-    const session = arena([{ id: 'criticalShot', rank: 7 }], roll);
+    const session = arena([{ id: 'criticalShot', rank: 5 }], roll);
     session.activateAbility('aimedFire');
     session.tick(5);
-    expect(
-      [...session.state.arrows.values()].slice(9).every((arrow) => arrow.critical === critical),
-    ).toBe(true);
+    expect([...session.state.arrows.values()].every((arrow) => arrow.critical === critical)).toBe(
+      true,
+    );
   });
 
   it('upgrades critical arrows from all waves and leaves archer buffs and cooldowns intact', () => {
     const session = arena(
       [
-        { id: 'criticalShot', rank: 7 },
+        { id: 'criticalShot', rank: 5 },
         { id: 'improvedCriticalShot', rank: 8 },
         { id: 'eagleEye', rank: 1 },
         { id: 'adrenaline', rank: 1 },
@@ -105,13 +102,13 @@ describe('aimed fire through session commands', () => {
 
   it('rolls critical chance independently for each arrow of the later waves', () => {
     let roll = 0;
-    const session = arena([{ id: 'criticalShot', rank: 7 }], () =>
+    const session = arena([{ id: 'criticalShot', rank: 5 }], () =>
       roll++ % 2 === 0 ? 0 : 0.999999,
     );
     session.activateAbility('aimedFire');
     session.tick(5);
     const arrows = [...session.state.arrows.values()];
-    for (const start of [9, 18]) {
+    for (const start of [0, 9]) {
       const criticals = arrows.slice(start, start + 9).filter((arrow) => arrow.critical).length;
       expect(criticals).toBeGreaterThanOrEqual(4);
       expect(criticals).toBeLessThanOrEqual(5);
@@ -119,11 +116,10 @@ describe('aimed fire through session commands', () => {
   });
 
   it('critical ability arrows pierce and reward every kill through the usual combat rules', () => {
-    const session = arena([{ id: 'piercingReward', rank: 8 }]);
+    const session = arena([{ id: 'piercingReward', rank: 7 }]);
     session.state.character.setModifiers('test', [
       { stat: 'spawnProbability', kind: 'percent', value: -100 },
       { stat: 'energyRegen', kind: 'percent', value: -100 },
-      { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
     ]);
     session.refreshStats();
     addSpider(session, 'normal', 0, 0.8);
@@ -133,19 +129,18 @@ describe('aimed fire through session commands', () => {
     session.tick(1);
     session.tick(0.4);
     expect(session.state.spiders.size).toBe(0);
-    expect(session.state.energy).toBe(energy + 16);
+    expect(session.state.energy).toBe(energy + 14);
   });
 
   it('rolls improvement on a guaranteed critical even without the critical-shot talent', () => {
     const session = arena([{ id: 'improvedCriticalShot', rank: 8 }], 0);
     session.activateAbility('aimedFire');
-    session.tick(5);
+    session.tick(1);
     expect([...session.state.arrows.values()].slice(0, 9).every((arrow) => arrow.power === 3)).toBe(
       true,
     );
-    expect([...session.state.arrows.values()].slice(9).every((arrow) => arrow.power === 1)).toBe(
-      true,
-    );
+    session.tick(4);
+    expect([...session.state.arrows.values()].every((arrow) => arrow.power === 1)).toBe(true);
   });
 
   it('applies agility, mastery, rapid fire and common cooldown reductions independently', () => {
@@ -154,14 +149,14 @@ describe('aimed fire through session commands', () => {
       { id: 'rapidFire', rank: 7 },
       { id: 'quickInstinct', rank: 2 },
     ]);
-    session.state.character.setBase('agility', 121); // 180 after level growth: -10%.
+    session.state.character.setBase('agility', 121); // 180 after level growth.
     session.refreshStats();
-    expect(session.state.stats['aimedFire.cooldown']).toBe(35.62); // 100 × .9 × .8 × .51 × .97
+    expect(session.state.stats['aimedFire.cooldown']).toBe(35.67); // 100 × 2^(-180/1200) × .8 × .51 × .97
     expect(session.state.stats['aimedFire.cost']).toBe(100);
     session.activateAbility('aimedFire');
-    expect(session.state.getAbility('aimedFire').remainingCooldown).toBe(35.62);
+    expect(session.state.getAbility('aimedFire').remainingCooldown).toBe(35.67);
     session.tick(5);
-    expect(session.state.arrows.size).toBe(27);
+    expect(session.state.arrows.size).toBe(18);
   });
 
   it('rejects unlearned or unaffordable casts without scheduling arrows', () => {
@@ -205,7 +200,7 @@ describe('aimed fire through session commands', () => {
     expect(session.activateAbility('recharge')).toBe('activated');
     expect(session.activateAbility('aimedFire')).toBe('activated');
     session.tick(5);
-    expect(session.state.arrows.size).toBe(54);
+    expect(session.state.arrows.size).toBe(36);
     expect(session.state.aimedFireWaves).toEqual([]);
   });
 
@@ -213,17 +208,15 @@ describe('aimed fire through session commands', () => {
     const session = arena();
     session.state.character.setModifiers('test', [
       { stat: 'spawnProbability', kind: 'percent', value: -100 },
-      { stat: 'arrowSpeed', kind: 'percent', value: -90 },
     ]);
     session.refreshStats();
     session.activateAbility('aimedFire');
     session.tick(5);
     const arrows = [...session.state.arrows.values()];
-    expect(arrows).toHaveLength(27);
+    expect(arrows).toHaveLength(18);
     expect(session.state.stats.arrowSpeed).toBeGreaterThan(0);
-    expect(arrows[0].y).toBeCloseTo(1 - session.state.stats.arrowSpeed * 4);
-    expect(arrows[9].y).toBeCloseTo(1 - session.state.stats.arrowSpeed * 2);
-    expect(arrows[18].y).toBe(1);
+    expect(arrows[0].y).toBeCloseTo(1 - session.state.stats.arrowSpeed * 2);
+    expect(arrows[9].y).toBe(1);
   });
 
   it('does not release pending waves after death', () => {
@@ -267,10 +260,11 @@ describe('progression and compatibility', () => {
       session.talents.loadFromSave([
         { id: 'hunterMastery', rank: 5 },
         { id: 'improvedAgility', rank: 5 },
-        { id: 'criticalShot', rank: 7 },
-        { id: 'piercingReward', rank: 8 },
+        { id: 'criticalShot', rank: 5 },
+        { id: 'piercingReward', rank: 7 },
         { id: 'killingStreak', rank: 8 },
         { id: 'vampirism', rank: 5 },
+        { id: 'volleyMastery', rank: 2 },
       ]);
       session.refreshStats();
       expect(session.talents.getTalent('titanPreparation')).toMatchObject({ tier: 5, maxRanks: 5 });
@@ -347,7 +341,7 @@ describe('progression and compatibility', () => {
     expect(loaded.state.getAbility('aimedFire').isReady).toBe(true);
     expect(loaded.state.aimedFireWaves).toEqual([]);
     const current = snapshot(loaded);
-    expect(current.version).toBe(23);
+    expect(current.version).toBe(25);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 });

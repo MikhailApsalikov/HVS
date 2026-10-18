@@ -94,7 +94,7 @@ describe('retired cheap equipment in previous-version saves', () => {
     expect(loaded.state.coins).toBe(session.state.coins + refund * 2);
     expect(loaded.buyItem(id)).toBe(false);
     const saved = snapshot(loaded);
-    expect(saved.version).toBe(23);
+    expect(saved.version).toBe(25);
     expect(snapshot(restore(parseSave(saved)!))).toEqual(saved);
   });
 });

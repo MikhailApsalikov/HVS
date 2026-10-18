@@ -3,6 +3,7 @@ import type { SpriteRegistry } from '../SpriteRegistry.js';
 import type { Spider } from '../../domain/model/Spider.js';
 import type { HUD } from './GameHud.js';
 import { WORLD } from '../../domain/rules/world.js';
+import { IMPROVED_CRITICAL_SHOT_POWER } from '../../domain/rules/stats.js';
 import { TooltipManager } from './TooltipManager.js';
 
 const SPIDER_SPRITE_MAP: Record<Spider['type'], string> = {
@@ -113,6 +114,7 @@ export class GameField {
       const archer = archers[i];
       const btn = this._archerButtons[i];
       if (archer && btn) {
+        (btn as HTMLButtonElement).disabled = state.isStunned;
         const cdPct = archer.cooldownFraction * 100;
         btn.style.setProperty('--cd-pct', `${cdPct}%`);
         btn.classList.toggle('archer-btn--cooldown', !archer.isReady);
@@ -182,6 +184,7 @@ export class GameField {
       }
       el.style.setProperty('--y', String(arrow.y));
       el.classList.toggle('arrow--critical', arrow.power > 1);
+      el.classList.toggle('arrow--triple', arrow.power === IMPROVED_CRITICAL_SHOT_POWER);
     }
     for (const [id, el] of this._arrowElements) {
       if (!currentIds.has(id)) {

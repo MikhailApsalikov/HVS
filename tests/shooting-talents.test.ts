@@ -4,21 +4,20 @@ import { parseSave, restore, snapshot } from '../src/domain/save.js';
 import { TALENTS } from '../src/content/talents.js';
 import type { TalentId } from '../src/domain/types.js';
 import { attributeDescription, talentDescription, shootDescription } from '../src/ui/presenters.js';
-import { addSpider, previousSpiders } from './helpers.js';
+import { addNearbySpider as addSpider, previousSpiders } from './helpers.js';
 
 function combat(rank = 1, roll = 0) {
   const random = vi.fn(() => roll);
   const session = new GameSession('normal', random);
   session.talents.loadFromSave([
     { id: 'criticalShot', rank },
-    { id: 'piercingReward', rank: 8 },
+    { id: 'piercingReward', rank: 7 },
   ]);
   session.state.character.setBase('agility', 0);
   session.state.character.setModifiers('test:arena', [
     { stat: 'spawnProbability', kind: 'percent', value: -100 },
     { stat: 'energyRegen', kind: 'percent', value: -100 },
     { stat: 'coinsPerSec', kind: 'percent', value: -100 },
-    { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
   ]);
   session.refreshStats();
   session.state.initialTalentPick = false;
@@ -72,12 +71,12 @@ describe('shooting and magic talent progression', () => {
       buy(session, 'improvedAgility', 2);
       expect(session.upgradeTalent('criticalShot')).toBe(false);
       session.state.level = 10;
-      buy(session, 'criticalShot', 7);
+      buy(session, 'criticalShot', 5);
       expect(session.upgradeTalent('criticalShot')).toBe(false);
-      expect(session.state.stats.criticalShotChance).toBe(0.21);
+      expect(session.state.stats.criticalShotChance).toBe(0.15);
       expect(session.talents.canUpgrade('piercingReward', 10)).toBe(true);
       const energyPerKill = session.state.stats.energyPerKill;
-      for (let rank = 1; rank <= 8; rank++) {
+      for (let rank = 1; rank <= 7; rank++) {
         buy(session, 'piercingReward', 1);
         expect(session.state.stats.energyPerKill).toBe(energyPerKill + rank);
       }
@@ -103,7 +102,7 @@ describe('shooting and magic talent progression', () => {
     buy(session, 'improvedAgility', 2);
     buy(session, 'criticalShot', 1);
     expect(session.talents.canUpgrade('piercingReward', 20)).toBe(true);
-    buy(session, 'criticalShot', 6);
+    buy(session, 'criticalShot', 4);
     buy(session, 'piercingReward', 1);
   });
 
@@ -121,7 +120,7 @@ describe('shooting and magic talent progression', () => {
     session.state.level = 30;
     buy(session, 'hunterMastery', 5);
     buy(session, 'improvedAgility', 5);
-    buy(session, 'criticalShot', 7);
+    buy(session, 'criticalShot', 5);
     expect(session.talents.getTalent('blizzardMastery').tier).toBe(2);
     buy(session, 'improvedIntellect', 5);
     buy(session, 'hunterArsenal', 2);
@@ -137,14 +136,14 @@ describe('critical shots through session commands', () => {
     [0, 10000, 0, false],
     [1, 0, 0.029999, true],
     [1, 0, 0.03, false],
-    [7, 0, 0.209999, true],
-    [7, 0, 0.21, false],
+    [5, 0, 0.149999, true],
+    [5, 0, 0.15, false],
     [1, 129, 0.03, false],
     [1, 130, 0.039999, true],
     [1, 130, 0.04, false],
     [2, 260, 0.079999, true],
     [2, 260, 0.08, false],
-    [7, 100000, 0.999999, true],
+    [5, 100000, 0.999999, true],
   ])('rank %s, agility %s, roll %s yields critical=%s', (rank, agility, roll, critical) => {
     const { session, random } = combat(rank, roll);
     session.state.character.setBase('agility', agility);
@@ -153,10 +152,12 @@ describe('critical shots through session commands', () => {
     expect([...session.state.arrows.values()][0].critical).toBe(critical);
     expect(random).toHaveBeenCalledTimes(rank > 0 ? 1 : 0);
     expect(session.state.stats.criticalShotChance).toBeLessThanOrEqual(1);
-    expect(session.shootLane(0)).toBe('blocked');
+    expect(session.shootLane(0)).toBe(session.state.stats.shootCooldown === 0 ? 'shot' : 'blocked');
     session.state.energy = 0;
     expect(session.shootLane(1)).toBe('not_enough_energy');
-    expect(random).toHaveBeenCalledTimes(rank > 0 ? 1 : 0);
+    expect(random).toHaveBeenCalledTimes(
+      rank > 0 ? (session.state.stats.shootCooldown === 0 ? 2 : 1) : 0,
+    );
   });
 
   it('kills two normal spiders across frames, rewards energy for each, and leaves the third alive', () => {
@@ -172,13 +173,13 @@ describe('critical shots through session commands', () => {
     expect(second.dying).toBe(false);
     const arrow = [...session.state.arrows.values()][0];
     expect(arrow).toMatchObject({ critical: true, power: 1, lane: 0 });
-    expect(arrow.y).toBeCloseTo(0.8);
+    expect(arrow.y).toBeCloseTo(1 - 0.02 / 3);
     session.tick(0.04);
     expect(second.dying).toBe(true);
     expect(session.state.arrows.size).toBe(0);
     expect(third.dying).toBe(false);
     session.tick(0.3);
-    expect(session.state.energy).toBe(energy + 16);
+    expect(session.state.energy).toBe(energy + 14);
     const rewards = session.drainEvents().filter((event) => event.type === 'coinDrop');
     expect(rewards.map((event) => event.spiderId)).toEqual([first.id, second.id]);
     expect(session.state.coins).toBe(252);
@@ -206,10 +207,10 @@ describe('critical shots through session commands', () => {
     if (kills) addSpider(session, 'normal', 0, 0.5);
     session.shootLane(0);
     const energy = session.state.energy;
-    session.tick(0.11);
+    session.tick(3.1);
     expect(session.state.arrows.size).toBe(0);
     session.tick(0.3);
-    expect(session.state.energy).toBe(energy + kills * 8);
+    expect(session.state.energy).toBe(energy + kills * 7);
   });
 
   it('keeps noncritical arrows limited to one hit against a fat spider', () => {
@@ -227,7 +228,7 @@ describe('critical shots through session commands', () => {
     const { session } = combat(7);
     session.state.level = 60;
     session.talents.loadFromSave([
-      { id: 'criticalShot', rank: 7 },
+      { id: 'criticalShot', rank: 5 },
       { id: 'adrenaline', rank: 1 },
     ]);
     session.state.character.setModifiers('test:counter', [
@@ -257,12 +258,12 @@ describe('critical shots through session commands', () => {
     const { session } = combat(0);
     session.state.character.setBase('agility', 480);
     session.refreshStats();
-    expect(session.state.stats.energyPerKill).toBe(10);
+    expect(session.state.stats.energyPerKill).toBe(9);
     addSpider(session, 'normal', 0, 0.9);
     session.shootLane(0);
     const energy = session.state.energy;
     session.tick(0.4);
-    expect(session.state.energy).toBe(energy + 10);
+    expect(session.state.energy).toBe(energy + 9);
   });
 });
 
@@ -332,7 +333,7 @@ describe('critical shot saves', () => {
       loaded.tick(0.4);
       session.tick(0.4);
       expect(snapshot(loaded)).toEqual(snapshot(session));
-      expect(loaded.state.energy).toBe(energy + 16);
+      expect(loaded.state.energy).toBe(energy + 14);
       expect(loaded.state.spiders.get(third.id)?.dying).toBe(false);
       expect(loaded.state.arrows.size).toBe(0);
     },
@@ -359,7 +360,7 @@ describe('critical shot saves', () => {
       spiders: previousSpiders(saved),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(23);
+    expect(parsed.version).toBe(25);
     const loaded = restore(parsed);
     expect(loaded.talents.getRank('hunterMastery')).toBe(5);
     expect(loaded.state.stats.shootCost).toBe(25);

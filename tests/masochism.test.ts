@@ -36,7 +36,6 @@ function arena(rank = 5, talents: { id: TalentId; rank: number }[] = []) {
     { stat: 'hpRegen', kind: 'percent', value: -100 },
     { stat: 'energyRegen', kind: 'percent', value: -100 },
     { stat: 'coinsPerSec', kind: 'percent', value: -100 },
-    { stat: 'arrowSpeed', kind: 'percent', value: -100 },
   ]);
   session.refreshStats();
   session.state.phase = 'playing';
@@ -78,7 +77,7 @@ describe('masochism through session commands', () => {
         else {
           expect(session.state.arrows.size).toBe(0);
           session.tick(5);
-          expect(session.state.arrows.size).toBe(27);
+          expect(session.state.arrows.size).toBe(18);
           expect(session.state.hp).toBe(25000 - cost * healthPerEnergy);
           expect(session.state.energy).toBe(0);
         }
@@ -342,7 +341,7 @@ describe('masochism saves', () => {
     expect(session.activateAbility('aimedFire')).toBe('activated');
     expect(session.state.hp).toBe(4325);
     const saved = snapshot(session);
-    expect(saved.version).toBe(23);
+    expect(saved.version).toBe(25);
     const parsed = parseSave(JSON.parse(JSON.stringify(saved)));
     expect(parsed).not.toBeNull();
     const loaded = restore(parsed!, () => 0.999999);
@@ -366,7 +365,7 @@ describe('masochism saves', () => {
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('masochism')).toBe(0);
     const normalized = snapshot(loaded);
-    expect(normalized.version).toBe(23);
+    expect(normalized.version).toBe(25);
     expect(normalized.state).toEqual(existing.state);
     expect(normalized.talents.filter(({ id }) => id !== 'masochism')).toEqual(existing.talents);
     expect(loaded.shootLane(0)).toBe('not_enough_energy');

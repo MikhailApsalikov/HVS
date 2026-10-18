@@ -8,6 +8,7 @@ class ElementDouble {
   className = '';
   innerHTML = '';
   textContent = '';
+  disabled = false;
   dataset: Record<string, string> = {};
   style = { top: '', setProperty: vi.fn() };
   children: ElementDouble[] = [];
@@ -72,6 +73,43 @@ function lane(index = 0): ElementDouble {
 }
 
 describe('combat feedback without a browser', () => {
+  it('disables all archer buttons while stunned and restores them when stun expires', () => {
+    const session = game(260);
+    session.state.character.setModifiers('stun:arena', [
+      { stat: 'spawnProbability', kind: 'percent', value: -100 },
+      { stat: 'maxHp', kind: 'flat', value: 1000000 },
+      { stat: 'dodgeChance', kind: 'percent', value: -100 },
+    ]);
+    session.refreshStats();
+    session.state.levelTimer = session.state.levelTimerMax = 1000;
+    addSpider(session, 'normal', 0, 1, 100);
+    session.tick(0.001);
+    field.render(session.state);
+    const archers = field.getArchersRow() as unknown as ElementDouble;
+    expect(archers.children.every(({ children }) => children[0].disabled)).toBe(true);
+    session.tick(session.state.stunTimer);
+    field.render(session.state);
+    expect(archers.children.every(({ children }) => !children[0].disabled)).toBe(true);
+  });
+  it('distinguishes a triple critical arrow from an ordinary critical as its power is spent', () => {
+    const session = game();
+    session.state.character.setModifiers('test:critical', [
+      { stat: 'criticalShotChance', kind: 'flat', value: 1 },
+      { stat: 'improvedCriticalShotChance', kind: 'flat', value: 1 },
+    ]);
+    session.refreshStats();
+    session.shootLane(0);
+    field.render(session.state);
+    const arrow = lane().children.find((element) => element.classList.contains('arrow'))!;
+    expect(arrow.classList.contains('arrow--triple')).toBe(true);
+    expect(arrow.textContent).not.toContain('×3');
+    expect(arrow.children).toHaveLength(0);
+    addSpider(session, 'normal', 0, 0.94);
+    session.tick(0.1);
+    field.render(session.state);
+    expect(arrow.classList.contains('arrow--triple')).toBe(false);
+    expect(arrow.classList.contains('arrow--critical')).toBe(true);
+  });
   it('keeps simultaneous defensive effects inside a separate layer above the lanes', () => {
     const effects = field.getEffectsContainer() as unknown as ElementDouble;
     const lanesArea = container.children[0];

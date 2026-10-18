@@ -188,7 +188,7 @@ describe('preparation saves', () => {
       active.tick(4);
     }
     expect(snapshot(loaded)).toEqual(snapshot(session));
-    expect(loaded.state.energy).toBe(250 + 8 * 6 - 50);
+    expect(loaded.state.energy).toBe(250 + 8 * 6 - 25);
     expect(loaded.state.currentEnergyRegen).toBe(8);
   });
 
@@ -204,7 +204,7 @@ describe('preparation saves', () => {
     const { prepTimer: _timer, ...state } = saved.state;
     const previous = { ...saved, version: 14, abilities: saved.abilities.slice(0, 11), state };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(23);
+    expect(parsed.version).toBe(25);
     const loaded = restore(parsed, () => 0.999999);
     expect(loaded.state.prepTimer).toBe(0);
     expect(loaded.state.energy).toBe(saved.state.energy);

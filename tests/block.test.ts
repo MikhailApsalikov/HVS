@@ -280,7 +280,6 @@ describe('damage blocking and counter volleys', () => {
       if (rank === 10) expect(session.upgradeTalent('bestDefense')).toBe(false);
       session.state.character.setModifiers('test:volley', [
         { stat: 'volley.lanes', kind: 'flat', value: 2 },
-        { stat: 'arrowSpeed', kind: 'percent', value: 50 },
       ]);
       session.refreshStats();
       session.state.phase = 'playing';
@@ -394,7 +393,7 @@ describe('defense save compatibility', () => {
       ),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(23);
+    expect(parsed.version).toBe(25);
     const loaded = restore(parsed);
     expect(loaded.state.getAbility('stand').remainingCooldown).toBe(41);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(123);

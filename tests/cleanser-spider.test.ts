@@ -19,7 +19,7 @@ function arena(roll = 0.999999) {
     { id: 'adrenaline', rank: 1 },
     { id: 'eagleEye', rank: 1 },
     { id: 'killingStreak', rank: 1 },
-    { id: 'titanPreparation', rank: 2 },
+    { id: 'titanPreparation', rank: 4 },
     { id: 'divineShield', rank: 1 },
     { id: 'aimedFire', rank: 1 },
   ]);

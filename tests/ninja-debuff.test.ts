@@ -198,7 +198,7 @@ describe('disorientation save compatibility', () => {
     const previous = { ...current, version: 22, state };
     const parsed = parseSave(previous)!;
     expect(parsed).not.toBeNull();
-    expect(parsed.version).toBe(23);
+    expect(parsed.version).toBe(25);
     expect(parsed.state.disorientationTimer).toBe(0);
     expect(snapshot(restore(parsed))).toEqual(current);
     expect(parseSave({ ...previous, state: { ...state, disorientationTimer: 10 } })).toEqual(

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GameSession } from '../src/domain/GameSession.js';
 import { parseSave, restore, snapshot } from '../src/domain/save.js';
 import type { Difficulty } from '../src/domain/types.js';
-import { addSpider } from './helpers.js';
+import { addNearbySpider as addSpider } from './helpers.js';
 
 function arena(level = 50, roll = 0.5, difficulty: Difficulty = 'normal') {
   const session = new GameSession(difficulty, () => roll, { level });
@@ -13,7 +13,6 @@ function arena(level = 50, roll = 0.5, difficulty: Difficulty = 'normal') {
     { stat: 'energyRegen', kind: 'percent', value: -100 },
     { stat: 'shootCost', kind: 'percent', value: -100 },
     { stat: 'shootCooldown', kind: 'percent', value: -100 },
-    { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
     { stat: 'hpPerKill', kind: 'flat', value: 7 },
     { stat: 'energyPerKill', kind: 'flat', value: 11 },
   ]);
@@ -36,7 +35,7 @@ function rewards(session: GameSession) {
 describe('mega-fat spiders through session commands', () => {
   it('takes three normal arrows, changes shape after each wound and rewards only the kill', () => {
     const session = arena();
-    const spider = addSpider(session, 'megaFat', 0, 0.9, 123, 0.1);
+    const spider = addSpider(session, 'megaFat', 0, 0.9, 123, 0.01);
     const behind = addSpider(session, 'normal', 0, 0.5);
     session.state.hp -= 50;
     session.state.energy -= 50;
@@ -47,7 +46,7 @@ describe('mega-fat spiders through session commands', () => {
       ['normal', 1],
     ] as const) {
       shoot(session);
-      expect(spider).toMatchObject({ type, hits, dying: false, damage: 123, speed: 0.1 });
+      expect(spider).toMatchObject({ type, hits, dying: false, damage: 123, speed: 0.01 });
       expect(session.state.arrows.size).toBe(0);
       expect(behind.dying).toBe(false);
       session.tick(0.31);

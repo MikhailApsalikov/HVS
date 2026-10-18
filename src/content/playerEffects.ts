@@ -96,6 +96,14 @@ export const PLAYER_EFFECTS = {
     source: 'spider',
     removableByCleanser: false,
   },
+  stun: {
+    name: DEBUFFS.stun.name,
+    sprite: 'DebuffStun',
+    kind: 'debuff',
+    source: 'spider',
+    removableByCleanser: false,
+    ignoresMagicArmor: true,
+  },
   antiAfk: {
     name: 'Бездействие',
     sprite: 'DebuffInactivity',

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GameSession } from '../src/domain/GameSession.js';
 import type { SpiderType } from '../src/domain/types.js';
-import { addSpider } from './helpers.js';
+import { addNearbySpider as addSpider } from './helpers.js';
 
 function arena(rank = 5, roll = 0.999999, level = 50) {
   const session = new GameSession('normal', () => roll, { level });
@@ -15,7 +15,6 @@ function arena(rank = 5, roll = 0.999999, level = 50) {
     { stat: 'energyRegen', kind: 'percent', value: -100 },
     { stat: 'shootCost', kind: 'percent', value: -100 },
     { stat: 'shootCooldown', kind: 'percent', value: -100 },
-    { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
     { stat: 'armor', kind: 'flat', value: 100 },
   ]);
   session.refreshStats();

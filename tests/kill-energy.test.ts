@@ -4,17 +4,16 @@ import { parseSave, restore, snapshot } from '../src/domain/save.js';
 import type { SpiderType, TalentId } from '../src/domain/types.js';
 import { SPIDERS } from '../src/content/spiders.js';
 import { WORLD } from '../src/domain/rules/world.js';
-import { addSpider, previousSpiders } from './helpers.js';
+import { addNearbySpider as addSpider, previousSpiders } from './helpers.js';
 
 function arena(talents: { id: TalentId; rank: number }[] = []) {
   const session = new GameSession('normal', () => 0);
-  session.talents.loadFromSave([{ id: 'piercingReward', rank: 8 }, ...talents]);
+  session.talents.loadFromSave([{ id: 'piercingReward', rank: 7 }, ...talents]);
   session.state.character.restoreBase({ endurance: 0, agility: 0, intellect: 0 });
   session.state.character.setModifiers('test:arena', [
     { stat: 'spawnProbability', kind: 'percent', value: -100 },
     { stat: 'energyRegen', kind: 'percent', value: -100 },
     { stat: 'maxEnergy', kind: 'flat', value: 1000 },
-    { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
     { stat: 'shootCooldown', kind: 'percent', value: -100 },
   ]);
   session.refreshStats();
@@ -36,7 +35,7 @@ describe('energy for every spider kill', () => {
         const energy = session.state.energy;
         session.tick(0.4);
         const killed = hit === SPIDERS[type].hits;
-        expect(session.state.energy).toBe(energy + (killed ? 8 : 0));
+        expect(session.state.energy).toBe(energy + (killed ? 7 : 0));
         expect(spider.dying).toBe(killed);
       }
       expect(session.state.spiders.size).toBe(0);
@@ -65,9 +64,9 @@ describe('energy for every spider kill', () => {
     const energy = session.state.energy;
     session.tick(0.4);
     expect(session.state.spiders.size).toBe(0);
-    expect(session.state.energy).toBe(energy + WORLD.lanes * 8);
+    expect(session.state.energy).toBe(energy + WORLD.lanes * 7);
     session.tick(1);
-    expect(session.state.energy).toBe(energy + WORLD.lanes * 8);
+    expect(session.state.energy).toBe(energy + WORLD.lanes * 7);
   });
 
   it.each([false, true])('rewards each free adrenaline kill with eagle eye=%s', (eagleEye) => {
@@ -84,7 +83,7 @@ describe('energy for every spider kill', () => {
     expect(session.state.energy).toBe(0);
     session.tick(0.4);
     expect(session.state.spiders.size).toBe(0);
-    expect(session.state.energy).toBe(eagleEye ? 16 : 8);
+    expect(session.state.energy).toBe(eagleEye ? 14 : 7);
   });
 
   it('rewards every Armageddon victim, including new spiders and an arrow victim, once', () => {
@@ -113,7 +112,7 @@ describe('energy for every spider kill', () => {
   });
 
   it('caps energy from several kills at the maximum without banking the excess', () => {
-    const session = arena([{ id: 'criticalShot', rank: 7 }]);
+    const session = arena([{ id: 'criticalShot', rank: 5 }]);
     addSpider(session, 'normal', 0, 0.8);
     addSpider(session, 'normal', 0, 0.4);
     session.shootLane(0);
@@ -147,7 +146,7 @@ describe('kill energy save migration', () => {
     'migrates version 15 after %s seconds without retaining exclusions or repeating rewards',
     (elapsed) => {
       const session = arena([
-        { id: 'criticalShot', rank: 7 },
+        { id: 'criticalShot', rank: 5 },
         { id: 'improvedCriticalShot', rank: 8 },
         { id: 'killingStreak', rank: 1 },
       ]);
@@ -178,7 +177,7 @@ describe('kill energy save migration', () => {
       for (const active of [session, loaded]) active.tick(0.4);
       expect(snapshot(loaded)).toEqual(snapshot(session));
       expect(loaded.state.spiders.size).toBe(0);
-      expect(loaded.state.energy).toBe(energy + 24 + 0.4 * loaded.state.stats['prep.energyRegen']);
+      expect(loaded.state.energy).toBe(energy + 21 + 0.4 * loaded.state.stats['prep.energyRegen']);
       const saved = snapshot(loaded);
       expect(snapshot(restore(parseSave(saved)!, () => 0))).toEqual(saved);
       expect(JSON.stringify(saved)).not.toMatch(/grantsKillEnergy|"kills"/);
@@ -186,7 +185,7 @@ describe('kill energy save migration', () => {
   );
 
   it.each([9, 10])('still rejects invalid power history in version %s', (version) => {
-    const session = arena([{ id: 'criticalShot', rank: 7 }]);
+    const session = arena([{ id: 'criticalShot', rank: 5 }]);
     session.shootLane(0);
     const saved = snapshot(session);
     for (const invalid of [

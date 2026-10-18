@@ -99,9 +99,10 @@ describe('new defense talents through session commands', () => {
     const session = defense(49);
     buy(session, 'hunterMastery', 5);
     buy(session, 'vampirism', 5);
-    buy(session, 'piercingReward', 8);
-    buy(session, 'criticalShot', 7);
-    buy(session, 'improvedAgility', 3);
+    buy(session, 'piercingReward', 7);
+    buy(session, 'criticalShot', 5);
+    buy(session, 'improvedAgility', 5);
+    buy(session, 'volleyMastery', 1);
     buy(session, 'killingStreak', 7);
     expect(session.upgradeTalent('willToWin')).toBe(false);
     session.state.level = 50;
@@ -377,7 +378,7 @@ describe('new defense talents through session commands', () => {
     expect(loaded.state.adrenalineShots).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(0);
     const current = snapshot(loaded);
-    expect(current.version).toBe(23);
+    expect(current.version).toBe(25);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 

@@ -29,7 +29,7 @@ function start(session: GameSession): void {
 function shootingBase(session: GameSession): void {
   learn(session, 'hunterMastery', 5);
   learn(session, 'vampirism', 5);
-  learn(session, 'piercingReward', 4);
+  learn(session, 'piercingReward', 5);
 }
 
 describe('item chance tooltips through session commands', () => {
@@ -79,12 +79,12 @@ describe('item chance tooltips through session commands', () => {
   it('shows guaranteed critical shots and the increased triple chance while Eagle Eye has charges', () => {
     const session = arena();
     shootingBase(session);
-    learn(session, 'criticalShot', 7);
+    learn(session, 'criticalShot', 5);
     learn(session, 'eagleEye');
     learn(session, 'improvedCriticalShot');
     expect(session.buyItem('l027')).toBe(true);
     expect(shootDescription(session.state, 1)).toContain(
-      'Шанс тройного крита среди критических выстрелов — 44%.',
+      'Шанс тройного крита среди критических выстрелов — 40.6%.',
     );
     start(session);
     expect(session.activateAbility('eagleEye')).toBe('activated');
@@ -92,7 +92,7 @@ describe('item chance tooltips through session commands', () => {
       'Общий шанс критического выстрела — 100%.',
     );
     expect(shootDescription(session.state, 1)).toContain(
-      'Шанс тройного крита среди критических выстрелов — 48%.',
+      'Шанс тройного крита среди критических выстрелов — 44.05%.',
     );
 
     for (let lane = 0; lane < 5; lane++) expect(session.shootLane(lane)).toBe('shot');
@@ -101,15 +101,17 @@ describe('item chance tooltips through session commands', () => {
     expect(tooltip).toContain(
       `Общий шанс критического выстрела — ${formatStat('criticalShotChance', session.state.stats.criticalShotChance)}.`,
     );
-    expect(tooltip).toContain('Шанс тройного крита среди критических выстрелов — 44%.');
+    expect(tooltip).toContain('Шанс тройного крита среди критических выстрелов — 40.6%.');
   });
 
   it('clamps the complete triple chance from a maximum talent and item to 100%', () => {
     const session = arena();
     shootingBase(session);
-    learn(session, 'criticalShot', 7);
+    learn(session, 'criticalShot', 5);
     learn(session, 'eagleEye');
     learn(session, 'improvedCriticalShot', 8);
+    session.state.character.setBase('agility', 1941);
+    session.refreshStats();
     expect(shootDescription(session.state, 1)).toContain(
       'Шанс тройного крита среди критических выстрелов — 64%.',
     );

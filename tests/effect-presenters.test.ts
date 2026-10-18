@@ -7,7 +7,7 @@ import {
   playerEffectDescription,
   talentDescription,
 } from '../src/ui/presenters.js';
-import { addSpider } from './helpers.js';
+import { addNearbySpider as addSpider } from './helpers.js';
 
 function arena() {
   const session = new GameSession('normal', () => 0.999999, { level: 60 });
@@ -96,7 +96,6 @@ describe('player effect tooltips through session commands', () => {
     session.talents.loadFromSave([{ id: 'hunterReward', rank: 5 }]);
     session.state.character.setModifiers('test:shooting', [
       { stat: 'shootCooldown', kind: 'percent', value: -100 },
-      { stat: 'arrowSpeed', kind: 'percent', value: 2900 },
     ]);
     session.refreshStats();
     const spider = addSpider(session, 'golden', 0, 0.9);
@@ -176,7 +175,7 @@ describe('player effect tooltips through session commands', () => {
     expect(titanHtml).toContain(
       'Избыток временных эффектов «Подготовки титана» постепенно исчезает.',
     );
-    expect(titanHtml).toContain('Стоимость выстрела снижена на 20 энергии.');
+    expect(titanHtml).toContain('Стоимость выстрела снижена на 10 энергии.');
     expect(titanHtml).not.toMatch(/Увлечённость|Каждое убийство|Эффектов:|Следующий эффект через/);
   });
 });

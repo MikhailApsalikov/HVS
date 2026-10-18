@@ -27,7 +27,7 @@ interface TalentDefinition {
     readonly step: number;
     readonly mode?: 'steps' | 'continuous';
     readonly effect: Effect;
-    readonly additionalEffects?: readonly Effect[];
+    readonly additionalEffects?: readonly (Effect & { readonly basePerRank?: number })[];
     readonly basePerRank?: number;
   };
 }
@@ -112,7 +112,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 2,
     name: 'Зоркость',
     sprite: 'AbilityEagleEye',
-    prerequisite: { id: 'criticalShot', rank: 7 },
+    prerequisite: { id: 'criticalShot', rank: 5 },
     effects: [],
   },
   improvedCriticalShot: {
@@ -121,11 +121,17 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Улучшенный критический выстрел',
     sprite: 'TalentImprovedCriticalShot',
     prerequisite: { id: 'eagleEye', rank: 1 },
-    effects: [
-      flat('improvedCriticalShotChance', 0.08),
-      flat('eagleEye.improvedCriticalShotChance', 0.04),
-    ],
-    description: `С вероятностью {improvedCriticalShotChance} критическая стрела убивает до ${IMPROVED_CRITICAL_SHOT_POWER} пауков вместо ${CRITICAL_SHOT_POWER}.\nВо время «Зоркости» вероятность повышается до {eagleEyeImprovedChance}.`,
+    effects: [],
+    scaling: {
+      attribute: 'agility',
+      step: 50,
+      basePerRank: 0.04,
+      effect: flat('improvedCriticalShotChance', 0.001),
+      additionalEffects: [
+        { ...flat('eagleEye.improvedCriticalShotChance', 0.00075), basePerRank: 0.03 },
+      ],
+    },
+    description: `С вероятностью {scaling.base} критическая стрела убивает до ${IMPROVED_CRITICAL_SHOT_POWER} пауков вместо ${CRITICAL_SHOT_POWER}.\nШанс дополнительно повышается на {scaling.value} за каждые {scaling.step} полных единиц ловкости. Во время «Зоркости» весь бонус этого таланта увеличен на 75%.`,
   },
   agileCriticalShot: {
     branch: 'shooting',
@@ -146,7 +152,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     effects: [],
     scaling: {
       attribute: 'agility',
-      step: 50,
+      step: 40,
       basePerRank: 5,
       mode: 'continuous',
       effect: flat('hpPerKill', 1),
@@ -197,7 +203,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 2,
     name: 'Подготовка титана',
     sprite: 'TalentTitanPreparation',
-    effects: [flat('prep.stacks', 4)],
+    effects: [flat('prep.stacks', 2)],
     description:
       '«Подготовка» доводит число эффектов «Череды убийств» до {prep.stacks}, даже если этот талант не изучен.',
   },
@@ -262,10 +268,9 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
       percent('shootCooldown', -7),
       percent('volley.cooldown', -7),
       percent('aimedFire.cooldown', -7),
-      percent('arrowSpeed', 7),
     ],
     description:
-      'Сокращает перезарядку выстрела на {shootCooldown}, а «Залпа» и «Прицельного огня» — на {volley.cooldown}.\nСтрелы летят на {arrowSpeed} быстрее.',
+      'Сокращает перезарядку выстрела на {shootCooldown}, а «Залпа» и «Прицельного огня» — на {volley.cooldown}.',
   },
   dutyBound: {
     branch: 'defense',
@@ -357,7 +362,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
       additionalEffects: [flat('spiderDebuffResistance', 0.0001)],
     },
     description:
-      'Каждая единица интеллекта даёт {scaling.value} брони и снижает эффективность дебаффов пауков на {scaling.spiderDebuffResistance}.\nПри снижении эффективности на 100% вы становитесь невосприимчивы к дебаффам пауков.',
+      'Каждая единица интеллекта даёт {scaling.value} брони и снижает эффективность дебаффов пауков на {scaling.spiderDebuffResistance}.\nПри снижении эффективности на 100% вы становитесь невосприимчивы к дебаффам пауков, кроме «Оглушения».',
   },
   divineShield: {
     name: 'Божественный щит',
@@ -424,7 +429,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     sprite: 'AbilityStand',
     effects: [],
-    description: `Получая урон от паука, вы снимаете все дебаффы от пауков и становитесь неуязвимы на {learningShieldDuration} с. Срабатывает не чаще раза в ${LEARNING_FROM_MISTAKES.shieldCooldown} с.\nСмертельный удар оставляет вам 1 здоровья и даёт ${LEARNING_FROM_MISTAKES.fatalShieldDuration} с неуязвимости, даже если первый эффект ещё восстанавливается.\nПосле спасения вы получаете «Истощение» на ${LEARNING_FROM_MISTAKES.exhaustionDuration / 60} минут: ловкость снижена на ${LEARNING_FROM_MISTAKES.exhaustionAgilityPercent}%, талант и получение неуязвимости недоступны. «Истощение» нельзя снять.\nДлительность неуязвимости от таланта нельзя увеличить.`,
+    description: `Получая от одного удара паука урон не меньше {learningDamageThreshold}% максимального здоровья после брони и блока, вы снимаете все дебаффы от пауков и становитесь неуязвимы на {learningShieldDuration} с. Срабатывает не чаще раза в ${LEARNING_FROM_MISTAKES.shieldCooldown} с.\nСмертельный удар оставляет вам 1 здоровья и даёт {learningFatalShieldDuration} с неуязвимости, даже если первый эффект ещё восстанавливается.\nПосле спасения вы получаете «Истощение» на ${LEARNING_FROM_MISTAKES.exhaustionDuration / 60} минут: ловкость снижена на ${LEARNING_FROM_MISTAKES.exhaustionAgilityPercent}%, талант и получение неуязвимости недоступны. «Истощение» нельзя снять.\nДлительность неуязвимости от таланта нельзя увеличить.`,
   },
   willToWin: {
     name: 'Воля к победе',
