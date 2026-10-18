@@ -12,6 +12,7 @@ import { fireVolley } from './AbilitySystem.js';
 import { applySpiderDebuff, applyPiercingStun } from './DebuffSystem.js';
 import { clearPlayerBuffs } from './BuffSystem.js';
 import { protectFromBreach, shieldAfterBreach } from './LearningFromMistakesSystem.js';
+import { startChainLightning } from './MagicSystem.js';
 
 /** Returns the time within this tick when a live spider first occupies the field. */
 export function spawnSpiders(state: GameState, dt: number, random: RandomSource): number {
@@ -66,7 +67,13 @@ export function moveSpiders(state: GameState, dt: number, random: RandomSource):
 }
 
 /** Swept collision catches fast arrows crossing a spider between two frames. */
-export function tickArrows(state: GameState, dt: number): void {
+export function tickArrows(
+  state: GameState,
+  dt: number,
+  random: RandomSource,
+  emit: EmitEvent,
+): Spider[] {
+  const arrowKills: Spider[] = [];
   for (const [id, arrow] of state.arrows) {
     arrow.move(dt);
     const collisions: { spider: Spider; time: number }[] = [];
@@ -83,12 +90,15 @@ export function tickArrows(state: GameState, dt: number): void {
     }
     collisions.sort((a, b) => a.time - b.time);
     for (const { spider: hit } of collisions) {
-      const damage = Math.min(hit.hits, arrow.power);
-      hit.hits -= damage;
+      const damage = hit.takeHit(arrow.power);
+      if (hit.dying) arrowKills.push(hit);
       arrow.power -= damage;
-      if (hit.hits <= 0) hit.startDying();
-      else if (hit.type === 'megaFat' || hit.type === 'fat')
-        hit.type = hit.hits === SPIDERS.fat.hits ? 'fat' : 'normal';
+      if (arrow.lightningJumps > 0) {
+        const point = { lane: hit.lane, y: hit.y };
+        emit({ type: 'lightning', from: point, to: point });
+        startChainLightning(state, hit, arrow.lightningJumps, arrow.lightningDelay, random);
+        arrow.lightningJumps = 0;
+      }
       if (arrow.power === 0) {
         state.arrows.delete(id);
         break;
@@ -96,6 +106,7 @@ export function tickArrows(state: GameState, dt: number): void {
     }
     if (arrow.y < 0) state.arrows.delete(id);
   }
+  return arrowKills;
 }
 
 export function resolveBreaches(

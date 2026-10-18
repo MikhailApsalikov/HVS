@@ -11,7 +11,8 @@ export type AbilityId =
   | 'lastHope'
   | 'adrenaline'
   | 'eagleEye'
-  | 'aimedFire';
+  | 'aimedFire'
+  | 'lightningArrows';
 export type TalentId =
   | 'endurance'
   | 'spiderArmor'
@@ -30,6 +31,10 @@ export type TalentId =
   | 'improvedPrep'
   | 'recharge'
   | 'permafrost'
+  | 'lightningArrows'
+  | 'improvedLightning'
+  | 'fireExplosion'
+  | 'improvedArmageddon'
   | 'volleyMastery'
   | 'titanPreparation'
   | 'aimedFire'

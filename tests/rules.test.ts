@@ -140,8 +140,8 @@ describe('primary attribute sources', () => {
 describe('content contracts', () => {
   it('retains all difficulties, talents, abilities and unique items', () => {
     expect(Object.keys(DIFFICULTIES)).toHaveLength(3);
-    expect(TALENT_ORDER).toHaveLength(45);
-    expect(ABILITY_ORDER).toHaveLength(12);
+    expect(TALENT_ORDER).toHaveLength(49);
+    expect(ABILITY_ORDER).toHaveLength(13);
     expect(new Set(ITEM_CATALOG.map((item) => item.id)).size).toBe(ITEM_CATALOG.length);
   });
   it.each(ITEM_CATALOG)('every item is valid, priced and resolves: $id $name', (item) => {

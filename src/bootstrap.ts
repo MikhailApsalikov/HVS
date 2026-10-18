@@ -58,6 +58,7 @@ export function bootstrap(root: HTMLElement): () => void {
     eagleEye: SoundEffect.PREP_ACTIVATE,
     armageddon: SoundEffect.ARMAGEDDON_ACTIVATE,
     recharge: SoundEffect.RECHARGE_ACTIVATE,
+    lightningArrows: SoundEffect.PREP_ACTIVATE,
   };
   const shoot = (lane: number) => {
     const result = engine.shootLane(lane);
@@ -96,6 +97,7 @@ export function bootstrap(root: HTMLElement): () => void {
     } else if (phase === 'playing') audio.playMusic(MusicTrack.GAMEPLAY);
   });
   const field = app.game.getGameField();
+  engine.setMagicEffectCallback((event) => field.showMagicEffect(event));
   engine.setCoinDropCallback((id, coins, jackpot) => {
     field.showCoinDrop(id, coins, jackpot);
     audio.playSfx(SoundEffect.KILL_SPIDER);

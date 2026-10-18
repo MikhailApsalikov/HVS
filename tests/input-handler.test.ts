@@ -10,6 +10,7 @@ describe('physical ability keys through session commands', () => {
   it.each([
     ['KeyQ', 'й', 'freeze'],
     ['KeyW', 'ц', 'volley'],
+    ['KeyF', 'а', 'lightningArrows'],
     ['KeyE', 'у', 'prep'],
     ['KeyR', 'к', 'heal'],
     ['KeyT', 'е', 'blizzard'],

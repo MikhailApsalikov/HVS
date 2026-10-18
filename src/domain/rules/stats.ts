@@ -26,6 +26,13 @@ export function learningDamageThreshold(rank: number): number {
 }
 export const KILLING_STREAK = { maxStacks: 10, decayInterval: 1.5 } as const;
 export const AIMED_FIRE = { firstDelay: 1, interval: 2 } as const;
+export const MAGIC_HIT_DAMAGE = 1;
+export const FIRE_EXPLOSION = {
+  energyThreshold: 100,
+  cost: 15,
+  chance: 0.3,
+  verticalReach: 1.3,
+} as const;
 export const MASOCHISM = {
   healthPerEnergy: [10, 9, 8, 7, 6],
   minHpFraction: [0.9, 0.8, 0.7, 0.6, 0.5],
@@ -177,6 +184,12 @@ export const STATS = {
   'armageddon.cooldown': stat('Перезарядка: Армагеддон, с', 180, duration),
   'armageddon.charge': stat('Подготовка: Армагеддон, с', 2.5, duration),
   'armageddon.duration': stat('Длительность: Армагеддон, с', 3, duration),
+  'lightningArrows.cost': stat('Стоимость: Стрелы молний', 90, integer),
+  'lightningArrows.cooldown': stat('Перезарядка: Стрелы молний, с', 30, duration),
+  'lightningArrows.jumps': stat('Перескоки: Стрелы молний', 1, { ...integer, max: 6 }),
+  'lightningArrows.delay': stat('Задержка: Стрелы молний, с', 0.5, { ...duration, min: 0.25 }),
+  'fireExplosion.chance': stat('Шанс: Огненный взрыв', 0, probability),
+  'fireExplosion.radius': stat('Радиус: Огненный взрыв, ширин линии', 0.33, decimal),
   'recharge.cost': stat('Стоимость: Перезарядка', 65, integer),
   'recharge.cooldown': stat('Перезарядка: Перезарядка, с', 300, duration),
   'adrenaline.cost': stat('Стоимость: Адреналин', 0, integer),

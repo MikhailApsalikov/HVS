@@ -2,6 +2,7 @@ import type { SpiderType } from '../types.js';
 import { WORLD } from '../rules/world.js';
 import { calculate } from '../rules/numbers.js';
 import { STATS } from '../rules/stats.js';
+import { SPIDERS } from '../../content/spiders.js';
 
 export class Spider {
   y = 0;
@@ -46,6 +47,14 @@ export class Spider {
   tickSlow(dt: number): void {
     this.slowTimer = Math.max(0, this.slowTimer - dt);
     if (this.slowTimer === 0) this.slowFactor = 1;
+  }
+  takeHit(power: number): number {
+    const damage = Math.min(this.hits, power);
+    this.hits -= damage;
+    if (this.hits <= 0) this.startDying();
+    else if (this.type === 'megaFat' || this.type === 'fat')
+      this.type = this.hits === SPIDERS.fat.hits ? 'fat' : 'normal';
+    return damage;
   }
   startDying(): void {
     if (!this.dying) {

@@ -195,10 +195,10 @@ describe('disorientation save compatibility', () => {
     addSpider(session, 'normal', 2, 0.5);
     const current = snapshot(session);
     const { disorientationTimer: _timer, ...state } = current.state;
-    const previous = { ...current, version: 22, state };
+    const previous = { ...current, abilities: current.abilities.slice(0, 12), version: 22, state };
     const parsed = parseSave(previous)!;
     expect(parsed).not.toBeNull();
-    expect(parsed.version).toBe(25);
+    expect(parsed.version).toBe(26);
     expect(parsed.state.disorientationTimer).toBe(0);
     expect(snapshot(restore(parsed))).toEqual(current);
     expect(parseSave({ ...previous, state: { ...state, disorientationTimer: 10 } })).toEqual(

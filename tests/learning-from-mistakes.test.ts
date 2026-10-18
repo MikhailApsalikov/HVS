@@ -287,6 +287,7 @@ describe('learning from mistakes saves', () => {
     } = saved.state;
     const previous = {
       ...saved,
+      abilities: saved.abilities.slice(0, 12),
       version: 22,
       state,
       talents: saved.talents.filter(({ id }) => id !== 'learningFromMistakes'),

@@ -1,5 +1,17 @@
 export type GameEvent =
   | {
+      readonly type: 'lightning';
+      readonly from: { readonly lane: number; readonly y: number };
+      readonly to: { readonly lane: number; readonly y: number };
+    }
+  | {
+      readonly type: 'fireExplosion';
+      readonly lane: number;
+      readonly y: number;
+      readonly radius: number;
+      readonly verticalRadius: number;
+    }
+  | {
       readonly type: 'coinDrop';
       readonly spiderId: string;
       readonly coins: number;

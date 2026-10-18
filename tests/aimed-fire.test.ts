@@ -286,7 +286,7 @@ describe('progression and compatibility', () => {
     },
   );
 
-  it('orders basic abilities by unlock level and assigns unique keys in the top keyboard row', () => {
+  it('orders basic abilities by unlock level and assigns unique physical keys', () => {
     const session = arena();
     const basic = ABILITY_DISPLAY_ORDER.filter((id) => !ABILITIES[id].talent);
     expect(basic.map((id) => [ABILITIES[id].unlockLevel, ABILITIES[id].key])).toEqual([
@@ -306,7 +306,7 @@ describe('progression and compatibility', () => {
       if (id === 'freeze') session.activateAbility(id);
     }
     expect(new Set(ABILITY_ORDER.map((id) => ABILITIES[id].key)).size).toBe(ABILITY_ORDER.length);
-    expect(ABILITY_DISPLAY_ORDER.map((id) => ABILITIES[id].key).join('')).toBe('QWERTYUIOP[]');
+    expect(ABILITY_DISPLAY_ORDER.map((id) => ABILITIES[id].key).join('')).toBe('QWFERTYUIOP[]');
     expect('volley' in TALENTS).toBe(false);
     expect(TALENTS.volleyMastery.prerequisite).toBeUndefined();
     expect(abilityDescription(session.state, 'aimedFire')).not.toContain('{');
@@ -341,7 +341,7 @@ describe('progression and compatibility', () => {
     expect(loaded.state.getAbility('aimedFire').isReady).toBe(true);
     expect(loaded.state.aimedFireWaves).toEqual([]);
     const current = snapshot(loaded);
-    expect(current.version).toBe(25);
+    expect(current.version).toBe(26);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 });

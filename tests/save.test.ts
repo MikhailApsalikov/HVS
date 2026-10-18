@@ -13,6 +13,7 @@ describe('saves and migration', () => {
     const saved = snapshot(session);
     const previous = {
       ...saved,
+      abilities: saved.abilities.slice(0, 12),
       version: 23,
       talents: [
         { id: 'criticalShot', rank: 7 },
@@ -46,6 +47,7 @@ describe('saves and migration', () => {
   it('refunds retired armor and primary attribute ranks from version 23 exactly once', () => {
     const previous = {
       ...snapshot(game(20)),
+      abilities: snapshot(game(20)).abilities.slice(0, 12),
       version: 23,
       talents: [
         { id: 'magicArmor', rank: 7 },
@@ -70,7 +72,7 @@ describe('saves and migration', () => {
     loaded.state.phase = 'levelUp';
     expect(loaded.upgradeTalent('magicArmor')).toBe(false);
     const saved = snapshot(loaded);
-    expect(saved.version).toBe(25);
+    expect(saved.version).toBe(26);
     expect(saved.talents.find(({ id }) => id === 'magicArmor')?.rank).toBe(5);
     expect(snapshot(restore(parseSave(saved)!, () => 0.999999))).toEqual(saved);
   });
@@ -87,6 +89,7 @@ describe('saves and migration', () => {
       const { hunterRewardTimer: _timer, ...previousState } = data.state;
       const parsed = parseSave({
         ...data,
+        abilities: data.abilities.slice(0, version >= 17 ? 12 : data.abilities.length),
         version,
         state: {
           ...previousState,
@@ -96,7 +99,7 @@ describe('saves and migration', () => {
         },
       });
       expect(parsed).not.toBeNull();
-      expect(parsed!.version).toBe(25);
+      expect(parsed!.version).toBe(26);
       const loaded = restore(parsed!, () => 0.999999);
       expect(loaded.state).toMatchObject({
         hunterRewardTimer: 0,
@@ -123,7 +126,7 @@ describe('saves and migration', () => {
         parseSave({
           ...data,
           version,
-          abilities: version === 3 ? data.abilities.slice(0, 8) : data.abilities,
+          abilities: version === 3 ? data.abilities.slice(0, 8) : data.abilities.slice(0, 12),
           state: { ...data.state, hunterRewardTimer: 15 },
         })!,
       );
@@ -170,6 +173,7 @@ describe('saves and migration', () => {
       const data = snapshot(game(50));
       const previous = {
         ...data,
+        abilities: data.abilities.slice(0, 12),
         version: 19,
         talents: [
           { id: 'criticalShot', rank: 10 },
@@ -185,7 +189,7 @@ describe('saves and migration', () => {
       };
       const parsed = parseSave(previous)!;
       expect(parsed).not.toBeNull();
-      expect(parsed.version).toBe(25);
+      expect(parsed.version).toBe(26);
       const loaded = restore(parsed, () => 0.999999);
       expect(loaded.talents.getRank('criticalShot')).toBe(5);
       expect(loaded.talents.getRank('killingStreak')).toBe(Math.min(rank, 8));
@@ -208,6 +212,7 @@ describe('saves and migration', () => {
     expect(
       parseSave({
         ...data,
+        abilities: data.abilities.slice(0, 12),
         version: 19,
         talents: [{ id: 'killingStreak', rank: 10 }],
         state: { ...data.state, killingStreakProgress: 10 },
@@ -220,6 +225,7 @@ describe('saves and migration', () => {
     const loaded = restore(
       parseSave({
         ...data,
+        abilities: data.abilities.slice(0, 12),
         version: 19,
         talents: [
           { id: 'killingStreak', rank: 1 },
@@ -298,7 +304,7 @@ describe('saves and migration', () => {
         inventory: ['c015', 'c015', 'missing', 'c009', 'c015', 'c009'],
         abilities: data.abilities.slice(0, version < 5 ? 8 : 9),
       })!;
-      expect(parsed.version).toBe(25);
+      expect(parsed.version).toBe(26);
       const loaded = restore(parsed);
       expect(loaded.items.inventory).toEqual(['c015', 'c009']);
       expect(loaded.state.coins).toBe(
@@ -350,7 +356,7 @@ describe('saves and migration', () => {
       },
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(25);
+    expect(parsed.version).toBe(26);
     const loaded = restore(parsed);
     expect(loaded.state.stats).toMatchObject({
       endurance: 79,

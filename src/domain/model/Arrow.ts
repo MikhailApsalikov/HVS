@@ -1,4 +1,4 @@
-import { CRITICAL_SHOT_POWER } from '../rules/stats.js';
+import { CRITICAL_SHOT_POWER, STATS } from '../rules/stats.js';
 
 export class Arrow {
   y = 1;
@@ -10,6 +10,8 @@ export class Arrow {
     readonly fromVolley = false,
     readonly critical = false,
     public power = critical ? CRITICAL_SHOT_POWER : 1,
+    public lightningJumps = 0,
+    public lightningDelay: number = STATS['lightningArrows.delay'].base,
   ) {}
   move(dt: number): void {
     this.previousY = this.y;

@@ -7,6 +7,8 @@ import {
   HUNTER_REWARD,
   IMPROVED_CRITICAL_SHOT_POWER,
   LEARNING_FROM_MISTAKES,
+  FIRE_EXPLOSION,
+  MAGIC_HIT_DAMAGE,
 } from '../domain/rules/stats.js';
 import { ABILITY_ORDER } from './abilities.js';
 
@@ -197,6 +199,40 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     },
     description:
       'Снижает скорость передвижения всех пауков на {scaling.base} + {scaling.value} за каждые {scaling.step} полных единиц интеллекта.\nЗамедление от этого таланта не может превышать 50%.',
+  },
+  lightningArrows: {
+    branch: 'magic',
+    column: 3,
+    name: 'Стрелы молний',
+    sprite: 'AbilityLightningArrows',
+    effects: [],
+  },
+  improvedLightning: {
+    branch: 'magic',
+    column: 3,
+    name: 'Улучшенные молнии',
+    sprite: 'TalentImprovedLightning',
+    prerequisite: { id: 'lightningArrows', rank: 1 },
+    effects: [flat('lightningArrows.jumps', 1), flat('lightningArrows.delay', -0.05)],
+    description:
+      'Увеличивает число перескоков «Стрел молний» на {lightningArrows.jumps} и снижает задержку между ними на {lightningArrows.delay} с.',
+  },
+  fireExplosion: {
+    branch: 'magic',
+    column: 2,
+    name: 'Огненный взрыв',
+    sprite: 'TalentFireExplosion',
+    effects: [flat('fireExplosion.radius', 0.12)],
+    fixedEffects: [flat('fireExplosion.chance', FIRE_EXPLOSION.chance)],
+    description: `При убийстве паука стрелой, включая стрелы «Залпа», если у вас больше ${FIRE_EXPLOSION.energyThreshold} энергии, с вероятностью ${FIRE_EXPLOSION.chance * 100}% на месте убийства происходит взрыв за ${FIRE_EXPLOSION.cost} энергии.\nНаносит ${MAGIC_HIT_DAMAGE} урона всем живым паукам в радиусе {explosionRadius} ширины линии; вдоль линии область на ${Math.round((FIRE_EXPLOSION.verticalReach - 1) * 100)}% больше. Радиус растёт с рангом; с 6-го ранга достаёт до соседних линий. Убийства молнией, взрывом и другими способностями взрывов не вызывают.`,
+  },
+  improvedArmageddon: {
+    branch: 'magic',
+    name: 'Улучшенный армагеддон',
+    sprite: 'TalentImprovedArmageddon',
+    effects: [flat('armageddon.cooldown', -10), flat('armageddon.duration', 0.5)],
+    description:
+      'Снижает перезарядку «Армагеддона» на {armageddon.cooldown} с и увеличивает его длительность на {armageddon.duration} с.',
   },
   titanPreparation: {
     branch: 'shooting',

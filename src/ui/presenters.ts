@@ -106,6 +106,11 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
       if (key === 'streakInterval')
         return formatSeconds(talentEffectValue(id, rank, 'killingStreak.interval'));
       if (key === 'streakBaseStacks') return String(STATS['killingStreak.maxStacks'].base);
+      if (key === 'explosionRadius')
+        return formatStat(
+          'fireExplosion.radius',
+          talentEffectValue(id, rank, 'fireExplosion.radius'),
+        );
       if (key === 'scaling.step') return String(definition.scaling!.step);
       if (key === 'scaling.percent')
         return String(Number((definition.scaling!.effect.value * rank * 100).toFixed(4)));
@@ -123,6 +128,8 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
       const amount = Math.abs(effect.value);
       if (effect.kind === 'percent') return `${Number(amount.toFixed(4))}%`;
       if (effect.stat === 'blizzard.slow') return percentagePoints(amount);
+      if (effect.stat.endsWith('.duration'))
+        return String(Number(amount.toFixed(STATS[effect.stat].policy.digits)));
       return formatStat(effect.stat, amount);
     });
   const abilityId = ABILITY_ORDER.find((abilityId) => ABILITIES[abilityId].talent === id)!;
@@ -204,7 +211,9 @@ function abilityEffectDescription(id: AbilityId, stats: ResolvedStats): string {
   return fillDescription(description, (key) =>
     key === 'endurancePercent'
       ? formatStat('blockChance', ATTRIBUTE_RULES.endurance.lastHopeBlockPerPoint)
-      : formatStat(key as StatId, stats[key as StatId]),
+      : key.endsWith('.duration')
+        ? String(Number(stats[key as StatId].toFixed(STATS[key as StatId].policy.digits)))
+        : formatStat(key as StatId, stats[key as StatId]),
   );
 }
 function abilityUsageDescription(id: AbilityId, stats: ResolvedStats): string {

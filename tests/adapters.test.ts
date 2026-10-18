@@ -72,6 +72,27 @@ describe('browser loop without a browser', () => {
 });
 
 describe('application orchestration', () => {
+  it('forwards lightning impact and jump events to the field feedback callback', () => {
+    const session = game(60);
+    session.talents.loadFromSave([{ id: 'lightningArrows', rank: 1 }]);
+    session.refreshStats();
+    session.state.energy = session.state.maxEnergy;
+    session.activateAbility('lightningArrows');
+    addSpider(session, 'normal', 0, 0.94);
+    addSpider(session, 'normal', 1, 0.1);
+    session.shootLane(0);
+    const frames = new Frames();
+    const saves = new SaveSystem(new MemoryStorage());
+    saves.save(session);
+    const engine = new GameEngine(vi.fn(), saves, new FrameLoop(frames));
+    const feedback = vi.fn();
+    engine.setMagicEffectCallback(feedback);
+    expect(engine.loadGame()).toBe(true);
+    frames.advance(0);
+    for (let frame = 1; frame <= 40; frame++) frames.advance((frame * 1000) / 60);
+    expect(feedback.mock.calls.filter(([event]) => event.type === 'lightning')).toHaveLength(2);
+    engine.stopLoop();
+  });
   it.each([
     ['', undefined, undefined],
     ['?test=50&money=1000', 50, 1000],

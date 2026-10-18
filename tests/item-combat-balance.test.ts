@@ -221,13 +221,14 @@ describe('version 20 shield rank migration through session restoration', () => {
     const previous = snapshot(session);
     const parsed = parseSave({
       ...previous,
+      abilities: previous.abilities.slice(0, 12),
       version: 20,
       talents: previous.talents.map((talent) =>
         talent.id === 'shieldBlock' ? { ...talent, rank: 8 } : talent,
       ),
     });
     expect(parsed).not.toBeNull();
-    expect(parsed!.version).toBe(25);
+    expect(parsed!.version).toBe(26);
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('shieldBlock')).toBe(7);
     expect(loaded.talents.getRank('improvedLastHope')).toBe(3);
@@ -244,7 +245,9 @@ describe('version 20 shield rank migration through session restoration', () => {
     learn(session, 'endurance', 7);
     learn(session, 'shieldBlock', rank);
     const previous = snapshot(session);
-    const loaded = restore(parseSave({ ...previous, version: 20 })!);
+    const loaded = restore(
+      parseSave({ ...previous, abilities: previous.abilities.slice(0, 12), version: 20 })!,
+    );
     expect(loaded.talents.getRank('shieldBlock')).toBe(rank);
     expect(loaded.state.pendingTalentPoints).toBe(previous.state.pendingTalentPoints);
     expect(snapshot(loaded)).toEqual(previous);

@@ -571,6 +571,7 @@ describe('debuff save compatibility', () => {
       const current = snapshot(session);
       const previous = {
         ...current,
+        abilities: current.abilities.slice(0, 12),
         version: 18,
         state: {
           ...current.state,
@@ -581,7 +582,7 @@ describe('debuff save compatibility', () => {
       };
       const parsed = parseSave(previous)!;
       expect(parsed).not.toBeNull();
-      expect(parsed.version).toBe(25);
+      expect(parsed.version).toBe(26);
       expect(parsed.state).toEqual({ ...previous.state, poisonTimer: expectedTimer });
       const loaded = restore(parsed, () => 0.999999);
       expect(loaded.state.stats['poison.tickDamage']).toBe(180);
@@ -613,7 +614,7 @@ describe('debuff save compatibility', () => {
       ...state
     } = current.state;
     void [goldLockTimer, healingReductionTimer, poisonTimer, poisonTickTimer, poisonDamage];
-    const previous = { ...current, version: 17, state };
+    const previous = { ...current, abilities: current.abilities.slice(0, 12), version: 17, state };
     const migrated = parseSave(previous)!;
     expect(migrated).toEqual(current);
     const loaded = restore(migrated);

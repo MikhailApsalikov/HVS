@@ -6,17 +6,23 @@ import { WORLD } from '../rules/world.js';
 import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
 import { Arrow } from '../model/Arrow.js';
 import { AIMED_FIRE } from '../rules/stats.js';
-import { createArrow } from './ArrowFactory.js';
+import { chargeArrow, createArrow } from './ArrowFactory.js';
 import { clearDebuffs, clearSpiderDebuffs } from './DebuffSystem.js';
 
 type Effect = (state: GameState, random: RandomSource) => void;
 export function fireVolley(state: GameState, random: RandomSource): void {
   for (const lane of pickLanes(random, state.stats['volley.lanes'], WORLD.lanes)) {
-    const arrow = new Arrow(state.newId('arrow'), lane, state.stats.arrowSpeed, true);
+    const arrow = chargeArrow(
+      state,
+      new Arrow(state.newId('arrow'), lane, state.stats.arrowSpeed, true),
+    );
     state.arrows.set(arrow.id, arrow);
   }
 }
 const EFFECTS: Record<AbilityId, Effect> = {
+  lightningArrows: (state) => {
+    state.lightningCharges.fill(true);
+  },
   freeze: (state) => {
     state.freezeActive = true;
     state.phase = 'paused';
@@ -120,13 +126,13 @@ export function tickAbilities(state: GameState, dt: number): void {
   for (const spider of state.spiders.values()) spider.tickSlow(dt);
   if (state.armageddonPhase === 'none') return;
   state.armageddonTimer -= dt;
-  if (state.armageddonPhase === 'charging' && state.armageddonTimer <= 0) {
+  if (state.armageddonPhase === 'charging' && state.armageddonTimer <= 1e-9) {
     state.armageddonPhase = 'firing';
     state.armageddonTimer += state.stats['armageddon.duration'];
   }
   if (state.armageddonPhase === 'firing') {
     for (const spider of state.spiders.values()) spider.startDying();
-    if (state.armageddonTimer <= 0) {
+    if (state.armageddonTimer <= 1e-9) {
       state.armageddonPhase = 'none';
       state.armageddonTimer = 0;
     }

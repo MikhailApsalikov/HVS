@@ -88,13 +88,18 @@ describe('retired cheap equipment in previous-version saves', () => {
     ['c022', 91],
   ] as const)('refunds every removed %s once at its former full price', (id, refund) => {
     const session = new GameSession('normal');
-    const previous = { ...snapshot(session), version: 20, inventory: [id, id] };
+    const previous = {
+      ...snapshot(session),
+      abilities: snapshot(session).abilities.slice(0, 12),
+      version: 20,
+      inventory: [id, id],
+    };
     const loaded = restore(parseSave(previous)!);
     expect(loaded.items.inventory).toEqual([]);
     expect(loaded.state.coins).toBe(session.state.coins + refund * 2);
     expect(loaded.buyItem(id)).toBe(false);
     const saved = snapshot(loaded);
-    expect(saved.version).toBe(25);
+    expect(saved.version).toBe(26);
     expect(snapshot(restore(parseSave(saved)!))).toEqual(saved);
   });
 });

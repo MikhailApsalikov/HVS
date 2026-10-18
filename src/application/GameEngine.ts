@@ -11,6 +11,9 @@ import { GameSession, type NewGameOptions } from '../domain/GameSession.js';
 import { restore } from '../domain/save.js';
 import { FrameLoop } from '../infrastructure/browser/FrameLoop.js';
 import { SaveSystem } from '../infrastructure/storage/SaveSystem.js';
+import type { GameEvent } from '../domain/events.js';
+
+export type MagicEffectEvent = Extract<GameEvent, { type: 'lightning' | 'fireExplosion' }>;
 
 /** Coordinates a session, persistence and rendering; contains no game formulas. */
 export class GameEngine {
@@ -31,6 +34,7 @@ export class GameEngine {
   private resourceGain:
     ((id: string, hp: number, energy: number, reason: 'kill' | 'breach') => void) | null = null;
   private absorb: (() => void) | null = null;
+  private magicEffect: ((event: MagicEffectEvent) => void) | null = null;
   constructor(
     private readonly render: (state: GameState) => void,
     private readonly saves: SaveSystem,
@@ -52,6 +56,9 @@ export class GameEngine {
   }
   setAbsorbCallback(callback: () => void): void {
     this.absorb = callback;
+  }
+  setMagicEffectCallback(callback: NonNullable<GameEngine['magicEffect']>): void {
+    this.magicEffect = callback;
   }
   getState(): GameState | null {
     return this.session?.state ?? null;
@@ -136,6 +143,8 @@ export class GameEngine {
             );
           else if (event.type === 'resourceGain')
             this.resourceGain?.(event.spiderId, event.hp, event.energy, event.reason);
+          else if (event.type === 'lightning' || event.type === 'fireExplosion')
+            this.magicEffect?.(event);
           else this.absorb?.();
         }
         this.render(state);

@@ -12,6 +12,7 @@ import { ItemSystem } from './model/ItemSystem.js';
 import { createArrow } from './systems/ArrowFactory.js';
 import { activateAbility, tickAbilities, tickAimedFire } from './systems/AbilitySystem.js';
 import { tickAntiAfk } from './systems/AntiAfkSystem.js';
+import { resolveArrowExplosions, tickChainLightning } from './systems/MagicSystem.js';
 import {
   learningModifiers,
   nextLearningBoundary,
@@ -240,6 +241,7 @@ export class GameSession {
         nextBuffBoundary(this.state),
         nextLearningBoundary(this.state),
         ...this.state.aimedFireWaves.map((wave) => wave.remaining),
+        ...this.state.chainLightning.map((chain) => chain.remaining),
       );
       this.tickStep(step);
       remaining = Math.max(0, remaining - step);
@@ -271,7 +273,9 @@ export class GameSession {
     )
       this.refreshStats(false);
     moveSpiders(state, dt, this.random);
-    tickArrows(state, dt);
+    tickChainLightning(state, dt, this.random, emit);
+    const arrowKills = tickArrows(state, dt, this.random, emit);
+    resolveArrowExplosions(state, arrowKills, this.random, emit);
     resolveBreaches(
       state,
       this.random,

@@ -121,9 +121,11 @@ describe('shooting and magic talent progression', () => {
     buy(session, 'hunterMastery', 5);
     buy(session, 'improvedAgility', 5);
     buy(session, 'criticalShot', 5);
-    expect(session.talents.getTalent('blizzardMastery').tier).toBe(2);
+    expect(session.talents.getTalent('blizzardMastery').tier).toBe(4);
     buy(session, 'improvedIntellect', 5);
     buy(session, 'hunterArsenal', 2);
+    expect(session.upgradeTalent('blizzardMastery')).toBe(false);
+    buy(session, 'permafrost', 2);
     buy(session, 'blizzardMastery', 1);
     expect(session.state.stats['blizzard.slow']).toBe(0.47);
     expect(session.state.stats['blizzard.duration']).toBe(5);
@@ -360,7 +362,7 @@ describe('critical shot saves', () => {
       spiders: previousSpiders(saved),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(25);
+    expect(parsed.version).toBe(26);
     const loaded = restore(parsed);
     expect(loaded.talents.getRank('hunterMastery')).toBe(5);
     expect(loaded.state.stats.shootCost).toBe(25);

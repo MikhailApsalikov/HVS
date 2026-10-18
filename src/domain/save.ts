@@ -63,6 +63,8 @@ const STATE_FIELDS = [
   'killingStreakProgress',
   'killingStreakDecayProgress',
   'aimedFireWaves',
+  'lightningCharges',
+  'chainLightning',
   'antiAfkIdleTimer',
   'antiAfkStacks',
   'antiAfkRecoveryTimer',
@@ -95,14 +97,23 @@ type SavedSpider = Pick<
 >;
 type SavedArrow = Pick<
   Arrow,
-  'id' | 'lane' | 'speed' | 'fromVolley' | 'critical' | 'power' | 'y' | 'previousY'
+  | 'id'
+  | 'lane'
+  | 'speed'
+  | 'fromVolley'
+  | 'critical'
+  | 'power'
+  | 'y'
+  | 'previousY'
+  | 'lightningJumps'
+  | 'lightningDelay'
 >;
 interface SavedCooldown {
   readonly duration: number;
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 25;
+  readonly version: 26;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -118,8 +129,9 @@ export interface SaveData {
 export function snapshot(session: GameSession): SaveData {
   const state = session.state;
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
+  fields.lightningCharges = [...state.lightningCharges];
   return {
-    version: 25,
+    version: 26,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -183,6 +195,12 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
     state.antiAfkRecoveryTimer = 0;
   }
   const minimumDuration = STATS.levelDuration.policy.min!;
+  state.lightningCharges =
+    data.version < 26
+      ? Array.from({ length: WORLD.lanes }, () => false)
+      : [...data.state.lightningCharges];
+  state.chainLightning =
+    data.version < 26 ? [] : data.state.chainLightning.map((chain) => ({ ...chain }));
   if (state.levelTimerMax < minimumDuration) {
     if (state.levelTimer > 0) state.levelTimer += minimumDuration - state.levelTimerMax;
     state.levelTimerMax = minimumDuration;
@@ -224,6 +242,8 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
       entry.fromVolley,
       entry.critical,
       entry.power,
+      data.version < 26 ? 0 : entry.lightningJumps,
+      data.version < 26 ? STATS['lightningArrows.delay'].base : entry.lightningDelay,
     );
     arrow.y = entry.y;
     arrow.previousY = entry.previousY;
@@ -294,6 +314,10 @@ export function parseSave(value: unknown): SaveData | null {
         (state.killingStreakExcess > 0 && state.stats['prep.stacks'] === 0) ||
         (state.killingStreakExcess === 0 && state.killingStreakDecayProgress > 0) ||
         (state.aimedFireWaves.length > 0 && !state.isAbilityUnlocked('aimedFire')) ||
+        ((state.chainLightning.length > 0 ||
+          state.lightningCharges.some(Boolean) ||
+          [...state.arrows.values()].some((arrow) => arrow.lightningJumps > 0)) &&
+          !state.isAbilityUnlocked('lightningArrows')) ||
         state.killingStreakProgress >= state.stats['killingStreak.interval'] ||
         (state.killingStreakFull && state.killingStreakProgress > 0) ||
         (!state.killingStreakLearned && state.killingStreakProgress > 0)
@@ -310,19 +334,45 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (!object(value) || !member(value.difficulty, DIFFICULTIES)) return null;
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
   if (
-    ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25].includes(
-      value.version as number,
-    ) ||
+    ![
+      3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+    ].includes(value.version as number) ||
     !object(value.state)
   )
     return null;
   const state = value.state;
   if (
-    value.version === 25 &&
+    (value.version as number) >= 25 &&
     (!number(state.stunTimer) ||
       !number(state.level) ||
       state.stunTimer > stunDuration(state.level) ||
       (state.level < PIERCING_STRIKE.unlockLevel && state.stunTimer > 0))
+  )
+    return null;
+  if (
+    (value.version as number) >= 26 &&
+    (!arrayOf(state.lightningCharges, (charge) => typeof charge === 'boolean') ||
+      state.lightningCharges.length !== WORLD.lanes ||
+      !arrayOf(
+        state.chainLightning,
+        (chain) =>
+          object(chain) &&
+          typeof chain.sourceId === 'string' &&
+          /^spider-\d+$/.test(chain.sourceId) &&
+          typeof chain.targetId === 'string' &&
+          /^spider-\d+$/.test(chain.targetId) &&
+          lane(chain.sourceLane) &&
+          number(chain.sourceY) &&
+          integer(chain.jumps) &&
+          chain.jumps > 0 &&
+          chain.jumps <= STATS['lightningArrows.jumps'].policy.max! &&
+          number(chain.delay) &&
+          chain.delay >= STATS['lightningArrows.delay'].policy.min! &&
+          chain.delay <= STATS['lightningArrows.delay'].base &&
+          number(chain.remaining) &&
+          chain.remaining > 0 &&
+          chain.remaining <= chain.delay,
+      ))
   )
     return null;
   if (
@@ -521,7 +571,9 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     !arrayOf(value.abilities, cooldown) ||
     value.abilities.length !==
       ((value.version as number) >= 17
-        ? ABILITY_ORDER.length
+        ? (value.version as number) >= 26
+          ? ABILITY_ORDER.length
+          : 12
         : (value.version as number) >= 11
           ? 11
           : (value.version as number) >= 7
@@ -576,6 +628,12 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
         number(entry.y) &&
         number(entry.previousY) &&
         typeof entry.fromVolley === 'boolean' &&
+        ((value.version as number) < 26 ||
+          (integer(entry.lightningJumps) &&
+            entry.lightningJumps <= STATS['lightningArrows.jumps'].policy.max! &&
+            number(entry.lightningDelay) &&
+            entry.lightningDelay >= STATS['lightningArrows.delay'].policy.min! &&
+            entry.lightningDelay <= STATS['lightningArrows.delay'].base)) &&
         ((value.version as number) < 9 ||
           (typeof entry.critical === 'boolean' &&
             ((value.version as number) >= 17 || !entry.critical || !entry.fromVolley))) &&
@@ -676,6 +734,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     return snapshot(restore(upgradeHunterRewardSave(value)));
   if (value.version === 22) return snapshot(restore(upgradeDisorientationSave(value)));
   if (value.version === 24) return snapshot(restore(value as unknown as SaveData));
+  if (value.version === 25) return snapshot(restore(value as unknown as SaveData));
   return value as unknown as SaveData;
 }
 

@@ -1,6 +1,6 @@
 import type { AbilityId, TalentId } from '../domain/types.js';
 import type { StatId } from '../domain/rules/stats.js';
-import { AIMED_FIRE } from '../domain/rules/stats.js';
+import { AIMED_FIRE, MAGIC_HIT_DAMAGE } from '../domain/rules/stats.js';
 
 interface AbilityDefinition {
   readonly name: string;
@@ -139,12 +139,21 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     effectStat: 'aimedFire.waves',
     effectKind: 'flat',
   },
+  lightningArrows: {
+    name: 'Стрелы молний',
+    key: 'F',
+    sprite: 'AbilityLightningArrows',
+    unlockLevel: 10,
+    talent: 'lightningArrows',
+    description: `Заряжает все 9 орудий: первая выпущенная стрела каждой линии становится электрической. Заряды сохраняются до выстрела и не складываются при повторном применении.\nПри первом попадании запускает цепную молнию: {lightningArrows.jumps} перескоков с задержкой {lightningArrows.delay} с, по ${MAGIC_HIT_DAMAGE} урона за попадание.\nКаждый раз случайно выбирает живого паука на соседней слева или справа линии, на любом расстоянии от вас. Может вернуться к уже поражённому живому пауку.`,
+  },
 };
 /** Stable storage order; the HUD has its own order by level, then keyboard position. */
 export const ABILITY_ORDER = Object.keys(ABILITIES) as AbilityId[];
 export const ABILITY_DISPLAY_ORDER: readonly AbilityId[] = [
   'freeze',
   'volley',
+  'lightningArrows',
   'prep',
   'heal',
   'blizzard',

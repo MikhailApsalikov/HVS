@@ -3,6 +3,7 @@ import type { GameField } from '../src/ui/components/GameField.js';
 import type { SpriteRegistry } from '../src/ui/SpriteRegistry.js';
 import { StandShieldOverlay } from '../src/ui/overlays/StandShieldOverlay.js';
 import { addSpider, game } from './helpers.js';
+import { GameSession } from '../src/domain/GameSession.js';
 
 class ElementDouble {
   className = '';
@@ -13,7 +14,7 @@ class ElementDouble {
   style = { top: '', setProperty: vi.fn() };
   children: ElementDouble[] = [];
   private parent: ElementDouble | null = null;
-  private listeners = new Map<string, (() => void)[]>();
+  private listeners = new Map<string, ((event: { target: ElementDouble }) => void)[]>();
   classList = {
     contains: (name: string) => this.className.split(' ').includes(name),
     toggle: (name: string, active: boolean) => {
@@ -41,11 +42,11 @@ class ElementDouble {
     if (this.parent) this.parent.children = this.parent.children.filter((child) => child !== this);
     this.parent = null;
   }
-  addEventListener(name: string, listener: () => void): void {
+  addEventListener(name: string, listener: (event: { target: ElementDouble }) => void): void {
     this.listeners.set(name, [...(this.listeners.get(name) ?? []), listener]);
   }
-  finishAnimation(): void {
-    this.listeners.get('animationend')?.forEach((listener) => listener());
+  finishAnimation(target: ElementDouble = this): void {
+    this.listeners.get('animationend')?.forEach((listener) => listener({ target }));
   }
 }
 
@@ -73,6 +74,80 @@ function lane(index = 0): ElementDouble {
 }
 
 describe('combat feedback without a browser', () => {
+  it('shows charged archers, electric arrows and the chain from semantic combat events', () => {
+    const session = game(60);
+    session.talents.loadFromSave([{ id: 'lightningArrows', rank: 1 }]);
+    session.refreshStats();
+    session.state.energy = session.state.maxEnergy;
+    expect(session.activateAbility('lightningArrows')).toBe('activated');
+    field.render(session.state);
+    const archers = field.getArchersRow() as unknown as ElementDouble;
+    expect(
+      archers.children.every(({ children }) =>
+        children[0].classList.contains('archer-btn--lightning'),
+      ),
+    ).toBe(true);
+    addSpider(session, 'normal', 0, 0.94);
+    addSpider(session, 'normal', 1, 0.1);
+    session.shootLane(0);
+    field.render(session.state);
+    expect(lane().children.some((element) => element.classList.contains('arrow--lightning'))).toBe(
+      true,
+    );
+    expect(archers.children[0].children[0].classList.contains('archer-btn--lightning')).toBe(false);
+    session.tick(0.04);
+    session.tick(0.5);
+    for (const event of session.drainEvents())
+      if (event.type === 'lightning') field.showMagicEffect(event);
+    const effects = field.getEffectsContainer() as unknown as ElementDouble;
+    expect(effects.children).toHaveLength(2);
+    expect(effects.children[1].innerHTML).toContain('lightning-chain__core');
+    expect(effects.children[1].innerHTML).toContain('lightning-impact');
+    expect(effects.children[1].style.setProperty).toHaveBeenCalledWith('--target-y', '10%');
+    effects.children[0].finishAnimation(new ElementDouble());
+    expect(effects.children).toHaveLength(2);
+    effects.children[0].finishAnimation();
+    expect(effects.children).toHaveLength(1);
+    field.reset();
+    expect(effects.children).toHaveLength(0);
+  });
+  it('sizes the fire burst from the actual explosion radius and removes it after the animation', () => {
+    const session = game(60);
+    session.talents.loadFromSave([{ id: 'fireExplosion', rank: 6 }]);
+    session.refreshStats();
+    // Trigger a deterministic roll through a saved public session.
+    const loaded = new GameSession('normal', () => 0, { level: 60 });
+    loaded.talents.loadFromSave(session.talents.toSaveData());
+    loaded.refreshStats();
+    loaded.state.phase = 'playing';
+    loaded.state.energy = loaded.state.maxEnergy;
+    const source = addSpider(loaded, 'normal', 0, 0.94);
+    loaded.state.character.setModifiers('test:free', [
+      { stat: 'shootCost', kind: 'percent', value: -100 },
+    ]);
+    loaded.refreshStats();
+    loaded.shootLane(0);
+    loaded.tick(0.04);
+    expect(source.dying).toBe(true);
+    const event = loaded.drainEvents().find((event) => event.type === 'fireExplosion');
+    expect(event?.type).toBe('fireExplosion');
+    if (event?.type !== 'fireExplosion') return;
+    field.showMagicEffect(event);
+    const effects = field.getEffectsContainer() as unknown as ElementDouble;
+    expect(effects.children[0].innerHTML).toContain('fire-explosion');
+    expect(effects.children[0].style.setProperty).toHaveBeenCalledWith(
+      '--blast-diameter',
+      `${((1.05 * 2) / 9) * 100}%`,
+    );
+    expect(effects.children[0].style.setProperty).toHaveBeenCalledWith(
+      '--blast-height',
+      `${((1.05 * 1.3 * 2) / 9) * 100}%`,
+    );
+    expect(effects.children[0].innerHTML).toContain('fire-explosion__flame');
+    expect(effects.children[0].innerHTML).toContain('fire-explosion__ember');
+    effects.children[0].finishAnimation();
+    expect(effects.children).toHaveLength(0);
+  });
   it('disables all archer buttons while stunned and restores them when stun expires', () => {
     const session = game(260);
     session.state.character.setModifiers('stun:arena', [

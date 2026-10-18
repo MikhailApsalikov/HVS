@@ -21,6 +21,15 @@ export interface AimedFireWave {
   readonly remaining: number;
   readonly guaranteedCritical: boolean;
 }
+export interface ChainLightning {
+  readonly sourceId: string;
+  readonly sourceLane: number;
+  readonly sourceY: number;
+  readonly targetId: string;
+  readonly remaining: number;
+  readonly jumps: number;
+  readonly delay: number;
+}
 
 export class GameState {
   phase: GamePhase = 'levelUp';
@@ -61,6 +70,8 @@ export class GameState {
   killingStreakProgress = 0;
   killingStreakDecayProgress = 0;
   aimedFireWaves: readonly AimedFireWave[] = [];
+  lightningCharges = Array.from({ length: WORLD.lanes }, () => false);
+  chainLightning: readonly ChainLightning[] = [];
   antiAfkIdleTimer = 0;
   antiAfkStacks = 0;
   antiAfkRecoveryTimer = 0;

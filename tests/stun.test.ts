@@ -226,6 +226,7 @@ describe('piercing stun through session commands', () => {
         { id: 'lastHope', rank: 1 },
         { id: 'aimedFire', rank: 1 },
         { id: 'adrenaline', rank: 1 },
+        { id: 'lightningArrows', rank: 1 },
       ]);
       hit(session);
       const before = snapshot(session);
@@ -322,9 +323,14 @@ describe('stun save compatibility', () => {
     session.activateAbility('eagleEye');
     const saved = snapshot(session);
     const { stunTimer: _stun, ...state } = saved.state;
-    const parsed = parseSave({ ...saved, version: 24, state })!;
+    const parsed = parseSave({
+      ...saved,
+      abilities: saved.abilities.slice(0, 12),
+      version: 24,
+      state,
+    })!;
     expect(parsed).not.toBeNull();
-    expect(parsed.version).toBe(25);
+    expect(parsed.version).toBe(26);
     const loaded = restore(parsed);
     expect(loaded.state.stunTimer).toBe(0);
     expect(loaded.state.eagleEyeShots).toBe(5);

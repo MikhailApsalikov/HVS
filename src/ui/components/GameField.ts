@@ -5,6 +5,8 @@ import type { HUD } from './GameHud.js';
 import { WORLD } from '../../domain/rules/world.js';
 import { IMPROVED_CRITICAL_SHOT_POWER } from '../../domain/rules/stats.js';
 import { TooltipManager } from './TooltipManager.js';
+import type { GameEvent } from '../../domain/events.js';
+import { chainLightningMarkup, electricWrap, fireExplosionMarkup } from '../magicEffects.js';
 
 const SPIDER_SPRITE_MAP: Record<Spider['type'], string> = {
   normal: 'SpiderNormal',
@@ -27,6 +29,7 @@ export class GameField {
   private _lanes: HTMLElement[] = [];
   private _spiderElements: Map<string, HTMLElement> = new Map();
   private _arrowElements: Map<string, HTMLElement> = new Map();
+  private readonly _magicElements = new Set<HTMLElement>();
   private _archerButtons: HTMLElement[] = [];
   private readonly _spriteRegistry: SpriteRegistry;
   private _hud: HUD | null = null;
@@ -88,6 +91,10 @@ export class GameField {
       iconWrap.className = 'archer-btn__icon';
       iconWrap.innerHTML = this._spriteRegistry.get('Archer');
       btn.appendChild(iconWrap);
+      const electricity = document.createElement('span');
+      electricity.className = 'electric-wrap electric-wrap--archer';
+      electricity.innerHTML = electricWrap('archer');
+      btn.appendChild(electricity);
       const laneNum = i + 1;
       btn.addEventListener('mouseenter', () => {
         const html = this._hud?.getShootTooltipHtml(laneNum);
@@ -118,6 +125,7 @@ export class GameField {
         const cdPct = archer.cooldownFraction * 100;
         btn.style.setProperty('--cd-pct', `${cdPct}%`);
         btn.classList.toggle('archer-btn--cooldown', !archer.isReady);
+        btn.classList.toggle('archer-btn--lightning', state.lightningCharges[i]);
       }
     }
   }
@@ -185,6 +193,7 @@ export class GameField {
       el.style.setProperty('--y', String(arrow.y));
       el.classList.toggle('arrow--critical', arrow.power > 1);
       el.classList.toggle('arrow--triple', arrow.power === IMPROVED_CRITICAL_SHOT_POWER);
+      el.classList.toggle('arrow--lightning', arrow.lightningJumps > 0);
     }
     for (const [id, el] of this._arrowElements) {
       if (!currentIds.has(id)) {
@@ -197,7 +206,7 @@ export class GameField {
   private _createArrowElement(): HTMLElement {
     const div = document.createElement('div');
     div.className = 'arrow';
-    div.innerHTML = this._spriteRegistry.get('Arrow');
+    div.innerHTML = `${this._spriteRegistry.get('Arrow')}<span class="electric-wrap electric-wrap--arrow">${electricWrap('arrow')}</span>`;
     return div;
   }
 
@@ -214,11 +223,41 @@ export class GameField {
     this._spiderElements.clear();
     this._arrowElements.clear();
     this._lastSpiderPositions.clear();
+    for (const element of this._magicElements) element.remove();
+    this._magicElements.clear();
     this._tooltip.hide();
   }
 
   public getArchersRow(): HTMLElement {
     return this._archersRow;
+  }
+
+  public showMagicEffect(event: Extract<GameEvent, { type: 'lightning' | 'fireExplosion' }>): void {
+    const element = document.createElement('div');
+    element.className = `magic-effect magic-effect--${event.type}`;
+    if (event.type === 'lightning') {
+      const from = { x: (event.from.lane + 0.5) * 100, y: event.from.y * 900 };
+      const to = { x: (event.to.lane + 0.5) * 100, y: event.to.y * 900 };
+      element.innerHTML = chainLightningMarkup(from, to);
+      element.style.setProperty('--target-x', `${((event.to.lane + 0.5) / WORLD.lanes) * 100}%`);
+      element.style.setProperty('--target-y', `${event.to.y * 100}%`);
+    } else {
+      element.style.setProperty('--target-x', `${((event.lane + 0.5) / WORLD.lanes) * 100}%`);
+      element.style.setProperty('--target-y', `${event.y * 100}%`);
+      element.style.setProperty('--blast-diameter', `${((event.radius * 2) / WORLD.lanes) * 100}%`);
+      element.style.setProperty(
+        '--blast-height',
+        `${((event.verticalRadius * 2) / WORLD.lanes) * 100}%`,
+      );
+      element.innerHTML = fireExplosionMarkup();
+    }
+    this._magicElements.add(element);
+    this._effects.appendChild(element);
+    element.addEventListener('animationend', (animation) => {
+      if (animation.target !== element) return;
+      element.remove();
+      this._magicElements.delete(element);
+    });
   }
 
   public showCoinDrop(spiderId: string, coins: number, isJackpot: boolean = false): void {

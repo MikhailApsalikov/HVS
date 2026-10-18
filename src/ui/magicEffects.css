@@ -1,0 +1,354 @@
+.magic-effect {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: magic-effect-life 0.85s linear both;
+}
+.lightning-chain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.lightning-chain path {
+  vector-effect: non-scaling-stroke;
+}
+.lightning-chain__stroke {
+  animation: lightning-discharge 0.42s steps(1) both;
+}
+.lightning-chain__stroke--2 {
+  animation-delay: 0.045s;
+}
+.lightning-chain__glow {
+  stroke: #3899ff;
+  stroke-width: 7;
+  opacity: 0.35;
+  filter: blur(2px);
+}
+.lightning-chain__blue {
+  stroke: #69cfff;
+  stroke-width: 2.6;
+  filter: drop-shadow(0 0 3px #69dfff);
+}
+.lightning-chain__core {
+  stroke: #f3fdff;
+  stroke-width: 1;
+}
+.lightning-chain__branch {
+  stroke: #b8eaff;
+  stroke-width: 0.7;
+  opacity: 0.75;
+}
+.lightning-impact {
+  position: absolute;
+  left: var(--target-x);
+  top: var(--target-y);
+  width: 82px;
+  height: 82px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #e5faff99, #69cfff22 38%, transparent 68%);
+  animation: lightning-impact 0.55s ease-out both;
+}
+.electric-wrap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: none;
+}
+.electric-wrap--archer {
+  inset: 0 -2px -3px;
+}
+.archer-btn--lightning .electric-wrap,
+.arrow--lightning .electric-wrap {
+  display: block;
+}
+.electric-arcs {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.electric-arcs__thread {
+  animation: electric-crawl 0.73s steps(1) infinite;
+}
+.electric-arcs__thread--1 {
+  animation-delay: -0.21s;
+}
+.electric-arcs__thread--2 {
+  animation-delay: -0.46s;
+}
+.electric-arcs__thread--3 {
+  animation-delay: -0.61s;
+}
+.electric-arcs__halo {
+  stroke: #48b8ff;
+  stroke-width: 2.8;
+  opacity: 0.65;
+  filter: blur(1px);
+}
+.electric-arcs__core {
+  stroke: #d7f4ff;
+  stroke-width: 0.65;
+}
+.electric-arcs--arrow .electric-arcs__halo {
+  stroke-width: 1.8;
+}
+.electric-arcs--arrow .electric-arcs__core {
+  stroke-width: 0.5;
+}
+.electric-arcs--impact .electric-arcs__thread {
+  animation: electric-crawl 0.18s steps(1) infinite;
+}
+.arrow .electric-wrap svg {
+  transform: none;
+  filter: none;
+}
+.archer-btn--lightning {
+  border-color: #81bbd5;
+  box-shadow: inset 0 0 9px #3689bc33;
+}
+.fire-explosion {
+  position: absolute;
+  left: var(--target-x);
+  top: var(--target-y);
+  width: var(--blast-diameter);
+  height: var(--blast-height);
+  transform: translate(-50%, -50%);
+  isolation: isolate;
+}
+.fire-explosion__flash,
+.fire-explosion__core,
+.fire-explosion__smoke {
+  position: absolute;
+  inset: 12%;
+  border-radius: 43% 57% 51% 49%;
+}
+.fire-explosion__flash {
+  background: radial-gradient(ellipse, #fffbe8, #ffe9a999 25%, #ff9b3c33 55%, transparent 70%);
+  animation: fire-flash 0.25s ease-out both;
+}
+.fire-explosion__core {
+  background: radial-gradient(
+    ellipse at 48% 60%,
+    #fff0b8 2%,
+    #ffc44c 16%,
+    #ff7d16 37%,
+    #d52f0c99 58%,
+    transparent 72%
+  );
+  filter: blur(2px);
+  animation: fire-core 0.65s ease-out both;
+}
+.fire-explosion__smoke {
+  inset: -4% 4%;
+  background:
+    radial-gradient(ellipse at 30% 25%, #3d302a99, transparent 52%),
+    radial-gradient(ellipse at 70% 40%, #51403388, transparent 56%);
+  filter: blur(8px);
+  animation: fire-smoke 0.8s ease-out both;
+}
+.fire-explosion__flame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--flame-size);
+  height: var(--flame-distance);
+  translate: -50% -86%;
+  rotate: var(--flame-angle);
+  transform-origin: 50% 86%;
+  border-radius: 55% 15% 38% 49%;
+  clip-path: polygon(
+    45% 0,
+    70% 18%,
+    60% 37%,
+    94% 32%,
+    84% 68%,
+    100% 85%,
+    66% 100%,
+    14% 88%,
+    0 56%,
+    25% 60%,
+    16% 29%
+  );
+  background: radial-gradient(
+    ellipse at 45% 85%,
+    #fff2bd 6%,
+    #ffd36a 22%,
+    #ff9a23 42%,
+    #f2520c 63%,
+    #9b220633 90%
+  );
+  filter: drop-shadow(0 0 3px #ff6b16aa);
+  animation: fire-tongue 0.65s ease-out both;
+  animation-delay: var(--flame-delay);
+}
+.fire-explosion__ember {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 5px;
+  border-radius: 60% 40% 70% 30%;
+  background: #ffe8a1;
+  box-shadow:
+    0 0 4px #ffb330,
+    0 0 8px #f56016;
+  animation: fire-ember 0.7s ease-out both;
+  animation-delay: var(--ember-delay);
+}
+@keyframes magic-effect-life {
+  to {
+    visibility: hidden;
+  }
+}
+@keyframes lightning-discharge {
+  0%,
+  12%,
+  34%,
+  52% {
+    opacity: 1;
+  }
+  7%,
+  25%,
+  46% {
+    opacity: 0.1;
+  }
+  66%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes electric-crawl {
+  0%,
+  21%,
+  55%,
+  80% {
+    opacity: 0.9;
+    stroke-dasharray: 12 3 6 1;
+    stroke-dashoffset: 0;
+  }
+  8%,
+  43%,
+  69% {
+    opacity: 0.2;
+    stroke-dasharray: 6 8 2 5;
+    stroke-dashoffset: 14;
+  }
+  34%,
+  93% {
+    opacity: 0.7;
+    stroke-dasharray: 2 3 9 2;
+    stroke-dashoffset: 28;
+  }
+}
+@keyframes lightning-impact {
+  0% {
+    opacity: 0.4;
+    scale: 0.8;
+  }
+  10%,
+  30% {
+    opacity: 1;
+    scale: 1;
+  }
+  22% {
+    opacity: 0.35;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.15;
+  }
+}
+@keyframes fire-flash {
+  from {
+    opacity: 1;
+    scale: 0.3;
+  }
+  to {
+    opacity: 0;
+    scale: 1.3;
+  }
+}
+@keyframes fire-core {
+  0% {
+    opacity: 1;
+    scale: 0.25;
+  }
+  22% {
+    opacity: 1;
+    scale: 1.1;
+  }
+  70% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    scale: 0.7;
+    translate: 0 -15%;
+  }
+}
+@keyframes fire-tongue {
+  0% {
+    opacity: 0.8;
+    scale: 0.15;
+  }
+  18% {
+    opacity: 1;
+    scale: 0.85 1.05;
+  }
+  42% {
+    opacity: 0.95;
+    scale: 1.1 1.2;
+  }
+  100% {
+    opacity: 0;
+    scale: 0.4 1.35;
+  }
+}
+@keyframes fire-smoke {
+  0% {
+    opacity: 0;
+    scale: 0.3;
+  }
+  40% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.25;
+    translate: 0 -20%;
+  }
+}
+@keyframes fire-ember {
+  0% {
+    opacity: 1;
+    scale: 0.5;
+  }
+  60% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    left: calc(50% + var(--ember-x));
+    top: calc(50% + var(--ember-y));
+    scale: 0.3;
+  }
+}
+.game-field--paused .magic-effect,
+.game-field--paused .magic-effect *,
+.game-field--paused .electric-arcs__thread {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .electric-arcs__thread {
+    animation: none;
+  }
+  .magic-effect * {
+    animation-name: magic-effect-fade;
+  }
+  @keyframes magic-effect-fade {
+    to {
+      opacity: 0;
+    }
+  }
+}

@@ -16,12 +16,24 @@ export function createArrow(
   const critical = guaranteedCritical || (criticalChance > 0 && random() < criticalChance);
   const improvedChance = state.rules.improvedCriticalShotChance(eagleEyeActive);
   const improved = critical && improvedChance > 0 && random() < improvedChance;
-  return new Arrow(
-    state.newId('arrow'),
-    lane,
-    state.stats.arrowSpeed,
-    fromVolley,
-    critical,
-    improved ? IMPROVED_CRITICAL_SHOT_POWER : critical ? CRITICAL_SHOT_POWER : 1,
+  return chargeArrow(
+    state,
+    new Arrow(
+      state.newId('arrow'),
+      lane,
+      state.stats.arrowSpeed,
+      fromVolley,
+      critical,
+      improved ? IMPROVED_CRITICAL_SHOT_POWER : critical ? CRITICAL_SHOT_POWER : 1,
+    ),
   );
+}
+
+export function chargeArrow(state: GameState, arrow: Arrow): Arrow {
+  if (state.lightningCharges[arrow.lane]) {
+    state.lightningCharges[arrow.lane] = false;
+    arrow.lightningJumps = state.stats['lightningArrows.jumps'];
+    arrow.lightningDelay = state.stats['lightningArrows.delay'];
+  }
+  return arrow;
 }
