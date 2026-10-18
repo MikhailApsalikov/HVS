@@ -68,6 +68,7 @@ export const normalConfig: DifficultyConfig = {
     improvedLightning: { maxRanks: 5, unlocksAtLevel: 20 },
     fireExplosion: { maxRanks: 10, unlocksAtLevel: 20 },
     improvedArmageddon: { maxRanks: 6, unlocksAtLevel: 40 },
+    iceArrows: { maxRanks: 5, unlocksAtLevel: 40 },
     volleyMastery: { maxRanks: 5, unlocksAtLevel: 10 },
     titanPreparation: { maxRanks: 5, unlocksAtLevel: 40 },
     aimedFire: { maxRanks: 1, unlocksAtLevel: 60 },

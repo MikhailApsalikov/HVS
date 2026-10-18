@@ -2,9 +2,22 @@ import type { GameState } from '../model/GameState.js';
 import type { Spider } from '../model/Spider.js';
 import type { EmitEvent } from '../events.js';
 import type { RandomSource } from '../rules/random.js';
-import { FIRE_EXPLOSION, MAGIC_HIT_DAMAGE } from '../rules/stats.js';
+import { FIRE_EXPLOSION, ICE_ARROWS, MAGIC_HIT_DAMAGE } from '../rules/stats.js';
 import { WORLD } from '../rules/world.js';
 import { randomInt } from '../rules/random.js';
+
+/** A single roll: the adjacent-lane chance is part of the total proc chance. */
+export function applyIceArrows(state: GameState, lane: number, random: RandomSource): void {
+  const chance = state.stats['iceArrows.chance'];
+  if (chance === 0) return;
+  const roll = random();
+  if (roll >= chance) return;
+  const reach = roll < state.stats['iceArrows.adjacentChance'] ? 1 : 0;
+  for (const spider of state.spiders.values()) {
+    if (!spider.dying && Math.abs(spider.lane - lane) <= reach)
+      spider.rootTimer = ICE_ARROWS.duration;
+  }
+}
 
 export function startChainLightning(
   state: GameState,

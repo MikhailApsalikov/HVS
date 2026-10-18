@@ -4,6 +4,49 @@
   pointer-events: none;
   animation: magic-effect-life 0.85s linear both;
 }
+.spider.spider--rooted {
+  animation-play-state: paused !important;
+  filter: saturate(0.7) brightness(1.15) drop-shadow(0 0 5px #91ddff);
+}
+.spider--rooted::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: -2px;
+  height: 26px;
+  background: linear-gradient(120deg, #e1faffdd, #68bfea99 45%, #c9f4ffdd 70%, #539ac9bb);
+  clip-path: polygon(
+    0 90%,
+    7% 35%,
+    19% 60%,
+    27% 0,
+    40% 55%,
+    50% 25%,
+    61% 63%,
+    75% 8%,
+    82% 56%,
+    94% 35%,
+    100% 95%
+  );
+  filter: drop-shadow(0 1px 3px #6ad8ff);
+}
+.spider--rooted::after {
+  content: '';
+  position: absolute;
+  inset: 9px 4px 0;
+  border: 1px solid #bdedff99;
+  border-radius: 40% 52% 26% 32%;
+  background: linear-gradient(
+    125deg,
+    transparent 20%,
+    #e1faff33 22%,
+    transparent 25%,
+    #a0dcff33 65%,
+    transparent 70%
+  );
+  box-shadow: inset 0 -6px 10px #77d8ff44;
+}
 .lightning-chain {
   position: absolute;
   inset: 0;

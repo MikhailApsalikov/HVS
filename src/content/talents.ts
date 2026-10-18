@@ -9,6 +9,7 @@ import {
   LEARNING_FROM_MISTAKES,
   FIRE_EXPLOSION,
   MAGIC_HIT_DAMAGE,
+  ICE_ARROWS,
 } from '../domain/rules/stats.js';
 import { ABILITY_ORDER } from './abilities.js';
 
@@ -180,7 +181,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   recharge: {
     branch: 'magic',
-    column: 1,
+    column: 2,
     name: 'Перезарядка',
     sprite: 'AbilityRecharge',
     prerequisite: { id: 'quickInstinct', rank: 10 },
@@ -228,6 +229,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   improvedArmageddon: {
     branch: 'magic',
+    column: 3,
     name: 'Улучшенный армагеддон',
     sprite: 'TalentImprovedArmageddon',
     effects: [flat('armageddon.cooldown', -10), flat('armageddon.duration', 0.5)],
@@ -320,6 +322,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   blizzardMastery: {
     branch: 'magic',
+    column: 1,
     name: 'Беспощадная вьюга',
     sprite: 'TalentBlizzardMastery',
     effects: [flat('blizzard.slow', 0.07), flat('blizzard.duration', 1)],
@@ -345,10 +348,20 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   quickInstinct: {
     branch: 'magic',
+    column: 2,
     name: 'Быстрое чутьё',
     sprite: 'TalentQuickInstinct',
     effects: ABILITY_ORDER.map((id) => percent(`${id}.cooldown`, -1.5)),
     description: 'Сокращает перезарядку всех способностей на {prep.cooldown}.',
+  },
+  iceArrows: {
+    branch: 'magic',
+    column: 1,
+    name: 'Ледяные стрелы',
+    sprite: 'TalentIceArrows',
+    prerequisite: { id: 'blizzardMastery', rank: 6 },
+    effects: [flat('iceArrows.chance', 0.06), flat('iceArrows.adjacentChance', 0.01)],
+    description: `При каждом попадании любой стрелы с вероятностью {iceArrows.chance} примораживает к земле всех живых пауков на линии попадания на ${ICE_ARROWS.duration} с.\nВ эту вероятность входит {iceArrows.adjacentChance} на одновременную заморозку своей и соседних линий. Действует со стрелами залпа, критическими и электрическими стрелами. Повторное срабатывание обновляет время заморозки.`,
   },
   hunterArsenal: {
     branch: 'magic',

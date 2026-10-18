@@ -19,6 +19,7 @@ import {
   LEARNING_FROM_MISTAKES,
   learningFatalShieldDuration,
   aimedFireDuration,
+  ICE_ARROWS,
 } from './rules/stats.js';
 import { TALENTS } from '../content/talents.js';
 import { SPIDERS } from '../content/spiders.js';
@@ -89,6 +90,7 @@ type SavedSpider = Pick<
   | 'previousY'
   | 'slowFactor'
   | 'slowTimer'
+  | 'rootTimer'
   | 'dying'
   | 'dyingTimer'
   | 'reachedCastle'
@@ -113,7 +115,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 26;
+  readonly version: 27;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -131,7 +133,7 @@ export function snapshot(session: GameSession): SaveData {
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   fields.lightningCharges = [...state.lightningCharges];
   return {
-    version: 26,
+    version: 27,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -232,6 +234,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
     ] as const) {
       Object.assign(spider, { [key]: entry[key] });
     }
+    spider.rootTimer = data.version < 27 ? 0 : entry.rootTimer;
     state.spiders.set(spider.id, spider);
   }
   for (const entry of data.arrows) {
@@ -335,7 +338,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (value.version === 1 || value.version === 2) return migrateLegacy(value);
   if (
     ![
-      3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+      3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
     ].includes(value.version as number) ||
     !object(value.state)
   )
@@ -605,6 +608,8 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
         typeof entry.dyingTimer === 'number' &&
         Number.isFinite(entry.dyingTimer) &&
         ['dying', 'reachedCastle'].every((key) => typeof entry[key] === 'boolean') &&
+        ((value.version as number) < 27 ||
+          (number(entry.rootTimer) && entry.rootTimer <= ICE_ARROWS.duration)) &&
         ((value.version as number) < 12
           ? typeof entry.hasJumped === 'boolean'
           : integer(entry.jumpsMade) &&
@@ -735,6 +740,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (value.version === 22) return snapshot(restore(upgradeDisorientationSave(value)));
   if (value.version === 24) return snapshot(restore(value as unknown as SaveData));
   if (value.version === 25) return snapshot(restore(value as unknown as SaveData));
+  if (value.version === 26) return snapshot(restore(value as unknown as SaveData));
   return value as unknown as SaveData;
 }
 

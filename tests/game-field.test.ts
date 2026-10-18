@@ -74,6 +74,22 @@ function lane(index = 0): ElementDouble {
 }
 
 describe('combat feedback without a browser', () => {
+  it('shows ice on rooted spiders and removes it exactly when they can move again', () => {
+    const session = new GameSession('normal', () => 0.02, { level: 60 });
+    session.talents.loadFromSave([{ id: 'iceArrows', rank: 5 }]);
+    session.refreshStats();
+    session.state.phase = 'playing';
+    const target = addSpider(session, 'normal', 0, 0.1);
+    addSpider(session, 'normal', 0, 0.95);
+    session.shootLane(0);
+    session.tick(0.001);
+    field.render(session.state);
+    const element = lane().children.find((child) => child.dataset.spiderId === target.id)!;
+    expect(element.classList.contains('spider--rooted')).toBe(true);
+    session.tick(4);
+    field.render(session.state);
+    expect(element.classList.contains('spider--rooted')).toBe(false);
+  });
   it('shows charged archers, electric arrows and the chain from semantic combat events', () => {
     const session = game(60);
     session.talents.loadFromSave([{ id: 'lightningArrows', rank: 1 }]);

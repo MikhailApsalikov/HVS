@@ -27,6 +27,7 @@ export function learningDamageThreshold(rank: number): number {
 export const KILLING_STREAK = { maxStacks: 10, decayInterval: 1.5 } as const;
 export const AIMED_FIRE = { firstDelay: 1, interval: 2 } as const;
 export const MAGIC_HIT_DAMAGE = 1;
+export const ICE_ARROWS = { duration: 4 } as const;
 export const FIRE_EXPLOSION = {
   energyThreshold: 100,
   cost: 15,
@@ -143,6 +144,8 @@ export const STATS = {
   spawnInterval: stat('Интервал появления, с', 0.02, { ...duration, min: 0.01 }),
   spiderSpeed: stat('Скорость паука, поля/с', 0, speed),
   permafrostSlow: stat('Замедление: Вечная мерзлота', 0, { ...probability, max: 0.5 }),
+  'iceArrows.chance': stat('Шанс: Ледяные стрелы', 0, probability),
+  'iceArrows.adjacentChance': stat('Шанс соседних линий: Ледяные стрелы', 0, probability),
   spiderDamage: stat('Урон паука', SPIDER_DAMAGE.base, integer),
   burnerEnergy: stat('Сжигание энергии', 90, integer),
   'freeze.cost': stat('Стоимость: Заморозка времени', 25, integer),

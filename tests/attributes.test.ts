@@ -482,6 +482,7 @@ describe('armor and talent branches', () => {
     ['volleyMastery', 2, 7, 10],
     ['rapidFire', 5, 28, 40],
     ['blizzardMastery', 4, 21, 30],
+    ['iceArrows', 5, 28, 40],
     ['magicArmor', 4, 21, 30],
     ['permafrost', 2, 7, 10],
     ['recharge', 7, 42, 60],

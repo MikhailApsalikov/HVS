@@ -9,6 +9,7 @@ export class Spider {
   previousY = 0;
   slowFactor = 1;
   slowTimer = 0;
+  rootTimer = 0;
   dying = false;
   dyingTimer = 0;
   reachedCastle = false;
@@ -38,7 +39,10 @@ export class Spider {
   }
   move(dt: number, passiveSlow: number): void {
     this.previousY = this.y;
-    this.y += this.effectiveSpeed(passiveSlow) * dt;
+    const movingTime = Math.max(0, dt - this.rootTimer);
+    const rootRemaining = this.rootTimer - dt;
+    this.rootTimer = rootRemaining > 1e-9 ? rootRemaining : 0;
+    this.y += this.effectiveSpeed(passiveSlow) * movingTime;
   }
   applySlow(factor: number, duration: number): void {
     this.slowFactor = factor;

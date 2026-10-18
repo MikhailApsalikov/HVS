@@ -146,6 +146,7 @@ describe('legacy feature inventory captured before rewrite', () => {
         improvedLightning: { maxRanks: 5, unlocksAtLevel: 20 },
         fireExplosion: { maxRanks: 10, unlocksAtLevel: 20 },
         improvedArmageddon: { maxRanks: 6, unlocksAtLevel: 40 },
+        iceArrows: { maxRanks: 5, unlocksAtLevel: 40 },
         dutyBound: { maxRanks: 5, unlocksAtLevel: 40 },
         divineShield: { maxRanks: 1, unlocksAtLevel: 30 },
         shieldBlock: { maxRanks: 7, unlocksAtLevel: 10 },

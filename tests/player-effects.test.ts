@@ -258,7 +258,7 @@ describe('player effect entities through session commands', () => {
       session.tick(0.001);
     }
     const saved = snapshot(session);
-    expect(saved.version).toBe(26);
+    expect(saved.version).toBe(27);
     expect(saved.state).not.toHaveProperty('activeEffects');
     const loaded = restore(parseSave(JSON.parse(JSON.stringify(saved)))!, () => 0.999999);
     expect(loaded.state.activeEffects).toEqual(session.state.activeEffects);

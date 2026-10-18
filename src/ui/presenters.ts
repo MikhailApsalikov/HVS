@@ -51,6 +51,8 @@ export function formatStat(id: StatId, value: number): string {
     id === 'lastHope.blockChance' ||
     id === 'blizzard.slow' ||
     id === 'permafrostSlow' ||
+    id === 'iceArrows.chance' ||
+    id === 'iceArrows.adjacentChance' ||
     id === 'spiderDebuffResistance' ||
     id === 'healingReceived' ||
     id === 'jackpotChance' ||

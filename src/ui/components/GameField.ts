@@ -153,6 +153,7 @@ export class GameField {
         el.dataset.spiderType = spider.type;
       }
       el.classList.toggle('spider--slowed', spider.slowFactor < 1);
+      el.classList.toggle('spider--rooted', spider.rootTimer > 0);
       el.classList.toggle('spider--dying', spider.dying);
       this._lastSpiderPositions.set(spider.id, {
         lane: spider.lane,

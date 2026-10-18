@@ -12,7 +12,7 @@ import { fireVolley } from './AbilitySystem.js';
 import { applySpiderDebuff, applyPiercingStun } from './DebuffSystem.js';
 import { clearPlayerBuffs } from './BuffSystem.js';
 import { protectFromBreach, shieldAfterBreach } from './LearningFromMistakesSystem.js';
-import { startChainLightning } from './MagicSystem.js';
+import { applyIceArrows, startChainLightning } from './MagicSystem.js';
 
 /** Returns the time within this tick when a live spider first occupies the field. */
 export function spawnSpiders(state: GameState, dt: number, random: RandomSource): number {
@@ -54,6 +54,7 @@ export function moveSpiders(state: GameState, dt: number, random: RandomSource):
   for (const spider of state.spiders.values()) {
     if (spider.dying) continue;
     while (
+      spider.rootTimer === 0 &&
       SPIDERS[spider.type].jumpLevelStep &&
       spider.jumpsMade < spider.jumpLimit &&
       spider.y >= spider.nextJumpThreshold
@@ -93,6 +94,7 @@ export function tickArrows(
       const damage = hit.takeHit(arrow.power);
       if (hit.dying) arrowKills.push(hit);
       arrow.power -= damage;
+      applyIceArrows(state, arrow.lane, random);
       if (arrow.lightningJumps > 0) {
         const point = { lane: hit.lane, y: hit.y };
         emit({ type: 'lightning', from: point, to: point });

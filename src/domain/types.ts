@@ -35,6 +35,7 @@ export type TalentId =
   | 'improvedLightning'
   | 'fireExplosion'
   | 'improvedArmageddon'
+  | 'iceArrows'
   | 'volleyMastery'
   | 'titanPreparation'
   | 'aimedFire'

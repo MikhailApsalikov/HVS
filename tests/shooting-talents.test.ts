@@ -362,7 +362,7 @@ describe('critical shot saves', () => {
       spiders: previousSpiders(saved),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(26);
+    expect(parsed.version).toBe(27);
     const loaded = restore(parsed);
     expect(loaded.talents.getRank('hunterMastery')).toBe(5);
     expect(loaded.state.stats.shootCost).toBe(25);

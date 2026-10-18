@@ -242,6 +242,9 @@ export class GameSession {
         nextLearningBoundary(this.state),
         ...this.state.aimedFireWaves.map((wave) => wave.remaining),
         ...this.state.chainLightning.map((chain) => chain.remaining),
+        ...[...this.state.spiders.values()]
+          .filter((spider) => !spider.dying && spider.rootTimer > 0)
+          .map((spider) => spider.rootTimer),
       );
       this.tickStep(step);
       remaining = Math.max(0, remaining - step);
