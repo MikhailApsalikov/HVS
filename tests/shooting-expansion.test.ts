@@ -331,7 +331,7 @@ describe('eagle eye ability', () => {
     ]);
     session.refreshStats();
     session.activateAbility('eagleEye');
-    expect(session.state.getAbility('eagleEye').remainingCooldown).toBe(43.65);
+    expect(session.state.getAbility('eagleEye').remainingCooldown).toBe(43.2);
     session.state.energy = 100;
     session.activateAbility('volley');
     addSpider(session, 'normal', 0, 1, 0);
@@ -511,7 +511,7 @@ describe('version eleven saves', () => {
         talents: [...current.talents, { id: 'volleyMastery', rank: 3 }],
       };
       const parsed = parseSave(old)!;
-      expect(parsed.version).toBe(27);
+      expect(parsed.version).toBe(28);
       const loaded = restore(parsed, () => 0);
       expect(loaded.state.eagleEyeActive).toBe(false);
       expect(loaded.state.getAbility('eagleEye').isReady).toBe(true);

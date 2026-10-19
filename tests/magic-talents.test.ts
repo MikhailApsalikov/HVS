@@ -7,8 +7,36 @@ import {
   talentDescription,
 } from '../src/ui/presenters.js';
 import { addSpider, game } from './helpers.js';
+import { ABILITIES, ABILITY_ORDER } from '../src/content/abilities.js';
 
 describe('magic talent update through session commands', () => {
+  it.each([1, 5, 10])(
+    'reduces every ability cooldown by 2 percent per Quick Instinct rank: %s',
+    (rank) => {
+      for (const id of ABILITY_ORDER) {
+        const session = game(60);
+        session.talents.loadFromSave([
+          { id: 'quickInstinct', rank },
+          ...(ABILITIES[id].talent ? [{ id: ABILITIES[id].talent!, rank: 1 }] : []),
+        ]);
+        session.state.character.setModifiers('test:energy', [
+          { stat: 'maxEnergy', kind: 'flat', value: 1000 },
+          { stat: 'agility', kind: 'percent', value: -100 },
+        ]);
+        session.refreshStats();
+        session.state.energy = session.state.maxEnergy;
+        expect(session.activateAbility(id)).toBe('activated');
+        expect(session.state.getAbility(id).duration).toBeCloseTo(
+          session.state.config.abilities[id].cooldown * (1 - 0.02 * rank),
+        );
+      }
+      const session = game(60);
+      expect(talentDescription('quickInstinct', rank, session.state.stats)).toContain(
+        `${2 * rank}%`,
+      );
+    },
+  );
+
   it.each(['easy', 'normal', 'hard'] as const)(
     'requires tier seven and ten quick instinct ranks for recharge on %s',
     (difficulty) => {
@@ -50,7 +78,7 @@ describe('magic talent update through session commands', () => {
       session.state.getAbility('prep').start(10);
       expect(session.activateAbility('recharge')).toBe('activated');
       expect(session.state.getAbility('prep').isReady).toBe(true);
-      expect(session.state.getAbility('recharge').remainingCooldown).toBe(255);
+      expect(session.state.getAbility('recharge').remainingCooldown).toBe(240);
     },
   );
 

@@ -15,6 +15,7 @@ export function itemModifiers(
   }));
   const mod = item.abilityMod;
   if (!mod || !includeAbility) return modifiers;
+  if (mod.effects) return [...modifiers, ...mod.effects.map((effect) => ({ ...effect, source }))];
   if (mod.abilityId === 'killingStreak') {
     modifiers.push({ source, stat: 'killingStreak.maxStacks', kind: 'flat', value: mod.value });
   } else if (mod.abilityId === 'improvedCriticalShot') {
@@ -26,7 +27,7 @@ export function itemModifiers(
       kind: mod.kind ?? 'flat',
       value: -mod.value,
     });
-  } else {
+  } else if (mod.abilityId !== 'fireExplosion' && mod.abilityId !== 'permafrost') {
     const ability = ABILITIES[mod.abilityId];
     if (ability.effectStat)
       modifiers.push({

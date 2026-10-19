@@ -62,7 +62,7 @@ describe('magic armor through session commands', () => {
       const armor = session.state.stats.armor;
       for (let rank = 1; rank <= 5; rank++) {
         expect(session.upgradeTalent('magicArmor')).toBe(true);
-        expect(session.state.stats.armor).toBe(armor + 6850 * rank);
+        expect(session.state.stats.armor).toBe(armor + 5480 * rank);
         expect(session.state.stats.spiderDebuffResistance).toBeCloseTo(0.0274 * rank);
         expect(session.state.rules.explain('spiderDebuffResistance').modifiers).toEqual([
           expect.objectContaining({ source: 'talent:magicArmor' }),
@@ -75,11 +75,11 @@ describe('magic armor through session commands', () => {
       ]);
       session.refreshStats();
       expect(session.state.stats.intellect).toBe(299);
-      expect(session.state.stats.armor).toBe(armor + 37375);
+      expect(session.state.stats.armor).toBe(armor + 29900);
       expect(session.state.stats.spiderDebuffResistance).toBe(0.1495);
       session.state.character.removeModifiers('test:intellect-item');
       session.refreshStats();
-      expect(session.state.stats.armor).toBe(armor + 34250);
+      expect(session.state.stats.armor).toBe(armor + 27400);
       expect(session.state.stats.spiderDebuffResistance).toBe(0.137);
     },
   );

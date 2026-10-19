@@ -1146,11 +1146,121 @@ const LEGENDARY_ITEMS: readonly ItemConfig[] = [
   },
 ];
 
+const MAGIC_LEGENDARY_ITEMS: readonly ItemConfig[] = [
+  {
+    id: 'l028',
+    name: 'Сердце огненной бури',
+    rarity: 'legendary',
+    stats: [
+      { type: 'intellect', value: 220 },
+      { type: 'maxEnergy', value: 80 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'fireExplosion',
+      modType: 'effectBoost',
+      value: 0.35,
+      description: 'Повышает вероятность «Огненного взрыва» на 35%.',
+      effects: [{ stat: 'fireExplosion.chance', kind: 'flat', value: 0.35 }],
+    },
+  },
+  {
+    id: 'l029',
+    name: 'Колчан двойной молнии',
+    rarity: 'legendary',
+    stats: [
+      { type: 'intellect', value: 240 },
+      { type: 'energyRegen', value: 1 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'lightningArrows',
+      modType: 'effectBoost',
+      value: 1,
+      description: '«Стрелы молний» заряжают по два следующих выстрела каждого лучника.',
+      effects: [{ stat: 'lightningArrows.charges', kind: 'flat', value: 1 }],
+    },
+  },
+  {
+    id: 'l030',
+    name: 'Призма блуждающих разрядов',
+    rarity: 'legendary',
+    stats: [
+      { type: 'intellect', value: 230 },
+      { type: 'maxEnergy', value: 90 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'lightningArrows',
+      modType: 'effectBoost',
+      value: 1,
+      description:
+        'Если на соседних линиях нет целей, цепная молния перескакивает на паука текущей линии.',
+      effects: [{ stat: 'lightningArrows.sameLane', kind: 'flat', value: 1 }],
+    },
+  },
+  {
+    id: 'l031',
+    name: 'Сфера застывшего времени',
+    rarity: 'legendary',
+    stats: [
+      { type: 'intellect', value: 250 },
+      { type: 'energyRegen', value: 1 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'permafrost',
+      modType: 'effectBoost',
+      value: 0.25,
+      description: 'Постоянно замедляет всех пауков на поле на 25%.',
+      effects: [{ stat: 'globalSpiderSlow', kind: 'flat', value: 0.25 }],
+    },
+  },
+  {
+    id: 'l032',
+    name: 'Эгида грозового мага',
+    rarity: 'legendary',
+    stats: [
+      { type: 'intellect', value: 210 },
+      { type: 'maxEnergy', value: 100 },
+      { type: 'coinsPerKill', value: 2 },
+    ],
+    abilityMod: {
+      abilityId: 'lightningShield',
+      modType: 'cooldownReduction',
+      value: 30,
+      description: 'Сокращает время восстановления «Щита молний» на 30 секунд.',
+    },
+  },
+  {
+    id: 'l033',
+    name: 'Корона громовержца',
+    rarity: 'legendary',
+    stats: [
+      { type: 'intellect', value: 260 },
+      { type: 'maxEnergy', value: 80 },
+      { type: 'coinsPerKill', value: 1 },
+    ],
+    abilityMod: {
+      abilityId: 'lightningArrows',
+      modType: 'effectBoost',
+      value: 5,
+      description:
+        'Добавляет 5 перескоков цепной молнии и сокращает интервал ответных молний «Щита молний» на 0,5 секунды.',
+      effects: [
+        { stat: 'lightningArrows.jumps', kind: 'flat', value: 5 },
+        { stat: 'lightningShield.procCooldown', kind: 'flat', value: -0.5 },
+      ],
+    },
+  },
+];
+
 export const ITEM_CATALOG: readonly ItemDefinition[] = [
   ...COMMON_ITEMS,
   ...RARE_ITEMS,
   ...EPIC_ITEMS,
   ...LEGENDARY_ITEMS,
+  ...MAGIC_LEGENDARY_ITEMS,
 ].map((item) => ({ ...item, price: computeItemPrice(item) }));
 
 export const ITEM_MAP: ReadonlyMap<string, ItemDefinition> = new Map(

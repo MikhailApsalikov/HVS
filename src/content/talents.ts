@@ -8,7 +8,7 @@ import {
   IMPROVED_CRITICAL_SHOT_POWER,
   LEARNING_FROM_MISTAKES,
   FIRE_EXPLOSION,
-  MAGIC_HIT_DAMAGE,
+  MASOCHISM,
   ICE_ARROWS,
 } from '../domain/rules/stats.js';
 import { ABILITY_ORDER } from './abilities.js';
@@ -169,15 +169,15 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Мазохизм',
     sprite: 'TalentMasochism',
     effects: [],
-    description:
-      'При нехватке энергии выстрелы, «Залп» и «Прицельный огонь» расходуют здоровье: {masochismHealthPerEnergy} за единицу энергии.\nЗдоровье при этом не опускается ниже {masochismMinHpPercent}% максимума.',
+    description: `При нехватке энергии выстрелы, «Залп» и «Прицельный огонь» расходуют здоровье: {masochismHealthPerEnergy} за единицу энергии.\nЗдоровье при этом не опускается ниже {masochismMinHpPercent}% максимума.\nЕсли удар паука оставляет вам меньше ${MASOCHISM.triggerHpFraction * 100}% здоровья, вы получаете +{masochismAgility} ловкости на ${MASOCHISM.duration} секунд.`,
   },
   improvedPrep: {
     branch: 'magic',
     name: 'Улучшенная подготовка',
     sprite: 'TalentPrep',
-    effects: [flat('prep.cooldown', -6)],
-    description: 'Сокращает перезарядку «Подготовки» на {prep.cooldown} с.',
+    effects: [flat('prep.cooldown', -6), flat('prep.duration', 1)],
+    description:
+      'Сокращает перезарядку «Подготовки» на {prep.cooldown} с и продлевает усиленное восстановление энергии на {prep.duration} с.',
   },
   recharge: {
     branch: 'magic',
@@ -216,25 +216,33 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     prerequisite: { id: 'lightningArrows', rank: 1 },
     effects: [flat('lightningArrows.jumps', 1), flat('lightningArrows.delay', -0.05)],
     description:
-      'Увеличивает число перескоков «Стрел молний» на {lightningArrows.jumps} и снижает задержку между ними на {lightningArrows.delay} с.',
+      'Увеличивает число перескоков «Стрел молний» на {lightningArrows.jumps} и незначительно ускоряет цепь молний.',
   },
   fireExplosion: {
     branch: 'magic',
     column: 2,
     name: 'Огненный взрыв',
     sprite: 'TalentFireExplosion',
-    effects: [flat('fireExplosion.radius', 0.12)],
+    effects: [flat('fireExplosion.radius', 0.12 * 1.3)],
     fixedEffects: [flat('fireExplosion.chance', FIRE_EXPLOSION.chance)],
-    description: `При убийстве паука стрелой, включая стрелы «Залпа», если у вас больше ${FIRE_EXPLOSION.energyThreshold} энергии, с вероятностью ${FIRE_EXPLOSION.chance * 100}% на месте убийства происходит взрыв за ${FIRE_EXPLOSION.cost} энергии.\nНаносит ${MAGIC_HIT_DAMAGE} урона всем живым паукам в радиусе {explosionRadius} ширины линии; вдоль линии область на ${Math.round((FIRE_EXPLOSION.verticalReach - 1) * 100)}% больше. Радиус растёт с рангом; с 6-го ранга достаёт до соседних линий. Убийства молнией, взрывом и другими способностями взрывов не вызывают.`,
+    description: `Если у вас больше ${FIRE_EXPLOSION.energyThreshold} энергии, убийство паука стрелой с вероятностью {explosionChance} вызывает огненный взрыв, поражающий пауков рядом. Каждый ранг увеличивает область взрыва, а с ${FIRE_EXPLOSION.adjacentRank}-го ранга он задевает и соседние линии. Не расходует энергию.`,
   },
   improvedArmageddon: {
     branch: 'magic',
-    column: 3,
+    column: 2,
     name: 'Улучшенный армагеддон',
     sprite: 'TalentImprovedArmageddon',
     effects: [flat('armageddon.cooldown', -10), flat('armageddon.duration', 0.5)],
     description:
       'Снижает перезарядку «Армагеддона» на {armageddon.cooldown} с и увеличивает его длительность на {armageddon.duration} с.',
+  },
+  lightningShield: {
+    branch: 'magic',
+    column: 3,
+    name: 'Щит молний',
+    sprite: 'AbilityLightningShield',
+    prerequisite: { id: 'magicArmor', rank: 5 },
+    effects: [],
   },
   titanPreparation: {
     branch: 'shooting',
@@ -258,7 +266,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     name: 'Череда убийств',
     sprite: 'TalentKillingStreak',
-    effects: [flat('killingStreak.interval', -3)],
+    effects: [flat('killingStreak.interval', -5)],
     description:
       'Каждые {streakInterval} с без урона получаете эффект «Череда убийств»: выстрелы стоят на 1 энергию меньше.\nЭффект складывается до {streakBaseStacks} раз. Урон от паука снимает один эффект.',
   },
@@ -267,7 +275,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     name: 'Увлеченность',
     sprite: 'TalentEnthusiasm',
-    prerequisite: { id: 'killingStreak', rank: 8 },
+    prerequisite: { id: 'killingStreak', rank: 5 },
     effects: [flat('enthusiasmChance', 0.2)],
     description:
       'Дает {enthusiasmChance} вероятности уклониться от урона.\nТребует активной «Череды убийств» и расходует один эффект.',
@@ -336,7 +344,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     prerequisite: { id: 'greed', rank: 5 },
     column: 3,
     effects: [flat('jackpotChance', 0.07), flat('goldenJackpotChance', 0.2)],
-    description: `С вероятностью {jackpotChance} вы получаете тройную награду за убитого паука; для золотого паука шанс — {goldenJackpotChance}.\nТройная награда за убийство золотого паука даёт «Награду охотника» на ${HUNTER_REWARD.duration} с: +${HUNTER_REWARD.incomePercent}% пассивного золота и +${HUNTER_REWARD.armorPercent}% брони. Бафф снимается очистителем.`,
+    description: `С вероятностью {jackpotChance} вы получаете тройную награду за убитого паука; для золотого паука шанс — {goldenJackpotChance}.\nТройная награда за убийство золотого паука даёт «Награду охотника» на ${HUNTER_REWARD.duration} с: +${HUNTER_REWARD.incomePercent}% пассивного золота и +${HUNTER_REWARD.armorPercent}% брони.`,
   },
   greed: {
     branch: 'defense',
@@ -351,7 +359,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 2,
     name: 'Быстрое чутьё',
     sprite: 'TalentQuickInstinct',
-    effects: ABILITY_ORDER.map((id) => percent(`${id}.cooldown`, -1.5)),
+    effects: ABILITY_ORDER.map((id) => percent(`${id}.cooldown`, -2)),
     description: 'Сокращает перезарядку всех способностей на {prep.cooldown}.',
   },
   iceArrows: {
@@ -360,8 +368,8 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Ледяные стрелы',
     sprite: 'TalentIceArrows',
     prerequisite: { id: 'blizzardMastery', rank: 6 },
-    effects: [flat('iceArrows.chance', 0.06), flat('iceArrows.adjacentChance', 0.01)],
-    description: `При каждом попадании любой стрелы с вероятностью {iceArrows.chance} примораживает к земле всех живых пауков на линии попадания на ${ICE_ARROWS.duration} с.\nВ эту вероятность входит {iceArrows.adjacentChance} на одновременную заморозку своей и соседних линий. Действует со стрелами залпа, критическими и электрическими стрелами. Повторное срабатывание обновляет время заморозки.`,
+    effects: [flat('iceArrows.chance', 0.07), flat('iceArrows.adjacentChance', 0.02)],
+    description: `При каждом попадании любой стрелы с вероятностью {iceArrows.chance} примораживает к земле всех живых пауков на линии попадания на ${ICE_ARROWS.duration} с.\nВ эту вероятность входит {iceArrows.adjacentChance} на одновременную заморозку своей и соседних линий. Действует со стрелами залпа, критическими и электрическими стрелами.`,
   },
   hunterArsenal: {
     branch: 'magic',
@@ -402,12 +410,13 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   magicArmor: {
     name: 'Магическая броня',
     branch: 'magic',
+    column: 3,
     sprite: 'TalentMagicArmor',
     effects: [],
     scaling: {
       attribute: 'intellect',
       step: 1,
-      effect: flat('armor', 25),
+      effect: flat('armor', 20),
       additionalEffects: [flat('spiderDebuffResistance', 0.0001)],
     },
     description:

@@ -32,6 +32,7 @@ export class GameApp {
   private readonly blizzard: BlizzardOverlay;
   private readonly shield: StandShieldOverlay;
   private readonly lastHope: StandShieldOverlay;
+  private readonly lightningShield: StandShieldOverlay;
   private readonly adrenaline: AdrenalineOverlay;
   private readonly eagleEye: AdrenalineOverlay;
   private readonly antiAfk: AntiAfkOverlay;
@@ -71,6 +72,7 @@ export class GameApp {
     this.blizzard = new BlizzardOverlay(effects);
     this.shield = new StandShieldOverlay(effects, sprites);
     this.lastHope = new StandShieldOverlay(effects, sprites, 'lastHope');
+    this.lightningShield = new StandShieldOverlay(effects, sprites, 'lightningShield');
     this.adrenaline = new AdrenalineOverlay(effects, sprites);
     this.eagleEye = new AdrenalineOverlay(effects, sprites, 'eagleEye');
     this.antiAfk = new AntiAfkOverlay(effects);
@@ -128,6 +130,10 @@ export class GameApp {
         Math.max(state.invulnerableTimer, state.learningShieldTimer, state.fatalShieldTimer),
       );
     } else this.shield.hide();
+    if (state.lightningShieldTimer > 0) {
+      this.lightningShield.show();
+      this.lightningShield.updateTimer(state.lightningShieldAbsorption);
+    } else this.lightningShield.hide();
     if (state.lastHopeTimer > 0) {
       this.lastHope.show();
       this.lastHope.updateTimer(state.lastHopeTimer);

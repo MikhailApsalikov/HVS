@@ -11,6 +11,7 @@ describe('physical ability keys through session commands', () => {
     ['KeyQ', 'й', 'freeze'],
     ['KeyW', 'ц', 'volley'],
     ['KeyF', 'а', 'lightningArrows'],
+    ['KeyG', 'п', 'lightningShield'],
     ['KeyE', 'у', 'prep'],
     ['KeyR', 'к', 'heal'],
     ['KeyT', 'е', 'blizzard'],

@@ -12,7 +12,11 @@ import { ItemSystem } from './model/ItemSystem.js';
 import { createArrow } from './systems/ArrowFactory.js';
 import { activateAbility, tickAbilities, tickAimedFire } from './systems/AbilitySystem.js';
 import { tickAntiAfk } from './systems/AntiAfkSystem.js';
-import { resolveArrowExplosions, tickChainLightning } from './systems/MagicSystem.js';
+import {
+  absorbLightningShield,
+  resolveArrowExplosions,
+  tickChainLightning,
+} from './systems/MagicSystem.js';
 import {
   learningModifiers,
   nextLearningBoundary,
@@ -64,6 +68,7 @@ export class GameSession {
     const state = this.state;
     state.killingStreakLearned = this.talents.getRank('killingStreak') > 0;
     state.masochismRank = this.talents.getRank('masochism');
+    state.fireExplosionRank = this.talents.getRank('fireExplosion');
     state.learningFromMistakesRank = this.talents.getRank('learningFromMistakes');
     state.talentAbilities.clear();
     for (const id of ABILITY_ORDER) {
@@ -257,7 +262,6 @@ export class GameSession {
     const hpRegeneration = state.stats.hpRegen * dt;
     const passiveCoins = state.stats.coinsPerSec * dt;
     if (tickBuffs(state, dt)) this.refreshStats(false);
-    if (tickDebuffs(state, dt)) this.refreshStats(false);
     if (state.hp <= 0) {
       state.phase = 'gameOver';
       return;
@@ -277,6 +281,14 @@ export class GameSession {
       this.refreshStats(false);
     moveSpiders(state, dt, this.random);
     tickChainLightning(state, dt, this.random, emit);
+    if (
+      tickDebuffs(state, dt, (damage) => {
+        const absorbed = absorbLightningShield(state, damage, null, this.random, emit);
+        if (absorbed > 0) emit({ type: 'shieldAbsorption', hp: damage - absorbed, absorbed });
+        return absorbed;
+      })
+    )
+      this.refreshStats(false);
     const arrowKills = tickArrows(state, dt, this.random, emit);
     resolveArrowExplosions(state, arrowKills, this.random, emit);
     resolveBreaches(

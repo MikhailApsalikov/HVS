@@ -43,8 +43,8 @@ describe('talent strength and independent sources', () => {
       { id: 'improvedPrep', rank: 1 },
     ]);
     session.refreshStats();
-    expect(session.state.stats['volley.cooldown']).toBe(29.63); // 36 × .86 × .97 × 2^(-23/1200)
-    expect(session.state.stats['prep.cooldown']).toBe(52.2); // 60 × .97 − 6
+    expect(session.state.stats['volley.cooldown']).toBe(29.33); // 36 × .86 × .96 × 2^(-23/1200)
+    expect(session.state.stats['prep.cooldown']).toBe(51.6); // 60 × .96 − 6
     expect(session.state.stats.shootCooldown).toBe(2.53);
   });
   it('adds flat item, intellect and tireless regeneration', () => {
@@ -140,8 +140,8 @@ describe('primary attribute sources', () => {
 describe('content contracts', () => {
   it('retains all difficulties, talents, abilities and unique items', () => {
     expect(Object.keys(DIFFICULTIES)).toHaveLength(3);
-    expect(TALENT_ORDER).toHaveLength(50);
-    expect(ABILITY_ORDER).toHaveLength(13);
+    expect(TALENT_ORDER).toHaveLength(51);
+    expect(ABILITY_ORDER).toHaveLength(14);
     expect(new Set(ITEM_CATALOG.map((item) => item.id)).size).toBe(ITEM_CATALOG.length);
   });
   it.each(ITEM_CATALOG)('every item is valid, priced and resolves: $id $name', (item) => {

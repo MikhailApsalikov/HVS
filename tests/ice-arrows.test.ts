@@ -64,8 +64,8 @@ describe('ice arrows through session commands', () => {
       expect(session.upgradeTalent('permafrost')).toBe(true);
       for (let rank = 1; rank <= 5; rank++) {
         expect(session.upgradeTalent('iceArrows')).toBe(true);
-        expect(session.state.stats['iceArrows.chance']).toBeCloseTo(0.06 * rank);
-        expect(session.state.stats['iceArrows.adjacentChance']).toBeCloseTo(0.01 * rank);
+        expect(session.state.stats['iceArrows.chance']).toBeCloseTo(0.07 * rank);
+        expect(session.state.stats['iceArrows.adjacentChance']).toBeCloseTo(0.02 * rank);
         expect(session.state.rules.explain('iceArrows.chance').modifiers).toHaveLength(1);
       }
       expect(session.upgradeTalent('iceArrows')).toBe(false);
@@ -77,10 +77,10 @@ describe('ice arrows through session commands', () => {
     (rank) => {
       for (const [roll, own, adjacent] of [
         [0, true, true],
-        [rank * 0.01 - 0.000001, true, true],
-        [rank * 0.01, true, false],
-        [rank * 0.06 - 0.000001, true, false],
-        [rank * 0.06, false, false],
+        [rank * 0.02 - 0.000001, true, true],
+        [rank * 0.02, true, false],
+        [rank * 0.07 - 0.000001, true, false],
+        [rank * 0.07, false, false],
         [0.999999, false, false],
       ] as const) {
         const session = arena(rank, roll);
@@ -178,10 +178,10 @@ describe('ice arrows through session commands', () => {
     impact(session);
     expect(same.rootTimer).toBe(4);
     expect(side.rootTimer).toBe(0);
-    session.tick(0.5);
+    session.tick(0.65);
     expect(side.hits).toBe(2);
     expect(side.rootTimer).toBe(0);
-    expect(same.rootTimer).toBeCloseTo(3.5);
+    expect(same.rootTimer).toBeCloseTo(3.35);
   });
 
   it('rolls on every hit of the same critical arrow', () => {
@@ -252,8 +252,8 @@ describe('ice arrows through session commands', () => {
   it('describes the nested probabilities at the current rank', () => {
     const session = arena(5);
     const description = talentDescription('iceArrows', 5, session.state.stats);
-    expect(description).toContain('вероятностью 30%');
-    expect(description).toContain('входит 5%');
+    expect(description).toContain('вероятностью 35%');
+    expect(description).toContain('входит 10%');
     expect(description).toContain('на 4 с');
     expect(description).not.toContain('{');
   });
@@ -286,11 +286,13 @@ describe('ice arrow save compatibility', () => {
     const previous = {
       ...data,
       version: 26,
+      abilities: data.abilities.slice(0, 13),
+      state: { ...data.state, lightningCharges: data.state.lightningCharges.map(Boolean) },
       talents: data.talents.filter(({ id }) => id !== 'iceArrows'),
       spiders: data.spiders.map(({ rootTimer: _timer, ...spider }) => spider),
     };
     const parsed = parseSave(previous);
-    expect(parsed?.version).toBe(27);
+    expect(parsed?.version).toBe(28);
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('iceArrows')).toBe(0);
     expect(loaded.state.lightningCharges).toEqual(data.state.lightningCharges);

@@ -61,6 +61,7 @@ export function attributeModifiers(
       effect('intellect', 'energyRegen', i * ir.regenPerPoint),
       effect('intellect', 'heal.amount', i * ir.healPerPoint),
       effect('intellect', 'prep.restore', i * ir.prepPerPoint),
+      effect('intellect', 'lightningShield.absorption', i * ir.shieldAbsorptionPerPoint),
     ],
   };
 }

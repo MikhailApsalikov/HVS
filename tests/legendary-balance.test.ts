@@ -43,7 +43,7 @@ describe('will to win in shooting', () => {
       { id: 'piercingReward', rank: 7 },
       { id: 'criticalShot', rank: 5 },
       { id: 'volleyMastery', rank: 5 },
-      { id: 'improvedAgility', rank: 1 },
+      { id: 'improvedAgility', rank: 3 },
       { id: 'killingStreak', rank: 7 },
     ]);
     session.refreshStats();
@@ -132,7 +132,7 @@ describe('updated legendary equipment through session purchases', () => {
     ]);
     expect(session.buyItem('l009')).toBe(true);
     const agilityReduction = Math.min(70, (1 - 2 ** (-session.state.stats.agility / 1200)) * 100);
-    const cooldown = Math.round(36 * (1 - agilityReduction / 100) * 0.8 * 0.85 * 0.8 * 100) / 100;
+    const cooldown = Math.round(36 * (1 - agilityReduction / 100) * 0.8 * 0.8 * 0.8 * 100) / 100;
     play(session);
     expect(session.activateAbility('volley')).toBe('activated');
     expect(session.state.getAbility('volley').remainingCooldown).toBe(cooldown);

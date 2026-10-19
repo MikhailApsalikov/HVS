@@ -4,7 +4,7 @@ import type { RandomSource } from '../rules/random.js';
 import type { SpiderType } from '../types.js';
 import { randomInt } from '../rules/random.js';
 import { PIERCING_STRIKE, WORLD } from '../rules/world.js';
-import { BEST_DEFENSE_COOLDOWN, HUNTER_REWARD, STATS } from '../rules/stats.js';
+import { BEST_DEFENSE_COOLDOWN, HUNTER_REWARD, MASOCHISM, STATS } from '../rules/stats.js';
 import { calculate, clamp } from '../rules/numbers.js';
 import { SPIDERS, SPECIAL_SPIDER_ORDER } from '../../content/spiders.js';
 import { Spider } from '../model/Spider.js';
@@ -12,7 +12,7 @@ import { fireVolley } from './AbilitySystem.js';
 import { applySpiderDebuff, applyPiercingStun } from './DebuffSystem.js';
 import { clearPlayerBuffs } from './BuffSystem.js';
 import { protectFromBreach, shieldAfterBreach } from './LearningFromMistakesSystem.js';
-import { applyIceArrows, startChainLightning } from './MagicSystem.js';
+import { absorbLightningShield, applyIceArrows, startChainLightning } from './MagicSystem.js';
 
 /** Returns the time within this tick when a live spider first occupies the field. */
 export function spawnSpiders(state: GameState, dt: number, random: RandomSource): number {
@@ -63,7 +63,15 @@ export function moveSpiders(state: GameState, dt: number, random: RandomSource):
         spider.lane === 0 ? 1 : spider.lane === WORLD.lanes - 1 ? -1 : random() < 0.5 ? -1 : 1;
       spider.jumpsMade += 1;
     }
-    spider.move(dt, state.stats.permafrostSlow);
+    const slow = calculate(
+      1,
+      [
+        { source: 'talent:permafrost', kind: 'percent', value: -state.stats.permafrostSlow * 100 },
+        { source: 'item:globalSlow', kind: 'percent', value: -state.stats.globalSpiderSlow * 100 },
+      ],
+      STATS.spiderSpeed.policy,
+    ).value;
+    spider.move(dt, 1 - slow);
   }
 }
 
@@ -162,11 +170,16 @@ export function resolveBreaches(
       if (hp > 0 && !dodged) {
         if (state.killingStreakStacks > 0) {
           dodged = state.stats.enthusiasmChance > 0 && random() < state.stats.enthusiasmChance;
-          state.killingStreakStacks -= 1;
+          if (dodged) state.killingStreakStacks -= 1;
         }
-        if (!dodged) state.killingStreakProgress = 0;
       }
       if (dodged) hp = 0;
+      const absorbedDamage = absorbLightningShield(state, hp, spider.lane, random, emit);
+      hp -= absorbedDamage;
+      if (hp > 0) {
+        if (state.killingStreakStacks > 0) state.killingStreakStacks -= 1;
+        state.killingStreakProgress = 0;
+      }
       const energy =
         definition.burnsEnergy && !dodged ? Math.min(state.energy, state.stats.burnerEnergy) : 0;
       const previousHp = state.hp;
@@ -174,6 +187,13 @@ export function resolveBreaches(
       hp = protectFromBreach(state, hp);
       state.modifyHp(-hp);
       const lostHealth = state.hp < previousHp;
+      if (
+        lostHealth &&
+        state.hp > 0 &&
+        state.hp < state.maxHp * MASOCHISM.triggerHpFraction &&
+        state.masochismRank > 0
+      )
+        state.masochismTimer = MASOCHISM.duration;
       if (lostHealth) applySpiderDebuff(state, spider);
       if (lostHealth && piercing) applyPiercingStun(state);
       if (definition.clearsBuffs && !dodged) {
@@ -193,6 +213,7 @@ export function resolveBreaches(
         hp,
         energy,
         ...(blocked ? { blockedDamage } : {}),
+        ...(absorbedDamage > 0 ? { absorbedDamage } : {}),
         ...(dodged ? { dodged: true } : {}),
         ...(piercing ? { piercing: true } : {}),
         ...(piercing || spider.type === 'tank'

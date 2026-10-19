@@ -115,7 +115,7 @@ describe('player effect tooltips through session commands', () => {
       details: { incomePercent: 50, armorPercent: 50 },
     });
     expect(playerEffectDescription(buff)).toContain(
-      'Пассивный доход увеличен на 50% и броня увеличена на 50%. Снимается очистителем.',
+      'Пассивный доход увеличен на 50% и броня увеличена на 50%.',
     );
     expect(coinsDescription(session.state)).toContain(
       'Вероятность тройной награды за золотого паука — 100%.',

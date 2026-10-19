@@ -12,7 +12,8 @@ export type AbilityId =
   | 'adrenaline'
   | 'eagleEye'
   | 'aimedFire'
-  | 'lightningArrows';
+  | 'lightningArrows'
+  | 'lightningShield';
 export type TalentId =
   | 'endurance'
   | 'spiderArmor'
@@ -32,6 +33,7 @@ export type TalentId =
   | 'recharge'
   | 'permafrost'
   | 'lightningArrows'
+  | 'lightningShield'
   | 'improvedLightning'
   | 'fireExplosion'
   | 'improvedArmageddon'

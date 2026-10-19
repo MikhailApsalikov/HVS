@@ -31,7 +31,7 @@ export function createArrow(
 
 export function chargeArrow(state: GameState, arrow: Arrow): Arrow {
   if (state.lightningCharges[arrow.lane]) {
-    state.lightningCharges[arrow.lane] = false;
+    state.lightningCharges[arrow.lane] -= 1;
     arrow.lightningJumps = state.stats['lightningArrows.jumps'];
     arrow.lightningDelay = state.stats['lightningArrows.delay'];
   }

@@ -1,6 +1,6 @@
 import type { AbilityId, TalentId } from '../domain/types.js';
 import type { StatId } from '../domain/rules/stats.js';
-import { AIMED_FIRE, MAGIC_HIT_DAMAGE } from '../domain/rules/stats.js';
+import { AIMED_FIRE, ATTRIBUTE_RULES } from '../domain/rules/stats.js';
 
 interface AbilityDefinition {
   readonly name: string;
@@ -145,7 +145,16 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     sprite: 'AbilityLightningArrows',
     unlockLevel: 10,
     talent: 'lightningArrows',
-    description: `Заряжает все 9 орудий: первая выпущенная стрела каждой линии становится электрической. Заряды сохраняются до выстрела и не складываются при повторном применении.\nПри первом попадании запускает цепную молнию: {lightningArrows.jumps} перескоков с задержкой {lightningArrows.delay} с, по ${MAGIC_HIT_DAMAGE} урона за попадание.\nКаждый раз случайно выбирает живого паука на соседней слева или справа линии, на любом расстоянии от вас. Может вернуться к уже поражённому живому пауку.`,
+    description:
+      'Заряжает всех лучников молнией. Следующая атака каждого лучника становится электрической и при попадании в паука запускает цепную молнию, атакующую до {lightningArrows.jumps} пауков. Паук выбирается случайно среди тех, кто находится на одной из соседних линий.',
+  },
+  lightningShield: {
+    name: 'Щит молний',
+    key: 'G',
+    sprite: 'AbilityLightningShield',
+    unlockLevel: 40,
+    talent: 'lightningShield',
+    description: `Окружает вас щитом молний на 3 минуты, поглощающим до {lightningShield.absorption} урона. Каждая единица интеллекта увеличивает прочность щита на ${ATTRIBUTE_RULES.intellect.shieldAbsorptionPerPoint}.\nЕсли изучены «Стрелы молний», поглощение урона выпускает в пауков ответную цепную молнию не чаще раза в {lightningShield.procCooldown} с.`,
   },
 };
 /** Stable storage order; the HUD has its own order by level, then keyboard position. */
@@ -161,6 +170,7 @@ export const ABILITY_DISPLAY_ORDER: readonly AbilityId[] = [
   'eagleEye',
   'stand',
   'lastHope',
+  'lightningShield',
   'aimedFire',
   'recharge',
   'adrenaline',

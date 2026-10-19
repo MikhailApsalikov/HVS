@@ -190,9 +190,10 @@ describe('item combat balance through session commands', () => {
     learn(session, 'vampirism', 5);
     learn(session, 'piercingReward', 7);
     learn(session, 'volleyMastery', 5);
-    learn(session, 'killingStreak', 6);
+    learn(session, 'killingStreak', 5);
+    learn(session, 'masochism', 1);
     learn(session, 'rapidFire', 7);
-    learn(session, 'killingStreak', 2);
+    learn(session, 'masochism', 2);
     learn(session, 'titanPreparation', 5);
     learn(session, 'aimedFire');
     expect(session.buyItem('l027')).toBe(true);
@@ -228,7 +229,7 @@ describe('version 20 shield rank migration through session restoration', () => {
       ),
     });
     expect(parsed).not.toBeNull();
-    expect(parsed!.version).toBe(27);
+    expect(parsed!.version).toBe(28);
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('shieldBlock')).toBe(7);
     expect(loaded.talents.getRank('improvedLastHope')).toBe(3);

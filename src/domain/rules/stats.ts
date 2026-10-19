@@ -30,13 +30,17 @@ export const MAGIC_HIT_DAMAGE = 1;
 export const ICE_ARROWS = { duration: 4 } as const;
 export const FIRE_EXPLOSION = {
   energyThreshold: 100,
-  cost: 15,
-  chance: 0.3,
+  chance: 0.35,
+  adjacentRank: 6,
   verticalReach: 1.3,
 } as const;
+export const LIGHTNING_SHIELD = { duration: 180, procCooldown: 2 } as const;
 export const MASOCHISM = {
   healthPerEnergy: [10, 9, 8, 7, 6],
   minHpFraction: [0.9, 0.8, 0.7, 0.6, 0.5],
+  agilityPerRank: 40,
+  duration: 75,
+  triggerHpFraction: 0.3,
 } as const;
 export function masochismHealthPerEnergy(rank: number): number {
   return MASOCHISM.healthPerEnergy[rank - 1] ?? 0;
@@ -99,7 +103,7 @@ export const STATS = {
   blockChance: stat('Шанс блока', 0, probability),
   dodgeChance: stat('Шанс уклонения', 0, { ...probability, max: DODGE_CAP }),
   enthusiasmChance: stat('Шанс уклонения: Увлечённость', 0, probability),
-  'killingStreak.interval': stat('Время набора: Череда убийств, с', 34, { ...duration, min: 1 }),
+  'killingStreak.interval': stat('Время набора: Череда убийств, с', 35, { ...duration, min: 1 }),
   'killingStreak.maxStacks': stat('Максимум эффектов: Череда убийств', 5, {
     ...integer,
     max: KILLING_STREAK.maxStacks,
@@ -144,6 +148,7 @@ export const STATS = {
   spawnInterval: stat('Интервал появления, с', 0.02, { ...duration, min: 0.01 }),
   spiderSpeed: stat('Скорость паука, поля/с', 0, speed),
   permafrostSlow: stat('Замедление: Вечная мерзлота', 0, { ...probability, max: 0.5 }),
+  globalSpiderSlow: stat('Замедление пауков от предметов', 0, probability),
   'iceArrows.chance': stat('Шанс: Ледяные стрелы', 0, probability),
   'iceArrows.adjacentChance': stat('Шанс соседних линий: Ледяные стрелы', 0, probability),
   spiderDamage: stat('Урон паука', SPIDER_DAMAGE.base, integer),
@@ -157,7 +162,7 @@ export const STATS = {
   'prep.cost': stat('Стоимость: Подготовка', 0, integer),
   'prep.cooldown': stat('Перезарядка: Подготовка, с', 60, duration),
   'prep.restore': stat('Общее восстановление энергии: Подготовка', 250, integer),
-  'prep.duration': stat('Длительность: Подготовка, с', 5, { ...duration, max: 5 }),
+  'prep.duration': stat('Длительность: Подготовка, с', 5, { ...duration, max: 10 }),
   'prep.energyRegen': stat('Восстановление энергии/с: Подготовка', 30, decimal),
   'prep.overTime': stat('Постепенное восстановление энергии: Подготовка', 0, decimal),
   'prep.instant': stat('Мгновенное восстановление энергии: Подготовка', 0, integer),
@@ -189,10 +194,28 @@ export const STATS = {
   'armageddon.duration': stat('Длительность: Армагеддон, с', 3, duration),
   'lightningArrows.cost': stat('Стоимость: Стрелы молний', 90, integer),
   'lightningArrows.cooldown': stat('Перезарядка: Стрелы молний, с', 30, duration),
-  'lightningArrows.jumps': stat('Перескоки: Стрелы молний', 1, { ...integer, max: 6 }),
-  'lightningArrows.delay': stat('Задержка: Стрелы молний, с', 0.5, { ...duration, min: 0.25 }),
+  'lightningArrows.jumps': stat('Перескоки: Стрелы молний', 1, { ...integer, max: 11 }),
+  'lightningArrows.charges': stat('Зарядов каждого лучника: Стрелы молний', 1, {
+    ...integer,
+    max: 2,
+  }),
+  'lightningArrows.sameLane': stat('Молнии на текущей линии', 0, { ...integer, max: 1 }),
+  'lightningArrows.delay': stat('Задержка: Стрелы молний, с', 0.65, { ...duration, min: 0.25 }),
+  'lightningShield.cost': stat('Стоимость: Щит молний', 0, integer),
+  'lightningShield.cooldown': stat('Перезарядка: Щит молний, с', 180, duration),
+  'lightningShield.duration': stat(
+    'Длительность: Щит молний, с',
+    LIGHTNING_SHIELD.duration,
+    duration,
+  ),
+  'lightningShield.absorption': stat('Поглощение: Щит молний', 500, integer),
+  'lightningShield.procCooldown': stat(
+    'Интервал ответных молний, с',
+    LIGHTNING_SHIELD.procCooldown,
+    duration,
+  ),
   'fireExplosion.chance': stat('Шанс: Огненный взрыв', 0, probability),
-  'fireExplosion.radius': stat('Радиус: Огненный взрыв, ширин линии', 0.33, decimal),
+  'fireExplosion.radius': stat('Радиус: Огненный взрыв, ширин линии', 0.33 * 1.3, decimal),
   'recharge.cost': stat('Стоимость: Перезарядка', 65, integer),
   'recharge.cooldown': stat('Перезарядка: Перезарядка, с', 300, duration),
   'adrenaline.cost': stat('Стоимость: Адреналин', 0, integer),
@@ -247,6 +270,7 @@ export const ATTRIBUTE_RULES = {
     regenPerPoint: 0.01,
     healPerPoint: 2,
     prepPerPoint: 1,
+    shieldAbsorptionPerPoint: 10,
   },
 } as const;
 export interface StatModifier extends Modifier {

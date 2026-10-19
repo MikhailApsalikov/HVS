@@ -1,6 +1,6 @@
 import { PLAYER_EFFECTS } from '../../content/playerEffects.js';
 import { DEBUFFS } from '../../content/debuffs.js';
-import { HUNTER_REWARD } from '../rules/stats.js';
+import { HUNTER_REWARD, MASOCHISM } from '../rules/stats.js';
 import { disorientationPercent, goldIncomePercent, poisonArmorPercent } from '../rules/debuffs.js';
 import type { GameState } from './GameState.js';
 
@@ -8,6 +8,8 @@ export type PlayerEffectId =
   | 'prep'
   | 'lastHope'
   | 'stand'
+  | 'lightningShield'
+  | 'masochism'
   | 'learningShield'
   | 'fatalShield'
   | 'exhaustion'
@@ -35,6 +37,8 @@ export interface PlayerEffectMetadata {
 
 export interface PlayerEffectDetails {
   readonly energyRegen: number;
+  readonly absorption: number;
+  readonly agility: number;
   readonly blockChance: number;
   readonly blockPower: number;
   readonly shootCooldownReduction: number;
@@ -69,6 +73,25 @@ interface EffectLifecycle {
 }
 
 const LIFECYCLES: Readonly<Record<PlayerEffectId, EffectLifecycle>> = {
+  lightningShield: {
+    read: (state) => ({
+      remaining: state.lightningShieldTimer,
+      details: { absorption: state.lightningShieldAbsorption },
+    }),
+    clear: (state) => {
+      state.lightningShieldTimer = 0;
+      state.lightningShieldAbsorption = 0;
+    },
+  },
+  masochism: {
+    read: (state) => ({
+      remaining: state.masochismTimer,
+      details: { agility: state.masochismRank * MASOCHISM.agilityPerRank },
+    }),
+    clear: (state) => {
+      state.masochismTimer = 0;
+    },
+  },
   learningShield: {
     read: (state) => ({ remaining: state.learningShieldTimer }),
     clear: (state) => {

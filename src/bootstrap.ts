@@ -59,6 +59,7 @@ export function bootstrap(root: HTMLElement): () => void {
     armageddon: SoundEffect.ARMAGEDDON_ACTIVATE,
     recharge: SoundEffect.RECHARGE_ACTIVATE,
     lightningArrows: SoundEffect.PREP_ACTIVATE,
+    lightningShield: SoundEffect.STAND_ACTIVATE,
   };
   const shoot = (lane: number) => {
     const result = engine.shootLane(lane);
@@ -102,8 +103,8 @@ export function bootstrap(root: HTMLElement): () => void {
     field.showCoinDrop(id, coins, jackpot);
     audio.playSfx(SoundEffect.KILL_SPIDER);
   });
-  engine.setDamagePopCallback((id, hp, energy, blockedDamage, dodged, piercing) => {
-    field.showDamagePop(id, hp, energy, blockedDamage, dodged, piercing);
+  engine.setDamagePopCallback((id, hp, energy, blockedDamage, dodged, piercing, absorbedDamage) => {
+    field.showDamagePop(id, hp, energy, blockedDamage, dodged, piercing, absorbedDamage);
     if (hp > 0) audio.playSfx(SoundEffect.PLAYER_TAKE_DAMAGE);
     if (energy > 0) audio.playSfx(SoundEffect.BURNER_DRAIN);
     const state = engine.getState();

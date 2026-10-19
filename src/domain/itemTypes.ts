@@ -1,5 +1,5 @@
 import type { AbilityId } from './types.js';
-import type { PrimaryStatId } from './rules/stats.js';
+import type { PrimaryStatId, StatModifier } from './rules/stats.js';
 
 export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary';
 export type StatType =
@@ -22,10 +22,12 @@ export type AbilityMod = {
   readonly value: number;
   readonly description: string;
   readonly kind?: 'flat' | 'percent';
+  readonly effects?: readonly Omit<StatModifier, 'source'>[];
 } & (
   | { readonly abilityId: AbilityId; readonly modType: AbilityModType }
   | { readonly abilityId: 'killingStreak'; readonly modType: 'effectBoost' }
   | { readonly abilityId: 'improvedCriticalShot'; readonly modType: 'effectBoost' }
+  | { readonly abilityId: 'fireExplosion' | 'permafrost'; readonly modType: 'effectBoost' }
 );
 export interface ItemConfig {
   readonly id: string;

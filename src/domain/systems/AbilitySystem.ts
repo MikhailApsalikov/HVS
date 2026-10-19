@@ -21,7 +21,11 @@ export function fireVolley(state: GameState, random: RandomSource): void {
 }
 const EFFECTS: Record<AbilityId, Effect> = {
   lightningArrows: (state) => {
-    state.lightningCharges.fill(true);
+    state.lightningCharges.fill(state.stats['lightningArrows.charges']);
+  },
+  lightningShield: (state) => {
+    state.lightningShieldTimer = state.stats['lightningShield.duration'];
+    state.lightningShieldAbsorption = state.stats['lightningShield.absorption'];
   },
   freeze: (state) => {
     state.freezeActive = true;

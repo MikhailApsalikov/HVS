@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs><linearGradient id="stormShield" x2="0.8" y2="1"><stop stop-color="#d7f9ff"/><stop offset="0.5" stop-color="#277dcc"/><stop offset="1" stop-color="#202e68"/></linearGradient></defs>
+  <path d="M24 4L40 11L37 29Q34 39 24 44Q14 39 11 29L8 11Z" fill="url(#stormShield)" stroke="#b2f5ff" stroke-width="2"/>
+  <path d="M27 9L16 26H24L20 39L34 20H26Z" fill="#f5ffff" stroke="#79dfff" stroke-width="1.5"/>
+  <path d="M5 17L1 23L7 22L3 31M43 14L47 20L41 24L46 30" fill="none" stroke="#8eeaff" stroke-width="2"/>
+</svg>

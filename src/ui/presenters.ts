@@ -6,6 +6,7 @@ import {
   ANTI_AFK,
   ATTRIBUTE_RULES,
   STATS,
+  MASOCHISM,
   masochismHealthPerEnergy,
   masochismMinHpFraction,
   LEARNING_FROM_MISTAKES,
@@ -51,6 +52,8 @@ export function formatStat(id: StatId, value: number): string {
     id === 'lastHope.blockChance' ||
     id === 'blizzard.slow' ||
     id === 'permafrostSlow' ||
+    id === 'globalSpiderSlow' ||
+    id === 'fireExplosion.chance' ||
     id === 'iceArrows.chance' ||
     id === 'iceArrows.adjacentChance' ||
     id === 'spiderDebuffResistance' ||
@@ -104,15 +107,16 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
       if (key === 'titanDamageReduction')
         return String(TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK * rank);
       if (key === 'masochismHealthPerEnergy') return String(masochismHealthPerEnergy(rank));
+      if (key === 'masochismAgility') return String(MASOCHISM.agilityPerRank * rank);
+      if (key === 'explosionChance')
+        return formatStat(
+          'fireExplosion.chance',
+          stats['fireExplosion.chance'] || talentEffectValue(id, rank, 'fireExplosion.chance'),
+        );
       if (key === 'masochismMinHpPercent') return String(masochismMinHpFraction(rank) * 100);
       if (key === 'streakInterval')
         return formatSeconds(talentEffectValue(id, rank, 'killingStreak.interval'));
       if (key === 'streakBaseStacks') return String(STATS['killingStreak.maxStacks'].base);
-      if (key === 'explosionRadius')
-        return formatStat(
-          'fireExplosion.radius',
-          talentEffectValue(id, rank, 'fireExplosion.radius'),
-        );
       if (key === 'scaling.step') return String(definition.scaling!.step);
       if (key === 'scaling.percent')
         return String(Number((definition.scaling!.effect.value * rank * 100).toFixed(4)));
@@ -139,6 +143,7 @@ export function talentDescription(id: TalentId, rank: number, stats: ResolvedSta
 }
 
 const ATTRIBUTE_EFFECT_TEXT: Partial<Record<StatId, string>> = {
+  'lightningShield.absorption': 'Увеличивает прочность «Щита молний» на {value} единиц.',
   maxHp: 'Увеличивает максимальное здоровье на {value} единиц.',
   hpRegen: 'Восстанавливает дополнительно {value} здоровья каждую секунду.',
   energyPerBreach: 'Когда паук доходит до вас, вы получаете дополнительно {value} энергии.',
@@ -210,13 +215,23 @@ function abilityEffectDescription(id: AbilityId, stats: ResolvedStats): string {
       ),
     )
     .join('\n');
-  return fillDescription(description, (key) =>
+  let result = fillDescription(description, (key) =>
     key === 'endurancePercent'
       ? formatStat('blockChance', ATTRIBUTE_RULES.endurance.lastHopeBlockPerPoint)
       : key.endsWith('.duration')
         ? String(Number(stats[key as StatId].toFixed(STATS[key as StatId].policy.digits)))
         : formatStat(key as StatId, stats[key as StatId]),
   );
+  if (id === 'lightningArrows') {
+    if (stats['lightningArrows.charges'] > 1)
+      result = result.replace(
+        'Следующая атака каждого лучника становится электрической',
+        'Следующие две атаки каждого лучника становятся электрическими',
+      );
+    if (stats['lightningArrows.sameLane'] > 0)
+      result += ' Если на соседних линиях нет целей, молния перескакивает на паука текущей линии.';
+  }
+  return result;
 }
 function abilityUsageDescription(id: AbilityId, stats: ResolvedStats): string {
   return [
@@ -315,6 +330,10 @@ function playerEffectDetail(effect: PlayerEffect): string {
       return `Увеличивает шанс блока на ${formatStat('blockChance', effect.details!.blockChance!)} и его силу на ${formatStat('blockPower', effect.details!.blockPower!)}.`;
     case 'stand':
       return 'Неуязвимость';
+    case 'lightningShield':
+      return `Поглощает ещё ${effect.details!.absorption} урона.`;
+    case 'masochism':
+      return `Ловкость увеличена на ${effect.details!.agility}.`;
     case 'learningShield':
     case 'fatalShield':
       return 'Неуязвимость. Фиксированная длительность, нельзя продлить.';
@@ -325,7 +344,7 @@ function playerEffectDetail(effect: PlayerEffect): string {
     case 'eagleEye':
       return `Выстрелы лучников гарантированно критические. Осталось — ${effect.stacks}.`;
     case 'hunterReward':
-      return `Пассивный доход увеличен на ${effect.details!.incomePercent}% и броня увеличена на ${effect.details!.armorPercent}%. Снимается очистителем.`;
+      return `Пассивный доход увеличен на ${effect.details!.incomePercent}% и броня увеличена на ${effect.details!.armorPercent}%.`;
     case 'goldLock':
       return `Пассивный доход уменьшен на ${formatPercent(Math.abs(effect.details!.incomePercent!))}. Награды за пауков сохраняются.`;
     case 'healingReduction':

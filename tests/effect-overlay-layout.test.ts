@@ -75,6 +75,23 @@ describe('combined field effect layout', () => {
     ).toEqual({ display: 'none' });
   });
 
+  it('centers lightning shield durability and gives divine shield priority over its aura', () => {
+    const readout = declarations('.lightning-shield-overlay .shield-overlay__readout');
+    for (const property of ['left', 'right', 'transform'])
+      expect(readout).not.toHaveProperty(property);
+    expect(
+      declarations(
+        '.game-field__effects:has(.stand-shield-overlay.active) .lightning-shield-overlay',
+      ),
+    ).toEqual({ display: 'none' });
+    expect(declarations('.lightning-shield-overlay__arc')).toMatchObject({
+      position: 'absolute',
+      left: 'var(--arc-x)',
+      top: 'var(--arc-y)',
+      width: 'clamp(12px, 2%, 24px)',
+    });
+  });
+
   it('gives both ammunition counters separate fixed readouts', () => {
     expect(declarations('.adrenaline-overlay__badge')).toMatchObject({
       bottom: '78px',

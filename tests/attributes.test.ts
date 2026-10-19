@@ -156,7 +156,7 @@ describe('primary attributes through the session API', () => {
     expect([...session.state.arrows.values()][0].speed).toBe(0.333333);
     session.state.energy = session.state.maxEnergy;
     expect(session.activateAbility('volley')).toBe('activated');
-    expect(session.state.getAbility('volley').duration).toBe(5.34);
+    expect(session.state.getAbility('volley').duration).toBe(5.29);
     expect([...session.state.arrows.values()].every((arrow) => arrow.speed === 0.333333)).toBe(
       true,
     );
@@ -534,7 +534,7 @@ describe('armor and talent branches', () => {
     expect(session.state.stats.inventorySlots).toBe(2);
   });
 
-  it('magic armor grants twenty-five armor per final intellect at every rank', () => {
+  it('magic armor grants twenty armor per final intellect at every rank', () => {
     const session = new GameSession('normal');
     session.state.level = 30;
     session.state.pendingTalentPoints = 6;
@@ -548,20 +548,20 @@ describe('armor and talent branches', () => {
     session.refreshStats(); // 74 intellect, 228 armor from endurance.
     for (let rank = 1; rank <= 5; rank++) {
       expect(session.upgradeTalent('magicArmor')).toBe(true);
-      expect(session.state.stats.armor).toBe(228 + 1850 * rank);
+      expect(session.state.stats.armor).toBe(228 + 1480 * rank);
     }
     expect(session.upgradeTalent('magicArmor')).toBe(false);
     session.state.character.setModifiers('intellect-item', [
       { stat: 'intellect', kind: 'flat', value: 1 },
     ]);
     session.refreshStats();
-    expect(session.state.stats.armor).toBe(9603); // 75 × 25 × 5 + 228.
+    expect(session.state.stats.armor).toBe(7728); // 75 × 20 × 5 + 228.
     session.state.pendingTalentPoints = 1;
     session.upgradeTalent('improvedIntellect');
     expect(session.state.stats.intellect).toBe(109);
-    expect(session.state.stats.armor).toBe(13853); // 109 × 25 × 5 + 228.
+    expect(session.state.stats.armor).toBe(11128); // 109 × 20 × 5 + 228.
     session.state.character.removeModifiers('intellect-item');
     session.refreshStats();
-    expect(session.state.stats.armor).toBe(13728); // 108 × 25 × 5 + 228.
+    expect(session.state.stats.armor).toBe(11028); // 108 × 20 × 5 + 228.
   });
 });

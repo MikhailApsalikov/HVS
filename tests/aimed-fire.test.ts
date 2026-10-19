@@ -151,10 +151,10 @@ describe('aimed fire through session commands', () => {
     ]);
     session.state.character.setBase('agility', 121); // 180 after level growth.
     session.refreshStats();
-    expect(session.state.stats['aimedFire.cooldown']).toBe(35.67); // 100 × 2^(-180/1200) × .8 × .51 × .97
+    expect(session.state.stats['aimedFire.cooldown']).toBe(35.3); // 100 × 2^(-180/1200) × .8 × .51 × .96
     expect(session.state.stats['aimedFire.cost']).toBe(100);
     session.activateAbility('aimedFire');
-    expect(session.state.getAbility('aimedFire').remainingCooldown).toBe(35.67);
+    expect(session.state.getAbility('aimedFire').remainingCooldown).toBe(35.3);
     session.tick(5);
     expect(session.state.arrows.size).toBe(18);
   });
@@ -264,7 +264,7 @@ describe('progression and compatibility', () => {
         { id: 'piercingReward', rank: 7 },
         { id: 'killingStreak', rank: 8 },
         { id: 'vampirism', rank: 5 },
-        { id: 'volleyMastery', rank: 2 },
+        { id: 'volleyMastery', rank: 5 },
       ]);
       session.refreshStats();
       expect(session.talents.getTalent('titanPreparation')).toMatchObject({ tier: 5, maxRanks: 5 });
@@ -306,7 +306,7 @@ describe('progression and compatibility', () => {
       if (id === 'freeze') session.activateAbility(id);
     }
     expect(new Set(ABILITY_ORDER.map((id) => ABILITIES[id].key)).size).toBe(ABILITY_ORDER.length);
-    expect(ABILITY_DISPLAY_ORDER.map((id) => ABILITIES[id].key).join('')).toBe('QWFERTYUIOP[]');
+    expect(ABILITY_DISPLAY_ORDER.map((id) => ABILITIES[id].key).join('')).toBe('QWFERTYUIOGP[]');
     expect('volley' in TALENTS).toBe(false);
     expect(TALENTS.volleyMastery.prerequisite).toBeUndefined();
     expect(abilityDescription(session.state, 'aimedFire')).not.toContain('{');
@@ -341,7 +341,7 @@ describe('progression and compatibility', () => {
     expect(loaded.state.getAbility('aimedFire').isReady).toBe(true);
     expect(loaded.state.aimedFireWaves).toEqual([]);
     const current = snapshot(loaded);
-    expect(current.version).toBe(27);
+    expect(current.version).toBe(28);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 });

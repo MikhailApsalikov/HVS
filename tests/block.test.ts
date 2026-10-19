@@ -209,7 +209,7 @@ describe('defense talent abilities through session commands', () => {
     buy(session, 'hunterArsenal', 3);
     buy(session, 'magicArmor', 5);
     buy(session, 'quickInstinct', 2);
-    expect(session.state.stats['lastHope.cooldown']).toBe(13.8); // 40 × .97 − 25
+    expect(session.state.stats['lastHope.cooldown']).toBe(13.4); // 40 × .96 − 25
   });
 });
 
@@ -393,7 +393,7 @@ describe('defense save compatibility', () => {
       ),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(27);
+    expect(parsed.version).toBe(28);
     const loaded = restore(parsed);
     expect(loaded.state.getAbility('stand').remainingCooldown).toBe(41);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(123);

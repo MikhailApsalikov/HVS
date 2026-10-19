@@ -63,15 +63,15 @@ describe('new magic talents through session commands', () => {
       expect(session.talents.getTalent('fireExplosion')).toMatchObject({ tier: 3, maxRanks: 10 });
       expect(session.talents.getTalent('blizzardMastery')).toMatchObject({ tier: 4 });
       expect(session.talents.getTalent('improvedArmageddon')).toMatchObject({
-        tier: 5,
+        tier: 4,
         maxRanks: 6,
       });
       for (let rank = 0; rank < 10; rank++)
         expect(session.upgradeTalent('fireExplosion')).toBe(true);
       expect(session.upgradeTalent('fireExplosion')).toBe(false);
-      session.state.level = 39;
+      session.state.level = 29;
       expect(session.upgradeTalent('improvedArmageddon')).toBe(false);
-      session.state.level = 40;
+      session.state.level = 30;
       for (let rank = 0; rank < 6; rank++)
         expect(session.upgradeTalent('improvedArmageddon')).toBe(true);
       expect(session.upgradeTalent('improvedArmageddon')).toBe(false);
@@ -91,18 +91,18 @@ describe('new magic talents through session commands', () => {
     expect(session.state.energy).toBe(910);
     expect(session.state.getAbility('lightningArrows').remainingCooldown).toBe(30);
     expect(session.activateAbility('lightningArrows')).toBe('on_cooldown');
-    expect(session.state.lightningCharges).toEqual(Array(9).fill(true));
+    expect(session.state.lightningCharges).toEqual(Array(9).fill(1));
     session.state.archers[0].start(1);
     expect(session.shootLane(0)).toBe('blocked');
-    expect(session.state.lightningCharges[0]).toBe(true);
+    expect(session.state.lightningCharges[0]).toBe(1);
     for (let lane = 1; lane < 9; lane++) expect(session.shootLane(lane)).toBe('shot');
     expect([...session.state.arrows.values()].every((arrow) => arrow.lightningJumps === 1)).toBe(
       true,
     );
-    expect(session.state.lightningCharges).toEqual([true, ...Array(8).fill(false)]);
+    expect(session.state.lightningCharges).toEqual([1, ...Array(8).fill(0)]);
     session.tick(30);
     expect(session.activateAbility('lightningArrows')).toBe('activated');
-    expect(session.state.lightningCharges).toEqual(Array(9).fill(true));
+    expect(session.state.lightningCharges).toEqual(Array(9).fill(1));
     expect(abilityDescription(session.state, 'lightningArrows')).toContain('90');
   });
 
@@ -134,7 +134,7 @@ describe('new magic talents through session commands', () => {
       expect(source.hits).toBe(type === 'normal' ? 0 : 2);
       expect(session.state.chainLightning).toHaveLength(1);
       expect(target.hits).toBe(3);
-      session.tick(0.499);
+      session.tick(0.649);
       expect(target.hits).toBe(3);
       session.tick(0.001);
       expect(target.hits).toBe(2);
@@ -156,7 +156,7 @@ describe('new magic talents through session commands', () => {
     const left = addSpider(session, 'normal', 3, 0.9);
     const right = addSpider(session, 'normal', 5, 0.01);
     hit(session);
-    session.tick(0.5);
+    session.tick(0.65);
     expect(left.dying).toBe(lane === 3);
     expect(right.dying).toBe(lane === 5);
   });
@@ -169,7 +169,7 @@ describe('new magic talents through session commands', () => {
       const target = addSpider(session, 'megaFat', 3, 0.1);
       source.hits = target.hits = 10;
       hit(session);
-      const delay = 0.5 - rank * 0.05;
+      const delay = 0.65 - rank * 0.05;
       expect(session.state.stats['lightningArrows.jumps']).toBe(1 + rank);
       expect(session.state.stats['lightningArrows.delay']).toBeCloseTo(delay);
       session.tick(delay * (1 + rank));
@@ -199,7 +199,7 @@ describe('new magic talents through session commands', () => {
     hit(session);
     hit(session, 5);
     expect(target.dying).toBe(true);
-    session.tick(0.5);
+    session.tick(0.65);
     expect(session.state.chainLightning).toHaveLength(0);
   });
 
@@ -239,17 +239,17 @@ describe('new magic talents through session commands', () => {
 describe('fire explosion through session commands', () => {
   it.each([
     [100, 0, false],
-    [100.01, 0.299999, true],
-    [150, 0.3, false],
+    [100.01, 0.349999, true],
+    [150, 0.35, false],
     [150, 0.999999, false],
-  ])('requires more than 100 energy and a roll below 30%%: %s / %s', (energy, roll, explodes) => {
+  ])('requires more than 100 energy and a roll below 35%%: %s / %s', (energy, roll, explodes) => {
     const session = arena([{ id: 'fireExplosion', rank: 1 }], () => roll);
     session.state.energy = energy;
     addSpider(session, 'normal', 4, 0.94);
     const target = addSpider(session, 'megaFat', 4, 0.92);
     hit(session);
     expect(target.hits).toBe(explodes ? 2 : 3);
-    expect(session.state.energy).toBeCloseTo(energy - (explodes ? 15 : 0));
+    expect(session.state.energy).toBeCloseTo(energy);
     session.tick(0.1);
     expect(target.hits).toBe(explodes ? 2 : 3);
   });
@@ -265,7 +265,7 @@ describe('fire explosion through session commands', () => {
     addSpider(session, 'normal', 4, 0.94);
     const sameLane = addSpider(session, 'megaFat', 4, 0.9);
     const near = addSpider(session, 'megaFat', 5, 0.94);
-    const far = addSpider(session, 'megaFat', 5, 0.76);
+    const far = addSpider(session, 'megaFat', 5, 0.65);
     const twoLanes = addSpider(session, 'normal', 6, 0.94);
     hit(session);
     expect(sameLane.hits).toBe(2);
@@ -275,7 +275,7 @@ describe('fire explosion through session commands', () => {
     expect(session.drainEvents().find((event) => event.type === 'fireExplosion')).toMatchObject({
       lane: 4,
       y: 0.94,
-      radius: Number((0.33 + rank * 0.12).toFixed(2)),
+      radius: Number(((0.33 + rank * 0.12) * 1.3).toFixed(2)),
     });
   });
 
@@ -290,7 +290,7 @@ describe('fire explosion through session commands', () => {
     expect(second.dying).toBe(true);
     expect(third.dying).toBe(false);
     expect(fourth.dying).toBe(false);
-    expect(session.state.energy).toBe(101);
+    expect(session.state.energy).toBe(116);
     expect(session.drainEvents().filter((event) => event.type === 'fireExplosion')).toHaveLength(1);
     session.tick(0.31);
     expect(session.drainEvents().filter((event) => event.type === 'coinDrop')).toHaveLength(2);
@@ -303,7 +303,7 @@ describe('fire explosion through session commands', () => {
     addSpider(session, 'normal', 5, 0.2);
     hit(session);
     session.drainEvents();
-    session.tick(0.5);
+    session.tick(0.65);
     expect(session.drainEvents().filter((event) => event.type === 'fireExplosion')).toHaveLength(0);
     addSpider(session, 'normal', 0, 1, 0);
     session.tick(0.001);
@@ -333,13 +333,13 @@ describe('fire explosion through session commands', () => {
     const session = arena([{ id: 'fireExplosion', rank: 1 }], () => 0);
     addSpider(session, 'normal', 4, 0.94);
     const inside = addSpider(session, 'megaFat', 4, 0.88);
-    const outside = addSpider(session, 'megaFat', 4, 0.87);
+    const outside = addSpider(session, 'megaFat', 4, 0.84);
     hit(session);
     expect(inside.hits).toBe(2);
     expect(outside.hits).toBe(3);
     expect(session.drainEvents().find((event) => event.type === 'fireExplosion')).toMatchObject({
-      radius: 0.45,
-      verticalRadius: 0.5850000000000001,
+      radius: 0.59,
+      verticalRadius: 0.767,
     });
   });
 
@@ -354,19 +354,19 @@ describe('fire explosion through session commands', () => {
     for (const y of [0.94, 0.93, 0.92]) addSpider(session, 'normal', 4, y);
     session.shootLane(4);
     session.tick(0.1);
-    expect(session.state.energy).toBe(86);
-    expect(session.drainEvents().filter((event) => event.type === 'fireExplosion')).toHaveLength(2);
+    expect(session.state.energy).toBe(116);
+    expect(session.drainEvents().filter((event) => event.type === 'fireExplosion')).toHaveLength(3);
   });
 
   it('describes the actual radius and fractional improvement values', () => {
     const session = arena();
     expect(talentDescription('fireExplosion', 1, session.state.stats)).toContain(
-      '0.45 ширины линии',
+      'Каждый ранг увеличивает область взрыва',
     );
-    expect(talentDescription('fireExplosion', 10, session.state.stats)).toContain(
-      '1.53 ширины линии',
+    expect(talentDescription('fireExplosion', 10, session.state.stats)).toContain('с 6-го ранга');
+    expect(talentDescription('improvedLightning', 5, session.state.stats)).toContain(
+      'незначительно ускоряет цепь молний',
     );
-    expect(talentDescription('improvedLightning', 5, session.state.stats)).toContain('0.25 с');
     expect(talentDescription('improvedArmageddon', 1, session.state.stats)).toContain('0.5 с');
   });
 });
@@ -378,15 +378,15 @@ describe('magic persistence', () => {
     addSpider(session, 'normal', 4, 0.94);
     const target = addSpider(session, 'megaFat', 5, 0.1);
     hit(session);
-    expect(saved.state.lightningCharges).toEqual(Array(9).fill(true));
-    expect(session.state.lightningCharges[4]).toBe(false);
+    expect(saved.state.lightningCharges).toEqual(Array(9).fill(1));
+    expect(session.state.lightningCharges[4]).toBe(0);
     expect(session.activateAbility('freeze')).toBe('activated');
     const pending = session.state.chainLightning;
     session.tick(10);
     expect(session.state.chainLightning).toEqual(pending);
     expect(target.hits).toBe(3);
     expect(session.activateAbility('freeze')).toBe('deactivated');
-    session.tick(0.25);
+    session.tick(0.4);
     expect(target.hits).toBe(2);
   });
   it('restores unspent lane charges, electric arrows and partially completed chains', () => {
@@ -401,10 +401,10 @@ describe('magic persistence', () => {
     expect(parsed).not.toBeNull();
     const loaded = restore(parsed!, () => 0.999999);
     expect(snapshot(loaded)).toEqual(saved);
-    loaded.tick(0.15);
+    loaded.tick(0.3);
     expect(loaded.state.spiders.get(target.id)?.hits).toBe(2);
-    expect(loaded.state.lightningCharges[0]).toBe(false);
-    expect(loaded.state.lightningCharges[1]).toBe(true);
+    expect(loaded.state.lightningCharges[0]).toBe(0);
+    expect(loaded.state.lightningCharges[1]).toBe(1);
   });
 
   it('migrates version 25 without new magic state or shifting existing ability cooldowns', () => {
@@ -428,9 +428,9 @@ describe('magic persistence', () => {
       ),
     };
     const parsed = parseSave(previous);
-    expect(parsed?.version).toBe(27);
+    expect(parsed?.version).toBe(28);
     const loaded = restore(parsed!);
-    expect(loaded.state.lightningCharges).toEqual(Array(9).fill(false));
+    expect(loaded.state.lightningCharges).toEqual(Array(9).fill(0));
     expect(loaded.state.chainLightning).toEqual([]);
     expect(loaded.state.isAbilityUnlocked('lightningArrows')).toBe(false);
     expect(loaded.state.getAbility('lightningArrows').isReady).toBe(true);
@@ -443,7 +443,7 @@ describe('magic persistence', () => {
 
   it.each([
     { lightningCharges: [true] },
-    { lightningCharges: Array(9).fill(1) },
+    { lightningCharges: Array(9).fill(true) },
     {
       chainLightning: [
         {
@@ -465,7 +465,7 @@ describe('magic persistence', () => {
           sourceY: 0.5,
           targetId: 'spider-2',
           remaining: 0.5,
-          jumps: 7,
+          jumps: 12,
           delay: 0.5,
         },
       ],

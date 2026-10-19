@@ -43,6 +43,8 @@ export class GameRules {
       ...effects.filter((effect) => {
         if (!effect.source.startsWith('item:')) return true;
         if (effect.stat === 'blockChance') return shieldBlockLearned;
+        if (effect.stat === 'fireExplosion.chance')
+          return effects.some((candidate) => candidate.source === 'talent:fireExplosion');
         if (effect.stat === 'criticalShotChance' || effect.stat === 'improvedCriticalShotChance')
           return criticalShotLearned;
         return true;
@@ -99,8 +101,11 @@ export class GameRules {
     }
     if (id === 'aimedFire.duration') return aimedFireDuration(this.value('aimedFire.waves'));
     if (id === 'prep.overTime') return this.value('prep.energyRegen') * this.value('prep.duration');
-    // Keep the previous total, including all bonuses, and defer only the fixed recovery.
-    if (id === 'prep.instant') return this.value('prep.restore') - this.value('prep.overTime');
+    // Only the base buff duration is deferred; talent extensions add extra recovery.
+    if (id === 'prep.instant')
+      return (
+        this.value('prep.restore') - this.value('prep.energyRegen') * STATS['prep.duration'].base
+      );
     if (id === 'armorReduction')
       return armorReduction(this.value('armor'), this.level, this.config.armorEffectiveness);
     const aliases = {

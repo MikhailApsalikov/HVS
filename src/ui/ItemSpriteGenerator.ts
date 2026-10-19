@@ -5,6 +5,7 @@ import { EPIC_SVGS } from './_epic_svgs.js';
 import { LEGENDARY_SVGS } from './_legendary_svgs.js';
 import { ATTRIBUTE_SVGS } from './_attribute_svgs.js';
 import { REWORKED_SVGS } from './_reworked_svgs.js';
+import { MAGIC_LEGENDARY_SVGS } from './_magic_legendary_svgs.js';
 
 const ITEM_SVGS: Record<string, string> = {
   ...COMMON_SVGS,
@@ -13,6 +14,7 @@ const ITEM_SVGS: Record<string, string> = {
   ...LEGENDARY_SVGS,
   ...ATTRIBUTE_SVGS,
   ...REWORKED_SVGS,
+  ...MAGIC_LEGENDARY_SVGS,
   l027: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
     <path d="M13 4Q44 24 13 44" fill="none" stroke="#EFC668" stroke-width="5"/>
     <path d="M13 4L20 24L13 44" fill="none" stroke="#FFF0BE" stroke-width="1.5"/>

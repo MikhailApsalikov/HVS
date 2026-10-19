@@ -6,6 +6,65 @@ import { FIRE_EXPLOSION, ICE_ARROWS, MAGIC_HIT_DAMAGE } from '../rules/stats.js'
 import { WORLD } from '../rules/world.js';
 import { randomInt } from '../rules/random.js';
 
+function lightningTarget(
+  state: GameState,
+  lane: number,
+  sourceId: string | null,
+  random: RandomSource,
+): Spider | undefined {
+  const live = [...state.spiders.values()].filter(
+    (spider) => !spider.dying && !spider.reachedCastle && spider.id !== sourceId,
+  );
+  let targets = live.filter((spider) => Math.abs(spider.lane - lane) === 1);
+  if (targets.length === 0 && state.stats['lightningArrows.sameLane'] > 0)
+    targets = live.filter((spider) => spider.lane === lane);
+  return targets.length > 0 ? targets[randomInt(random, 0, targets.length - 1)] : undefined;
+}
+
+/** Absorption runs only on damage left after avoidance, armor and block. */
+export function absorbLightningShield(
+  state: GameState,
+  damage: number,
+  lane: number | null,
+  random: RandomSource,
+  emit: EmitEvent,
+): number {
+  if (damage <= 0 || state.lightningShieldTimer === 0 || state.lightningShieldAbsorption === 0)
+    return 0;
+  const absorbed = Math.min(damage, state.lightningShieldAbsorption);
+  state.lightningShieldAbsorption -= absorbed;
+  if (state.lightningShieldAbsorption === 0) state.lightningShieldTimer = 0;
+  if (state.talentAbilities.has('lightningArrows') && state.lightningShieldProcCooldown === 0) {
+    const targets =
+      lane === null
+        ? [...state.spiders.values()].filter((spider) => !spider.dying && !spider.reachedCastle)
+        : [];
+    const target =
+      lane === null
+        ? targets.length > 0
+          ? targets[randomInt(random, 0, targets.length - 1)]
+          : undefined
+        : lightningTarget(state, lane, null, random);
+    if (target) {
+      emit({
+        type: 'lightning',
+        from: { lane: lane ?? target.lane, y: 1 },
+        to: { lane: target.lane, y: target.y },
+      });
+      target.takeHit(MAGIC_HIT_DAMAGE);
+      startChainLightning(
+        state,
+        target,
+        state.stats['lightningArrows.jumps'] - 1,
+        state.stats['lightningArrows.delay'],
+        random,
+      );
+      state.lightningShieldProcCooldown = state.stats['lightningShield.procCooldown'];
+    }
+  }
+  return absorbed;
+}
+
 /** A single roll: the adjacent-lane chance is part of the total proc chance. */
 export function applyIceArrows(state: GameState, lane: number, random: RandomSource): void {
   const chance = state.stats['iceArrows.chance'];
@@ -27,11 +86,8 @@ export function startChainLightning(
   random: RandomSource,
 ): void {
   if (jumps === 0) return;
-  const targets = [...state.spiders.values()].filter(
-    (spider) => !spider.dying && Math.abs(spider.lane - source.lane) === 1,
-  );
-  if (targets.length === 0) return;
-  const target = targets[randomInt(random, 0, targets.length - 1)];
+  const target = lightningTarget(state, source.lane, source.id, random);
+  if (!target) return;
   state.chainLightning = [
     ...state.chainLightning,
     {
@@ -88,7 +144,6 @@ export function resolveArrowExplosions(
       random() >= state.stats['fireExplosion.chance']
     )
       continue;
-    state.modifyEnergy(-FIRE_EXPLOSION.cost);
     const radius = state.stats['fireExplosion.radius'];
     emit({
       type: 'fireExplosion',
@@ -100,6 +155,7 @@ export function resolveArrowExplosions(
     for (const target of state.spiders.values()) {
       if (
         target.dying ||
+        (target.lane !== source.lane && state.fireExplosionRank < FIRE_EXPLOSION.adjacentRank) ||
         Math.hypot(
           target.lane - source.lane,
           ((target.y - source.y) * WORLD.lanes) / FIRE_EXPLOSION.verticalReach,

@@ -102,8 +102,8 @@ describe('new defense talents through session commands', () => {
     buy(session, 'piercingReward', 7);
     buy(session, 'criticalShot', 5);
     buy(session, 'improvedAgility', 5);
-    buy(session, 'volleyMastery', 1);
-    buy(session, 'killingStreak', 7);
+    buy(session, 'volleyMastery', 3);
+    buy(session, 'killingStreak', 5);
     expect(session.upgradeTalent('willToWin')).toBe(false);
     session.state.level = 50;
     session.refreshStats();
@@ -242,7 +242,7 @@ describe('new defense talents through session commands', () => {
     session.state.phase = 'playing';
     session.state.energy = session.state.maxEnergy;
     expect(session.activateAbility('adrenaline')).toBe('activated');
-    expect(session.state.getAbility('adrenaline').duration).toBe(116.4);
+    expect(session.state.getAbility('adrenaline').duration).toBe(115.2);
     expect(session.activateAbility('volley')).toBe('activated');
     const arrows = session.state.arrows.size;
     addSpider(session, 'normal', 8, 1, 1);
@@ -378,7 +378,7 @@ describe('new defense talents through session commands', () => {
     expect(loaded.state.adrenalineShots).toBe(0);
     expect(loaded.state.adrenalineTimer).toBe(0);
     const current = snapshot(loaded);
-    expect(current.version).toBe(27);
+    expect(current.version).toBe(28);
     expect(snapshot(restore(parseSave(current)!))).toEqual(current);
   });
 

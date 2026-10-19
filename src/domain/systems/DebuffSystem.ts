@@ -141,7 +141,11 @@ export function nextDebuffBoundary(state: GameState): number {
 }
 
 /** Session steps stop at every expiry and poison tick, including a tick exactly at expiry. */
-export function tickDebuffs(state: GameState, dt: number): boolean {
+export function tickDebuffs(
+  state: GameState,
+  dt: number,
+  absorbDamage: (damage: number) => number,
+): boolean {
   const wasGoldLocked = state.goldLockTimer > 0;
   const wasHealingReduced = state.healingReductionTimer > 0;
   const wasDisoriented = state.disorientationTimer > 0;
@@ -156,7 +160,8 @@ export function tickDebuffs(state: GameState, dt: number): boolean {
     state.poisonTimer = remaining(state.poisonTimer);
     state.poisonTickTimer = remaining(state.poisonTickTimer);
     if (state.poisonTickTimer === 0) {
-      state.modifyHp(-Math.min(state.stats['poison.tickDamage'], Math.max(0, state.hp - 1)));
+      const damage = Math.min(state.stats['poison.tickDamage'], Math.max(0, state.hp - 1));
+      state.modifyHp(-(damage - absorbDamage(damage)));
       state.poisonTickTimer = DEBUFFS.poison.interval;
     }
     if (state.poisonTimer === 0) {

@@ -1,4 +1,5 @@
 export type GameEvent =
+  | { readonly type: 'shieldAbsorption'; readonly hp: number; readonly absorbed: number }
   | {
       readonly type: 'lightning';
       readonly from: { readonly lane: number; readonly y: number };
@@ -23,6 +24,7 @@ export type GameEvent =
       readonly hp: number;
       readonly energy: number;
       readonly blockedDamage?: number;
+      readonly absorbedDamage?: number;
       readonly dodged?: boolean;
       readonly piercing?: boolean;
       readonly rawDamageMultiplier?: number;

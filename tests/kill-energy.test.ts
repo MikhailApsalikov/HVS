@@ -161,7 +161,7 @@ describe('kill energy save migration', () => {
         version: 15,
         state: {
           ...current.state,
-          killingStreakProgress: (current.state.killingStreakProgress / 31) * 19,
+          killingStreakProgress: (current.state.killingStreakProgress / 30) * 19,
         },
         abilities: current.abilities.slice(0, 11),
         arrows: current.arrows.map((arrow) => ({ ...arrow, kills: 3 - arrow.power })),

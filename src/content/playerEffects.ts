@@ -4,6 +4,20 @@ import { TALENTS } from './talents.js';
 import type { PlayerEffectId, PlayerEffectMetadata } from '../domain/model/PlayerEffect.js';
 
 export const PLAYER_EFFECTS = {
+  lightningShield: {
+    name: ABILITIES.lightningShield.name,
+    sprite: ABILITIES.lightningShield.sprite,
+    kind: 'buff',
+    source: 'ability',
+    removableByCleanser: true,
+  },
+  masochism: {
+    name: TALENTS.masochism.name,
+    sprite: TALENTS.masochism.sprite,
+    kind: 'buff',
+    source: 'talent',
+    removableByCleanser: true,
+  },
   learningShield: {
     name: ABILITIES.stand.name,
     sprite: ABILITIES.stand.sprite,

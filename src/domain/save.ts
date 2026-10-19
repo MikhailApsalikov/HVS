@@ -20,6 +20,8 @@ import {
   learningFatalShieldDuration,
   aimedFireDuration,
   ICE_ARROWS,
+  LIGHTNING_SHIELD,
+  MASOCHISM,
 } from './rules/stats.js';
 import { TALENTS } from '../content/talents.js';
 import { SPIDERS } from '../content/spiders.js';
@@ -41,6 +43,10 @@ const STATE_FIELDS = [
   'levelTimerMax',
   'freezeActive',
   'invulnerableTimer',
+  'lightningShieldTimer',
+  'lightningShieldAbsorption',
+  'lightningShieldProcCooldown',
+  'masochismTimer',
   'learningShieldTimer',
   'fatalShieldTimer',
   'learningShieldCooldown',
@@ -115,7 +121,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 27;
+  readonly version: 28;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -133,7 +139,7 @@ export function snapshot(session: GameSession): SaveData {
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   fields.lightningCharges = [...state.lightningCharges];
   return {
-    version: 27,
+    version: 28,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -162,6 +168,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   state.fatalShieldTimer = data.state.fatalShieldTimer;
   state.learningShieldCooldown = data.state.learningShieldCooldown;
   state.exhaustionTimer = data.state.exhaustionTimer;
+  state.masochismTimer = data.version < 28 ? 0 : data.state.masochismTimer;
   state.goldLockTimer = data.state.goldLockTimer;
   state.healingReductionTimer = data.state.healingReductionTimer;
   state.disorientationTimer = data.state.disorientationTimer;
@@ -185,7 +192,16 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
     Object.fromEntries(
       STATE_FIELDS.map((key) => [
         key,
-        key === 'stunTimer' && data.version < 25 ? 0 : data.state[key],
+        (key === 'stunTimer' && data.version < 25) ||
+        (data.version < 28 &&
+          [
+            'lightningShieldTimer',
+            'lightningShieldAbsorption',
+            'lightningShieldProcCooldown',
+            'masochismTimer',
+          ].includes(key))
+          ? 0
+          : data.state[key],
       ]),
     ),
   );
@@ -199,8 +215,17 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   const minimumDuration = STATS.levelDuration.policy.min!;
   state.lightningCharges =
     data.version < 26
-      ? Array.from({ length: WORLD.lanes }, () => false)
-      : [...data.state.lightningCharges];
+      ? Array.from({ length: WORLD.lanes }, () => 0)
+      : data.state.lightningCharges.map(Number);
+  if (data.version >= 20 && data.version < 28) {
+    const rank = Math.min(
+      8,
+      data.talents.reduce((rank, entry) => (entry.id === 'killingStreak' ? entry.rank : rank), 0),
+    );
+    const previousInterval = 34 - rank * 3;
+    state.killingStreakProgress =
+      (data.state.killingStreakProgress / previousInterval) * state.stats['killingStreak.interval'];
+  }
   state.chainLightning =
     data.version < 26 ? [] : data.state.chainLightning.map((chain) => ({ ...chain }));
   if (state.levelTimerMax < minimumDuration) {
@@ -323,7 +348,10 @@ export function parseSave(value: unknown): SaveData | null {
           !state.isAbilityUnlocked('lightningArrows')) ||
         state.killingStreakProgress >= state.stats['killingStreak.interval'] ||
         (state.killingStreakFull && state.killingStreakProgress > 0) ||
-        (!state.killingStreakLearned && state.killingStreakProgress > 0)
+        (!state.killingStreakLearned && state.killingStreakProgress > 0) ||
+        (state.lightningShieldTimer > 0 && !state.isAbilityUnlocked('lightningShield')) ||
+        (state.masochismTimer > 0 && state.masochismRank === 0) ||
+        state.prepTimer > state.stats['prep.duration']
       )
         return null;
     }
@@ -339,11 +367,24 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (
     ![
       3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
+      28,
     ].includes(value.version as number) ||
     !object(value.state)
   )
     return null;
   const state = value.state;
+  if (
+    (value.version as number) >= 28 &&
+    (!number(state.masochismTimer) ||
+      state.masochismTimer > MASOCHISM.duration ||
+      !number(state.lightningShieldTimer) ||
+      state.lightningShieldTimer > LIGHTNING_SHIELD.duration ||
+      !number(state.lightningShieldAbsorption) ||
+      !number(state.lightningShieldProcCooldown) ||
+      state.lightningShieldProcCooldown > LIGHTNING_SHIELD.procCooldown ||
+      state.lightningShieldTimer > 0 !== state.lightningShieldAbsorption > 0)
+  )
+    return null;
   if (
     (value.version as number) >= 25 &&
     (!number(state.stunTimer) ||
@@ -354,7 +395,11 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     return null;
   if (
     (value.version as number) >= 26 &&
-    (!arrayOf(state.lightningCharges, (charge) => typeof charge === 'boolean') ||
+    (!arrayOf(state.lightningCharges, (charge) =>
+      (value.version as number) < 28
+        ? typeof charge === 'boolean'
+        : integer(charge) && charge <= STATS['lightningArrows.charges'].policy.max!,
+    ) ||
       state.lightningCharges.length !== WORLD.lanes ||
       !arrayOf(
         state.chainLightning,
@@ -575,7 +620,9 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
     value.abilities.length !==
       ((value.version as number) >= 17
         ? (value.version as number) >= 26
-          ? ABILITY_ORDER.length
+          ? (value.version as number) >= 28
+            ? ABILITY_ORDER.length
+            : 13
           : 12
         : (value.version as number) >= 11
           ? 11
@@ -741,6 +788,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (value.version === 24) return snapshot(restore(value as unknown as SaveData));
   if (value.version === 25) return snapshot(restore(value as unknown as SaveData));
   if (value.version === 26) return snapshot(restore(value as unknown as SaveData));
+  if (value.version === 27) return snapshot(restore(value as unknown as SaveData));
   return value as unknown as SaveData;
 }
 

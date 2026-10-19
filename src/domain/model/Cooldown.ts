@@ -17,6 +17,7 @@ export class Cooldown {
     this.remainingCooldown = duration;
   }
   tick(dt: number): void {
-    this.remainingCooldown = Math.max(0, this.remainingCooldown - dt);
+    const remaining = this.remainingCooldown - dt;
+    this.remainingCooldown = remaining > 1e-9 ? remaining : 0;
   }
 }

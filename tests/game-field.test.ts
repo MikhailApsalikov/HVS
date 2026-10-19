@@ -74,6 +74,98 @@ function lane(index = 0): ElementDouble {
 }
 
 describe('combat feedback without a browser', () => {
+  it('shows the Lightning Shield timer in the buff panel and absorption on the field', async () => {
+    const { PlayerEffectPanel } = await import('../src/ui/components/PlayerEffectPanel.js');
+    const sprites = { get: () => '<svg></svg>' } as unknown as SpriteRegistry;
+    const panel = new PlayerEffectPanel(sprites);
+    const session = game(60);
+    session.talents.loadFromSave([{ id: 'lightningShield', rank: 1 }]);
+    session.refreshStats();
+    expect(session.activateAbility('lightningShield')).toBe('activated');
+    panel.render(session.state);
+    const panelContainer = panel.container as unknown as ElementDouble;
+    const badge = panelContainer.children[0].children[0].children[0].children[0];
+    expect(badge.children[1].textContent).toBe('180с');
+    const capacity = session.state.lightningShieldAbsorption;
+    addSpider(session, 'normal', 0, 1, 100);
+    session.tick(1.25);
+    panel.render(session.state);
+    expect(badge.children[1].textContent).toBe('179с');
+    expect(session.state.lightningShieldAbsorption).toBeLessThan(capacity);
+    const overlay = new StandShieldOverlay(field.getEffectsContainer(), sprites, 'lightningShield');
+    overlay.updateTimer(session.state.lightningShieldAbsorption);
+    const effects = field.getEffectsContainer() as unknown as ElementDouble;
+    expect(effects.children[0].children[0].children[1].textContent).toBe(
+      String(Math.ceil(session.state.lightningShieldAbsorption)),
+    );
+  });
+
+  it('shows electric feedback for complete and partial absorption', () => {
+    const session = game(60);
+    session.talents.loadFromSave([{ id: 'lightningShield', rank: 1 }]);
+    session.state.character.setModifiers('test:shield', [
+      { stat: 'armor', kind: 'percent', value: -100 },
+      { stat: 'maxHp', kind: 'flat', value: 10000 },
+    ]);
+    session.refreshStats();
+    session.activateAbility('lightningShield');
+    const capacity = session.state.lightningShieldAbsorption;
+    for (const damage of [100, capacity]) {
+      const spider = addSpider(session, 'normal', 0, 1, damage);
+      field.render(session.state);
+      session.tick(0.001);
+      const hit = session
+        .drainEvents()
+        .find((event) => event.type === 'damage' && event.spiderId === spider.id);
+      expect(hit?.type).toBe('damage');
+      if (hit?.type !== 'damage') return;
+      field.showDamagePop(
+        hit.spiderId,
+        hit.hp,
+        hit.energy,
+        hit.blockedDamage,
+        hit.dodged,
+        hit.piercing,
+        hit.absorbedDamage,
+      );
+    }
+    const pops = lane().children.filter((element) =>
+      element.classList.contains('damage-pop--electric'),
+    );
+    expect(pops).toHaveLength(2);
+    expect(pops[0].textContent).toBe('Поглощено');
+    expect(pops[1].textContent).toBe('-100');
+    expect(pops[1].children[0].textContent).toBe(` (${capacity - 100} поглощено)`);
+    field.showMagicEffect({ type: 'shieldAbsorption', hp: 0, absorbed: 10 });
+    const effects = field.getEffectsContainer() as unknown as ElementDouble;
+    expect(effects.children[0].textContent).toBe('Поглощено');
+    field.reset();
+    expect(effects.children).toHaveLength(0);
+  });
+
+  it('displays shield durability instead of seconds and follows its visibility', async () => {
+    const { StandShieldOverlay } = await import('../src/ui/overlays/StandShieldOverlay.js');
+    const effects = field.getEffectsContainer() as unknown as ElementDouble;
+    const overlay = new StandShieldOverlay(
+      effects as unknown as HTMLElement,
+      { get: () => '<svg></svg>' } as unknown as SpriteRegistry,
+      'lightningShield',
+    );
+    overlay.show();
+    overlay.updateTimer(1500);
+    expect(overlay.isVisible()).toBe(true);
+    expect(effects.children[0].classList.contains('lightning-shield-overlay')).toBe(true);
+    const discharges = effects.children[0].children[1];
+    expect(discharges.className).toBe('lightning-shield-overlay__discharges');
+    expect(discharges.children).toHaveLength(48);
+    expect(discharges.children.every((arc) => arc.innerHTML.includes('<svg'))).toBe(true);
+    expect(effects.children[0].children[0].children[1].textContent).toBe('1500');
+    overlay.updateTimer(1234);
+    expect(effects.children[0].children[0].children[1].textContent).toBe('1234');
+    overlay.hide();
+    expect(overlay.isVisible()).toBe(false);
+  });
+
   it('shows ice on rooted spiders and removes it exactly when they can move again', () => {
     const session = new GameSession('normal', () => 0.02, { level: 60 });
     session.talents.loadFromSave([{ id: 'iceArrows', rank: 5 }]);
@@ -112,7 +204,7 @@ describe('combat feedback without a browser', () => {
     );
     expect(archers.children[0].children[0].classList.contains('archer-btn--lightning')).toBe(false);
     session.tick(0.04);
-    session.tick(0.5);
+    session.tick(0.65);
     for (const event of session.drainEvents())
       if (event.type === 'lightning') field.showMagicEffect(event);
     const effects = field.getEffectsContainer() as unknown as ElementDouble;
@@ -153,11 +245,11 @@ describe('combat feedback without a browser', () => {
     expect(effects.children[0].innerHTML).toContain('fire-explosion');
     expect(effects.children[0].style.setProperty).toHaveBeenCalledWith(
       '--blast-diameter',
-      `${((1.05 * 2) / 9) * 100}%`,
+      `${((1.37 * 2) / 9) * 100}%`,
     );
     expect(effects.children[0].style.setProperty).toHaveBeenCalledWith(
       '--blast-height',
-      `${((1.05 * 1.3 * 2) / 9) * 100}%`,
+      `${((1.37 * 1.3 * 2) / 9) * 100}%`,
     );
     expect(effects.children[0].innerHTML).toContain('fire-explosion__flame');
     expect(effects.children[0].innerHTML).toContain('fire-explosion__ember');

@@ -44,6 +44,10 @@ export class GameState {
   initialTalentPick = true;
   freezeActive = false;
   invulnerableTimer = 0;
+  lightningShieldTimer = 0;
+  lightningShieldAbsorption = 0;
+  lightningShieldProcCooldown = 0;
+  masochismTimer = 0;
   learningFromMistakesRank = 0;
   learningShieldTimer = 0;
   fatalShieldTimer = 0;
@@ -66,11 +70,12 @@ export class GameState {
   eagleEyeShots = 0;
   killingStreakLearned = false;
   masochismRank = 0;
+  fireExplosionRank = 0;
   private streakStacks = 0;
   killingStreakProgress = 0;
   killingStreakDecayProgress = 0;
   aimedFireWaves: readonly AimedFireWave[] = [];
-  lightningCharges = Array.from({ length: WORLD.lanes }, () => false);
+  lightningCharges = Array.from({ length: WORLD.lanes }, () => 0);
   chainLightning: readonly ChainLightning[] = [];
   antiAfkIdleTimer = 0;
   antiAfkStacks = 0;

@@ -66,10 +66,11 @@ export function itemStatLines(item: ItemDefinition): string[] {
 }
 
 export function itemAbilityDescription(item: ItemDefinition): string | null {
+  if (item.abilityMod?.effects) return item.abilityMod.description;
   const effect = itemModifiers(item, 'preview')[item.stats.length];
   if (!effect || !item.abilityMod) return null;
   const id = item.abilityMod.abilityId;
-  const name = `«${id === 'killingStreak' || id === 'improvedCriticalShot' ? TALENTS[id].name : ABILITIES[id].name}»`;
+  const name = `«${id === 'killingStreak' || id === 'improvedCriticalShot' || id === 'fireExplosion' || id === 'permafrost' ? TALENTS[id].name : ABILITIES[id].name}»`;
   const value = Math.abs(effect.value);
   const amount = (effect.kind === 'percent' ? `${value}%` : formatStat(effect.stat, value)).replace(
     '.',

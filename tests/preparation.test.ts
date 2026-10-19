@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { parseSave, restore, snapshot } from '../src/domain/save.js';
-import { abilityDescription, resourceDescription } from '../src/ui/presenters.js';
+import {
+  abilityDescription,
+  resourceDescription,
+  talentDescription,
+} from '../src/ui/presenters.js';
 import { addSpider, game } from './helpers.js';
 
 function preparation(regenPercent = 0) {
@@ -16,6 +20,37 @@ function preparation(regenPercent = 0) {
 }
 
 describe('preparation through session commands', () => {
+  it.each([1, 2, 3, 4, 5])(
+    'extends the regeneration buff by one second per improved rank: %s',
+    (rank) => {
+      const session = preparation(-100);
+      session.state.level = 30;
+      session.talents.loadFromSave([{ id: 'improvedPrep', rank }]);
+      session.refreshStats();
+      session.state.levelTimer = session.state.levelTimerMax = 1000;
+      expect(session.activateAbility('prep')).toBe('activated');
+      expect(session.state.energy).toBe(100);
+      expect(session.state.prepTimer).toBe(5 + rank);
+      expect(session.state.getAbility('prep').duration).toBe(60 - 6 * rank);
+      expect(session.state.currentEnergyRegen).toBe(30);
+      expect(abilityDescription(session.state, 'prep')).toContain(
+        `100 энергии и ${30 * (5 + rank)} в течение ${5 + rank} секунд`,
+      );
+      expect(talentDescription('improvedPrep', rank, session.state.stats)).toContain(
+        `на ${rank} с`,
+      );
+      const saved = snapshot(session);
+      const loaded = restore(parseSave(saved)!, () => 0.999999);
+      expect(snapshot(loaded)).toEqual(saved);
+      loaded.tick(5 + rank);
+      expect(loaded.state.energy).toBe(250 + rank * 30);
+      expect(loaded.state.prepTimer).toBe(0);
+      expect(loaded.state.currentEnergyRegen).toBe(0);
+      loaded.tick(1);
+      expect(loaded.state.energy).toBe(250 + rank * 30);
+    },
+  );
+
   it('restores 100 immediately and advertises 150 over five seconds', () => {
     const session = preparation();
     expect(abilityDescription(session.state, 'prep')).toContain(
@@ -204,14 +239,14 @@ describe('preparation saves', () => {
     const { prepTimer: _timer, ...state } = saved.state;
     const previous = { ...saved, version: 14, abilities: saved.abilities.slice(0, 11), state };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(27);
+    expect(parsed.version).toBe(28);
     const loaded = restore(parsed, () => 0.999999);
     expect(loaded.state.prepTimer).toBe(0);
     expect(loaded.state.energy).toBe(saved.state.energy);
     expect(loaded.state.coins).toBe(saved.state.coins);
     expect(loaded.state.killingStreakStacks).toBe(saved.state.killingStreakStacks);
     expect(loaded.state.killingStreakProgress).toBeCloseTo(
-      (saved.state.killingStreakProgress / 19) * 31,
+      (saved.state.killingStreakProgress / 19) * 30,
     );
     expect(snapshot(loaded).abilities).toEqual(saved.abilities);
     const migrated = snapshot(loaded);

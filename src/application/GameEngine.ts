@@ -13,7 +13,10 @@ import { FrameLoop } from '../infrastructure/browser/FrameLoop.js';
 import { SaveSystem } from '../infrastructure/storage/SaveSystem.js';
 import type { GameEvent } from '../domain/events.js';
 
-export type MagicEffectEvent = Extract<GameEvent, { type: 'lightning' | 'fireExplosion' }>;
+export type MagicEffectEvent = Extract<
+  GameEvent,
+  { type: 'lightning' | 'fireExplosion' | 'shieldAbsorption' }
+>;
 
 /** Coordinates a session, persistence and rendering; contains no game formulas. */
 export class GameEngine {
@@ -29,6 +32,7 @@ export class GameEngine {
         blockedDamage?: number,
         dodged?: boolean,
         piercing?: boolean,
+        absorbedDamage?: number,
       ) => void)
     | null = null;
   private resourceGain:
@@ -140,10 +144,15 @@ export class GameEngine {
               event.blockedDamage,
               event.dodged,
               event.piercing,
+              ...(event.absorbedDamage === undefined ? [] : [event.absorbedDamage]),
             );
           else if (event.type === 'resourceGain')
             this.resourceGain?.(event.spiderId, event.hp, event.energy, event.reason);
-          else if (event.type === 'lightning' || event.type === 'fireExplosion')
+          else if (
+            event.type === 'lightning' ||
+            event.type === 'fireExplosion' ||
+            event.type === 'shieldAbsorption'
+          )
             this.magicEffect?.(event);
           else this.absorb?.();
         }

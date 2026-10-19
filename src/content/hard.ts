@@ -6,7 +6,7 @@ export const hardConfig: DifficultyConfig = {
   ...normalConfig,
   armorEffectiveness: 1,
   coinsPerSec: 7,
-  startingCoins: 1000,
+  startingCoins: 2000,
   spiderSpeedBase: SPIDER_SPEED.hard.base,
   spiderSpeedStep: SPIDER_SPEED.hard.perLevel,
   spiderDamageBase: SPIDER_DAMAGE.base,

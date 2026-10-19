@@ -125,7 +125,7 @@ export class GameField {
         const cdPct = archer.cooldownFraction * 100;
         btn.style.setProperty('--cd-pct', `${cdPct}%`);
         btn.classList.toggle('archer-btn--cooldown', !archer.isReady);
-        btn.classList.toggle('archer-btn--lightning', state.lightningCharges[i]);
+        btn.classList.toggle('archer-btn--lightning', state.lightningCharges[i] > 0);
       }
     }
   }
@@ -233,7 +233,23 @@ export class GameField {
     return this._archersRow;
   }
 
-  public showMagicEffect(event: Extract<GameEvent, { type: 'lightning' | 'fireExplosion' }>): void {
+  public showMagicEffect(
+    event: Extract<GameEvent, { type: 'lightning' | 'fireExplosion' | 'shieldAbsorption' }>,
+  ): void {
+    if (event.type === 'shieldAbsorption') {
+      const pop = document.createElement('div');
+      pop.className = 'damage-pop damage-pop--electric';
+      pop.style.left = '50%';
+      pop.style.top = '90%';
+      pop.textContent = event.hp > 0 ? `-${event.hp} (${event.absorbed} поглощено)` : 'Поглощено';
+      this._magicElements.add(pop);
+      this._effects.appendChild(pop);
+      pop.addEventListener('animationend', () => {
+        pop.remove();
+        this._magicElements.delete(pop);
+      });
+      return;
+    }
     const element = document.createElement('div');
     element.className = `magic-effect magic-effect--${event.type}`;
     if (event.type === 'lightning') {
@@ -314,6 +330,7 @@ export class GameField {
     blockedDamage?: number,
     dodged = false,
     piercing = false,
+    absorbedDamage = 0,
   ): void {
     const pos = this._lastSpiderPositions.get(spiderId);
     if (!pos) return;
@@ -321,13 +338,25 @@ export class GameField {
     const laneEl = this._lanes[pos.lane];
     if (!laneEl) return;
 
-    if (hpDamage > 0 || blockedDamage !== undefined || dodged) {
+    if (hpDamage > 0 || blockedDamage !== undefined || dodged || absorbedDamage > 0) {
       const el = document.createElement('div');
       el.className = 'damage-pop damage-pop--hp';
       el.classList.toggle('damage-pop--dodge', dodged);
+      el.classList.toggle('damage-pop--electric', absorbedDamage > 0);
       el.classList.toggle('damage-pop--heavy', pos.type === 'tank' && hpDamage > 0);
       el.classList.toggle('damage-pop--piercing', piercing && hpDamage > 0);
-      el.textContent = dodged ? 'Уклонение' : hpDamage === 0 ? 'Блок' : `-${hpDamage}`;
+      el.textContent = dodged
+        ? 'Уклонение'
+        : hpDamage === 0
+          ? absorbedDamage > 0
+            ? 'Поглощено'
+            : 'Блок'
+          : `-${hpDamage}`;
+      if (absorbedDamage > 0 && hpDamage > 0) {
+        const absorption = document.createElement('span');
+        absorption.textContent = ` (${absorbedDamage} поглощено)`;
+        el.append(absorption);
+      }
       if (blockedDamage !== undefined && hpDamage > 0) {
         const block = document.createElement('span');
         block.className = 'damage-pop__blocked';

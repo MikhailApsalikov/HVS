@@ -27,7 +27,7 @@ function arena(talents: { id: TalentId; rank: number }[] = [], roll = 0.999999) 
   session.state.levelTimer = session.state.levelTimerMax = 10000;
   return session;
 }
-const streak = [{ id: 'killingStreak' as const, rank: 8 }];
+const streak = [{ id: 'killingStreak' as const, rank: 5 }];
 function hit(session: GameSession, damage = 10) {
   addSpider(session, 'normal', 8, 1, damage);
   session.tick(0.001);
@@ -108,9 +108,9 @@ describe('agility dodge and breach effects', () => {
 });
 
 describe('killing streak through gameplay time', () => {
-  it.each(Array.from({ length: 8 }, (_, i) => i + 1))('rank %s sets the stack interval', (rank) => {
+  it.each(Array.from({ length: 5 }, (_, i) => i + 1))('rank %s sets the stack interval', (rank) => {
     const session = arena([{ id: 'killingStreak', rank }]);
-    const interval = 34 - 3 * rank;
+    const interval = 35 - 5 * rank;
     expect(session.state.stats['killingStreak.interval']).toBe(interval);
     session.tick(interval - 0.01);
     expect(session.state.killingStreakStacks).toBe(0);
@@ -323,8 +323,8 @@ describe('enthusiasm and improved streak', () => {
 
 describe('shooting rebalance, tooltips and save compatibility', () => {
   it.each([
-    ['enthusiasm', 'killingStreak', 8, 0],
-    ['enthusiasm', 'killingStreak', 8, 1],
+    ['enthusiasm', 'killingStreak', 5, 0],
+    ['enthusiasm', 'killingStreak', 5, 1],
     ['improvedKillingStreak', 'enthusiasm', 5, 0],
     ['improvedKillingStreak', 'enthusiasm', 5, 1],
   ] as const)(
@@ -338,7 +338,8 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         { id: 'criticalShot', rank: 5 },
         { id: 'piercingReward', rank: 7 },
         { id: 'improvedAgility', rank: 5 },
-        { id: 'killingStreak', rank: 8 },
+        { id: 'killingStreak', rank: 5 },
+        { id: 'vampirism', rank: 3 },
         { id: prerequisite, rank: 0 },
         { id, rank: currentRank },
       ]);
@@ -396,13 +397,13 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
     'new tiers, prerequisites, ranks and gold on %s',
     (difficulty) => {
       const session = new GameSession(difficulty);
-      expect(session.state.coins).toBe({ easy: 0, normal: 250, hard: 1000 }[difficulty]);
+      expect(session.state.coins).toBe({ easy: 0, normal: 250, hard: 2000 }[difficulty]);
       for (const [id, tier, maxRanks] of [
         ['piercingReward', 2, 7],
         ['volleyMastery', 2, 5],
         ['titanPreparation', 5, 5],
         ['aimedFire', 7, 1],
-        ['killingStreak', 3, 8],
+        ['killingStreak', 3, 5],
         ['enthusiasm', 4, 5],
         ['rapidFire', 5, 7],
         ['improvedKillingStreak', 5, 5],
@@ -419,7 +420,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
       ]);
       expect(session.upgradeTalent('enthusiasm')).toBe(false);
       expect(session.upgradeTalent('volleyMastery')).toBe(true);
-      for (let i = 0; i < 8; i++) expect(session.upgradeTalent('killingStreak')).toBe(true);
+      for (let i = 0; i < 5; i++) expect(session.upgradeTalent('killingStreak')).toBe(true);
       expect(session.upgradeTalent('killingStreak')).toBe(false);
       for (const id of ['enthusiasm', 'improvedKillingStreak'] as const) {
         for (let i = 0; i < 5; i++) expect(session.upgradeTalent(id)).toBe(true);
@@ -457,8 +458,8 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
   });
   it('describes the bonuses without leaking placeholders or rules internals', () => {
     const session = arena(streak);
-    expect(talentDescription('killingStreak', 1, session.state.stats)).toContain('31 с');
-    expect(talentDescription('killingStreak', 8, session.state.stats)).toContain('10 с');
+    expect(talentDescription('killingStreak', 1, session.state.stats)).toContain('30 с');
+    expect(talentDescription('killingStreak', 5, session.state.stats)).toContain('10 с');
     expect(talentDescription('enthusiasm', 5, session.state.stats)).toContain('100%');
     expect(talentDescription('improvedKillingStreak', 5, session.state.stats)).toContain('0.05 с');
     expect(talentDescription('volleyMastery', 5, session.state.stats)).toContain('20%');
@@ -502,15 +503,15 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         },
       };
       const parsed = parseSave(previous)!;
-      expect(parsed.version).toBe(27);
+      expect(parsed.version).toBe(28);
       const session = restore(parsed, () => 0.999999);
       expect(session.state.killingStreakStacks).toBe(2);
-      expect(session.state.killingStreakProgress).toBe((34 - 3 * Math.min(rank, 8)) / 2);
+      expect(session.state.killingStreakProgress).toBe((35 - 5 * Math.min(rank, 5)) / 2);
       expect(session.state.killingStreakFraction).toBe(0.5);
       expect(session.state.currentShootCost).toBe(33);
       expect(session.state.coins).toBe(previous.state.coins);
       expect(snapshot(restore(parseSave(snapshot(session))!))).toEqual(snapshot(session));
-      session.tick((34 - 3 * Math.min(rank, 8)) / 2);
+      session.tick((35 - 5 * Math.min(rank, 5)) / 2);
       expect(session.state.killingStreakStacks).toBe(3);
       expect(session.state.killingStreakProgress).toBe(0);
     },
@@ -532,7 +533,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         ...saved,
         version: 13,
         abilities: saved.abilities.slice(0, 11),
-        state: { ...saved.state, killingStreakProgress: 24 },
+        state: { ...saved.state, killingStreakProgress: 30 },
       }),
     ).toBeNull();
   });
