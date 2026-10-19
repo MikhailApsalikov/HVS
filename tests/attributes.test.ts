@@ -483,7 +483,8 @@ describe('armor and talent branches', () => {
     ['rapidFire', 5, 28, 40],
     ['blizzardMastery', 4, 21, 30],
     ['iceArrows', 5, 28, 40],
-    ['magicArmor', 4, 21, 30],
+    ['magicArmor', 5, 28, 40],
+    ['lightningShield', 4, 21, 30],
     ['permafrost', 2, 7, 10],
     ['recharge', 7, 42, 60],
     ['dutyBound', 5, 28, 40],
@@ -534,34 +535,37 @@ describe('armor and talent branches', () => {
     expect(session.state.stats.inventorySlots).toBe(2);
   });
 
-  it('magic armor grants twenty armor per final intellect at every rank', () => {
+  it('magic armor grants fifteen armor per final intellect at every rank', () => {
     const session = new GameSession('normal');
-    session.state.level = 30;
+    session.state.level = 40;
     session.state.pendingTalentPoints = 6;
     session.talents.loadFromSave([
       { id: 'tireless', rank: 5 },
       { id: 'agility', rank: 5 },
       { id: 'improvedPrep', rank: 5 },
       { id: 'hunterArsenal', rank: 5 },
-      { id: 'permafrost', rank: 1 },
+      { id: 'permafrost', rank: 5 },
+      { id: 'lightningShield', rank: 1 },
+      { id: 'lightningArrows', rank: 1 },
+      { id: 'fireExplosion', rank: 1 },
     ]);
-    session.refreshStats(); // 74 intellect, 228 armor from endurance.
+    session.refreshStats(); // 94 intellect, 288 armor from endurance.
     for (let rank = 1; rank <= 5; rank++) {
       expect(session.upgradeTalent('magicArmor')).toBe(true);
-      expect(session.state.stats.armor).toBe(228 + 1480 * rank);
+      expect(session.state.stats.armor).toBe(288 + 1410 * rank);
     }
     expect(session.upgradeTalent('magicArmor')).toBe(false);
     session.state.character.setModifiers('intellect-item', [
       { stat: 'intellect', kind: 'flat', value: 1 },
     ]);
     session.refreshStats();
-    expect(session.state.stats.armor).toBe(7728); // 75 × 20 × 5 + 228.
+    expect(session.state.stats.armor).toBe(7413); // 95 × 15 × 5 + 288.
     session.state.pendingTalentPoints = 1;
     session.upgradeTalent('improvedIntellect');
-    expect(session.state.stats.intellect).toBe(109);
-    expect(session.state.stats.armor).toBe(11128); // 109 × 20 × 5 + 228.
+    expect(session.state.stats.intellect).toBe(141);
+    expect(session.state.stats.armor).toBe(10863); // 141 × 15 × 5 + 288.
     session.state.character.removeModifiers('intellect-item');
     session.refreshStats();
-    expect(session.state.stats.armor).toBe(11028); // 108 × 20 × 5 + 228.
+    expect(session.state.stats.armor).toBe(10788); // 140 × 15 × 5 + 288.
   });
 });

@@ -231,11 +231,12 @@ describe('new defense talents through session commands', () => {
     const session = defense(60, () => 0);
     buy(session, 'bestDefense', 10);
     buy(session, 'adrenaline');
-    buy(session, 'agility', 5);
+    buy(session, 'agility', 9);
     buy(session, 'improvedIntellect', 5);
     buy(session, 'hunterArsenal', 5);
     buy(session, 'tireless', 5);
     buy(session, 'improvedPrep', 3);
+    buy(session, 'lightningShield');
     buy(session, 'magicArmor', 5);
     buy(session, 'quickInstinct', 2);
     session.refreshStats();

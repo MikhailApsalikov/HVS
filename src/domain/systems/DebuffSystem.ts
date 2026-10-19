@@ -86,7 +86,7 @@ export function debuffAgilityDodgeModifiers(
     : [];
 }
 
-/** Called only after a breach actually removes health. */
+/** Called after a breach damages health or a damage-absorption shield. */
 export function applySpiderDebuff(state: GameState, spider: Spider): boolean {
   if (state.stats.spiderDebuffResistance === 1) return false;
   const duration = (base: number) => state.rules.value('spiderDebuffDuration', base);

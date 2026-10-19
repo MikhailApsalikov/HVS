@@ -202,11 +202,12 @@ describe('defense talent abilities through session commands', () => {
     buy(session, 'shieldBlock', 7);
     buy(session, 'lastHope');
     buy(session, 'improvedLastHope', 5);
-    buy(session, 'agility', 5);
+    buy(session, 'agility', 9);
     buy(session, 'improvedIntellect', 5);
     buy(session, 'tireless', 5);
     buy(session, 'improvedPrep', 5);
     buy(session, 'hunterArsenal', 3);
+    buy(session, 'lightningShield');
     buy(session, 'magicArmor', 5);
     buy(session, 'quickInstinct', 2);
     expect(session.state.stats['lastHope.cooldown']).toBe(13.4); // 40 × .96 − 25

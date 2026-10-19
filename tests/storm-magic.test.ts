@@ -93,34 +93,56 @@ describe('storm talent balance through session commands', () => {
     expect(session.state.stats.energyRegen).toBe(regen + 7);
   });
 
-  it('requires tier five and fully learned magic armor for Lightning Shield', () => {
-    const session = new GameSession('normal', () => 0.999999, { level: 60 });
-    session.talents.loadFromSave([
-      { id: 'agility', rank: 10 },
-      { id: 'tireless', rank: 7 },
-      { id: 'improvedIntellect', rank: 5 },
-      { id: 'hunterArsenal', rank: 5 },
-      { id: 'magicArmor', rank: 4 },
-    ]);
-    expect(session.talents.getTalent('lightningShield')).toMatchObject({
-      tier: 5,
-      maxRanks: 1,
-      requiredBranchPoints: 28,
-    });
-    expect(session.upgradeTalent('lightningShield')).toBe(false);
-    expect(session.upgradeTalent('magicArmor')).toBe(true);
-    session.state.level = 39;
-    expect(session.upgradeTalent('lightningShield')).toBe(false);
-    session.state.level = 40;
-    expect(session.upgradeTalent('lightningShield')).toBe(true);
-    expect(session.upgradeTalent('lightningShield')).toBe(false);
-    expect(session.talents.getTalent('improvedArmageddon').tier).toBe(4);
-    expect(TALENTS.magicArmor.column).toBe(TALENTS.lightningShield.column);
-    const tierFour = session.talents.talents.filter(
-      (talent) => talent.branch === 'magic' && talent.tier === 4,
-    );
-    expect(new Set(tierFour.map(({ id }) => TALENTS[id].column)).size).toBe(tierFour.length);
-  });
+  it.each(['easy', 'normal', 'hard'] as const)(
+    'learns Lightning Shield at tier four before Magic Armor at tier five on %s',
+    (difficulty) => {
+      const session = new GameSession(difficulty, () => 0.999999, { level: 60 });
+      session.talents.loadFromSave([
+        { id: 'agility', rank: 10 },
+        { id: 'tireless', rank: 7 },
+        { id: 'improvedIntellect', rank: 5 },
+        { id: 'hunterArsenal', rank: 5 },
+        { id: 'permafrost', rank: 1 },
+      ]);
+      expect(session.talents.getTalent('lightningShield')).toMatchObject({
+        tier: 4,
+        maxRanks: 1,
+        requiredBranchPoints: 21,
+        unlocksAtLevel: 30,
+      });
+      expect(session.talents.getTalent('magicArmor')).toMatchObject({
+        tier: 5,
+        maxRanks: 5,
+        requiredBranchPoints: 28,
+        unlocksAtLevel: 40,
+      });
+      expect(session.talents.upgradeBlockReason('magicArmor', 60)).toBe('prerequisite');
+      expect(session.upgradeTalent('magicArmor')).toBe(false);
+      session.state.level = 29;
+      expect(session.upgradeTalent('lightningShield')).toBe(false);
+      session.state.level = 30;
+      expect(session.upgradeTalent('lightningShield')).toBe(true);
+      expect(session.upgradeTalent('lightningShield')).toBe(false);
+      session.state.phase = 'playing';
+      expect(session.activateAbility('lightningShield')).toBe('activated');
+      session.state.phase = 'levelUp';
+      session.state.level = 39;
+      expect(session.upgradeTalent('magicArmor')).toBe(false);
+      session.state.level = 40;
+      for (let rank = 1; rank <= 5; rank++) expect(session.upgradeTalent('magicArmor')).toBe(true);
+      expect(session.upgradeTalent('magicArmor')).toBe(false);
+      expect(session.talents.getTalent('improvedArmageddon').tier).toBe(4);
+      expect(TALENTS.magicArmor.column).toBe(TALENTS.lightningShield.column);
+      expect(TALENTS.magicArmor.prerequisite).toEqual({ id: 'lightningShield', rank: 1 });
+      expect(TALENTS.lightningShield.prerequisite).toBeUndefined();
+      for (const tier of [4, 5]) {
+        const talents = session.talents.talents.filter(
+          (talent) => talent.branch === 'magic' && talent.tier === tier,
+        );
+        expect(new Set(talents.map(({ id }) => TALENTS[id].column)).size).toBe(talents.length);
+      }
+    },
+  );
 });
 
 describe('Lightning Shield through session commands', () => {
@@ -169,6 +191,73 @@ describe('Lightning Shield through session commands', () => {
     expect(breach(session, 10)).toMatchObject({ hp: 10 });
   });
 
+  it.each([
+    ['golden', 'goldLock'],
+    ['fast', 'healingReduction'],
+    ['poisonous', 'poison'],
+    ['ninja', 'disorientation'],
+  ] as const)(
+    'applies the %s spider debuff through full and partial shield absorption',
+    (type, effectId) => {
+      for (const partial of [false, true]) {
+        const session = arena(shield);
+        expect(session.activateAbility('lightningShield')).toBe('activated');
+        const capacity = session.state.lightningShieldAbsorption;
+        const hp = session.state.hp;
+        const damage = partial ? capacity + 100 : 100;
+        addSpider(session, type, 4, 1, damage);
+        session.tick(0.001);
+        expect(session.state.hp).toBe(hp - (partial ? 100 : 0));
+        expect(session.state.lightningShieldAbsorption).toBe(partial ? 0 : capacity - 100);
+        expect(
+          session.state.activeEffects.find((effect) => effect.id === effectId)?.remaining,
+        ).toBeGreaterThan(0);
+        if (type === 'golden') expect(session.state.stats.coinsPerSec).toBeLessThan(4);
+        if (type === 'fast') expect(session.state.stats.healingReceived).toBeLessThan(1);
+        if (type === 'poisonous') {
+          expect(session.state.poisonDamage).toEqual([damage]);
+          expect(session.state.stats['poison.tickDamage']).toBeGreaterThan(0);
+        }
+        const loaded = restore(parseSave(snapshot(session))!);
+        expect(loaded.state.activeEffects).toEqual(session.state.activeEffects);
+      }
+    },
+  );
+
+  it('respects magic armor immunity when shield absorption replaces health damage', () => {
+    const session = arena([...shield, { id: 'magicArmor', rank: 5 }]);
+    session.state.character.setModifiers('test:intellect', [
+      { stat: 'intellect', kind: 'flat', value: 2000 - session.state.stats.intellect },
+    ]);
+    session.refreshStats();
+    expect(session.state.stats.spiderDebuffResistance).toBe(1);
+    expect(session.activateAbility('lightningShield')).toBe('activated');
+    for (const type of ['golden', 'fast', 'poisonous', 'ninja'] as const)
+      addSpider(session, type, 4, 1, 100);
+    const hp = session.state.hp;
+    session.tick(0.001);
+    expect(session.state.hp).toBe(hp);
+    expect(
+      session.state.activeEffects.filter(
+        (effect) => effect.kind === 'debuff' && effect.source === 'spider',
+      ),
+    ).toEqual([]);
+  });
+
+  it('applies piercing stun even when the shield absorbs the entire hit', () => {
+    const session = arena(shield, 0);
+    session.state.level = 61;
+    session.refreshStats();
+    expect(session.activateAbility('lightningShield')).toBe('activated');
+    const hp = session.state.hp;
+    const capacity = session.state.lightningShieldAbsorption;
+    expect(breach(session)).toMatchObject({ hp: 0, absorbedDamage: 400, piercing: true });
+    expect(session.state.hp).toBe(hp);
+    expect(session.state.lightningShieldAbsorption).toBe(capacity - 400);
+    expect(session.state.isStunned).toBe(true);
+    expect(session.state.stats.energyPerBreach).toBe(0);
+  });
+
   it.each(['dodge', 'block', 'invulnerability', 'zero'] as const)(
     'does not spend absorption after %s prevents damage',
     (protection) => {
@@ -188,9 +277,11 @@ describe('Lightning Shield through session commands', () => {
       session.activateAbility('lightningShield');
       if (protection === 'invulnerability') session.state.invulnerableTimer = 5;
       const capacity = session.state.lightningShieldAbsorption;
-      breach(session, protection === 'zero' ? 0 : 100);
+      addSpider(session, 'poisonous', 4, 1, protection === 'zero' ? 0 : 100);
+      session.tick(0.001);
       expect(session.state.lightningShieldAbsorption).toBe(capacity);
       expect(session.state.lightningShieldProcCooldown).toBe(0);
+      expect(session.state.poisonTimer).toBe(0);
     },
   );
 
@@ -478,6 +569,19 @@ describe('new legendary magic equipment', () => {
 });
 
 describe('storm save compatibility', () => {
+  it('preserves Magic Armor already learned at level thirty before the tier swap', () => {
+    const session = new GameSession('normal', () => 0.999999, { level: 30 });
+    session.talents.loadFromSave([{ id: 'magicArmor', rank: 5 }]);
+    session.refreshStats();
+    const saved = snapshot(session);
+    const loaded = restore(parseSave(saved)!);
+    expect(loaded.talents.getRank('magicArmor')).toBe(5);
+    expect(loaded.talents.getRank('lightningShield')).toBe(0);
+    expect(loaded.state.stats.armor).toBe(session.state.stats.armor);
+    expect(loaded.state.pendingTalentPoints).toBe(saved.state.pendingTalentPoints);
+    expect(snapshot(loaded)).toEqual(saved);
+  });
+
   it('migrates version 27, refunds three removed ranks once and preserves cooldowns and streak progress', () => {
     const session = arena([{ id: 'killingStreak', rank: 5 }, ...lightning]);
     const saved = snapshot(session);

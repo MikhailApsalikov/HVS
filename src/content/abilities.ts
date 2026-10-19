@@ -152,7 +152,7 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     name: 'Щит молний',
     key: 'G',
     sprite: 'AbilityLightningShield',
-    unlockLevel: 40,
+    unlockLevel: 30,
     talent: 'lightningShield',
     description: `Окружает вас щитом молний на 3 минуты, поглощающим до {lightningShield.absorption} урона. Каждая единица интеллекта увеличивает прочность щита на ${ATTRIBUTE_RULES.intellect.shieldAbsorptionPerPoint}.\nЕсли изучены «Стрелы молний», поглощение урона выпускает в пауков ответную цепную молнию не чаще раза в {lightningShield.procCooldown} с.`,
   },

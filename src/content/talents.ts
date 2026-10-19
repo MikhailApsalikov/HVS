@@ -241,7 +241,6 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 3,
     name: 'Щит молний',
     sprite: 'AbilityLightningShield',
-    prerequisite: { id: 'magicArmor', rank: 5 },
     effects: [],
   },
   titanPreparation: {
@@ -411,12 +410,13 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Магическая броня',
     branch: 'magic',
     column: 3,
+    prerequisite: { id: 'lightningShield', rank: 1 },
     sprite: 'TalentMagicArmor',
     effects: [],
     scaling: {
       attribute: 'intellect',
       step: 1,
-      effect: flat('armor', 20),
+      effect: flat('armor', 15),
       additionalEffects: [flat('spiderDebuffResistance', 0.0001)],
     },
     description:

@@ -194,14 +194,15 @@ export function resolveBreaches(
         state.masochismRank > 0
       )
         state.masochismTimer = MASOCHISM.duration;
-      if (lostHealth) applySpiderDebuff(state, spider);
-      if (lostHealth && piercing) applyPiercingStun(state);
+      const damagingHit = lostHealth || absorbedDamage > 0;
+      if (damagingHit) applySpiderDebuff(state, spider);
+      if (damagingHit && piercing) applyPiercingStun(state);
       if (definition.clearsBuffs && !dodged) {
         clearPlayerBuffs(state);
       }
       if (lostHealth) shieldAfterBreach(state, previousHp - state.hp);
       if (
-        lostHealth ||
+        damagingHit ||
         previousFatalShield !== state.fatalShieldTimer ||
         (definition.clearsBuffs && !dodged)
       )

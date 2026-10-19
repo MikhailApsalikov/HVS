@@ -36,9 +36,9 @@ function breach(session: GameSession, type: DebuffSpider, damage = 101) {
 
 describe('magic armor through session commands', () => {
   it.each(['easy', 'normal', 'hard'] as const)(
-    'requires magic tier four and grants five ranks based on final intellect on %s',
+    'requires magic tier five and grants five ranks based on final intellect on %s',
     (difficulty) => {
-      const session = new GameSession(difficulty, () => 0.999999, { level: 29 });
+      const session = new GameSession(difficulty, () => 0.999999, { level: 39 });
       session.state.pendingTalentPoints = 6;
       session.talents.loadFromSave([
         { id: 'improvedIntellect', rank: 5 },
@@ -46,24 +46,27 @@ describe('magic armor through session commands', () => {
         { id: 'tireless', rank: 5 },
         { id: 'hunterArsenal', rank: 3 },
         { id: 'improvedPrep', rank: 2 },
+        { id: 'permafrost', rank: 5 },
+        { id: 'lightningArrows', rank: 1 },
+        { id: 'lightningShield', rank: 1 },
       ]);
       expect(session.talents.getTalent('magicArmor')).toMatchObject({
         branch: 'magic',
-        tier: 4,
-        requiredBranchPoints: 21,
-        unlocksAtLevel: 30,
+        tier: 5,
+        requiredBranchPoints: 28,
+        unlocksAtLevel: 40,
         maxRanks: 5,
       });
       expect(session.upgradeTalent('magicArmor')).toBe(false);
-      session.state.level = 30;
+      session.state.level = 40;
       expect(session.upgradeTalent('magicArmor')).toBe(false);
       expect(session.upgradeTalent('hunterArsenal')).toBe(true);
-      expect(session.state.stats.intellect).toBe(274);
+      expect(session.state.stats.intellect).toBe(361);
       const armor = session.state.stats.armor;
       for (let rank = 1; rank <= 5; rank++) {
         expect(session.upgradeTalent('magicArmor')).toBe(true);
-        expect(session.state.stats.armor).toBe(armor + 5480 * rank);
-        expect(session.state.stats.spiderDebuffResistance).toBeCloseTo(0.0274 * rank);
+        expect(session.state.stats.armor).toBe(armor + 5415 * rank);
+        expect(session.state.stats.spiderDebuffResistance).toBeCloseTo(0.0361 * rank);
         expect(session.state.rules.explain('spiderDebuffResistance').modifiers).toEqual([
           expect.objectContaining({ source: 'talent:magicArmor' }),
         ]);
@@ -74,13 +77,13 @@ describe('magic armor through session commands', () => {
         { stat: 'intellect', kind: 'flat', value: 20 },
       ]);
       session.refreshStats();
-      expect(session.state.stats.intellect).toBe(299);
-      expect(session.state.stats.armor).toBe(armor + 29900);
-      expect(session.state.stats.spiderDebuffResistance).toBe(0.1495);
+      expect(session.state.stats.intellect).toBe(386);
+      expect(session.state.stats.armor).toBe(armor + 28950);
+      expect(session.state.stats.spiderDebuffResistance).toBe(0.193);
       session.state.character.removeModifiers('test:intellect-item');
       session.refreshStats();
-      expect(session.state.stats.armor).toBe(armor + 27400);
-      expect(session.state.stats.spiderDebuffResistance).toBe(0.137);
+      expect(session.state.stats.armor).toBe(armor + 27075);
+      expect(session.state.stats.spiderDebuffResistance).toBe(0.1805);
     },
   );
 
