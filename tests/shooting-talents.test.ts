@@ -127,7 +127,7 @@ describe('shooting and magic talent progression', () => {
     expect(session.upgradeTalent('blizzardMastery')).toBe(false);
     buy(session, 'permafrost', 2);
     buy(session, 'blizzardMastery', 1);
-    expect(session.state.stats['blizzard.slow']).toBe(0.47);
+    expect(session.state.stats['blizzard.slow']).toBe(0.44);
     expect(session.state.stats['blizzard.duration']).toBe(5);
     expect(TALENTS.blizzardMastery.branch).toBe('magic');
   });

@@ -87,6 +87,7 @@ describe('item chance tooltips through session commands', () => {
       'Шанс тройного крита среди критических выстрелов — 40.6%.',
     );
     start(session);
+    session.state.energy = session.state.maxEnergy;
     expect(session.activateAbility('eagleEye')).toBe('activated');
     expect(shootDescription(session.state, 1)).toContain(
       'Общий шанс критического выстрела — 100%.',

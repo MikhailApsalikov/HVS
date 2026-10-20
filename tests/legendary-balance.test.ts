@@ -98,7 +98,7 @@ describe('updated legendary equipment through session purchases', () => {
       expect(after.intellect).toBe(before.intellect + intellect);
       expect(after.endurance).toBe(before.endurance + endurance);
       expect(after.agility).toBe(before.agility + agility);
-      expect(after.maxEnergy).toBe(before.maxEnergy + 2 * intellect + energy);
+      expect(after.maxEnergy).toBe(before.maxEnergy + intellect + energy);
       expect(after.energyRegen).toBeCloseTo(before.energyRegen + intellect * 0.01 + regen);
       expect(after.hpRegen).toBeCloseTo(before.hpRegen + endurance * 0.04);
       expect(after.armor).toBe(before.armor + 2 * endurance);

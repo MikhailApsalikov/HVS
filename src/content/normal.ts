@@ -64,7 +64,7 @@ export const normalConfig: DifficultyConfig = {
     masochism: { maxRanks: 5, unlocksAtLevel: 20 },
     improvedPrep: { maxRanks: 5, unlocksAtLevel: 20 },
     recharge: { maxRanks: 1, unlocksAtLevel: 60 },
-    permafrost: { maxRanks: 5, unlocksAtLevel: 10 },
+    permafrost: { maxRanks: 10, unlocksAtLevel: 10 },
     lightningArrows: { maxRanks: 1, unlocksAtLevel: 10 },
     improvedLightning: { maxRanks: 5, unlocksAtLevel: 20 },
     fireExplosion: { maxRanks: 10, unlocksAtLevel: 20 },

@@ -296,7 +296,7 @@ describe('presentation uses the actual resolved stats', () => {
     expect(talentDescription('magicArmor', 5, stats)).toContain(
       'Каждая единица интеллекта даёт 75 брони',
     );
-    expect(talentDescription('blizzardMastery', 1, stats)).toContain('7 процентных пунктов');
+    expect(talentDescription('blizzardMastery', 1, stats)).toContain('4 процентных пунктов');
     expect(escapeHtml('<script>"&\'')).toBe('&lt;script&gt;&quot;&amp;&#39;');
   });
 });

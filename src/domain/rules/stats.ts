@@ -159,7 +159,7 @@ export const STATS = {
   spiderTypeProbability: stat('Вероятность выбора вида паука', 0, probability),
   spawnInterval: stat('Интервал появления, с', 0.02, { ...duration, min: 0.01 }),
   spiderSpeed: stat('Скорость паука, поля/с', 0, speed),
-  permafrostSlow: stat('Замедление: Вечная мерзлота', 0, { ...probability, max: 0.5 }),
+  permafrostSlow: stat('Замедление: Вечная мерзлота', 0, { ...probability, max: 0.6 }),
   globalSpiderSlow: stat('Замедление пауков от предметов', 0, probability),
   'iceArrows.chance': stat('Шанс: Ледяные стрелы', 0, probability),
   'iceArrows.adjacentChance': stat('Шанс соседних линий: Ледяные стрелы', 0, probability),
@@ -205,7 +205,7 @@ export const STATS = {
   'armageddon.charge': stat('Подготовка: Армагеддон, с', 2.5, duration),
   'armageddon.duration': stat('Длительность: Армагеддон, с', 3, duration),
   'lightningArrows.cost': stat('Стоимость: Стрелы молний', 90, integer),
-  'lightningArrows.cooldown': stat('Перезарядка: Стрелы молний, с', 30, duration),
+  'lightningArrows.cooldown': stat('Перезарядка: Стрелы молний, с', 90, duration),
   'lightningArrows.jumps': stat('Перескоки: Стрелы молний', 1, { ...integer, max: 11 }),
   'lightningArrows.charges': stat('Зарядов каждого лучника: Стрелы молний', 1, {
     ...integer,
@@ -278,7 +278,7 @@ export const ATTRIBUTE_RULES = {
   },
   intellect: {
     energyThreshold: 100,
-    energyPerPoint: 2,
+    energyPerPoint: 1,
     regenPerPoint: 0.01,
     healPerPoint: 2,
     prepPerPoint: 1,

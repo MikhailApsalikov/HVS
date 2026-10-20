@@ -44,7 +44,7 @@ describe('talent strength and independent sources', () => {
     ]);
     session.refreshStats();
     expect(session.state.stats['volley.cooldown']).toBe(29.33); // 36 × .86 × .96 × 2^(-23/1200)
-    expect(session.state.stats['prep.cooldown']).toBe(51.6); // 60 × .96 − 6
+    expect(session.state.stats['prep.cooldown']).toBe(55.6); // 60 × .96 − 2
     expect(session.state.stats.shootCooldown).toBe(2.53);
   });
   it('adds flat item, intellect and tireless regeneration', () => {

@@ -21,7 +21,7 @@ function preparation(regenPercent = 0) {
 
 describe('preparation through session commands', () => {
   it.each([1, 2, 3, 4, 5])(
-    'extends the regeneration buff by one second per improved rank: %s',
+    'reduces cooldown by two seconds and extends regeneration by one second per improved rank: %s',
     (rank) => {
       const session = preparation(-100);
       session.state.level = 30;
@@ -31,10 +31,13 @@ describe('preparation through session commands', () => {
       expect(session.activateAbility('prep')).toBe('activated');
       expect(session.state.energy).toBe(100);
       expect(session.state.prepTimer).toBe(5 + rank);
-      expect(session.state.getAbility('prep').duration).toBe(60 - 6 * rank);
+      expect(session.state.getAbility('prep').duration).toBe(60 - 2 * rank);
       expect(session.state.currentEnergyRegen).toBe(30);
       expect(abilityDescription(session.state, 'prep')).toContain(
         `100 энергии и ${30 * (5 + rank)} в течение ${5 + rank} секунд`,
+      );
+      expect(talentDescription('improvedPrep', rank, session.state.stats)).toContain(
+        `Сокращает перезарядку «Подготовки» на ${2 * rank} с`,
       );
       expect(talentDescription('improvedPrep', rank, session.state.stats)).toContain(
         `на ${rank} с`,

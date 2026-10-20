@@ -175,7 +175,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'magic',
     name: 'Улучшенная подготовка',
     sprite: 'TalentPrep',
-    effects: [flat('prep.cooldown', -6), flat('prep.duration', 1)],
+    effects: [flat('prep.cooldown', -2), flat('prep.duration', 1)],
     description:
       'Сокращает перезарядку «Подготовки» на {prep.cooldown} с и продлевает усиленное восстановление энергии на {prep.duration} с.',
   },
@@ -191,7 +191,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'magic',
     name: 'Вечная мерзлота',
     sprite: 'TalentPermafrost',
-    effects: [flat('permafrostSlow', 0.1)],
+    effects: [flat('permafrostSlow', 0.06)],
     description: 'Снижает скорость передвижения всех пауков на {permafrostSlow}.',
   },
   lightningArrows: {
@@ -325,7 +325,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     name: 'Беспощадная вьюга',
     sprite: 'TalentBlizzardMastery',
-    effects: [flat('blizzard.slow', 0.07), flat('blizzard.duration', 1)],
+    effects: [flat('blizzard.slow', 0.04), flat('blizzard.duration', 1)],
     description:
       'Усиливает замедление пауков от «Вьюги» на {blizzard.slow} и продлевает её действие на {blizzard.duration} с.',
   },

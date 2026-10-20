@@ -180,6 +180,7 @@ describe('item combat balance through session commands', () => {
     const arrows = [...session.state.arrows.values()];
     expect(arrows).toHaveLength(18);
     expect(arrows.every(({ critical, power }) => critical && power === 3)).toBe(true);
+    session.state.energy = session.state.maxEnergy;
     expect(session.activateAbility('eagleEye')).toBe('activated');
     expect(session.state.currentImprovedCriticalShotChance).toBe(1);
   });

@@ -165,8 +165,8 @@ describe('primary attributes through the session API', () => {
   it.each([
     [99, 100, 10.44, 348, 349],
     [100, 100, 10.45, 350, 350],
-    [101, 102, 10.46, 352, 351],
-    [250, 400, 11.95, 650, 500],
+    [101, 101, 10.46, 352, 351],
+    [250, 250, 11.95, 650, 500],
   ])(
     'intellect %s respects the energy threshold and strengthens both abilities',
     (intellect, maxEnergy, energyRegen, heal, prep) => {

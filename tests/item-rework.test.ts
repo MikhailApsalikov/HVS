@@ -192,7 +192,7 @@ describe('reworked equipment through session commands', () => {
     expect(stats.energyRegen).toBeCloseTo(
       before.energyRegen + bonus('energyRegen') + bonus('intellect') * 0.01,
     );
-    expect(stats.maxEnergy).toBe(100 + bonus('maxEnergy') + Math.max(0, stats.intellect - 100) * 2);
+    expect(stats.maxEnergy).toBe(100 + bonus('maxEnergy') + Math.max(0, stats.intellect - 100));
     expect(stats.energyPerKill).toBe(bonus('energyPerKill') + Math.floor(stats.agility / 240));
     expect(stats.coinsPerKill).toBe(bonus('coinsPerKill') + Math.floor(stats.endurance / 240));
     expect(stats.energyPerBreach).toBe(Math.floor(stats.endurance / 100));

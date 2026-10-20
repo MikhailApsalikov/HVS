@@ -59,7 +59,7 @@ describe('new magic talents through session commands', () => {
       for (let rank = 1; rank <= 5; rank++)
         expect(session.upgradeTalent('improvedLightning')).toBe(true);
       expect(session.upgradeTalent('improvedLightning')).toBe(false);
-      expect(session.talents.getTalent('permafrost')).toMatchObject({ tier: 2, maxRanks: 5 });
+      expect(session.talents.getTalent('permafrost')).toMatchObject({ tier: 2, maxRanks: 10 });
       expect(session.talents.getTalent('fireExplosion')).toMatchObject({ tier: 3, maxRanks: 10 });
       expect(session.talents.getTalent('blizzardMastery')).toMatchObject({ tier: 4 });
       expect(session.talents.getTalent('improvedArmageddon')).toMatchObject({
@@ -89,7 +89,7 @@ describe('new magic talents through session commands', () => {
     session.state.energy = 1000;
     expect(session.activateAbility('lightningArrows')).toBe('activated');
     expect(session.state.energy).toBe(910);
-    expect(session.state.getAbility('lightningArrows').remainingCooldown).toBe(30);
+    expect(session.state.getAbility('lightningArrows').remainingCooldown).toBe(90);
     expect(session.activateAbility('lightningArrows')).toBe('on_cooldown');
     expect(session.state.lightningCharges).toEqual(Array(9).fill(1));
     session.state.archers[0].start(1);
@@ -101,6 +101,11 @@ describe('new magic talents through session commands', () => {
     );
     expect(session.state.lightningCharges).toEqual([1, ...Array(8).fill(0)]);
     session.tick(30);
+    expect(session.activateAbility('lightningArrows')).toBe('on_cooldown');
+    expect(session.state.lightningCharges).toEqual([1, ...Array(8).fill(0)]);
+    session.tick(59.99);
+    expect(session.activateAbility('lightningArrows')).toBe('on_cooldown');
+    session.tick(0.01);
     expect(session.activateAbility('lightningArrows')).toBe('activated');
     expect(session.state.lightningCharges).toEqual(Array(9).fill(1));
     expect(abilityDescription(session.state, 'lightningArrows')).toContain('90');
