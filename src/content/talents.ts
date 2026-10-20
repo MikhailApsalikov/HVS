@@ -191,15 +191,8 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'magic',
     name: 'Вечная мерзлота',
     sprite: 'TalentPermafrost',
-    effects: [],
-    scaling: {
-      attribute: 'intellect',
-      step: 20,
-      basePerRank: 0.01,
-      effect: flat('permafrostSlow', 0.001),
-    },
-    description:
-      'Снижает скорость передвижения всех пауков на {scaling.base} + {scaling.value} за каждые {scaling.step} полных единиц интеллекта.\nЗамедление от этого таланта не может превышать 50%.',
+    effects: [flat('permafrostSlow', 0.1)],
+    description: 'Снижает скорость передвижения всех пауков на {permafrostSlow}.',
   },
   lightningArrows: {
     branch: 'magic',
@@ -225,7 +218,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     sprite: 'TalentFireExplosion',
     effects: [flat('fireExplosion.radius', 0.12 * 1.3)],
     fixedEffects: [flat('fireExplosion.chance', FIRE_EXPLOSION.chance)],
-    description: `Если у вас больше ${FIRE_EXPLOSION.energyThreshold} энергии, убийство паука стрелой с вероятностью {explosionChance} вызывает огненный взрыв, поражающий пауков рядом. Каждый ранг увеличивает область взрыва, а с ${FIRE_EXPLOSION.adjacentRank}-го ранга он задевает и соседние линии. Не расходует энергию.`,
+    description: `Убийство паука стрелой с вероятностью {explosionChance} вызывает огненный взрыв, поражающий пауков рядом. Каждый ранг увеличивает область взрыва, а с ${FIRE_EXPLOSION.adjacentRank}-го ранга он задевает и соседние линии. Не расходует энергию.`,
   },
   improvedArmageddon: {
     branch: 'magic',
@@ -367,7 +360,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Ледяные стрелы',
     sprite: 'TalentIceArrows',
     prerequisite: { id: 'blizzardMastery', rank: 6 },
-    effects: [flat('iceArrows.chance', 0.07), flat('iceArrows.adjacentChance', 0.02)],
+    effects: [flat('iceArrows.chance', 0.12), flat('iceArrows.adjacentChance', 0.04)],
     description: `При каждом попадании любой стрелы с вероятностью {iceArrows.chance} примораживает к земле всех живых пауков на линии попадания на ${ICE_ARROWS.duration} с.\nВ эту вероятность входит {iceArrows.adjacentChance} на одновременную заморозку своей и соседних линий. Действует со стрелами залпа, критическими и электрическими стрелами.`,
   },
   hunterArsenal: {

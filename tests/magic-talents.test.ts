@@ -92,7 +92,7 @@ describe('magic talent update through session commands', () => {
     expect(session.state.energy).toBe(session.state.maxEnergy);
   });
 
-  it('grants exactly five permafrost ranks using final intellect and one bonus source', () => {
+  it('grants ten percent slow per permafrost rank from one source, independent of intellect', () => {
     const session = new GameSession('normal');
     session.state.level = 20;
     session.state.pendingTalentPoints = 6;
@@ -105,7 +105,7 @@ describe('magic talent update through session commands', () => {
     expect(session.state.stats.intellect).toBe(186);
     for (let rank = 1; rank <= 5; rank++) {
       expect(session.upgradeTalent('permafrost')).toBe(true);
-      expect(session.state.stats.permafrostSlow).toBeCloseTo(0.019 * rank);
+      expect(session.state.stats.permafrostSlow).toBeCloseTo(0.1 * rank);
       expect(session.state.rules.explain('permafrostSlow').modifiers).toHaveLength(1);
     }
     expect(session.upgradeTalent('permafrost')).toBe(false);
@@ -114,23 +114,22 @@ describe('magic talent update through session commands', () => {
     ]);
     session.refreshStats();
     expect(session.state.stats.intellect).toBe(211);
-    expect(session.state.stats.permafrostSlow).toBe(0.1);
+    expect(session.state.stats.permafrostSlow).toBe(0.5);
     session.state.character.removeModifiers('test:intellect');
     session.refreshStats();
-    expect(session.state.stats.permafrostSlow).toBe(0.095);
+    expect(session.state.stats.permafrostSlow).toBe(0.5);
   });
 
   it.each([
-    [0, 1, 0.01],
-    [19, 1, 0.01],
-    [20, 1, 0.011],
-    [39, 5, 0.055],
-    [40, 5, 0.06],
-    [1799, 5, 0.495],
-    [1800, 5, 0.5],
+    [0, 1, 0.1],
+    [19, 1, 0.1],
+    [20, 2, 0.2],
+    [39, 3, 0.3],
+    [40, 4, 0.4],
+    [1799, 5, 0.5],
     [100000, 5, 0.5],
   ])(
-    'uses full twenty-point steps and caps the slow: intellect %s, rank %s',
+    'slows movement by rank regardless of intellect: intellect %s, rank %s',
     (intellect, rank, slow) => {
       const session = game();
       session.talents.loadFromSave([{ id: 'permafrost', rank }]);
@@ -140,8 +139,9 @@ describe('magic talent update through session commands', () => {
       const spider = addSpider(session, 'normal', 0, 0, 0, 0.1);
       session.tick(1);
       expect(spider.y).toBeCloseTo(0.1 * (1 - slow));
-      expect(attributeDescription(session.state, 'intellect')).toContain(
-        `Снижает скорость передвижения пауков на ${Number((slow * 100).toFixed(4))}%`,
+      expect(attributeDescription(session.state, 'intellect')).not.toContain('Вечная мерзлота');
+      expect(talentDescription('permafrost', rank, session.state.stats)).toContain(
+        `Снижает скорость передвижения всех пауков на ${slow * 100}%`,
       );
     },
   );
@@ -156,24 +156,24 @@ describe('magic talent update through session commands', () => {
       session.refreshStats();
       expect(session.state.stats.intellect).toBe(200);
       session.tick(0.5);
-      expect(spider.y).toBeCloseTo(0.045);
+      expect(spider.y).toBeCloseTo(0.025);
       expect(session.activateAbility('blizzard')).toBe('activated');
       const newcomer = addSpider(session, type, 1, 0, 0, 0.1);
       session.tick(0.5);
-      expect(spider.y).toBeCloseTo(0.072);
-      expect(newcomer.y).toBeCloseTo(0.045);
+      expect(spider.y).toBeCloseTo(0.04);
+      expect(newcomer.y).toBeCloseTo(0.025);
       session.state.character.setBase('intellect', 362);
       session.refreshStats();
       session.tick(0.5);
-      expect(spider.y).toBeCloseTo(0.0975);
-      expect(newcomer.y).toBeCloseTo(0.0875);
+      expect(spider.y).toBeCloseTo(0.055);
+      expect(newcomer.y).toBeCloseTo(0.05);
       session.tick(4);
       expect(spider.slowFactor).toBe(1);
-      expect(spider.y).toBeCloseTo(0.4375);
+      expect(spider.y).toBeCloseTo(0.255);
       session.talents.loadFromSave([]);
       session.refreshStats();
       session.tick(0.5);
-      expect(spider.y).toBeCloseTo(0.4875);
+      expect(spider.y).toBeCloseTo(0.305);
     },
   );
 
@@ -187,7 +187,7 @@ describe('magic talent update through session commands', () => {
     session.tick(1);
     expect(spider.y).toBe(0.03);
     const description = talentDescription('permafrost', 5, session.state.stats);
-    expect(description).toContain('5% + 0.5% за каждые 20');
+    expect(description).not.toContain('интеллекта');
     expect(description).toContain('50%');
     expect(talentDescription('recharge', 1, session.state.stats)).toContain(
       'Открывает способность «Перезарядка»',
@@ -208,7 +208,7 @@ describe('magic talent update through session commands', () => {
     );
     expect(loaded.state.isAbilityUnlocked('recharge')).toBe(true);
     loaded.tick(1);
-    expect([...loaded.state.spiders.values()][0].y).toBeCloseTo(0.092);
+    expect([...loaded.state.spiders.values()][0].y).toBeCloseTo(0.05);
   });
 
   it('loads saves without the new talents without granting recharge or a passive slow', () => {

@@ -5,7 +5,7 @@ import { talentDescription } from '../src/ui/presenters.js';
 import type { SpiderType, TalentId } from '../src/domain/types.js';
 import { addSpider } from './helpers.js';
 
-function arena(rank = 1, roll = 0.02, additional: { id: TalentId; rank: number }[] = []) {
+function arena(rank = 1, roll = 0.04, additional: { id: TalentId; rank: number }[] = []) {
   const session = new GameSession('normal', () => roll, { level: 60 });
   session.talents.loadFromSave([{ id: 'iceArrows', rank }, ...additional]);
   session.state.character.setModifiers('test:arena', [
@@ -64,8 +64,8 @@ describe('ice arrows through session commands', () => {
       expect(session.upgradeTalent('permafrost')).toBe(true);
       for (let rank = 1; rank <= 5; rank++) {
         expect(session.upgradeTalent('iceArrows')).toBe(true);
-        expect(session.state.stats['iceArrows.chance']).toBeCloseTo(0.07 * rank);
-        expect(session.state.stats['iceArrows.adjacentChance']).toBeCloseTo(0.02 * rank);
+        expect(session.state.stats['iceArrows.chance']).toBeCloseTo(0.12 * rank);
+        expect(session.state.stats['iceArrows.adjacentChance']).toBeCloseTo(0.04 * rank);
         expect(session.state.rules.explain('iceArrows.chance').modifiers).toHaveLength(1);
       }
       expect(session.upgradeTalent('iceArrows')).toBe(false);
@@ -77,10 +77,10 @@ describe('ice arrows through session commands', () => {
     (rank) => {
       for (const [roll, own, adjacent] of [
         [0, true, true],
-        [rank * 0.02 - 0.000001, true, true],
-        [rank * 0.02, true, false],
-        [rank * 0.07 - 0.000001, true, false],
-        [rank * 0.07, false, false],
+        [rank * 0.04 - 0.000001, true, true],
+        [rank * 0.04, true, false],
+        [rank * 0.12 - 0.000001, true, false],
+        [rank * 0.12, false, false],
         [0.999999, false, false],
       ] as const) {
         const session = arena(rank, roll);
@@ -171,7 +171,7 @@ describe('ice arrows through session commands', () => {
   });
 
   it('works with electric arrows, while chain lightning hits cannot refresh roots', () => {
-    const session = arena(1, 0.02, [{ id: 'lightningArrows', rank: 1 }]);
+    const session = arena(1, 0.04, [{ id: 'lightningArrows', rank: 1 }]);
     const same = addSpider(session, 'normal', 4, 0.1);
     const side = addSpider(session, 'megaFat', 5, 0.1);
     session.activateAbility('lightningArrows');
@@ -185,7 +185,7 @@ describe('ice arrows through session commands', () => {
   });
 
   it('rolls on every hit of the same critical arrow', () => {
-    const session = arena(1, 0.02);
+    const session = arena(1, 0.04);
     session.state.character.setModifiers('test:critical', [
       { stat: 'criticalShotChance', kind: 'flat', value: 1 },
     ]);
@@ -200,7 +200,7 @@ describe('ice arrows through session commands', () => {
   });
 
   it('refreshes to four seconds without stacking and combines with existing slows', () => {
-    const session = arena(1, 0.02, [{ id: 'permafrost', rank: 5 }]);
+    const session = arena(1, 0.04, [{ id: 'permafrost', rank: 5 }]);
     const target = addSpider(session, 'normal', 4, 0.1, 0, 0.1);
     session.activateAbility('blizzard');
     impact(session);
@@ -252,8 +252,8 @@ describe('ice arrows through session commands', () => {
   it('describes the nested probabilities at the current rank', () => {
     const session = arena(5);
     const description = talentDescription('iceArrows', 5, session.state.stats);
-    expect(description).toContain('вероятностью 35%');
-    expect(description).toContain('входит 10%');
+    expect(description).toContain('вероятностью 60%');
+    expect(description).toContain('входит 20%');
     expect(description).toContain('на 4 с');
     expect(description).not.toContain('{');
   });

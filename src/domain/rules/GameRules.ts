@@ -4,7 +4,7 @@ import {
   aimedFireDuration,
   BURNER_ENERGY_PER_LEVEL,
   GOLDEN_SPIDER_REWARD,
-  EASY_REGENERATION,
+  initialAssistance,
   PRIMARY_STATS,
   PRIMARY_GROWTH,
   type PrimaryStatId,
@@ -24,6 +24,7 @@ export class GameRules {
   readonly attributeEffects: Readonly<Record<PrimaryStatId, readonly StatModifier[]>>;
   readonly criticalShotLearned: boolean;
   readonly shieldBlockLearned: boolean;
+  readonly initialAssistance: ReturnType<typeof initialAssistance>;
   constructor(
     readonly config: DifficultyConfig,
     effects: readonly StatModifier[] = [],
@@ -31,6 +32,7 @@ export class GameRules {
     readonly level = 1,
     agilityDodgeModifiers: readonly Modifier[] = [],
   ) {
+    this.initialAssistance = initialAssistance(level, config.initialAssistanceMultiplier);
     const criticalShotLearned = effects.some(
       (effect) => effect.source === 'talent:criticalShot' && effect.value > 0,
     );
@@ -95,10 +97,8 @@ export class GameRules {
   }
   private base(id: StatId): number {
     if (this.bases[id] !== undefined) return this.bases[id];
-    if (this.config.easyRegeneration && (id === 'hpRegen' || id === 'energyRegen')) {
-      const bonus = EASY_REGENERATION[id];
-      return this.config[id] + Math.max(0, bonus.base - bonus.perLevel * this.level);
-    }
+    if (id === 'hpRegen' || id === 'energyRegen')
+      return this.config[id] + this.initialAssistance[id];
     if (id === 'aimedFire.duration') return aimedFireDuration(this.value('aimedFire.waves'));
     if (id === 'prep.overTime') return this.value('prep.energyRegen') * this.value('prep.duration');
     // Only the base buff duration is deferred; talent extensions add extra recovery.

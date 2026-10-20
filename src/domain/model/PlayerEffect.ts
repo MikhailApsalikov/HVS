@@ -5,6 +5,7 @@ import { disorientationPercent, goldIncomePercent, poisonArmorPercent } from '..
 import type { GameState } from './GameState.js';
 
 export type PlayerEffectId =
+  | 'initialAssistance'
   | 'prep'
   | 'lastHope'
   | 'stand'
@@ -23,7 +24,7 @@ export type PlayerEffectId =
   | 'stun'
   | 'antiAfk';
 export type PlayerEffectKind = 'buff' | 'debuff';
-export type PlayerEffectSource = 'ability' | 'talent' | 'spider' | 'inactivity';
+export type PlayerEffectSource = 'difficulty' | 'ability' | 'talent' | 'spider' | 'inactivity';
 
 export interface PlayerEffectMetadata {
   readonly name: string;
@@ -36,6 +37,7 @@ export interface PlayerEffectMetadata {
 }
 
 export interface PlayerEffectDetails {
+  readonly hpRegen: number;
   readonly energyRegen: number;
   readonly absorption: number;
   readonly agility: number;
@@ -73,6 +75,13 @@ interface EffectLifecycle {
 }
 
 const LIFECYCLES: Readonly<Record<PlayerEffectId, EffectLifecycle>> = {
+  initialAssistance: {
+    read: (state) => ({
+      remaining: state.rules.initialAssistance.hpRegen > 0 ? null : 0,
+      details: state.rules.initialAssistance,
+    }),
+    clear: () => {},
+  },
   lightningShield: {
     read: (state) => ({
       remaining: state.lightningShieldTimer,

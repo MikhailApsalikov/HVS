@@ -130,8 +130,8 @@ describe('progression and player commands', () => {
     session.state.hp = 50;
     session.state.energy = 0;
     advance(session, 2.5);
-    expect(session.state.hp).toBeCloseTo(52.7, 8);
-    expect(session.state.energy).toBeCloseTo(20.4, 8);
+    expect(session.state.hp).toBeCloseTo(67.2, 8);
+    expect(session.state.energy).toBeCloseTo(24.025, 8);
     expect(session.state.coins + session.state.coinAccumulator).toBeCloseTo(260, 8);
   });
   it('rejects invalid timestep and blocks commands outside their phase', () => {
@@ -390,7 +390,7 @@ describe('enemy types and rewards', () => {
     const session = game();
     addSpider(session, 'burner', 0, 1, 2);
     advance(session, 0.5);
-    expect(session.state.energy).toBeCloseTo(12.08, 8);
+    expect(session.state.energy).toBeCloseTo(12.805, 8);
     expect(session.drainEvents()).toEqual([
       { type: 'damage', spiderId: 'spider-1', hp: 1, energy: 92 },
     ]);

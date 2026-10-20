@@ -58,18 +58,18 @@ describe('preparation through session commands', () => {
     );
     expect(session.activateAbility('prep')).toBe('activated');
     expect(session.state.energy).toBe(100);
-    expect(session.state.currentEnergyRegen).toBe(38);
+    expect(session.state.currentEnergyRegen).toBe(38.9);
     expect(session.state.abilityActiveTimer('prep')).toBe(5);
     expect(session.state.getAbility('prep').remainingCooldown).toBe(60);
     expect(abilityDescription(session.state, 'prep')).toContain('Действует ещё 5 с');
     expect(resourceDescription(session.state, 'energy')).toContain(
-      'Восстанавливается 38 в секунду.',
+      'Восстанавливается 38.9 в секунду.',
     );
     session.tick(1);
-    expect(session.state.energy).toBe(138);
+    expect(session.state.energy).toBe(138.9);
     expect(session.state.abilityActiveTimer('prep')).toBe(4);
     expect(session.activateAbility('prep')).toBe('on_cooldown');
-    expect(session.state.energy).toBe(138);
+    expect(session.state.energy).toBe(138.9);
     expect(session.state.abilityActiveTimer('prep')).toBe(4);
   });
 
@@ -80,12 +80,12 @@ describe('preparation through session commands', () => {
       session.activateAbility('prep');
       for (const dt of steps) session.tick(dt);
       const elapsed = steps.reduce((sum, dt) => sum + dt, 0);
-      expect(session.state.energy).toBeCloseTo(250 + 8 * elapsed);
+      expect(session.state.energy).toBeCloseTo(250 + 8.9 * elapsed);
       expect(session.state.abilityActiveTimer('prep')).toBe(0);
-      expect(session.state.currentEnergyRegen).toBe(8);
+      expect(session.state.currentEnergyRegen).toBe(8.9);
       const energy = session.state.energy;
       session.tick(1);
-      expect(session.state.energy).toBeCloseTo(energy + 8);
+      expect(session.state.energy).toBeCloseTo(energy + 8.9);
       expect(abilityDescription(session.state, 'prep')).not.toContain('Действует ещё');
     },
   );
@@ -132,7 +132,7 @@ describe('preparation through session commands', () => {
     expect(session.shootLane(0)).toBe('shot');
     const energy = session.state.energy;
     session.tick(0.1);
-    expect(session.state.energy).toBeCloseTo(energy + 3.8);
+    expect(session.state.energy).toBeCloseTo(energy + 3.89);
     session.tick(5);
     expect(session.state.energy).toBe(session.state.maxEnergy);
   });
@@ -152,7 +152,7 @@ describe('preparation through session commands', () => {
     expect(session.state.phase).toBe('levelUp');
     expect(session.state.abilityActiveTimer('prep')).toBe(3);
     session.tick(20);
-    expect(session.state.energy).toBe(energy + 38);
+    expect(session.state.energy).toBe(energy + 38.9);
     expect(session.state.abilityActiveTimer('prep')).toBe(3);
     expect(session.upgradeTalent('agility')).toBe(true);
     expect(session.confirmLevelUp()).toBe(true);
@@ -170,15 +170,15 @@ describe('preparation through session commands', () => {
     const energy = session.state.energy;
     expect(session.activateAbility('prep')).toBe('activated');
     expect(session.state.energy).toBe(energy + 100);
-    expect(session.state.currentEnergyRegen).toBe(38);
+    expect(session.state.currentEnergyRegen).toBe(38.9);
     expect(session.state.abilityActiveTimer('prep')).toBe(5);
     session.tick(5);
-    expect(session.state.energy).toBe(energy + 100 + 190);
+    expect(session.state.energy).toBe(energy + 100 + 194.5);
   });
 
   it.each([
-    [76, 4, 2],
-    [200, 8, 1.75],
+    [76, 4, 4 - 76 / 38.9],
+    [200, 8, 3 - 5.5 / 8.9],
   ])(
     'uses the temporary rate when filling %s missing energy before AFK detection',
     (missing, dt, idle) => {
@@ -215,7 +215,7 @@ describe('preparation saves', () => {
     const loaded = restore(parseSave(JSON.parse(JSON.stringify(saved)))!, () => 0.999999);
     expect(snapshot(loaded)).toEqual(saved);
     expect(loaded.state.abilityActiveTimer('prep')).toBe(3);
-    expect(loaded.state.currentEnergyRegen).toBe(38);
+    expect(loaded.state.currentEnergyRegen).toBe(38.9);
     loaded.tick(10);
     expect(snapshot(loaded)).toEqual(saved);
     for (const active of [session, loaded]) {
@@ -223,8 +223,8 @@ describe('preparation saves', () => {
       active.tick(4);
     }
     expect(snapshot(loaded)).toEqual(snapshot(session));
-    expect(loaded.state.energy).toBe(250 + 8 * 6 - 25);
-    expect(loaded.state.currentEnergyRegen).toBe(8);
+    expect(loaded.state.energy).toBe(250 + 8.9 * 6 - 25);
+    expect(loaded.state.currentEnergyRegen).toBe(8.9);
   });
 
   it('migrates version 14 with an inactive effect and preserves resources, cooldowns and streak', () => {
@@ -252,7 +252,7 @@ describe('preparation saves', () => {
     const migrated = snapshot(loaded);
     expect(snapshot(restore(parseSave(migrated)!))).toEqual(migrated);
     loaded.tick(1);
-    expect(loaded.state.energy).toBe(saved.state.energy + 8);
+    expect(loaded.state.energy).toBe(saved.state.energy + 8.9);
   });
 
   it.each([undefined, -1, 5.1, Infinity, NaN, '3'])(

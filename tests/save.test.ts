@@ -442,7 +442,7 @@ describe('saves and migration', () => {
     expect(data).not.toBeNull();
     const loaded = restore(data!);
     expect(loaded.state.coins).toBe(123);
-    expect(loaded.state.stats.energyRegen).toBe(10.54);
+    expect(loaded.state.stats.energyRegen).toBe(11.04);
     expect(loaded.state.phase).toBe('levelUp');
     expect(loaded.state.maxHp).toBe(790);
     loaded.upgradeTalent('agility');

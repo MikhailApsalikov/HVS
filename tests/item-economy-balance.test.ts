@@ -42,11 +42,11 @@ describe('rebalanced equipment prices through session commands', () => {
   });
 
   it.each([
-    ['c068', 8.66],
-    ['c-regen-flow', 9.16],
-    ['r-regen-potion', 9.66],
-    ['c076', 10.16],
-    ['e018', 11.76],
+    ['c068', 10.11],
+    ['c-regen-flow', 10.61],
+    ['r-regen-potion', 11.11],
+    ['c076', 11.61],
+    ['e018', 13.21],
   ] as const)('restores fractional energy from %s over game time', (id, regeneration) => {
     const session = new GameSession('normal', () => 0.999999);
     session.state.coins = 100000;

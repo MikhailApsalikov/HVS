@@ -7,6 +7,7 @@ import {
   ATTRIBUTE_RULES,
   STATS,
   MASOCHISM,
+  INITIAL_ASSISTANCE,
   masochismHealthPerEnergy,
   masochismMinHpFraction,
   LEARNING_FROM_MISTAKES,
@@ -167,7 +168,6 @@ const ATTRIBUTE_EFFECT_TEXT: Partial<Record<StatId, string>> = {
   energyRegen: 'Восстанавливает дополнительно {value} энергии каждую секунду.',
   'heal.amount': '«Лечение» восстанавливает на {value} здоровья больше.',
   'prep.restore': '«Подготовка» восстанавливает на {value} энергии больше.',
-  permafrostSlow: 'Снижает скорость передвижения пауков на {value}.',
   spiderDebuffResistance: 'Снижает эффективность дебаффов пауков, кроме «Оглушения», на {value}.',
 };
 function attributeEffectDescription(effect: StatModifier): string {
@@ -199,7 +199,7 @@ export function attributeDescription(state: GameState, id: PrimaryStatId | 'armo
       for (const modifier of state.rules.explain(effect.stat).modifiers) {
         if (modifier.source === `talent:${talentId}` && modifier.value !== 0)
           contributions.push(
-            `Благодаря таланту «${name}»: ${attributeEffectDescription({ ...modifier, stat: effect.stat, value: effect.stat === 'permafrostSlow' || effect.stat === 'spiderDebuffResistance' ? state.stats[effect.stat] : modifier.value })}`,
+            `Благодаря таланту «${name}»: ${attributeEffectDescription({ ...modifier, stat: effect.stat, value: effect.stat === 'spiderDebuffResistance' ? state.stats[effect.stat] : modifier.value })}`,
           );
       }
     }
@@ -324,6 +324,8 @@ export function coinsDescription(state: GameState): string {
 }
 function playerEffectDetail(effect: PlayerEffect): string {
   switch (effect.id) {
+    case 'initialAssistance':
+      return `Восстановление здоровья увеличено на ${formatStat('hpRegen', effect.details!.hpRegen!)} в секунду, энергии — на ${formatStat('energyRegen', effect.details!.energyRegen!)} в секунду. Бонус уменьшается с каждым уровнем и исчезает на ${INITIAL_ASSISTANCE.endLevel}-м уровне. Нельзя рассеять.`;
     case 'prep':
       return `Восстановление энергии увеличено на ${formatStat('energyRegen', effect.details!.energyRegen!)} в секунду.`;
     case 'lastHope':

@@ -116,7 +116,7 @@ describe('shooting and magic talent progression', () => {
     expect(session.upgradeTalent('tireless')).toBe(false);
     session.state.level = 10;
     buy(session, 'tireless', 5);
-    expect(session.state.stats.energyRegen).toBe(13.34);
+    expect(session.state.stats.energyRegen).toBe(14.34);
     session.state.level = 30;
     buy(session, 'hunterMastery', 5);
     buy(session, 'improvedAgility', 5);

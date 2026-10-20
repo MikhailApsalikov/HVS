@@ -3,6 +3,7 @@ import { SPIDER_DAMAGE, SPIDER_SPEED, STATS } from '../domain/rules/stats.js';
 import { ABILITY_ORDER } from './abilities.js';
 
 export const normalConfig: DifficultyConfig = {
+  initialAssistanceMultiplier: 0.5,
   armorEffectiveness: 1.5,
   baseHp: STATS.maxHp.base,
   baseEnergy: STATS.maxEnergy.base,

@@ -238,11 +238,14 @@ describe('new magic talents through session commands', () => {
 
 describe('fire explosion through session commands', () => {
   it.each([
-    [100, 0, false],
+    [0, 0, true],
+    [20, 0.349999, true],
+    [100, 0, true],
     [100.01, 0.349999, true],
     [150, 0.35, false],
     [150, 0.999999, false],
-  ])('requires more than 100 energy and a roll below 35%%: %s / %s', (energy, roll, explodes) => {
+    [0, 0.35, false],
+  ])('rolls below 35%% independently of energy: %s / %s', (energy, roll, explodes) => {
     const session = arena([{ id: 'fireExplosion', rank: 1 }], () => roll);
     session.state.energy = energy;
     addSpider(session, 'normal', 4, 0.94);

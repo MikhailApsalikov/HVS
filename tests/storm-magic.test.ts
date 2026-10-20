@@ -146,6 +146,63 @@ describe('storm talent balance through session commands', () => {
 });
 
 describe('Lightning Shield through session commands', () => {
+  it.each([0, 100, 100.01, 120])(
+    'requires strictly more than 100 energy and charges 20 per response chain: %s',
+    (energy) => {
+      const session = arena([...shield, ...lightning, { id: 'improvedLightning', rank: 1 }]);
+      session.state.character.setModifiers('test:rewards', [
+        { stat: 'energyPerBreach', kind: 'percent', value: -100 },
+        { stat: 'energyPerKill', kind: 'percent', value: -100 },
+      ]);
+      session.refreshStats();
+      session.activateAbility('lightningShield');
+      session.state.energy = energy;
+      const first = addSpider(session, 'megaFat', 5, 0.2);
+      const second = addSpider(session, 'megaFat', 6, 0.2);
+      const capacity = session.state.lightningShieldAbsorption;
+      expect(breach(session)).toMatchObject({ hp: 0, absorbedDamage: 100 });
+      const procs = energy > 100;
+      expect(session.state.lightningShieldAbsorption).toBe(capacity - 100);
+      expect(first.hits).toBe(procs ? 2 : 3);
+      expect(session.state.energy).toBeCloseTo(energy - (procs ? 20 : 0));
+      expect(session.state.lightningShieldProcCooldown).toBe(procs ? 2 : 0);
+      expect(session.state.chainLightning).toHaveLength(procs ? 1 : 0);
+      session.tick(0.6);
+      expect(second.hits).toBe(procs ? 2 : 3);
+      expect(session.state.energy).toBeCloseTo(energy - (procs ? 20 : 0));
+      session.tick(1.4);
+      breach(session);
+      expect(first.hits).toBe(procs ? 2 : 3);
+      expect(session.state.energy).toBeCloseTo(energy - (procs ? 20 : 0));
+      const description = abilityDescription(session.state, 'lightningShield');
+      expect(description).toContain('больше 100 энергии');
+      expect(description).toContain('расходует 20 энергии');
+    },
+  );
+
+  it('spends no energy or response cooldown when no eligible target exists', () => {
+    const session = arena([...shield, ...lightning]);
+    session.state.character.setModifiers('test:rewards', [
+      { stat: 'energyPerBreach', kind: 'percent', value: -100 },
+      { stat: 'energyPerKill', kind: 'percent', value: -100 },
+    ]);
+    session.refreshStats();
+    session.activateAbility('lightningShield');
+    session.state.energy = 150;
+    addSpider(session, 'normal', 4, 0.2);
+    addSpider(session, 'normal', 5, 0.2).startDying();
+    breach(session);
+    expect(session.state.energy).toBe(150);
+    expect(session.state.lightningShieldProcCooldown).toBe(0);
+    expect(session.state.chainLightning).toEqual([]);
+    expect(session.drainEvents().some((event) => event.type === 'lightning')).toBe(false);
+    const target = addSpider(session, 'megaFat', 5, 0.2);
+    breach(session);
+    expect(target.hits).toBe(2);
+    expect(session.state.energy).toBe(130);
+    expect(session.state.lightningShieldProcCooldown).toBe(2);
+  });
+
   it('costs no energy, scales with intellect and expires after three minutes', () => {
     const session = arena(shield);
     session.state.energy = 0;
@@ -403,24 +460,24 @@ describe('Lightning Shield through session commands', () => {
 });
 
 describe('Masochism low-health buff', () => {
-  it.each([1, 2, 3, 4, 5])('grants 40 agility per rank, refreshes and expires: %s', (rank) => {
+  it.each([1, 2, 3, 4, 5])('grants 60 agility per rank, refreshes and expires: %s', (rank) => {
     const session = arena([{ id: 'masochism', rank }]);
     const agility = session.state.stats.agility;
     session.state.hp = session.state.maxHp * 0.3 + 1;
     breach(session, 1);
     expect(session.state.masochismTimer).toBe(0);
     breach(session, 1);
-    expect(session.state.stats.agility).toBe(agility + 40 * rank);
+    expect(session.state.stats.agility).toBe(agility + 60 * rank);
     expect(session.state.masochismTimer).toBe(75);
     expect(
       playerEffectDescription(
         session.state.activeEffects.find((effect) => effect.id === 'masochism')!,
       ),
-    ).toContain(String(40 * rank));
+    ).toContain(String(60 * rank));
     session.tick(10);
     breach(session, 1);
     expect(session.state.masochismTimer).toBe(75);
-    expect(session.state.stats.agility).toBe(agility + 40 * rank);
+    expect(session.state.stats.agility).toBe(agility + 60 * rank);
     session.state.phase = 'levelUp';
     session.tick(100);
     expect(session.state.masochismTimer).toBe(75);
@@ -429,7 +486,7 @@ describe('Masochism low-health buff', () => {
     expect(session.state.masochismTimer).toBe(0);
     expect(session.state.stats.agility).toBe(agility);
     expect(talentDescription('masochism', rank, session.state.stats)).toContain(
-      `+${40 * rank} ловкости`,
+      `+${60 * rank} ловкости`,
     );
   });
 

@@ -39,8 +39,8 @@ describe('primary attributes through the session API', () => {
       armor: 54,
       maxHp: 100,
       maxEnergy: 100,
-      hpRegen: 1.08,
-      energyRegen: 8.16,
+      hpRegen: 6.88,
+      energyRegen: 9.61,
       shootCooldown: 2.94,
       arrowSpeed: 0.333333,
       'volley.cooldown': 35.52,
@@ -93,8 +93,8 @@ describe('primary attributes through the session API', () => {
     [79, 'coinsPerSec', 4.1],
     [80, 'coinsPerSec', 4.2],
     [120, 'coinsPerSec', 4.3],
-    [1, 'hpRegen', 0.04],
-    [55, 'hpRegen', 2.2],
+    [1, 'hpRegen', 5.84],
+    [55, 'hpRegen', 8],
     [55, 'armor', 110],
   ] as const)('endurance %s resolves %s to %s at its threshold', (value, stat, expected) => {
     const session = new GameSession('normal');
@@ -163,10 +163,10 @@ describe('primary attributes through the session API', () => {
   });
 
   it.each([
-    [99, 100, 8.99, 348, 349],
-    [100, 100, 9, 350, 350],
-    [101, 102, 9.01, 352, 351],
-    [250, 400, 10.5, 650, 500],
+    [99, 100, 10.44, 348, 349],
+    [100, 100, 10.45, 350, 350],
+    [101, 102, 10.46, 352, 351],
+    [250, 400, 11.95, 650, 500],
   ])(
     'intellect %s respects the energy threshold and strengthens both abilities',
     (intellect, maxEnergy, energyRegen, heal, prep) => {
@@ -237,7 +237,7 @@ describe('primary attributes through the session API', () => {
     expect(session.state.stats).toMatchObject({
       endurance: 52,
       maxHp: 220,
-      hpRegen: 2.08,
+      hpRegen: 7.88,
       armor: 104,
       coinsPerSec: 4.1,
     });
@@ -245,7 +245,7 @@ describe('primary attributes through the session API', () => {
     expect(session.state.stats).toMatchObject({
       endurance: 27,
       maxHp: 100,
-      hpRegen: 1.08,
+      hpRegen: 6.88,
       armor: 54,
       coinsPerSec: 4,
     });
@@ -279,7 +279,7 @@ describe('primary attributes through the session API', () => {
       endurance: 57,
       maxHp: 270,
       armor: 114,
-      hpRegen: 2.28,
+      hpRegen: 8.08,
     });
   });
 });
@@ -358,6 +358,7 @@ describe('armor and talent branches', () => {
     session.state.character.setModifiers('test', [
       { stat: 'endurance', kind: 'percent', value: -100 },
       { stat: 'armor', kind: 'flat', value: armor },
+      { stat: 'hpRegen', kind: 'percent', value: -100 },
     ]);
     session.refreshStats();
     session.state.hp = 100;

@@ -2,7 +2,7 @@ import type { GameState } from '../model/GameState.js';
 import type { Spider } from '../model/Spider.js';
 import type { EmitEvent } from '../events.js';
 import type { RandomSource } from '../rules/random.js';
-import { FIRE_EXPLOSION, ICE_ARROWS, MAGIC_HIT_DAMAGE } from '../rules/stats.js';
+import { FIRE_EXPLOSION, ICE_ARROWS, LIGHTNING_SHIELD, MAGIC_HIT_DAMAGE } from '../rules/stats.js';
 import { WORLD } from '../rules/world.js';
 import { randomInt } from '../rules/random.js';
 
@@ -34,7 +34,11 @@ export function absorbLightningShield(
   const absorbed = Math.min(damage, state.lightningShieldAbsorption);
   state.lightningShieldAbsorption -= absorbed;
   if (state.lightningShieldAbsorption === 0) state.lightningShieldTimer = 0;
-  if (state.talentAbilities.has('lightningArrows') && state.lightningShieldProcCooldown === 0) {
+  if (
+    state.talentAbilities.has('lightningArrows') &&
+    state.lightningShieldProcCooldown === 0 &&
+    state.energy > LIGHTNING_SHIELD.energyThreshold
+  ) {
     const targets =
       lane === null
         ? [...state.spiders.values()].filter((spider) => !spider.dying && !spider.reachedCastle)
@@ -46,6 +50,7 @@ export function absorbLightningShield(
           : undefined
         : lightningTarget(state, lane, null, random);
     if (target) {
+      state.spendEnergy(LIGHTNING_SHIELD.procEnergyCost);
       emit({
         type: 'lightning',
         from: { lane: lane ?? target.lane, y: 1 },
@@ -140,7 +145,6 @@ export function resolveArrowExplosions(
     if (
       source.reachedCastle ||
       state.stats['fireExplosion.chance'] === 0 ||
-      state.energy <= FIRE_EXPLOSION.energyThreshold ||
       random() >= state.stats['fireExplosion.chance']
     )
       continue;

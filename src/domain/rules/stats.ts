@@ -29,16 +29,20 @@ export const AIMED_FIRE = { firstDelay: 1, interval: 2 } as const;
 export const MAGIC_HIT_DAMAGE = 1;
 export const ICE_ARROWS = { duration: 4 } as const;
 export const FIRE_EXPLOSION = {
-  energyThreshold: 100,
   chance: 0.35,
   adjacentRank: 6,
   verticalReach: 1.3,
 } as const;
-export const LIGHTNING_SHIELD = { duration: 180, procCooldown: 2 } as const;
+export const LIGHTNING_SHIELD = {
+  duration: 180,
+  procCooldown: 2,
+  energyThreshold: 100,
+  procEnergyCost: 20,
+} as const;
 export const MASOCHISM = {
   healthPerEnergy: [10, 9, 8, 7, 6],
   minHpFraction: [0.9, 0.8, 0.7, 0.6, 0.5],
-  agilityPerRank: 40,
+  agilityPerRank: 60,
   duration: 75,
   triggerHpFraction: 0.3,
 } as const;
@@ -69,10 +73,18 @@ export const SPIDER_DAMAGE = {
     hard: 0.15,
   },
 } as const;
-export const EASY_REGENERATION = {
-  hpRegen: { base: 12, perLevel: 0.4 },
-  energyRegen: { base: 3, perLevel: 0.1 },
+export const INITIAL_ASSISTANCE = {
+  endLevel: 30,
+  hpRegenPerLevel: 0.4,
+  energyRegenPerLevel: 0.1,
 } as const;
+export function initialAssistance(level: number, multiplier: number) {
+  const remainingLevels = Math.max(0, INITIAL_ASSISTANCE.endLevel - level);
+  return {
+    hpRegen: remainingLevels * INITIAL_ASSISTANCE.hpRegenPerLevel * multiplier,
+    energyRegen: remainingLevels * INITIAL_ASSISTANCE.energyRegenPerLevel * multiplier,
+  };
+}
 export const DODGE_CAP = 0.75;
 export const ANTI_AFK = {
   unlockLevel: 10,

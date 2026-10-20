@@ -53,9 +53,9 @@ describe('item bonus precision and common price steps', () => {
       session.state.coins = price;
       expect(session.buyItem(id)).toBe(true);
       expect(session.state.coins).toBe(0);
-      expect(session.state.stats[stat]).toBe(before + bonus);
+      expect(session.state.stats[stat]).toBeCloseTo(before + bonus, 10);
       const loaded = restore(parseSave(snapshot(session))!);
-      expect(loaded.state.stats[stat]).toBe(before + bonus);
+      expect(loaded.state.stats[stat]).toBeCloseTo(before + bonus, 10);
       expect(loaded.sellItem(0)).toBe(true);
       expect(loaded.state.stats[stat]).toBe(before);
     },

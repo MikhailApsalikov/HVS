@@ -4,6 +4,7 @@ import { normalConfig } from './normal.js';
 
 export const hardConfig: DifficultyConfig = {
   ...normalConfig,
+  initialAssistanceMultiplier: 0.25,
   armorEffectiveness: 1,
   coinsPerSec: 7,
   startingCoins: 2000,

@@ -96,7 +96,7 @@ export interface TalentLevelConfig {
 }
 
 export interface DifficultyConfig {
-  readonly easyRegeneration?: boolean;
+  readonly initialAssistanceMultiplier: number;
   readonly armorEffectiveness: number;
   readonly baseHp: number;
   readonly baseEnergy: number;

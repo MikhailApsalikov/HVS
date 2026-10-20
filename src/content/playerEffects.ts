@@ -4,6 +4,14 @@ import { TALENTS } from './talents.js';
 import type { PlayerEffectId, PlayerEffectMetadata } from '../domain/model/PlayerEffect.js';
 
 export const PLAYER_EFFECTS = {
+  initialAssistance: {
+    name: 'Начальная помощь',
+    sprite: 'BuffInitialAssistance',
+    kind: 'buff',
+    source: 'difficulty',
+    removableByCleanser: false,
+    undispellable: true,
+  },
   lightningShield: {
     name: ABILITIES.lightningShield.name,
     sprite: ABILITIES.lightningShield.sprite,
