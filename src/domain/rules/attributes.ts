@@ -60,8 +60,12 @@ export function attributeModifiers(
       effect('intellect', 'maxEnergy', Math.max(0, i - ir.energyThreshold) * ir.energyPerPoint),
       effect('intellect', 'energyRegen', i * ir.regenPerPoint),
       effect('intellect', 'heal.amount', i * ir.healPerPoint),
-      effect('intellect', 'prep.restore', i * ir.prepPerPoint),
-      effect('intellect', 'lightningShield.absorption', i * ir.shieldAbsorptionPerPoint),
+      effect('intellect', 'prep.restore', Math.floor(i / ir.prepStep) * ir.prepPerStep),
+      effect(
+        'intellect',
+        'lightningShield.absorption',
+        Math.max(0, i - ir.shieldAbsorptionThreshold) * ir.shieldAbsorptionPerPoint,
+      ),
     ],
   };
 }

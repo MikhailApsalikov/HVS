@@ -8,7 +8,8 @@ const DEBUFF_SPIDERS = ['golden', 'fast', 'poisonous', 'ninja'] as const;
 type DebuffSpider = (typeof DEBUFF_SPIDERS)[number];
 
 function arena(level = 60, intellect = 1000, rank = 5) {
-  const session = new GameSession('normal', () => 0.999999, { level });
+  const session = new GameSession('normal', () => 0.999999);
+  session.state.level = level; // Also exercise legacy formulas above the victory level.
   session.talents.loadFromSave([{ id: 'magicArmor', rank }]);
   session.state.character.setBase('intellect', intellect - (level - 1) * 2);
   session.state.character.setBase('agility', 200 - (level - 1));

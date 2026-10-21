@@ -15,6 +15,7 @@ export class SaveSystem {
   save(session: GameSession): boolean {
     try {
       if (session.state.phase === 'gameOver') {
+        this.saveRecord(session.state.record);
         this.clear();
         return true;
       }

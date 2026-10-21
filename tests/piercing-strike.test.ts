@@ -4,7 +4,8 @@ import type { RandomSource } from '../src/domain/rules/random.js';
 import { addSpider } from './helpers.js';
 
 function arena(level: number, random: RandomSource) {
-  const session = new GameSession('normal', random, { level });
+  const session = new GameSession('normal', random);
+  session.state.level = level; // Also exercise legacy formulas above the victory level.
   session.state.character.setModifiers('test:arena', [
     { stat: 'spawnProbability', kind: 'percent', value: -100 },
     { stat: 'endurance', kind: 'percent', value: -100 },

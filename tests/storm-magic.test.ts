@@ -203,13 +203,13 @@ describe('Lightning Shield through session commands', () => {
     expect(session.state.lightningShieldProcCooldown).toBe(2);
   });
 
-  it('costs no energy, scales with intellect and expires after three minutes', () => {
+  it('costs no energy, scales above 300 intellect and expires after five minutes', () => {
     const session = arena(shield);
     session.state.energy = 0;
     expect(session.activateAbility('lightningShield')).toBe('activated');
-    const capacity = 500 + session.state.stats.intellect * 10;
+    const capacity = 3500 + Math.max(0, session.state.stats.intellect - 300) * 10;
     expect(session.state.lightningShieldAbsorption).toBe(capacity);
-    expect(session.state.getAbility('lightningShield').remainingCooldown).toBe(180);
+    expect(session.state.getAbility('lightningShield').remainingCooldown).toBe(300);
     expect(session.activateAbility('lightningShield')).toBe('on_cooldown');
     expect(abilityDescription(session.state, 'lightningShield')).toContain(String(capacity));
     expect(attributeDescription(session.state, 'intellect')).toContain('Щита молний');
@@ -218,7 +218,7 @@ describe('Lightning Shield through session commands', () => {
         session.state.activeEffects.find((effect) => effect.id === 'lightningShield')!,
       ),
     ).toContain(String(capacity));
-    session.tick(179.999);
+    session.tick(299.999);
     expect(session.state.lightningShieldTimer).toBeCloseTo(0.001);
     session.tick(0.001);
     expect(session.state.lightningShieldTimer).toBe(0);
@@ -444,7 +444,7 @@ describe('Lightning Shield through session commands', () => {
     const hp = session.state.hp;
     session.activateAbility('freeze');
     session.tick(10);
-    expect(session.state.lightningShieldTimer).toBe(180);
+    expect(session.state.lightningShieldTimer).toBe(300);
     session.activateAbility('freeze');
     session.tick(2);
     expect(session.state.hp).toBe(hp);
@@ -613,7 +613,7 @@ describe('new legendary magic equipment', () => {
     expect(session.state.stats['lightningArrows.jumps']).toBe(11);
     expect(session.state.stats['lightningShield.procCooldown']).toBe(1.5);
     session.activateAbility('lightningShield');
-    expect(session.state.getAbility('lightningShield').remainingCooldown).toBe(114);
+    expect(session.state.getAbility('lightningShield').remainingCooldown).toBe(210);
     const target = addSpider(session, 'megaFat', 5, 0.1);
     target.hits = 100;
     breach(session);
@@ -664,7 +664,7 @@ describe('storm save compatibility', () => {
       },
     };
     const parsed = parseSave(previous);
-    expect(parsed?.version).toBe(28);
+    expect(parsed?.version).toBe(29);
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('killingStreak')).toBe(5);
     expect(loaded.state.pendingTalentPoints).toBe(saved.state.pendingTalentPoints + 3);
@@ -700,7 +700,7 @@ describe('storm save compatibility', () => {
   });
 
   it.each([
-    { lightningShieldTimer: 181 },
+    { lightningShieldTimer: 301 },
     { lightningShieldAbsorption: -1 },
     { lightningShieldTimer: 1, lightningShieldAbsorption: 0 },
     { lightningShieldProcCooldown: 2.1 },

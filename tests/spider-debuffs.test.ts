@@ -5,7 +5,8 @@ import { activeDebuffs, abilityDescription, coinsDescription } from '../src/ui/p
 import { addNearbySpider as addSpider } from './helpers.js';
 
 function arena(level = 50) {
-  const session = new GameSession('normal', () => 0.999999, { level });
+  const session = new GameSession('normal', () => 0.999999);
+  session.state.level = level; // Also exercise legacy formulas above the victory level.
   session.state.character.setModifiers('test:arena', [
     { stat: 'spawnProbability', kind: 'percent', value: -100 },
     { stat: 'maxHp', kind: 'flat', value: 100000 },
@@ -582,7 +583,7 @@ describe('debuff save compatibility', () => {
       };
       const parsed = parseSave(previous)!;
       expect(parsed).not.toBeNull();
-      expect(parsed.version).toBe(28);
+      expect(parsed.version).toBe(29);
       expect(parsed.state).toEqual({ ...previous.state, poisonTimer: expectedTimer });
       const loaded = restore(parsed, () => 0.999999);
       expect(loaded.state.stats['poison.tickDamage']).toBe(180);

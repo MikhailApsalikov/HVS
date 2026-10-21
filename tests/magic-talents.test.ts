@@ -78,7 +78,7 @@ describe('magic talent update through session commands', () => {
       session.state.getAbility('prep').start(10);
       expect(session.activateAbility('recharge')).toBe('activated');
       expect(session.state.getAbility('prep').isReady).toBe(true);
-      expect(session.state.getAbility('recharge').remainingCooldown).toBe(240);
+      expect(session.state.getAbility('recharge').remainingCooldown).toBe(96);
     },
   );
 
@@ -96,15 +96,18 @@ describe('magic talent update through session commands', () => {
     'grants six percent slow per permafrost rank up to rank ten from one source on %s',
     (difficulty) => {
       const session = new GameSession(difficulty);
-      session.state.level = 20;
+      session.state.level = 50;
       session.state.pendingTalentPoints = 11;
       session.talents.loadFromSave([
         { id: 'improvedIntellect', rank: 5 },
         { id: 'agility', rank: 5 },
         { id: 'hunterArsenal', rank: 4 },
+        { id: 'tireless', rank: 7 },
+        { id: 'improvedPrep', rank: 5 },
+        { id: 'fireExplosion', rank: 9 },
       ]);
       session.refreshStats();
-      expect(session.state.stats.intellect).toBe(186);
+      expect(session.state.stats.intellect).toBe(449);
       for (let rank = 1; rank <= 10; rank++) {
         expect(session.upgradeTalent('permafrost')).toBe(true);
         expect(session.state.stats.permafrostSlow).toBeCloseTo(0.06 * rank);
@@ -115,7 +118,7 @@ describe('magic talent update through session commands', () => {
         { stat: 'intellect', kind: 'flat', value: 20 },
       ]);
       session.refreshStats();
-      expect(session.state.stats.intellect).toBe(211);
+      expect(session.state.stats.intellect).toBe(474);
       expect(session.state.stats.permafrostSlow).toBe(0.6);
       session.state.character.removeModifiers('test:intellect');
       session.refreshStats();

@@ -105,7 +105,7 @@ export class GameApp {
   }
   showGameOver(state: GameState): void {
     this.progression.hide();
-    this.over.render(state.level, state.record, state.level >= state.record);
+    this.over.render(state);
     this.show('game-over');
   }
   render(state: GameState, saveError: string | null): void {

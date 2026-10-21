@@ -34,11 +34,12 @@ export const FIRE_EXPLOSION = {
   verticalReach: 1.3,
 } as const;
 export const LIGHTNING_SHIELD = {
-  duration: 180,
+  duration: 300,
   procCooldown: 2,
   energyThreshold: 100,
   procEnergyCost: 20,
 } as const;
+export const RECHARGE_COOLDOWN_PER_USE = 60;
 export const MASOCHISM = {
   healthPerEnergy: [10, 9, 8, 7, 6],
   minHpFraction: [0.9, 0.8, 0.7, 0.6, 0.5],
@@ -154,6 +155,7 @@ export const STATS = {
   goldenJackpotChance: stat('Шанс тройной награды за золотого паука', 0, probability),
   breachRewardFraction: stat('Доля награды за дошедшего паука', 0, probability),
   inventorySlots: stat('Слоты инвентаря', 1, integer),
+  itemEffectiveness: stat('Эффективность предметов', 1, speed),
   levelDuration: stat('Длительность уровня, с', 0, { ...duration, min: 10 }),
   spawnProbability: stat('Вероятность появления паука', 0, probability),
   spiderTypeProbability: stat('Вероятность выбора вида паука', 0, probability),
@@ -204,7 +206,7 @@ export const STATS = {
   'armageddon.cooldown': stat('Перезарядка: Армагеддон, с', 180, duration),
   'armageddon.charge': stat('Подготовка: Армагеддон, с', 2.5, duration),
   'armageddon.duration': stat('Длительность: Армагеддон, с', 3, duration),
-  'lightningArrows.cost': stat('Стоимость: Стрелы молний', 90, integer),
+  'lightningArrows.cost': stat('Стоимость: Стрелы молний', 70, integer),
   'lightningArrows.cooldown': stat('Перезарядка: Стрелы молний, с', 90, duration),
   'lightningArrows.jumps': stat('Перескоки: Стрелы молний', 1, { ...integer, max: 11 }),
   'lightningArrows.charges': stat('Зарядов каждого лучника: Стрелы молний', 1, {
@@ -214,22 +216,27 @@ export const STATS = {
   'lightningArrows.sameLane': stat('Молнии на текущей линии', 0, { ...integer, max: 1 }),
   'lightningArrows.delay': stat('Задержка: Стрелы молний, с', 0.65, { ...duration, min: 0.25 }),
   'lightningShield.cost': stat('Стоимость: Щит молний', 0, integer),
-  'lightningShield.cooldown': stat('Перезарядка: Щит молний, с', 180, duration),
+  'lightningShield.cooldown': stat('Перезарядка: Щит молний, с', 300, duration),
   'lightningShield.duration': stat(
     'Длительность: Щит молний, с',
     LIGHTNING_SHIELD.duration,
     duration,
   ),
-  'lightningShield.absorption': stat('Поглощение: Щит молний', 500, integer),
+  'lightningShield.absorption': stat('Поглощение: Щит молний', 3500, integer),
   'lightningShield.procCooldown': stat(
     'Интервал ответных молний, с',
     LIGHTNING_SHIELD.procCooldown,
     duration,
   ),
+  'lightningShield.procCost': stat(
+    'Стоимость ответной молнии',
+    LIGHTNING_SHIELD.procEnergyCost,
+    integer,
+  ),
   'fireExplosion.chance': stat('Шанс: Огненный взрыв', 0, probability),
   'fireExplosion.radius': stat('Радиус: Огненный взрыв, ширин линии', 0.33 * 1.3, decimal),
   'recharge.cost': stat('Стоимость: Перезарядка', 65, integer),
-  'recharge.cooldown': stat('Перезарядка: Перезарядка, с', 300, duration),
+  'recharge.cooldown': stat('Перезарядка: Перезарядка, с', 120, duration),
   'adrenaline.cost': stat('Стоимость: Адреналин', 0, integer),
   'eagleEye.cost': stat('Стоимость: Зоркость', 20, integer),
   'eagleEye.cooldown': stat('Перезарядка: Зоркость, с', 45, duration),
@@ -281,7 +288,9 @@ export const ATTRIBUTE_RULES = {
     energyPerPoint: 1,
     regenPerPoint: 0.01,
     healPerPoint: 2,
-    prepPerPoint: 1,
+    prepStep: 3,
+    prepPerStep: 1,
+    shieldAbsorptionThreshold: 300,
     shieldAbsorptionPerPoint: 10,
   },
 } as const;

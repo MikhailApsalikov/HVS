@@ -1,4 +1,4 @@
-import type { AbilityId, Difficulty, DifficultyConfig, GamePhase } from '../types.js';
+import type { AbilityId, Difficulty, DifficultyConfig, GamePhase, SpiderType } from '../types.js';
 import type { GameRules } from '../rules/GameRules.js';
 import type { ResolvedStats } from '../rules/stats.js';
 import {
@@ -33,6 +33,8 @@ export interface ChainLightning {
 
 export class GameState {
   phase: GamePhase = 'levelUp';
+  fatalHit: { readonly spider: SpiderType; readonly damage: number } | null = null;
+  rechargeUses = 0;
   level: number;
   levelTimer: number;
   levelTimerMax: number;
@@ -110,6 +112,9 @@ export class GameState {
   }
   get maxHp(): number {
     return this.stats.maxHp;
+  }
+  get isVictory(): boolean {
+    return this.level >= WORLD.maxLevel && this.hp > 0;
   }
   get activeEffects(): readonly PlayerEffect[] {
     return activePlayerEffects(this);

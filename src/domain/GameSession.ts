@@ -22,7 +22,8 @@ import {
   nextLearningBoundary,
   tickLearningFromMistakes,
 } from './systems/LearningFromMistakesSystem.js';
-import { TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK } from './rules/stats.js';
+import { RECHARGE_COOLDOWN_PER_USE, TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK } from './rules/stats.js';
+import { WORLD } from './rules/world.js';
 import { buffModifiers, nextBuffBoundary, tickBuffs } from './systems/BuffSystem.js';
 import {
   clearResistedSpiderDebuffs,
@@ -57,12 +58,22 @@ export class GameSession {
   ) {
     const config = DIFFICULTIES[difficulty];
     const { level = 1, coins = config.startingCoins } = options;
-    if (!Number.isSafeInteger(level) || level < 1 || !Number.isSafeInteger(coins) || coins < 0)
+    if (
+      !Number.isSafeInteger(level) ||
+      level < 1 ||
+      level > WORLD.maxLevel ||
+      !Number.isSafeInteger(coins) ||
+      coins < 0
+    )
       throw new RangeError('Invalid new game options');
     this.talents = new TalentSystem(config);
     this.items = new ItemSystem();
     this.state = new GameState(difficulty, config, new GameRules(config, [], {}, level));
     this.state.coins = coins;
+    if (this.state.isVictory) {
+      this.state.phase = 'gameOver';
+      this.state.initialTalentPick = false;
+    }
   }
   refreshStats(grantHealthIncrease = true): void {
     const state = this.state;
@@ -81,6 +92,12 @@ export class GameSession {
       ...state.character.getModifiers(),
       ...buffModifiers(state),
       ...learningModifiers(state),
+      {
+        source: 'ability:recharge',
+        stat: 'recharge.cooldown' as const,
+        kind: 'flat' as const,
+        value: state.rechargeUses * RECHARGE_COOLDOWN_PER_USE,
+      },
     ];
     const rules = new GameRules(state.config, effects, state.character.base, state.level);
     const scaling = this.talents.getScalingModifiers(rules.snapshot());
@@ -196,7 +213,7 @@ export class GameSession {
     this.refreshStats();
     state.record = Math.max(state.record, state.level);
     state.levelTimer = state.levelTimerMax = state.rules.levelDuration(state.level);
-    state.phase = 'playing';
+    state.phase = state.isVictory ? 'gameOver' : 'playing';
     return true;
   }
   shootLane(lane: number): ShootResult {
@@ -225,7 +242,11 @@ export class GameSession {
   activateAbility(id: AbilityId): AbilityResult {
     const result = activateAbility(this.state, id, this.random);
     if (
-      (id === 'lastHope' || id === 'adrenaline' || id === 'stand' || id === 'eagleEye') &&
+      (id === 'lastHope' ||
+        id === 'adrenaline' ||
+        id === 'stand' ||
+        id === 'eagleEye' ||
+        id === 'recharge') &&
       result === 'activated'
     )
       this.refreshStats(false);

@@ -1,6 +1,6 @@
 import type { AbilityId, TalentId } from '../domain/types.js';
 import type { StatId } from '../domain/rules/stats.js';
-import { AIMED_FIRE, ATTRIBUTE_RULES, LIGHTNING_SHIELD } from '../domain/rules/stats.js';
+import { AIMED_FIRE, LIGHTNING_SHIELD, RECHARGE_COOLDOWN_PER_USE } from '../domain/rules/stats.js';
 
 interface AbilityDefinition {
   readonly name: string;
@@ -92,7 +92,7 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     sprite: 'AbilityRecharge',
     unlockLevel: 60,
     talent: 'recharge',
-    description: 'Сбрасывает перезарядку остальных способностей и лучников.',
+    description: `Сбрасывает перезарядку остальных способностей и лучников. Сначала запускает собственную перезарядку, затем увеличивает её на ${RECHARGE_COOLDOWN_PER_USE} с для всех следующих применений до конца игры.`,
   },
   lastHope: {
     name: 'Блок последней надежды',
@@ -154,7 +154,7 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     sprite: 'AbilityLightningShield',
     unlockLevel: 30,
     talent: 'lightningShield',
-    description: `Окружает вас щитом молний на 3 минуты, поглощающим до {lightningShield.absorption} урона. Каждая единица интеллекта увеличивает прочность щита на ${ATTRIBUTE_RULES.intellect.shieldAbsorptionPerPoint}.\nЕсли изучены «Стрелы молний» и у вас больше ${LIGHTNING_SHIELD.energyThreshold} энергии, поглощение урона выпускает в пауков ответную цепную молнию не чаще раза в {lightningShield.procCooldown} с. Ответная молния расходует ${LIGHTNING_SHIELD.procEnergyCost} энергии, только если атакует хотя бы одного паука.`,
+    description: `Окружает вас щитом молний на {lightningShield.duration} с, поглощающим до {lightningShield.absorption} урона.\nЕсли изучены «Стрелы молний» и у вас больше ${LIGHTNING_SHIELD.energyThreshold} энергии, поглощение урона выпускает в пауков ответную цепную молнию не чаще раза в {lightningShield.procCooldown} с. Ответная молния расходует {lightningShield.procCost} энергии, только если атакует хотя бы одного паука.`,
   },
 };
 /** Stable storage order; the HUD has its own order by level, then keyboard position. */

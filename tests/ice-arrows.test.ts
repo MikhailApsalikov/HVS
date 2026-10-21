@@ -56,12 +56,12 @@ describe('ice arrows through session commands', () => {
       session.state.level = 40;
       session.talents.loadFromSave([
         ...invested.filter(({ id }) => id !== 'permafrost' && id !== 'blizzardMastery'),
-        { id: 'permafrost', rank: 1 },
+        { id: 'rationality', rank: 1 },
         { id: 'blizzardMastery', rank: 6 },
       ]);
       expect(session.talents.branchPoints('magic')).toBe(27);
       expect(session.upgradeTalent('iceArrows')).toBe(false);
-      expect(session.upgradeTalent('permafrost')).toBe(true);
+      expect(session.upgradeTalent('rationality')).toBe(true);
       for (let rank = 1; rank <= 5; rank++) {
         expect(session.upgradeTalent('iceArrows')).toBe(true);
         expect(session.state.stats['iceArrows.chance']).toBeCloseTo(0.12 * rank);
@@ -292,7 +292,7 @@ describe('ice arrow save compatibility', () => {
       spiders: data.spiders.map(({ rootTimer: _timer, ...spider }) => spider),
     };
     const parsed = parseSave(previous);
-    expect(parsed?.version).toBe(28);
+    expect(parsed?.version).toBe(29);
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('iceArrows')).toBe(0);
     expect(loaded.state.lightningCharges).toEqual(data.state.lightningCharges);

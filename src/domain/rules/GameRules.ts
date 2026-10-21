@@ -41,16 +41,37 @@ export class GameRules {
     );
     this.criticalShotLearned = criticalShotLearned;
     this.shieldBlockLearned = shieldBlockLearned;
+    const itemEffectiveness = calculate(
+      STATS.itemEffectiveness.base,
+      effects.filter((effect) => effect.stat === 'itemEffectiveness'),
+      STATS.itemEffectiveness.policy,
+    ).value;
     const allEffects: StatModifier[] = [
-      ...effects.filter((effect) => {
-        if (!effect.source.startsWith('item:')) return true;
-        if (effect.stat === 'blockChance') return shieldBlockLearned;
-        if (effect.stat === 'fireExplosion.chance')
-          return effects.some((candidate) => candidate.source === 'talent:fireExplosion');
-        if (effect.stat === 'criticalShotChance' || effect.stat === 'improvedCriticalShotChance')
-          return criticalShotLearned;
-        return true;
-      }),
+      ...effects
+        .filter((effect) => {
+          if (!effect.source.startsWith('item:')) return true;
+          if (effect.stat === 'blockChance') return shieldBlockLearned;
+          if (effect.stat === 'fireExplosion.chance')
+            return effects.some((candidate) => candidate.source === 'talent:fireExplosion');
+          if (effect.stat === 'criticalShotChance' || effect.stat === 'improvedCriticalShotChance')
+            return criticalShotLearned;
+          return true;
+        })
+        .map((effect) => {
+          if (!effect.source.startsWith('item:')) return effect;
+          const value = calculate(
+            effect.value,
+            [
+              {
+                source: 'itemEffectiveness',
+                kind: 'percent',
+                value: (itemEffectiveness - 1) * 100,
+              },
+            ],
+            STATS.itemEffectiveness.policy,
+          ).afterFlatPenalties;
+          return { ...effect, value: effect.kind === 'percent' ? Math.max(-100, value) : value };
+        }),
       ...PRIMARY_STATS.map((stat): StatModifier => ({
         source: 'character:level',
         stat,

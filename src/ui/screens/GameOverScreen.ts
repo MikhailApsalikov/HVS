@@ -1,8 +1,13 @@
+import type { GameState } from '../../domain/model/GameState.js';
+import { SPIDERS } from '../../content/spiders.js';
+import { formatStat } from '../presenters.js';
+
 export class GameOverScreen {
   private _container: HTMLElement;
   private _titleEl: HTMLElement;
   private _levelEl: HTMLElement;
   private _recordEl: HTMLElement;
+  private _causeEl: HTMLElement;
   private readonly _onReturnToMenu: () => void;
 
   public constructor(container: HTMLElement, onReturnToMenu: () => void) {
@@ -11,6 +16,7 @@ export class GameOverScreen {
     this._titleEl = document.createElement('h1');
     this._levelEl = document.createElement('p');
     this._recordEl = document.createElement('p');
+    this._causeEl = document.createElement('p');
     this._build();
   }
 
@@ -24,6 +30,9 @@ export class GameOverScreen {
     this._levelEl.className = 'game-over__level';
     this._container.appendChild(this._levelEl);
 
+    this._causeEl.className = 'game-over__cause';
+    this._container.appendChild(this._causeEl);
+
     this._recordEl.className = 'game-over__record';
     this._container.appendChild(this._recordEl);
 
@@ -36,12 +45,19 @@ export class GameOverScreen {
     this._container.appendChild(btn);
   }
 
-  public render(level: number, record: number, isNewRecord: boolean): void {
-    this._titleEl.textContent = isNewRecord ? 'НОВЫЙ РЕКОРД!' : 'ПОРАЖЕНИЕ';
-    this._titleEl.classList.toggle('game-over__title--victory', isNewRecord);
-    this._titleEl.classList.toggle('game-over__title--defeat', !isNewRecord);
+  public render(state: GameState): void {
+    const { level, record, isVictory, fatalHit } = state;
+    this._titleEl.textContent = isVictory ? 'ПОБЕДА!' : 'ПОРАЖЕНИЕ';
+    this._titleEl.classList.toggle('game-over__title--victory', isVictory);
+    this._titleEl.classList.toggle('game-over__title--defeat', !isVictory);
 
-    this._levelEl.textContent = `Вы пали на уровне ${level}`;
+    this._levelEl.textContent = isVictory
+      ? `Вы достигли уровня ${level}`
+      : `Вы пали на уровне ${level}`;
+    this._causeEl.textContent =
+      !isVictory && fatalHit
+        ? `Вас убил паук «${SPIDERS[fatalHit.spider].name}», нанеся ${formatStat('incomingDamage', fatalHit.damage)} урона.`
+        : '';
     this._recordEl.textContent = `Рекорд: ${record}`;
   }
 

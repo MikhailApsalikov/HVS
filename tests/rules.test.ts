@@ -69,7 +69,7 @@ describe('talent strength and independent sources', () => {
     expect(session.buyItem(cooldownItem.id)).toBe(true);
     const percent = item.abilityMod!.value;
     expect(session.state.stats['prep.restore']).toBe(
-      Math.round((250 + session.state.stats.intellect) * (1 + percent)),
+      Math.round((250 + Math.floor(session.state.stats.intellect / 3)) * (1 + percent)),
     );
     expect(session.state.stats['prep.cooldown']).toBe(60 - cooldownItem.abilityMod!.value);
     expect(
@@ -140,7 +140,7 @@ describe('primary attribute sources', () => {
 describe('content contracts', () => {
   it('retains all difficulties, talents, abilities and unique items', () => {
     expect(Object.keys(DIFFICULTIES)).toHaveLength(3);
-    expect(TALENT_ORDER).toHaveLength(51);
+    expect(TALENT_ORDER).toHaveLength(53);
     expect(ABILITY_ORDER).toHaveLength(14);
     expect(new Set(ITEM_CATALOG.map((item) => item.id)).size).toBe(ITEM_CATALOG.length);
   });

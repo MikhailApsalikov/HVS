@@ -343,7 +343,7 @@ describe('masochism saves', () => {
     expect(session.activateAbility('aimedFire')).toBe('activated');
     expect(session.state.hp).toBe(4325);
     const saved = snapshot(session);
-    expect(saved.version).toBe(28);
+    expect(saved.version).toBe(29);
     const parsed = parseSave(JSON.parse(JSON.stringify(saved)));
     expect(parsed).not.toBeNull();
     const loaded = restore(parsed!, () => 0.999999);
@@ -367,7 +367,7 @@ describe('masochism saves', () => {
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('masochism')).toBe(0);
     const normalized = snapshot(loaded);
-    expect(normalized.version).toBe(28);
+    expect(normalized.version).toBe(29);
     expect(normalized.state).toEqual(existing.state);
     expect(normalized.talents.filter(({ id }) => id !== 'masochism')).toEqual(existing.talents);
     expect(loaded.shootLane(0)).toBe('not_enough_energy');

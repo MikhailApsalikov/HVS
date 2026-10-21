@@ -7,6 +7,7 @@ import { TALENTS, TALENT_BRANCHES } from '../../content/talents.js';
 import { talentDescription, descriptionParagraphs } from '../presenters.js';
 import { ShopPanel, type ShopActions } from '../components/ShopPanel.js';
 import { TooltipManager } from '../components/TooltipManager.js';
+import { talentTierColumns } from '../talentLayout.js';
 
 export interface LevelUpActions extends ShopActions {
   upgrade(id: TalentId): boolean;
@@ -57,6 +58,7 @@ export class LevelUpScreen {
         const { unlocksAtLevel: level, requiredBranchPoints } = tierTalents[0];
         const row = document.createElement('div');
         row.className = 'talent-tree__tier-row';
+        const columns = talentTierColumns(tierTalents.map(({ id }) => id));
         for (const talent of tierTalents) {
           const definition = TALENTS[talent.id];
           const prerequisite = definition.prerequisite;
@@ -89,7 +91,7 @@ export class LevelUpScreen {
           button.addEventListener('blur', () => this.tooltip.hide());
           const option = document.createElement('div');
           option.className = 'talent-option';
-          option.style.gridColumn = String(definition.column ?? tierTalents.indexOf(talent) + 1);
+          option.style.gridColumn = String(columns.get(talent.id));
           option.style.gridRow = '1';
           option.append(button);
           row.append(option);

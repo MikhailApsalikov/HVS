@@ -127,6 +127,7 @@ export function resolveBreaches(
   onEffectsChanged: () => void,
 ): void {
   for (const spider of state.spiders.values()) {
+    if (state.hp <= 0) break;
     if (spider.dying || spider.y < 1) continue;
     spider.reachedCastle = true;
     onBreach();
@@ -186,6 +187,7 @@ export function resolveBreaches(
       const previousFatalShield = state.fatalShieldTimer;
       hp = protectFromBreach(state, hp);
       state.modifyHp(-hp);
+      if (previousHp > 0 && state.hp === 0) state.fatalHit = { spider: spider.type, damage: hp };
       const lostHealth = state.hp < previousHp;
       if (
         lostHealth &&

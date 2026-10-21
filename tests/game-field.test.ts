@@ -4,6 +4,7 @@ import type { SpriteRegistry } from '../src/ui/SpriteRegistry.js';
 import { StandShieldOverlay } from '../src/ui/overlays/StandShieldOverlay.js';
 import { addSpider, game } from './helpers.js';
 import { GameSession } from '../src/domain/GameSession.js';
+import { GameOverScreen } from '../src/ui/screens/GameOverScreen.js';
 
 class ElementDouble {
   className = '';
@@ -73,6 +74,41 @@ function lane(index = 0): ElementDouble {
   return container.children[0].children[index];
 }
 
+describe('end-of-game screen through session outcomes', () => {
+  it('shows a defeat, the lethal spider and its damage even on a record level', () => {
+    const session = game(20);
+    session.state.record = 20;
+    session.state.hp = 1;
+    addSpider(session, 'tank', 0, 1, 10000);
+    session.tick(0.001);
+    expect(session.state.phase).toBe('gameOver');
+    const result = new ElementDouble();
+    const screen = new GameOverScreen(result as unknown as HTMLElement, vi.fn());
+    screen.render(session.state);
+    expect(result.children[0].textContent).toBe('ПОРАЖЕНИЕ');
+    expect(result.children[2].textContent).toBe(
+      `Вас убил паук «Танк», нанеся ${session.state.fatalHit!.damage} урона.`,
+    );
+    expect(result.children[3].textContent).toBe('Рекорд: 20');
+  });
+
+  it('shows victory at level 120 and clears any prior cause of defeat', () => {
+    const result = new ElementDouble();
+    const screen = new GameOverScreen(result as unknown as HTMLElement, vi.fn());
+    const defeated = game(20);
+    defeated.state.hp = 1;
+    addSpider(defeated, 'fast', 0, 1, 10000);
+    defeated.tick(0.001);
+    screen.render(defeated.state);
+    const session = new GameSession('normal', undefined, { level: 120 });
+    screen.render(session.state);
+    expect(result.children[0].textContent).toBe('ПОБЕДА!');
+    expect(result.children[1].textContent).toBe('Вы достигли уровня 120');
+    expect(result.children[2].textContent).toBe('');
+    expect(result.children[0].classList.contains('game-over__title--victory')).toBe(true);
+  });
+});
+
 describe('combat feedback without a browser', () => {
   it('shows the Lightning Shield timer in the buff panel and absorption on the field', async () => {
     const { PlayerEffectPanel } = await import('../src/ui/components/PlayerEffectPanel.js');
@@ -85,12 +121,12 @@ describe('combat feedback without a browser', () => {
     panel.render(session.state);
     const panelContainer = panel.container as unknown as ElementDouble;
     const badge = panelContainer.children[0].children[0].children[0].children[0];
-    expect(badge.children[1].textContent).toBe('180с');
+    expect(badge.children[1].textContent).toBe('300с');
     const capacity = session.state.lightningShieldAbsorption;
     addSpider(session, 'normal', 0, 1, 100);
     session.tick(1.25);
     panel.render(session.state);
-    expect(badge.children[1].textContent).toBe('179с');
+    expect(badge.children[1].textContent).toBe('299с');
     expect(session.state.lightningShieldAbsorption).toBeLessThan(capacity);
     const overlay = new StandShieldOverlay(field.getEffectsContainer(), sprites, 'lightningShield');
     overlay.updateTimer(session.state.lightningShieldAbsorption);

@@ -59,7 +59,7 @@ describe('new magic talents through session commands', () => {
       for (let rank = 1; rank <= 5; rank++)
         expect(session.upgradeTalent('improvedLightning')).toBe(true);
       expect(session.upgradeTalent('improvedLightning')).toBe(false);
-      expect(session.talents.getTalent('permafrost')).toMatchObject({ tier: 2, maxRanks: 10 });
+      expect(session.talents.getTalent('permafrost')).toMatchObject({ tier: 6, maxRanks: 10 });
       expect(session.talents.getTalent('fireExplosion')).toMatchObject({ tier: 3, maxRanks: 10 });
       expect(session.talents.getTalent('blizzardMastery')).toMatchObject({ tier: 4 });
       expect(session.talents.getTalent('improvedArmageddon')).toMatchObject({
@@ -78,17 +78,17 @@ describe('new magic talents through session commands', () => {
     },
   );
 
-  it('charges nine lanes for 90 energy, respects cooldown and never spends charges on blocked shots', () => {
+  it('charges nine lanes for 70 energy, respects cooldown and never spends charges on blocked shots', () => {
     const session = arena();
     expect(session.activateAbility('lightningArrows')).toBe('level_locked');
     session.talents.loadFromSave(lightning);
     session.refreshStats();
-    session.state.energy = 89;
+    session.state.energy = 69;
     expect(session.activateAbility('lightningArrows')).toBe('not_enough_energy');
     expect(session.state.lightningCharges.some(Boolean)).toBe(false);
     session.state.energy = 1000;
     expect(session.activateAbility('lightningArrows')).toBe('activated');
-    expect(session.state.energy).toBe(910);
+    expect(session.state.energy).toBe(930);
     expect(session.state.getAbility('lightningArrows').remainingCooldown).toBe(90);
     expect(session.activateAbility('lightningArrows')).toBe('on_cooldown');
     expect(session.state.lightningCharges).toEqual(Array(9).fill(1));
@@ -436,7 +436,7 @@ describe('magic persistence', () => {
       ),
     };
     const parsed = parseSave(previous);
-    expect(parsed?.version).toBe(28);
+    expect(parsed?.version).toBe(29);
     const loaded = restore(parsed!);
     expect(loaded.state.lightningCharges).toEqual(Array(9).fill(0));
     expect(loaded.state.chainLightning).toEqual([]);

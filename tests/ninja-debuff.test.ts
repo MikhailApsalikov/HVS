@@ -5,7 +5,8 @@ import { activeDebuffs, playerEffectDescription } from '../src/ui/presenters.js'
 import { addSpider } from './helpers.js';
 
 function arena(level = 55) {
-  const session = new GameSession('normal', () => 0.999999, { level });
+  const session = new GameSession('normal', () => 0.999999);
+  session.state.level = level; // Also exercise legacy formulas above the victory level.
   session.state.character.setBase('agility', 200 - (level - 1));
   session.state.character.setModifiers('test:arena', [
     { stat: 'spawnProbability', kind: 'percent', value: -100 },
@@ -198,7 +199,7 @@ describe('disorientation save compatibility', () => {
     const previous = { ...current, abilities: current.abilities.slice(0, 12), version: 22, state };
     const parsed = parseSave(previous)!;
     expect(parsed).not.toBeNull();
-    expect(parsed.version).toBe(28);
+    expect(parsed.version).toBe(29);
     expect(parsed.state.disorientationTimer).toBe(0);
     expect(snapshot(restore(parsed))).toEqual(current);
     expect(parseSave({ ...previous, state: { ...state, disorientationTimer: 10 } })).toEqual(

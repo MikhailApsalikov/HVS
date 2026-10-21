@@ -38,6 +38,7 @@ const STATE_FIELDS = [
   'pendingTalentPoints',
   'record',
   'phase',
+  'rechargeUses',
   'initialTalentPick',
   'levelTimer',
   'levelTimerMax',
@@ -121,7 +122,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 28;
+  readonly version: 29;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -139,7 +140,7 @@ export function snapshot(session: GameSession): SaveData {
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   fields.lightningCharges = [...state.lightningCharges];
   return {
-    version: 28,
+    version: 29,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -157,6 +158,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   const session = new GameSession(data.difficulty, random);
   const state = session.state;
   state.level = data.state.level;
+  state.rechargeUses = data.version < 29 ? 0 : data.state.rechargeUses;
   state.lastHopeTimer = data.state.lastHopeTimer;
   state.adrenalineTimer = data.state.adrenalineTimer;
   state.adrenalineShots = data.state.adrenalineShots;
@@ -192,6 +194,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
     Object.fromEntries(
       STATE_FIELDS.map((key) => [
         key,
+        (key === 'rechargeUses' && data.version < 29) ||
         (key === 'stunTimer' && data.version < 25) ||
         (data.version < 28 &&
           [
@@ -290,6 +293,12 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
     }),
   );
   if (state.adrenalineActive) for (const archer of state.archers) archer.start(0);
+  if (state.level >= WORLD.maxLevel) {
+    state.level = WORLD.maxLevel;
+    state.phase = 'gameOver';
+    state.initialTalentPick = false;
+    session.refreshStats(false);
+  }
   return session;
 }
 
@@ -367,12 +376,17 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (
     ![
       3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
-      28,
+      28, 29,
     ].includes(value.version as number) ||
     !object(value.state)
   )
     return null;
   const state = value.state;
+  if (
+    (value.version as number) >= 29 &&
+    (!integer(state.rechargeUses) || !integer(state.level) || state.level > WORLD.maxLevel)
+  )
+    return null;
   if (
     (value.version as number) >= 28 &&
     (!number(state.masochismTimer) ||
@@ -789,6 +803,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (value.version === 25) return snapshot(restore(value as unknown as SaveData));
   if (value.version === 26) return snapshot(restore(value as unknown as SaveData));
   if (value.version === 27) return snapshot(restore(value as unknown as SaveData));
+  if (value.version === 28) return snapshot(restore(value as unknown as SaveData));
   return value as unknown as SaveData;
 }
 

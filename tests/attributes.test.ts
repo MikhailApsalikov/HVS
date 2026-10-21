@@ -45,7 +45,7 @@ describe('primary attributes through the session API', () => {
       arrowSpeed: 0.333333,
       'volley.cooldown': 35.52,
       'heal.amount': 182,
-      'prep.restore': 266,
+      'prep.restore': 255,
       coinsPerSec: 4,
     });
     session.upgradeTalent('hunterMastery');
@@ -163,10 +163,10 @@ describe('primary attributes through the session API', () => {
   });
 
   it.each([
-    [99, 100, 10.44, 348, 349],
-    [100, 100, 10.45, 350, 350],
-    [101, 101, 10.46, 352, 351],
-    [250, 250, 11.95, 650, 500],
+    [99, 100, 10.44, 348, 283],
+    [100, 100, 10.45, 350, 283],
+    [101, 101, 10.46, 352, 283],
+    [250, 250, 11.95, 650, 333],
   ])(
     'intellect %s respects the energy threshold and strengthens both abilities',
     (intellect, maxEnergy, energyRegen, heal, prep) => {
@@ -188,14 +188,14 @@ describe('primary attributes through the session API', () => {
       { stat: 'maxEnergy', kind: 'flat', value: 1000 },
       { stat: 'maxHp', kind: 'flat', value: 1000 },
     ]);
-    session.refreshStats(); // Intellect 54: +108 healing and +54 preparation.
+    session.refreshStats(); // Intellect 54: +108 healing and +18 preparation.
     session.state.hp = 10;
     session.state.energy = 100;
     expect(session.activateAbility('heal')).toBe('activated');
     expect(session.state.hp).toBe(268);
     expect(session.state.energy).toBe(0);
     expect(session.activateAbility('prep')).toBe('activated');
-    expect(session.state.energy).toBe(154);
+    expect(session.state.energy).toBe(118);
   });
 
   it('grants discrete income, breach energy and kill rewards in the simulation', () => {
@@ -486,7 +486,9 @@ describe('armor and talent branches', () => {
     ['iceArrows', 5, 28, 40],
     ['magicArmor', 5, 28, 40],
     ['lightningShield', 4, 21, 30],
-    ['permafrost', 2, 7, 10],
+    ['permafrost', 6, 35, 50],
+    ['economy', 6, 35, 50],
+    ['rationality', 2, 7, 10],
     ['recharge', 7, 42, 60],
     ['dutyBound', 5, 28, 40],
     ['healBoost', 5, 28, 40],

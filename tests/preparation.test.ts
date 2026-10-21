@@ -114,15 +114,15 @@ describe('preparation through session commands', () => {
     session.state.phase = 'playing';
     session.state.energy = 0;
     expect(session.state.stats.intellect).toBe(154);
-    // The pendant still multiplies the previous (250 + intellect) total by 1.5.
-    expect(session.state.stats['prep.restore']).toBe(606);
+    // The pendant multiplies (250 + floor(intellect / 3)) by 1.5.
+    expect(session.state.stats['prep.restore']).toBe(452);
     expect(session.activateAbility('prep')).toBe('activated');
-    expect(session.state.energy).toBe(456);
+    expect(session.state.energy).toBe(302);
     expect(abilityDescription(session.state, 'prep')).toContain(
-      'Восстанавливает 456 энергии и 150 в течение 5 секунд.',
+      'Восстанавливает 302 энергии и 150 в течение 5 секунд.',
     );
     session.tick(5);
-    expect(session.state.energy).toBeCloseTo(606 + session.state.stats.energyRegen * 5);
+    expect(session.state.energy).toBeCloseTo(452 + session.state.stats.energyRegen * 5);
   });
 
   it('respects the energy cap and resumes recovery when energy is spent', () => {
@@ -242,7 +242,7 @@ describe('preparation saves', () => {
     const { prepTimer: _timer, ...state } = saved.state;
     const previous = { ...saved, version: 14, abilities: saved.abilities.slice(0, 11), state };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(28);
+    expect(parsed.version).toBe(29);
     const loaded = restore(parsed, () => 0.999999);
     expect(loaded.state.prepTimer).toBe(0);
     expect(loaded.state.energy).toBe(saved.state.energy);

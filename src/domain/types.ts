@@ -51,6 +51,8 @@ export type TalentId =
   | 'greed'
   | 'quickInstinct'
   | 'hunterArsenal'
+  | 'economy'
+  | 'rationality'
   | 'improvedEndurance'
   | 'improvedAgility'
   | 'improvedIntellect'

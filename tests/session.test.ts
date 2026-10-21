@@ -320,7 +320,7 @@ describe('all abilities', () => {
     session.state.archers[0].start(10);
     session.activateAbility('recharge');
     for (const id of ABILITY_ORDER)
-      expect(session.state.getAbility(id).remainingCooldown).toBe(id === 'recharge' ? 300 : 0);
+      expect(session.state.getAbility(id).remainingCooldown).toBe(id === 'recharge' ? 120 : 0);
     expect(session.state.archers[0].remainingCooldown).toBe(0);
   });
 });

@@ -192,6 +192,13 @@ export function attributeDescription(state: GameState, id: PrimaryStatId | 'armo
         effect.value !== 0,
     )
     .map(attributeEffectDescription);
+  if (id === 'intellect') {
+    const rules = ATTRIBUTE_RULES.intellect;
+    contributions.push(
+      `Каждые ${rules.prepStep} полные единицы интеллекта повышают эффективность «Подготовки» на ${rules.prepPerStep}.`,
+      `Каждая единица интеллекта сверх ${rules.shieldAbsorptionThreshold} увеличивает прочность «Щита молний» на ${rules.shieldAbsorptionPerPoint}.`,
+    );
+  }
   for (const talentId of TALENT_ORDER) {
     const { scaling, name } = TALENTS[talentId];
     if (scaling?.attribute !== id) continue;

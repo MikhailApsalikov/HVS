@@ -1,4 +1,5 @@
 export const WORLD = {
+  maxLevel: 120,
   lanes: 9,
   fixedStep: 1 / 60,
   maxFrameTime: 0.1,

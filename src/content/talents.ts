@@ -207,9 +207,13 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     name: 'Улучшенные молнии',
     sprite: 'TalentImprovedLightning',
     prerequisite: { id: 'lightningArrows', rank: 1 },
-    effects: [flat('lightningArrows.jumps', 1), flat('lightningArrows.delay', -0.05)],
+    effects: [
+      flat('lightningArrows.jumps', 1),
+      flat('lightningArrows.delay', -0.05),
+      percent('lightningArrows.cost', 40),
+    ],
     description:
-      'Увеличивает число перескоков «Стрел молний» на {lightningArrows.jumps} и незначительно ускоряет цепь молний.',
+      'Увеличивает число перескоков «Стрел молний» на {lightningArrows.jumps} и незначительно ускоряет цепь молний. Повышает стоимость способности на {lightningArrows.cost}.',
   },
   fireExplosion: {
     branch: 'magic',
@@ -325,9 +329,9 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     name: 'Беспощадная вьюга',
     sprite: 'TalentBlizzardMastery',
-    effects: [flat('blizzard.slow', 0.04), flat('blizzard.duration', 1)],
+    effects: [flat('blizzard.slow', 0.04), flat('blizzard.duration', 1), flat('blizzard.cost', 6)],
     description:
-      'Усиливает замедление пауков от «Вьюги» на {blizzard.slow} и продлевает её действие на {blizzard.duration} с.',
+      'Усиливает замедление пауков от «Вьюги» на {blizzard.slow} и продлевает её действие на {blizzard.duration} с. Повышает стоимость способности на {blizzard.cost} энергии.',
   },
   hunterReward: {
     branch: 'defense',
@@ -365,10 +369,32 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
   },
   hunterArsenal: {
     branch: 'magic',
+    column: 1,
     name: 'Арсенал охотника',
     sprite: 'TalentArsenal',
     effects: [flat('inventorySlots', 1)],
     description: 'Увеличивает количество мест для предметов в инвентаре на {inventorySlots}.',
+  },
+  rationality: {
+    branch: 'magic',
+    column: 1,
+    name: 'Рациональность',
+    sprite: 'TalentRationality',
+    prerequisite: { id: 'hunterArsenal', rank: 1 },
+    effects: [percent('itemEffectiveness', 5)],
+    description: 'Увеличивает эффективность всех бонусов предметов на {itemEffectiveness}.',
+  },
+  economy: {
+    branch: 'magic',
+    column: 3,
+    name: 'Экономия',
+    sprite: 'TalentEconomy',
+    effects: [
+      percent('shootCost', -3),
+      percent('lightningShield.procCost', -3),
+      ...ABILITY_ORDER.map((id) => percent(`${id}.cost`, -3)),
+    ],
+    description: 'Снижает стоимость энергии всех заклинаний и выстрелов на {shootCost}.',
   },
   improvedEndurance: {
     name: 'Улучшенная выносливость',

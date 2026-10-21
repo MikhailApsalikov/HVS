@@ -74,6 +74,7 @@ const EFFECTS: Record<AbilityId, Effect> = {
     state.armageddonTimer = state.stats['armageddon.charge'];
   },
   recharge: (state) => {
+    state.rechargeUses += 1;
     for (const id of ABILITY_ORDER) if (id !== 'recharge') state.getAbility(id).start(0);
     for (const archer of state.archers) archer.start(0);
   },

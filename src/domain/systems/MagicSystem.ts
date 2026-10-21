@@ -50,7 +50,7 @@ export function absorbLightningShield(
           : undefined
         : lightningTarget(state, lane, null, random);
     if (target) {
-      state.spendEnergy(LIGHTNING_SHIELD.procEnergyCost);
+      state.spendEnergy(state.stats['lightningShield.procCost']);
       emit({
         type: 'lightning',
         from: { lane: lane ?? target.lane, y: 1 },
