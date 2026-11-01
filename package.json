@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
+    "version:flag": "node scripts/mark-version.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "node scripts/check.mjs"
