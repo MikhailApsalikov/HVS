@@ -177,27 +177,37 @@ describe('legacy feature inventory captured before rewrite', () => {
   });
   it('retains sound and music catalogs with their assets', () => {
     expect(SOUND_FILES).toEqual({
-      ...baseline.sounds,
+      ...Object.fromEntries(
+        Object.entries<string>(baseline.sounds).map(([effect, filename]) => [
+          effect,
+          filename.replace(/\.wav$/, '.mp3'),
+        ]),
+      ),
       [SoundEffect.VICTORY]: 'greed_main.mp3',
       [SoundEffect.ADRENALINE_ACTIVATE]: 'bloodlust_player_cast_head.ogg',
       [SoundEffect.EAGLE_EYE_ACTIVATE]: 'InnerFireC.ogg',
       [SoundEffect.LIGHTNING_ARROWS_ACTIVATE]: 'SPELL_LightningBolt_Impact_04.ogg',
       [SoundEffect.LIGHTNING_SHIELD_ACTIVATE]: 'LightningShieldImpact.ogg',
       [SoundEffect.AIMED_FIRE_ACTIVATE]: 'BowPullback.ogg',
-      [SoundEffect.MENU_BACK]: 'Select2.wav',
+      [SoundEffect.MENU_BACK]: 'Select2.mp3',
       [SoundEffect.FULL_BLOCK]: 'WoodenShieldBlock1.ogg',
       [SoundEffect.PARTIAL_BLOCK]: 'WoodenShieldBlock2.ogg',
       [SoundEffect.LAST_HOPE_ACTIVATE]: 'ShieldWallTarget.ogg',
       [SoundEffect.KILL_GOLDEN_SPIDER]: 'LootCoinSmall.ogg',
-      [SoundEffect.TANK_DAMAGE]: 'Takedmg.wav',
+      [SoundEffect.TANK_DAMAGE]: 'Takedmg.mp3',
       [SoundEffect.PIERCING_DAMAGE]: null,
-      [SoundEffect.PARTIAL_DEFENSE_DAMAGE]: 'Takedmg.wav',
+      [SoundEffect.PARTIAL_DEFENSE_DAMAGE]: 'Takedmg.mp3',
     });
     expect(MUSIC_FILES).toEqual({
-      ...baseline.music,
+      ...Object.fromEntries(
+        Object.entries<string>(baseline.music).map(([track, filename]) => [
+          track,
+          filename.replace(/\.wav$/, '.mp3'),
+        ]),
+      ),
       [MusicTrack.HELP]: '2.mp3',
       [MusicTrack.FREEZE]: 'bg36.mp3',
-      [MusicTrack.CRITICAL_HEALTH]: 'game_sboss.wav',
+      [MusicTrack.CRITICAL_HEALTH]: 'game_sboss.mp3',
     });
     const assets = files('src/sprites').map((file) => path.basename(file));
     for (const filename of [...Object.values(SOUND_FILES), ...Object.values(MUSIC_FILES)].filter(

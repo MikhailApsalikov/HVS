@@ -45,13 +45,13 @@ function sounds(session: GameSession): SoundEffect[] {
 
 describe('selected ability sounds through successful session commands', () => {
   it.each([
-    ['prep', 'Enrest.wav'],
+    ['prep', 'Enrest.mp3'],
     ['adrenaline', 'bloodlust_player_cast_head.ogg'],
     ['eagleEye', 'InnerFireC.ogg'],
     ['lightningArrows', 'SPELL_LightningBolt_Impact_04.ogg'],
-    ['volley', 'Shoot.wav'],
+    ['volley', 'Shoot.mp3'],
     ['aimedFire', 'BowPullback.ogg'],
-    ['stand', 'Bubble.wav'],
+    ['stand', 'Bubble.mp3'],
     ['lightningShield', 'LightningShieldImpact.ogg'],
   ] as const)('%s uses %s', (ability, filename) => {
     const session = arena();
@@ -246,7 +246,7 @@ describe('screen and button sounds', () => {
     (action) => {
       const sound = buttonSound({ screen: 'main-menu', action });
       expect(sound).toBe(SoundEffect.MENU_SELECT);
-      expect(SOUND_FILES[sound!]).toBe('Select1.wav');
+      expect(SOUND_FILES[sound!]).toBe('Select1.mp3');
     },
   );
 
@@ -266,7 +266,7 @@ describe('screen and button sounds', () => {
 
   it('retains Select2 exclusively for the help back button', () => {
     expect(buttonSound({ screen: 'help', action: 'back' })).toBe(SoundEffect.MENU_BACK);
-    expect(SOUND_FILES[SoundEffect.MENU_BACK]).toBe('Select2.wav');
+    expect(SOUND_FILES[SoundEffect.MENU_BACK]).toBe('Select2.mp3');
     expect(buttonSound({ screen: 'level-up', action: 'back' })).toBeNull();
   });
 

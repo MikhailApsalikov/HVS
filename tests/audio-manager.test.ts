@@ -40,9 +40,9 @@ describe('selected audio assets without a browser', () => {
     [SoundEffect.PARTIAL_BLOCK, 'WoodenShieldBlock2.ogg'],
     [SoundEffect.LAST_HOPE_ACTIVATE, 'ShieldWallTarget.ogg'],
     [SoundEffect.KILL_GOLDEN_SPIDER, 'LootCoinSmall.ogg'],
-    [SoundEffect.TANK_DAMAGE, 'Takedmg.wav'],
-    [SoundEffect.PIERCING_DAMAGE, 'Takedmg.wav'],
-    [SoundEffect.PARTIAL_DEFENSE_DAMAGE, 'Takedmg.wav'],
+    [SoundEffect.TANK_DAMAGE, 'Takedmg.mp3'],
+    [SoundEffect.PIERCING_DAMAGE, 'Takedmg.mp3'],
+    [SoundEffect.PARTIAL_DEFENSE_DAMAGE, 'Takedmg.mp3'],
   ] as const)('loads and plays %s using %s', (effect, filename) => {
     const audio = new AudioManager();
     const preloaded = AudioDouble.instances.length;
