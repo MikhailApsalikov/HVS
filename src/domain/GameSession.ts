@@ -344,7 +344,7 @@ export class GameSession {
       state.phase = 'gameOver';
       return;
     }
-    tickAimedFire(state, dt, this.random);
+    tickAimedFire(state, dt, this.random, emit);
     state.modifyHp(hpRegeneration);
     state.modifyEnergy(energyRegeneration + prepRegeneration);
     state.coinAccumulator += passiveCoins;
@@ -355,6 +355,7 @@ export class GameSession {
     if (state.levelTimer <= 0) {
       state.pendingTalentPoints += 1;
       state.phase = 'levelUp';
+      emit({ type: 'levelComplete', level: state.level });
     }
   }
 }

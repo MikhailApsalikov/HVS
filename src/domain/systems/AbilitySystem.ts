@@ -1,5 +1,6 @@
 import type { AbilityId, AbilityResult } from '../types.js';
 import type { GameState } from '../model/GameState.js';
+import type { EmitEvent } from '../events.js';
 import type { RandomSource } from '../rules/random.js';
 import { pickLanes } from '../rules/random.js';
 import { WORLD } from '../rules/world.js';
@@ -77,18 +78,28 @@ const EFFECTS: Record<AbilityId, Effect> = {
 };
 
 /** Called at a wave boundary, after existing arrows have moved for this interval. */
-export function tickAimedFire(state: GameState, dt: number, random: RandomSource): void {
+export function tickAimedFire(
+  state: GameState,
+  dt: number,
+  random: RandomSource,
+  emit: EmitEvent,
+): void {
   const pending = state.aimedFireWaves.map((wave) => ({ ...wave, remaining: wave.remaining - dt }));
   state.aimedFireWaves = pending.filter((wave) => wave.remaining > 1e-9);
   for (const wave of pending) {
     if (wave.remaining > 1e-9) continue;
+    let arrows = 0;
     for (let lane = 0; lane < WORLD.lanes; lane++) {
       const arrow = createArrow(state, random, lane, {
         fromVolley: true,
         guaranteedCritical: wave.guaranteedCritical,
       });
-      if (arrow) state.arrows.set(arrow.id, arrow);
+      if (arrow) {
+        state.arrows.set(arrow.id, arrow);
+        arrows += 1;
+      }
     }
+    if (arrows > 0) emit({ type: 'aimedFireVolley', arrows });
   }
 }
 

@@ -2,6 +2,12 @@ import { GameApp } from './ui/GameApp.js';
 import { SpriteRegistry } from './ui/SpriteRegistry.js';
 import { GameEngine } from './application/GameEngine.js';
 import { musicForState } from './application/music.js';
+import {
+  ABILITY_SOUNDS,
+  buttonSound,
+  gameOverSound,
+  soundsForEvent,
+} from './application/sounds.js';
 import { AudioManager } from './infrastructure/audio/AudioManager.js';
 import { SoundEffect, MusicTrack } from './infrastructure/audio/catalog.js';
 import { SaveSystem, type StoragePort } from './infrastructure/storage/SaveSystem.js';
@@ -34,7 +40,6 @@ export function bootstrap(root: HTMLElement): () => void {
   const app = new GameApp(root, sprites, {
     start: (difficulty) => {
       engine.startNewGame(difficulty);
-      audio.playSfx(SoundEffect.MENU_SELECT);
     },
     load: () => engine.loadGame(),
     hasSave: () => saves.hasSave(),
@@ -52,22 +57,6 @@ export function bootstrap(root: HTMLElement): () => void {
     undefined,
     parseNewGameOptions(window.location.search),
   );
-  const sounds: Record<AbilityId, SoundEffect> = {
-    freeze: SoundEffect.FREEZE_ACTIVATE,
-    blizzard: SoundEffect.BLIZZARD_ACTIVATE,
-    prep: SoundEffect.PREP_ACTIVATE,
-    heal: SoundEffect.HEAL,
-    volley: SoundEffect.VOLLEY_ACTIVATE,
-    aimedFire: SoundEffect.VOLLEY_ACTIVATE,
-    stand: SoundEffect.STAND_ACTIVATE,
-    lastHope: SoundEffect.ABSORB_DAMAGE,
-    adrenaline: SoundEffect.PREP_ACTIVATE,
-    eagleEye: SoundEffect.PREP_ACTIVATE,
-    armageddon: SoundEffect.ARMAGEDDON_ACTIVATE,
-    recharge: SoundEffect.RECHARGE_ACTIVATE,
-    lightningArrows: SoundEffect.PREP_ACTIVATE,
-    lightningShield: SoundEffect.STAND_ACTIVATE,
-  };
   const shoot = (lane: number) => {
     const result = engine.shootLane(lane);
     if (result === 'shot') audio.playSfx(SoundEffect.SHOOT);
@@ -75,7 +64,7 @@ export function bootstrap(root: HTMLElement): () => void {
   };
   const activate = (id: AbilityId) => {
     const result = engine.activateAbility(id);
-    if (result === 'activated') audio.playSfx(sounds[id]);
+    if (result === 'activated') audio.playSfx(ABILITY_SOUNDS[id]);
     else if (result === 'deactivated') audio.playSfx(SoundEffect.FREEZE_DEACTIVATE);
     else if (result === 'on_cooldown') audio.playSfx(SoundEffect.ABILITY_COOLDOWN);
     else if (result === 'not_enough_energy') audio.playSfx(SoundEffect.NOT_ENOUGH_ENERGY);
@@ -83,17 +72,21 @@ export function bootstrap(root: HTMLElement): () => void {
   const input = new InputHandler(shoot, activate);
   const clicks = (event: Event) => {
     const target =
-      event.target instanceof Element ? event.target.closest<HTMLElement>('button') : null;
+      event.target instanceof Element ? event.target.closest<HTMLButtonElement>('button') : null;
+    if (!target || target.disabled) return;
+    audio.playSfx(buttonSound(target.dataset.action));
     if (target?.dataset.lane) shoot(Number(target.dataset.lane));
     if (target?.dataset.ability) activate(target.dataset.ability as AbilityId);
   };
-  root.addEventListener('click', clicks);
+  root.addEventListener('click', clicks, true);
+  engine.setEventCallback((event) => {
+    for (const sound of soundsForEvent(event)) audio.playSfx(sound);
+  });
   engine.setPhaseChangeCallback((phase, state) => {
     if (phase === 'gameOver') {
-      audio.playSfx(SoundEffect.GAME_OVER);
+      audio.playSfx(gameOverSound(state));
       app.showGameOver(state);
     } else if (phase === 'levelUp') {
-      audio.playSfx(SoundEffect.LEVEL_COMPLETE);
       app.showLevelUp(state, engine.getTalentSystem()!, engine.getItemSystem()!, {
         upgrade: (id) => engine.upgradeTalent(id),
         buy: (id) => engine.buyItem(id),
@@ -106,17 +99,13 @@ export function bootstrap(root: HTMLElement): () => void {
   engine.setMagicEffectCallback((event) => field.showMagicEffect(event));
   engine.setCoinDropCallback((id, coins, jackpot) => {
     field.showCoinDrop(id, coins, jackpot);
-    audio.playSfx(SoundEffect.KILL_SPIDER);
   });
   engine.setDamagePopCallback((id, hp, energy, blockedDamage, dodged, piercing, absorbedDamage) => {
     field.showDamagePop(id, hp, energy, blockedDamage, dodged, piercing, absorbedDamage);
-    if (hp > 0) audio.playSfx(SoundEffect.PLAYER_TAKE_DAMAGE);
-    if (energy > 0) audio.playSfx(SoundEffect.BURNER_DRAIN);
     const state = engine.getState();
     if (state && state.hp > 0 && state.hp / state.maxHp < 0.05)
       audio.playSfx(SoundEffect.LOW_HP_WARNING);
   });
-  engine.setAbsorbCallback(() => audio.playSfx(SoundEffect.ABSORB_DAMAGE));
   engine.setResourceGainCallback((id, hp, energy, reason) => {
     field.showResourceGain(id, hp, energy, reason);
   });
@@ -127,7 +116,7 @@ export function bootstrap(root: HTMLElement): () => void {
     engine.stopLoop();
     input.destroy();
     audio.stopMusic();
-    root.removeEventListener('click', clicks);
+    root.removeEventListener('click', clicks, true);
     window.removeEventListener('pagehide', persist);
   };
 }

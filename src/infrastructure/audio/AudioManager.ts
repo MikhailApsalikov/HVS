@@ -1,7 +1,7 @@
-import { SoundEffect, MusicTrack, SOUND_FILES, MUSIC_FILES } from './catalog.js';
+import { SoundEffect, MusicTrack, SOUND_FILES, SOUND_FALLBACKS, MUSIC_FILES } from './catalog.js';
 
 const allAudioModules = import.meta.glob(
-  ['../../sprites/Звуки/**/*.{mp3,wav}', '../../sprites/Музыка/**/*.{mp3,wav}'],
+  ['../../sprites/Звуки/**/*.{mp3,wav,ogg}', '../../sprites/Музыка/**/*.{mp3,wav,ogg}'],
   { query: '?url', eager: true, import: 'default' },
 ) as Record<string, string>;
 
@@ -29,12 +29,14 @@ export class AudioManager {
   }
 
   private _preload(): void {
-    for (const [effect, filename] of Object.entries(SOUND_FILES)) {
-      const url = resolveUrl(filename);
+    for (const effect of Object.keys(SOUND_FILES) as SoundEffect[]) {
+      const fallback = SOUND_FALLBACKS[effect];
+      const filename = SOUND_FILES[effect] ?? (fallback ? SOUND_FILES[fallback] : null);
+      const url = filename ? resolveUrl(filename) : null;
       if (url) {
         const audio = new Audio(url);
         audio.preload = 'auto';
-        this._sfxCache.set(effect as SoundEffect, audio);
+        this._sfxCache.set(effect, audio);
       }
     }
 
@@ -53,8 +55,9 @@ export class AudioManager {
     if (this._muted) return;
 
     const now = performance.now();
-    const last = this._lastPlayTime.get(id) ?? 0;
-    if (now - last < SFX_THROTTLE_MS) return;
+    const last = this._lastPlayTime.get(id);
+    const isButton = id === SoundEffect.MENU_SELECT || id === SoundEffect.MENU_BACK;
+    if (!isButton && last !== undefined && now - last < SFX_THROTTLE_MS) return;
     this._lastPlayTime.set(id, now);
 
     const source = this._sfxCache.get(id);

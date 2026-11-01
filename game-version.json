@@ -12,6 +12,10 @@
     {
       "id": "enforce-version-flags",
       "type": "none"
+    },
+    {
+      "id": "sound-effects-first-batch-20261101",
+      "type": "cosmetic"
     }
   ]
 }

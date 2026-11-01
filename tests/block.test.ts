@@ -294,7 +294,10 @@ describe('damage blocking and counter volleys', () => {
     expect(session.state.hp).toBe(hp);
     expect(session.state.energy).toBe(0);
     const events = session.drainEvents();
-    expect(events.filter((event) => event.type === 'absorb')).toHaveLength(2);
+    expect(
+      events.filter((event) => event.type === 'damage' && event.blockedDamage !== undefined),
+    ).toHaveLength(2);
+    expect(events.filter((event) => event.type === 'absorb')).toHaveLength(0);
     expect(events).toContainEqual({
       type: 'damage',
       spiderId: burner.id,

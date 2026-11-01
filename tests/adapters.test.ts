@@ -72,6 +72,37 @@ describe('browser loop without a browser', () => {
 });
 
 describe('application orchestration', () => {
+  it('forwards release, kill and level events without treating them as invulnerability', () => {
+    const session = game(60);
+    session.talents.loadFromSave([{ id: 'aimedFire', rank: 1 }]);
+    session.refreshStats();
+    session.state.energy = session.state.maxEnergy;
+    session.activateAbility('aimedFire');
+    session.state.levelTimer = 1.1;
+    const killed = addSpider(session);
+    killed.startDying();
+    const frames = new Frames();
+    const saves = new SaveSystem(new MemoryStorage());
+    saves.save(session);
+    const engine = new GameEngine(vi.fn(), saves, new FrameLoop(frames));
+    const feedback = vi.fn();
+    const absorb = vi.fn();
+    engine.setEventCallback(feedback);
+    engine.setAbsorbCallback(absorb);
+    expect(engine.loadGame()).toBe(true);
+    frames.advance(0);
+    for (let frame = 1; frame <= 80; frame++) frames.advance((frame * 1000) / 60);
+    expect(feedback).toHaveBeenCalledWith({
+      type: 'spiderKilled',
+      spiderId: killed.id,
+      spiderType: 'normal',
+    });
+    expect(feedback).toHaveBeenCalledWith({ type: 'aimedFireVolley', arrows: 9 });
+    expect(feedback).toHaveBeenCalledWith({ type: 'levelComplete', level: 60 });
+    expect(absorb).not.toHaveBeenCalled();
+    engine.stopLoop();
+  });
+
   it('forwards lightning impact and jump events to the field feedback callback', () => {
     const session = game(60);
     session.talents.loadFromSave([{ id: 'lightningArrows', rank: 1 }]);

@@ -40,6 +40,7 @@ describe('actual combat resource gain events through session commands', () => {
     expect(session.state).toMatchObject({ hp: hp + 25, energy: energy + 11 });
     const events = session.drainEvents();
     expect(events).toEqual([
+      { type: 'spiderKilled', spiderId: spider.id, spiderType: 'normal' },
       { type: 'resourceGain', spiderId: spider.id, hp: 25, energy: 11, reason: 'kill' },
       { type: 'coinDrop', spiderId: spider.id, coins: 5, jackpot: false },
     ]);
@@ -86,6 +87,7 @@ describe('actual combat resource gain events through session commands', () => {
     const session = arena();
     const spider = kill(session);
     expect(session.drainEvents()).toEqual([
+      { type: 'spiderKilled', spiderId: spider.id, spiderType: 'normal' },
       { type: 'coinDrop', spiderId: spider.id, coins: 5, jackpot: false },
     ]);
   });

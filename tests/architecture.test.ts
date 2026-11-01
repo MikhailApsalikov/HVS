@@ -6,7 +6,13 @@ import { RETIRED_ITEM_REFUNDS } from '../src/content/retiredItems.js';
 import { generateItemSvg } from '../src/ui/ItemSpriteGenerator.js';
 import { normalConfig } from '../src/content/normal.js';
 import { SPIDER_DAMAGE } from '../src/domain/rules/stats.js';
-import { SOUND_FILES, MUSIC_FILES, MusicTrack } from '../src/infrastructure/audio/catalog.js';
+import {
+  SOUND_FILES,
+  SOUND_FALLBACKS,
+  MUSIC_FILES,
+  MusicTrack,
+  SoundEffect,
+} from '../src/infrastructure/audio/catalog.js';
 
 function files(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
@@ -170,7 +176,23 @@ describe('legacy feature inventory captured before rewrite', () => {
     });
   });
   it('retains sound and music catalogs with their assets', () => {
-    expect(SOUND_FILES).toEqual(baseline.sounds);
+    expect(SOUND_FILES).toEqual({
+      ...baseline.sounds,
+      [SoundEffect.VICTORY]: 'greed_main.mp3',
+      [SoundEffect.ADRENALINE_ACTIVATE]: 'bloodlust_player_cast_head.ogg',
+      [SoundEffect.EAGLE_EYE_ACTIVATE]: 'InnerFireC.ogg',
+      [SoundEffect.LIGHTNING_ARROWS_ACTIVATE]: 'SPELL_LightningBolt_Impact_04.ogg',
+      [SoundEffect.LIGHTNING_SHIELD_ACTIVATE]: 'LightningShieldImpact.ogg',
+      [SoundEffect.AIMED_FIRE_ACTIVATE]: 'BowPullback.ogg',
+      [SoundEffect.MENU_BACK]: 'Select2.wav',
+      [SoundEffect.FULL_BLOCK]: null,
+      [SoundEffect.PARTIAL_BLOCK]: null,
+      [SoundEffect.LAST_HOPE_ACTIVATE]: null,
+      [SoundEffect.KILL_GOLDEN_SPIDER]: null,
+      [SoundEffect.TANK_DAMAGE]: null,
+      [SoundEffect.PIERCING_DAMAGE]: null,
+      [SoundEffect.PARTIAL_DEFENSE_DAMAGE]: null,
+    });
     expect(MUSIC_FILES).toEqual({
       ...baseline.music,
       [MusicTrack.HELP]: '2.mp3',
@@ -178,7 +200,11 @@ describe('legacy feature inventory captured before rewrite', () => {
       [MusicTrack.CRITICAL_HEALTH]: 'game_sboss.wav',
     });
     const assets = files('src/sprites').map((file) => path.basename(file));
-    for (const filename of [...Object.values(SOUND_FILES), ...Object.values(MUSIC_FILES)])
+    for (const filename of [...Object.values(SOUND_FILES), ...Object.values(MUSIC_FILES)].filter(
+      (filename) => filename !== null,
+    ))
       expect(assets).toContain(filename);
+    for (const fallback of Object.values(SOUND_FALLBACKS))
+      expect(SOUND_FILES[fallback]).not.toBeNull();
   });
 });

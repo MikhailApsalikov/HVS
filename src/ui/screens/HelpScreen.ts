@@ -17,6 +17,7 @@ export class HelpScreen {
     const back = document.createElement('button');
     back.type = 'button';
     back.className = 'main-menu__btn';
+    back.dataset.action = 'back';
     back.textContent = '← В меню';
     back.addEventListener('click', this.onBack);
     const title = document.createElement('h1');

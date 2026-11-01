@@ -227,7 +227,6 @@ export function resolveBreaches(
             }
           : {}),
       });
-      if (blocked) emit({ type: 'absorb' });
     }
     if (
       state.bestDefenseCooldown === 0 &&
@@ -264,6 +263,7 @@ export function collectDeadSpiders(
     spider.dyingTimer -= dt;
     if (spider.dyingTimer > 0) continue;
     if (!spider.reachedCastle) {
+      emit({ type: 'spiderKilled', spiderId: id, spiderType: spider.type });
       state.advanceKillingStreak(state.stats['killingStreak.killAdvance']);
       const previousHp = state.hp;
       const previousEnergy = state.energy;

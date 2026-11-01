@@ -76,14 +76,20 @@ describe('item combat balance through session commands', () => {
     play(session);
     addSpider(session, 'normal', 0, 1, 100);
     session.tick(0.01);
-    expect(session.drainEvents()).toContainEqual({ type: 'absorb' });
+    expect(
+      session.drainEvents().find((event) => event.type === 'damage')?.blockedDamage,
+    ).toBeGreaterThan(0);
     session.state.phase = 'levelUp';
     expect(session.sellItem(0)).toBe(true);
     expect(session.state.stats.blockChance).toBe(0.06);
     play(session);
     addSpider(session, 'normal', 0, 1, 100);
     session.tick(0.01);
-    expect(session.drainEvents().some((event) => event.type === 'absorb')).toBe(false);
+    expect(
+      session
+        .drainEvents()
+        .some((event) => event.type === 'damage' && event.blockedDamage !== undefined),
+    ).toBe(false);
   });
 
   it('adds both named shields independently and caps block including last hope at one', () => {

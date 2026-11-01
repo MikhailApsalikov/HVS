@@ -110,7 +110,6 @@ describe('spider piercing strike through session ticks', () => {
           piercing: true,
           rawDamageMultiplier: 2.5,
         },
-        { type: 'absorb' },
       ]);
     },
   );

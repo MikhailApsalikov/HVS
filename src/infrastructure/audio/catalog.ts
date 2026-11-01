@@ -1,5 +1,6 @@
 export enum SoundEffect {
   GAME_OVER = 'gameOver',
+  VICTORY = 'victory',
   FREEZE_ACTIVATE = 'freezeActivate',
   FREEZE_DEACTIVATE = 'freezeDeactivate',
   STAND_ACTIVATE = 'standActivate',
@@ -19,6 +20,19 @@ export enum SoundEffect {
   VOLLEY_ACTIVATE = 'volleyActivate',
   BURNER_DRAIN = 'burnerDrain',
   RECHARGE_ACTIVATE = 'rechargeActivate',
+  ADRENALINE_ACTIVATE = 'adrenalineActivate',
+  EAGLE_EYE_ACTIVATE = 'eagleEyeActivate',
+  LIGHTNING_ARROWS_ACTIVATE = 'lightningArrowsActivate',
+  LIGHTNING_SHIELD_ACTIVATE = 'lightningShieldActivate',
+  AIMED_FIRE_ACTIVATE = 'aimedFireActivate',
+  MENU_BACK = 'menuBack',
+  FULL_BLOCK = 'fullBlock',
+  PARTIAL_BLOCK = 'partialBlock',
+  LAST_HOPE_ACTIVATE = 'lastHopeActivate',
+  KILL_GOLDEN_SPIDER = 'killGoldenSpider',
+  TANK_DAMAGE = 'tankDamage',
+  PIERCING_DAMAGE = 'piercingDamage',
+  PARTIAL_DEFENSE_DAMAGE = 'partialDefenseDamage',
 }
 
 export enum MusicTrack {
@@ -30,8 +44,9 @@ export enum MusicTrack {
   CRITICAL_HEALTH = 'criticalHealth',
 }
 
-export const SOUND_FILES: Record<SoundEffect, string> = {
+export const SOUND_FILES: Record<SoundEffect, string | null> = {
   [SoundEffect.GAME_OVER]: '4.mp3',
+  [SoundEffect.VICTORY]: 'greed_main.mp3',
   [SoundEffect.FREEZE_ACTIVATE]: 'Pause.wav',
   [SoundEffect.FREEZE_DEACTIVATE]: 'Unpause.wav',
   [SoundEffect.STAND_ACTIVATE]: 'Bubble.wav',
@@ -51,6 +66,30 @@ export const SOUND_FILES: Record<SoundEffect, string> = {
   [SoundEffect.VOLLEY_ACTIVATE]: 'Shoot.wav',
   [SoundEffect.BURNER_DRAIN]: 'Deepfreeze.wav',
   [SoundEffect.RECHARGE_ACTIVATE]: 'Refresher_Orb.mp3',
+  [SoundEffect.ADRENALINE_ACTIVATE]: 'bloodlust_player_cast_head.ogg',
+  [SoundEffect.EAGLE_EYE_ACTIVATE]: 'InnerFireC.ogg',
+  [SoundEffect.LIGHTNING_ARROWS_ACTIVATE]: 'SPELL_LightningBolt_Impact_04.ogg',
+  [SoundEffect.LIGHTNING_SHIELD_ACTIVATE]: 'LightningShieldImpact.ogg',
+  [SoundEffect.AIMED_FIRE_ACTIVATE]: 'BowPullback.ogg',
+  [SoundEffect.MENU_BACK]: 'Select2.wav',
+  // Awaiting owner-selected assets. Replace null to override the temporary fallback below.
+  [SoundEffect.FULL_BLOCK]: null,
+  [SoundEffect.PARTIAL_BLOCK]: null,
+  [SoundEffect.LAST_HOPE_ACTIVATE]: null,
+  [SoundEffect.KILL_GOLDEN_SPIDER]: null,
+  [SoundEffect.TANK_DAMAGE]: null,
+  [SoundEffect.PIERCING_DAMAGE]: null,
+  [SoundEffect.PARTIAL_DEFENSE_DAMAGE]: null,
+};
+
+export const SOUND_FALLBACKS: Partial<Record<SoundEffect, SoundEffect>> = {
+  [SoundEffect.FULL_BLOCK]: SoundEffect.ABSORB_DAMAGE,
+  [SoundEffect.PARTIAL_BLOCK]: SoundEffect.ABSORB_DAMAGE,
+  [SoundEffect.LAST_HOPE_ACTIVATE]: SoundEffect.ABSORB_DAMAGE,
+  [SoundEffect.KILL_GOLDEN_SPIDER]: SoundEffect.KILL_SPIDER,
+  [SoundEffect.TANK_DAMAGE]: SoundEffect.PLAYER_TAKE_DAMAGE,
+  [SoundEffect.PIERCING_DAMAGE]: SoundEffect.PLAYER_TAKE_DAMAGE,
+  [SoundEffect.PARTIAL_DEFENSE_DAMAGE]: SoundEffect.PLAYER_TAKE_DAMAGE,
 };
 
 export const MUSIC_FILES: Record<MusicTrack, string> = {

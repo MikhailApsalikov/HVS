@@ -39,6 +39,7 @@ export class GameEngine {
     ((id: string, hp: number, energy: number, reason: 'kill' | 'breach') => void) | null = null;
   private absorb: (() => void) | null = null;
   private magicEffect: ((event: MagicEffectEvent) => void) | null = null;
+  private eventCallback: ((event: GameEvent) => void) | null = null;
   constructor(
     private readonly render: (state: GameState) => void,
     private readonly saves: SaveSystem,
@@ -48,6 +49,9 @@ export class GameEngine {
 
   setPhaseChangeCallback(callback: NonNullable<GameEngine['phaseChanged']>): void {
     this.phaseChanged = callback;
+  }
+  setEventCallback(callback: (event: GameEvent) => void): void {
+    this.eventCallback = callback;
   }
   setCoinDropCallback(callback: NonNullable<GameEngine['coinDrop']>): void {
     this.coinDrop = callback;
@@ -134,6 +138,7 @@ export class GameEngine {
         const state = session.state;
         // Event locations still exist in the last rendered frame.
         for (const event of session.drainEvents()) {
+          this.eventCallback?.(event);
           if (event.type === 'coinDrop')
             this.coinDrop?.(event.spiderId, event.coins, event.jackpot);
           else if (event.type === 'damage')
@@ -154,7 +159,7 @@ export class GameEngine {
             event.type === 'shieldAbsorption'
           )
             this.magicEffect?.(event);
-          else this.absorb?.();
+          else if (event.type === 'absorb') this.absorb?.();
         }
         this.render(state);
         if (state.phase !== this.previousPhase) {

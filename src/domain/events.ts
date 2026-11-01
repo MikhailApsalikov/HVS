@@ -1,4 +1,9 @@
+import type { SpiderType } from './types.js';
+
 export type GameEvent =
+  | { readonly type: 'aimedFireVolley'; readonly arrows: number }
+  | { readonly type: 'levelComplete'; readonly level: number }
+  | { readonly type: 'spiderKilled'; readonly spiderId: string; readonly spiderType: SpiderType }
   | { readonly type: 'shieldAbsorption'; readonly hp: number; readonly absorbed: number }
   | {
       readonly type: 'lightning';
