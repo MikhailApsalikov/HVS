@@ -20,8 +20,13 @@ export const ABILITY_SOUNDS: Readonly<Record<AbilityId, SoundEffect>> = {
   lightningShield: SoundEffect.LIGHTNING_SHIELD_ACTIVATE,
 };
 
-export function buttonSound(action?: string): SoundEffect {
-  return action === 'back' ? SoundEffect.MENU_BACK : SoundEffect.MENU_SELECT;
+export function buttonSound(context: {
+  readonly screen?: string;
+  readonly action?: string;
+}): SoundEffect | null {
+  if (context.screen === 'main-menu') return SoundEffect.MENU_SELECT;
+  if (context.screen === 'help' && context.action === 'back') return SoundEffect.MENU_BACK;
+  return null;
 }
 
 export function gameOverSound(state: Pick<GameState, 'isVictory'>): SoundEffect {

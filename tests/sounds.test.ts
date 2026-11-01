@@ -59,11 +59,11 @@ describe('selected ability sounds through successful session commands', () => {
     expect(SOUND_FILES[ABILITY_SOUNDS[ability]]).toBe(filename);
   });
 
-  it('leaves a separate pending activation for last hope', () => {
+  it('plays the selected last hope activation', () => {
     const session = arena();
     expect(session.activateAbility('lastHope')).toBe('activated');
     expect(ABILITY_SOUNDS.lastHope).toBe(SoundEffect.LAST_HOPE_ACTIVATE);
-    expect(SOUND_FILES[SoundEffect.LAST_HOPE_ACTIVATE]).toBeNull();
+    expect(SOUND_FILES[SoundEffect.LAST_HOPE_ACTIVATE]).toBe('ShieldWallTarget.ogg');
   });
 });
 
@@ -241,12 +241,41 @@ describe('screen and button sounds', () => {
     expect(SOUND_FILES[gameOverSound(defeated.state)]).toBe('4.mp3');
   });
 
-  it.each([undefined, 'start', 'load', 'help', 'confirm', 'menu', 'back'])(
-    'chooses the button click for %s',
+  it.each([undefined, 'start', 'load', 'help'])(
+    'uses Select1 for main menu button %s',
     (action) => {
-      expect(SOUND_FILES[buttonSound(action)]).toBe(
-        action === 'back' ? 'Select2.wav' : 'Select1.wav',
-      );
+      const sound = buttonSound({ screen: 'main-menu', action });
+      expect(sound).toBe(SoundEffect.MENU_SELECT);
+      expect(SOUND_FILES[sound!]).toBe('Select1.wav');
     },
   );
+
+  it.each([
+    [undefined, undefined],
+    ['level-up', undefined],
+    ['level-up', 'confirm'],
+    ['game', undefined],
+    ['game', 'start'],
+    ['game-over', 'menu'],
+    ['help', undefined],
+    ['help', 'help'],
+    ['main-menu-other', 'start'],
+  ])('does not add a click to button action %s / %s outside the main menu', (screen, action) => {
+    expect(buttonSound({ screen, action })).toBeNull();
+  });
+
+  it('retains Select2 exclusively for the help back button', () => {
+    expect(buttonSound({ screen: 'help', action: 'back' })).toBe(SoundEffect.MENU_BACK);
+    expect(SOUND_FILES[SoundEffect.MENU_BACK]).toBe('Select2.wav');
+    expect(buttonSound({ screen: 'level-up', action: 'back' })).toBeNull();
+  });
+
+  it('keeps talent selection, buying and selling items silent', () => {
+    const session = new GameSession('normal', () => 0.999999, { coins: 1000 });
+    expect(session.upgradeTalent('hunterMastery')).toBe(true);
+    expect(session.buyItem('c046')).toBe(true);
+    expect(session.sellItem(0)).toBe(true);
+    expect(sounds(session)).toEqual([]);
+    expect(buttonSound({ screen: 'level-up' })).toBeNull();
+  });
 });

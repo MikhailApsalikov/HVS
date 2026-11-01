@@ -72,24 +72,18 @@ export const SOUND_FILES: Record<SoundEffect, string | null> = {
   [SoundEffect.LIGHTNING_SHIELD_ACTIVATE]: 'LightningShieldImpact.ogg',
   [SoundEffect.AIMED_FIRE_ACTIVATE]: 'BowPullback.ogg',
   [SoundEffect.MENU_BACK]: 'Select2.wav',
-  // Awaiting owner-selected assets. Replace null to override the temporary fallback below.
-  [SoundEffect.FULL_BLOCK]: null,
-  [SoundEffect.PARTIAL_BLOCK]: null,
-  [SoundEffect.LAST_HOPE_ACTIVATE]: null,
-  [SoundEffect.KILL_GOLDEN_SPIDER]: null,
-  [SoundEffect.TANK_DAMAGE]: null,
+  [SoundEffect.FULL_BLOCK]: 'WoodenShieldBlock1.ogg',
+  [SoundEffect.PARTIAL_BLOCK]: 'WoodenShieldBlock2.ogg',
+  [SoundEffect.LAST_HOPE_ACTIVATE]: 'ShieldWallTarget.ogg',
+  [SoundEffect.KILL_GOLDEN_SPIDER]: 'LootCoinSmall.ogg',
+  [SoundEffect.TANK_DAMAGE]: 'Takedmg.wav',
+  // Awaiting an owner-selected asset. Replace null to override the temporary fallback below.
   [SoundEffect.PIERCING_DAMAGE]: null,
-  [SoundEffect.PARTIAL_DEFENSE_DAMAGE]: null,
+  [SoundEffect.PARTIAL_DEFENSE_DAMAGE]: 'Takedmg.wav',
 };
 
 export const SOUND_FALLBACKS: Partial<Record<SoundEffect, SoundEffect>> = {
-  [SoundEffect.FULL_BLOCK]: SoundEffect.ABSORB_DAMAGE,
-  [SoundEffect.PARTIAL_BLOCK]: SoundEffect.ABSORB_DAMAGE,
-  [SoundEffect.LAST_HOPE_ACTIVATE]: SoundEffect.ABSORB_DAMAGE,
-  [SoundEffect.KILL_GOLDEN_SPIDER]: SoundEffect.KILL_SPIDER,
-  [SoundEffect.TANK_DAMAGE]: SoundEffect.PLAYER_TAKE_DAMAGE,
   [SoundEffect.PIERCING_DAMAGE]: SoundEffect.PLAYER_TAKE_DAMAGE,
-  [SoundEffect.PARTIAL_DEFENSE_DAMAGE]: SoundEffect.PLAYER_TAKE_DAMAGE,
 };
 
 export const MUSIC_FILES: Record<MusicTrack, string> = {

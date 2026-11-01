@@ -74,7 +74,11 @@ export function bootstrap(root: HTMLElement): () => void {
     const target =
       event.target instanceof Element ? event.target.closest<HTMLButtonElement>('button') : null;
     if (!target || target.disabled) return;
-    audio.playSfx(buttonSound(target.dataset.action));
+    const clickSound = buttonSound({
+      screen: target.closest<HTMLElement>('[data-screen]')?.dataset.screen,
+      action: target.dataset.action,
+    });
+    if (clickSound !== null) audio.playSfx(clickSound);
     if (target?.dataset.lane) shoot(Number(target.dataset.lane));
     if (target?.dataset.ability) activate(target.dataset.ability as AbilityId);
   };
