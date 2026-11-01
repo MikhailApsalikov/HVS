@@ -88,7 +88,7 @@ describe('learning from mistakes through session commands', () => {
         maxRanks: 5,
         tier: 6,
         branch: 'shooting',
-        unlocksAtLevel: 50,
+        requiredTotalPoints: 50,
         requiredBranchPoints: 35,
       });
       expect(TALENTS.learningFromMistakes.name).toBe('Обучение на ошибках');
@@ -104,6 +104,9 @@ describe('learning from mistakes through session commands', () => {
         { id: 'vampirism', rank: 5 },
         { id: 'volleyMastery', rank: 5 },
         { id: 'killingStreak', rank: 3 },
+        { id: 'hunterArsenal', rank: 5 },
+        { id: 'endurance', rank: 7 },
+        { id: 'greed', rank: 3 },
       ]);
       for (let rank = 1; rank <= 5; rank++)
         expect(session.upgradeTalent('learningFromMistakes')).toBe(true);

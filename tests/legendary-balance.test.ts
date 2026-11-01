@@ -45,6 +45,9 @@ describe('will to win in shooting', () => {
       { id: 'volleyMastery', rank: 5 },
       { id: 'improvedAgility', rank: 3 },
       { id: 'killingStreak', rank: 7 },
+      { id: 'hunterArsenal', rank: 5 },
+      { id: 'endurance', rank: 7 },
+      { id: 'greed', rank: 3 },
     ]);
     session.refreshStats();
     const base = session.state.stats;

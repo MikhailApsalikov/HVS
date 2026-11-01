@@ -32,7 +32,7 @@ describe('progression and player commands', () => {
       expect(session.confirmLevelUp()).toBe(false);
 
       for (let point = 0; point < 50; point++) {
-        const id = TALENT_ORDER.find((talent) => session.talents.canUpgrade(talent, state.level));
+        const id = TALENT_ORDER.find((talent) => session.talents.canUpgrade(talent));
         expect(id).toBeDefined();
         expect(session.upgradeTalent(id!)).toBe(true);
       }
@@ -46,9 +46,7 @@ describe('progression and player commands', () => {
       session.tick(state.levelTimer);
       expect(state.phase).toBe('levelUp');
       expect(state.pendingTalentPoints).toBe(1);
-      const nextTalent = TALENT_ORDER.find((talent) =>
-        session.talents.canUpgrade(talent, state.level),
-      );
+      const nextTalent = TALENT_ORDER.find((talent) => session.talents.canUpgrade(talent));
       expect(nextTalent).toBeDefined();
       expect(session.upgradeTalent(nextTalent!)).toBe(true);
       expect(session.confirmLevelUp()).toBe(true);

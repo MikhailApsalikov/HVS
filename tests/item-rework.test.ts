@@ -218,6 +218,7 @@ describe('reworked equipment through session commands', () => {
     expect(session.buyItem('c088')).toBe(true);
     expect(session.buyItem('r018')).toBe(true);
     expect(session.state.stats.criticalShotChance).toBe(0);
+    for (let rank = 0; rank < 2; rank++) expect(session.upgradeTalent('hunterArsenal')).toBe(true);
     for (let rank = 0; rank < 5; rank++) expect(session.upgradeTalent('hunterMastery')).toBe(true);
     for (let rank = 0; rank < 2; rank++)
       expect(session.upgradeTalent('improvedAgility')).toBe(true);

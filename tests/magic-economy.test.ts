@@ -138,6 +138,9 @@ describe('magic costs and item effectiveness through the session API', () => {
       { id: 'tireless', rank: 7 },
       { id: 'improvedPrep', rank: 5 },
       { id: 'fireExplosion', rank: 2 },
+      { id: 'endurance', rank: 7 },
+      { id: 'greed', rank: 5 },
+      { id: 'hunterMastery', rank: 3 },
     ] as const;
     session.talents.loadFromSave(invested);
     session.refreshStats();

@@ -18,6 +18,7 @@ function defense(random = () => 0.999999): GameSession {
   session.state.level = 40;
   session.state.initialTalentPick = false;
   session.state.pendingTalentPoints = 100;
+  buy(session, 'hunterArsenal', 4);
   buy(session, 'endurance', 7);
   buy(session, 'improvedEndurance', 5);
   buy(session, 'warriorArmor', 5);
@@ -90,6 +91,7 @@ describe('defense talent abilities through session commands', () => {
     session.state.level = 9;
     expect(session.upgradeTalent('shieldBlock')).toBe(false);
     session.state.level = 10;
+    buy(session, 'hunterArsenal', 3);
     for (let rank = 1; rank <= 7; rank++) {
       buy(session, 'shieldBlock');
       expect(session.state.stats.blockChance).toBeCloseTo(rank * 0.06);
@@ -105,7 +107,7 @@ describe('defense talent abilities through session commands', () => {
   it('requires both prerequisite links and spends no points on a rejected purchase', () => {
     const session = defense();
     const points = session.state.pendingTalentPoints;
-    expect(session.talents.upgradeBlockReason('lastHope', 40)).toBe('prerequisite');
+    expect(session.talents.upgradeBlockReason('lastHope')).toBe('prerequisite');
     expect(session.upgradeTalent('lastHope')).toBe(false);
     expect(session.upgradeTalent('improvedLastHope')).toBe(false);
     expect(session.state.pendingTalentPoints).toBe(points);
@@ -147,11 +149,9 @@ describe('defense talent abilities through session commands', () => {
       requiredBranchPoints: 28,
     });
     session.state.level = 29;
-    expect(session.upgradeTalent('divineShield')).toBe(false);
     session.state.level = 30;
     buy(session, 'divineShield');
     expect(session.upgradeTalent('divineShield')).toBe(false);
-    expect(session.upgradeTalent('dutyBound')).toBe(false);
     session.state.level = 40;
     buy(session, 'dutyBound', 5);
     expect(session.state.stats['stand.duration']).toBe(12);
@@ -244,7 +244,7 @@ describe('defense talent abilities through session commands', () => {
     buy(session, 'improvedIntellect', 5);
     buy(session, 'tireless', 5);
     buy(session, 'improvedPrep', 5);
-    buy(session, 'hunterArsenal', 3);
+    buy(session, 'hunterArsenal');
     buy(session, 'lightningShield');
     buy(session, 'magicArmor', 5);
     buy(session, 'quickInstinct', 2);

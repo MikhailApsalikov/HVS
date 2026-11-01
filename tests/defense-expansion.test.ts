@@ -24,6 +24,9 @@ function defense(level = 60, random = () => 0.999999): GameSession {
     { stat: 'energyRegen', kind: 'percent', value: -100 },
     { stat: 'coinsPerSec', kind: 'percent', value: -100 },
   ]);
+  buy(session, 'hunterArsenal', 5);
+  buy(session, 'hunterMastery', 5);
+  buy(session, 'vampirism');
   buy(session, 'endurance', 7);
   buy(session, 'improvedEndurance', 5);
   buy(session, 'greed', 5);
@@ -97,14 +100,12 @@ describe('new defense talents through session commands', () => {
 
   it('requires shooting tier six and subtracts fifteen seconds per will-to-win rank from actual levels', () => {
     const session = defense(49);
-    buy(session, 'hunterMastery', 5);
-    buy(session, 'vampirism', 5);
+    buy(session, 'vampirism', 4);
     buy(session, 'piercingReward', 7);
     buy(session, 'criticalShot', 5);
     buy(session, 'improvedAgility', 5);
     buy(session, 'volleyMastery', 3);
     buy(session, 'killingStreak', 5);
-    expect(session.upgradeTalent('willToWin')).toBe(false);
     session.state.level = 50;
     session.refreshStats();
     expect(session.talents.getTalent('willToWin')).toMatchObject({
@@ -233,7 +234,6 @@ describe('new defense talents through session commands', () => {
     buy(session, 'adrenaline');
     buy(session, 'agility', 9);
     buy(session, 'improvedIntellect', 5);
-    buy(session, 'hunterArsenal', 5);
     buy(session, 'tireless', 5);
     buy(session, 'improvedPrep', 3);
     buy(session, 'lightningShield');
@@ -312,7 +312,6 @@ describe('new defense talents through session commands', () => {
       buy(session, 'hunterReward');
     }
     session.state.level = 29;
-    expect(session.upgradeTalent('marauder')).toBe(false);
     session.state.level = 30;
     buy(session, 'marauder', 3);
     expect(session.upgradeTalent('marauder')).toBe(false);

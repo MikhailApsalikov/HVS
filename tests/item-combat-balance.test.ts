@@ -6,6 +6,10 @@ import { addSpider } from './helpers.js';
 
 function arena(random = () => 0.999999, difficulty: Difficulty = 'normal'): GameSession {
   const session = new GameSession(difficulty, random, { level: 60, coins: 1000000 });
+  session.talents.loadFromSave([
+    { id: 'healBoost', rank: 5 },
+    { id: 'dutyBound', rank: 5 },
+  ]);
   session.state.character.setModifiers('test:quiet', [
     { stat: 'spawnProbability', kind: 'percent', value: -100 },
     { stat: 'hpRegen', kind: 'percent', value: -100 },
@@ -162,6 +166,8 @@ describe('item combat balance through session commands', () => {
     learn(session, 'piercingReward', 1);
     learn(session, 'rapidFire', 6);
     learn(session, 'titanPreparation', 5);
+    learn(session, 'hunterArsenal', 5);
+    learn(session, 'greed', 5);
     learn(session, 'aimedFire');
     session.state.character.setBase('agility', 1941);
     session.refreshStats();
@@ -193,6 +199,8 @@ describe('item combat balance through session commands', () => {
     learn(session, 'volleyMastery', 5);
     learn(session, 'killingStreak', 5);
     learn(session, 'masochism', 1);
+    learn(session, 'hunterArsenal', 5);
+    learn(session, 'greed', 5);
     learn(session, 'rapidFire', 7);
     learn(session, 'masochism', 2);
     learn(session, 'titanPreparation', 5);

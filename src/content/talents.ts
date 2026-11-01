@@ -39,7 +39,7 @@ export const TALENT_BRANCHES: Readonly<Record<TalentBranch, string>> = {
   shooting: 'Стрельба',
   magic: 'Магия',
 };
-export const TALENT_TIER_RULES = { levelsPerTier: 10, pointsPerTier: 7 } as const;
+export const TALENT_TIER_RULES = { totalPointsPerTier: 10, pointsPerTier: 7 } as const;
 const flat = (stat: Effect['stat'], value: number): Effect => ({ stat, kind: 'flat', value });
 const percent = (stat: Effect['stat'], value: number): Effect => ({ stat, kind: 'percent', value });
 
@@ -191,7 +191,7 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     branch: 'magic',
     name: 'Вечная мерзлота',
     sprite: 'TalentPermafrost',
-    effects: [flat('permafrostSlow', 0.06)],
+    effects: [flat('permafrostSlow', 0.04)],
     description: 'Снижает скорость передвижения всех пауков на {permafrostSlow}.',
   },
   lightningArrows: {

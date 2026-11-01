@@ -265,6 +265,10 @@ describe('progression and compatibility', () => {
         { id: 'killingStreak', rank: 8 },
         { id: 'vampirism', rank: 5 },
         { id: 'volleyMastery', rank: 5 },
+        { id: 'endurance', rank: 7 },
+        { id: 'improvedEndurance', rank: 5 },
+        { id: 'greed', rank: 5 },
+        { id: 'hunterArsenal', rank: 1 },
       ]);
       session.refreshStats();
       expect(session.talents.getTalent('titanPreparation')).toMatchObject({ tier: 5, maxRanks: 5 });
@@ -274,9 +278,7 @@ describe('progression and compatibility', () => {
         expect(session.upgradeTalent('titanPreparation')).toBe(true);
       }
       expect(session.upgradeTalent('titanPreparation')).toBe(false);
-      session.state.level = 59;
-      expect(session.upgradeTalent('aimedFire')).toBe(false);
-      session.state.level = 60;
+      session.state.level = 1;
       expect(session.upgradeTalent('aimedFire')).toBe(true);
       expect(session.upgradeTalent('aimedFire')).toBe(false);
       expect(session.state.isAbilityUnlocked('aimedFire')).toBe(true);

@@ -48,7 +48,7 @@ describe('spider generation through session ticks', () => {
         type,
         speed: 0.14208,
         damage: 751,
-        hits: 1,
+        hits: 2,
       });
       const failure = encounter(55, speciesRolls(type, 55, 0.01));
       failure.tick(0.02);

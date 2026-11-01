@@ -4,24 +4,10 @@ import type { Spider } from '../../domain/model/Spider.js';
 import type { HUD } from './GameHud.js';
 import { WORLD } from '../../domain/rules/world.js';
 import { IMPROVED_CRITICAL_SHOT_POWER } from '../../domain/rules/stats.js';
+import { SPIDER_SPRITE_MAP } from '../spiderSprites.js';
 import { TooltipManager } from './TooltipManager.js';
 import type { GameEvent } from '../../domain/events.js';
 import { chainLightningMarkup, electricWrap, fireExplosionMarkup } from '../magicEffects.js';
-
-const SPIDER_SPRITE_MAP: Record<Spider['type'], string> = {
-  normal: 'SpiderNormal',
-  golden: 'SpiderGolden',
-  megaFat: 'SpiderMegaFat',
-  fat: 'SpiderFat',
-  fast: 'SpiderFast',
-  poisonous: 'SpiderPoisonous',
-  diseased: 'SpiderDiseased',
-  cursing: 'SpiderCursing',
-  cleanser: 'SpiderCleanser',
-  ninja: 'SpiderNinja',
-  burner: 'SpiderBurner',
-  tank: 'SpiderTank',
-};
 
 export class GameField {
   private _container: HTMLElement;
@@ -155,6 +141,10 @@ export class GameField {
         el.dataset.spiderType = spider.type;
       }
       el.classList.toggle('spider--slowed', spider.slowFactor < 1);
+      el.classList.toggle(
+        'spider--wounded',
+        (spider.type === 'diseased' || spider.type === 'cursing') && spider.hits === 1,
+      );
       el.classList.toggle('spider--rooted', spider.rootTimer > 0);
       el.classList.toggle('spider--dying', spider.dying);
       this._lastSpiderPositions.set(spider.id, {

@@ -45,13 +45,17 @@ describe('new magic talents through session commands', () => {
       ]);
       session.state.level = 9;
       expect(session.upgradeTalent('lightningArrows')).toBe(false);
-      session.state.level = 10;
+      session.state.pendingTalentPoints += 3;
+      for (let rank = 0; rank < 3; rank++)
+        expect(session.upgradeTalent('hunterArsenal')).toBe(true);
+      session.state.level = 1;
       expect(session.upgradeTalent('lightningArrows')).toBe(true);
       expect(session.upgradeTalent('lightningArrows')).toBe(false);
       session.talents.loadFromSave([
         { id: 'improvedIntellect', rank: 5 },
         { id: 'agility', rank: 5 },
         { id: 'tireless', rank: 5 },
+        { id: 'hunterMastery', rank: 5 },
       ]);
       session.state.level = 20;
       expect(session.upgradeTalent('improvedLightning')).toBe(false);
@@ -70,8 +74,7 @@ describe('new magic talents through session commands', () => {
         expect(session.upgradeTalent('fireExplosion')).toBe(true);
       expect(session.upgradeTalent('fireExplosion')).toBe(false);
       session.state.level = 29;
-      expect(session.upgradeTalent('improvedArmageddon')).toBe(false);
-      session.state.level = 30;
+      session.state.level = 1;
       for (let rank = 0; rank < 6; rank++)
         expect(session.upgradeTalent('improvedArmageddon')).toBe(true);
       expect(session.upgradeTalent('improvedArmageddon')).toBe(false);

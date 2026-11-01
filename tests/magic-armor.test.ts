@@ -50,12 +50,14 @@ describe('magic armor through session commands', () => {
         { id: 'permafrost', rank: 5 },
         { id: 'lightningArrows', rank: 1 },
         { id: 'lightningShield', rank: 1 },
+        { id: 'endurance', rank: 7 },
+        { id: 'greed', rank: 5 },
       ]);
       expect(session.talents.getTalent('magicArmor')).toMatchObject({
         branch: 'magic',
         tier: 5,
         requiredBranchPoints: 28,
-        unlocksAtLevel: 40,
+        requiredTotalPoints: 40,
         maxRanks: 5,
       });
       expect(session.upgradeTalent('magicArmor')).toBe(false);

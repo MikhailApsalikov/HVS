@@ -25,6 +25,7 @@ import {
   talentDescription,
 } from './presenters.js';
 import { itemAbilityDescription, itemStatLines } from './itemPresentation.js';
+import { spiderImageUrl } from './spiderSprites.js';
 
 export const HELP_SECTIONS = [
   ['start', 'Первые шаги'],
@@ -41,8 +42,8 @@ export const HELP_SECTIONS = [
 ] as const;
 const percent = (value: number) => `${Number((value * 100).toFixed(4))}%`;
 const paragraphs = (...lines: string[]) => descriptionParagraphs(lines.join('\n'));
-const entry = (name: string, text: string) =>
-  `<details class="help__entry"><summary>${escapeHtml(name)}</summary>${text}</details>`;
+const entry = (name: string, text: string, image = '') =>
+  `<details class="help__entry"><summary>${image}${escapeHtml(name)}</summary>${text}</details>`;
 const difficultyNames = { easy: 'Лёгкая', normal: 'Средняя', hard: 'Тяжёлая' } as const;
 const branchNames = { defense: 'Защита', shooting: 'Стрельба', magic: 'Магия' } as const;
 
@@ -69,9 +70,9 @@ function spiderEffect(type: SpiderType): string {
     case 'tank':
       return 'Медленный паук с особенно сильным ударом. Умирает от одной единицы силы стрелы.';
     case 'diseased':
-      return `Накладывает «Болезнь»: −${DEBUFFS.disease.energyPenalty} к восстановлению энергии в секунду, энергии за убийство и за прорыв. Длительность ${DEBUFFS.disease.duration} с на уровне ${SPIDERS.diseased.unlockLevel}, +${DEBUFFS.disease.durationPerLevel} с за каждый следующий уровень. Повторное наложение обновляет время без накопления штрафа.`;
+      return `После первого обычного попадания уменьшается в размерах, сохраняя вид и эффекты. Накладывает «Болезнь»: −${DEBUFFS.disease.energyPenalty} к восстановлению энергии в секунду, энергии за убийство и за прорыв. Длительность ${DEBUFFS.disease.duration} с на уровне ${SPIDERS.diseased.unlockLevel}, +${DEBUFFS.disease.durationPerLevel} с за каждый следующий уровень. Повторное наложение обновляет время без накопления штрафа.`;
     case 'cursing':
-      return `Накладывает «Проклятие»: с шансом ${percent(DEBUFFS.curse.failureChance)} каждая стрела не вылетает, включая стрелы способностей и ответного залпа. Энергия расходуется, перезарядка запускается. Электрический заряд сохраняется, если стрела не вылетела. Длительность ${DEBUFFS.curse.duration} с на уровне ${SPIDERS.cursing.unlockLevel}, +${DEBUFFS.curse.durationPerLevel} с за каждый следующий уровень. Повторное наложение обновляет время без накопления штрафа.`;
+      return `После первого обычного попадания уменьшается в размерах, сохраняя вид и эффекты. Накладывает «Проклятие»: с шансом ${percent(DEBUFFS.curse.failureChance)} каждая стрела не вылетает, включая стрелы способностей и ответного залпа. Энергия расходуется, перезарядка запускается. Электрический заряд сохраняется, если стрела не вылетела. Длительность ${DEBUFFS.curse.duration} с на уровне ${SPIDERS.cursing.unlockLevel}, +${DEBUFFS.curse.durationPerLevel} с за каждый следующий уровень. Повторное наложение обновляет время без накопления штрафа.`;
   }
 }
 
@@ -100,7 +101,7 @@ export function helpContent(): string {
     ),
     progress: paragraphs(
       'Чтобы пройти уровень, продержитесь до конца его таймера. После уровня игра останавливается: вы получаете очко талантов, выбираете улучшения и можете посетить лавку. Следующий уровень начинается после подтверждения. Живые пауки и стрелы остаются на поле; старые пауки сохраняют свою скорость и урон, новые получают параметры нового уровня.',
-      `У талантов три ветки: Защита, Стрельба и Магия. Каждый ранг стоит одно очко. Следующий тир открывается через ${TALENT_TIER_RULES.levelsPerTier} уровней и требует ещё ${TALENT_TIER_RULES.pointsPerTier} очков именно в своей ветке. Дополнительно могут требоваться конкретные ранги другого таланта. Свободные очки нужно распределить, пока доступны улучшения.`,
+      `У талантов три ветки: Защита, Стрельба и Магия. Каждый ранг стоит одно очко. Каждый следующий тир требует ещё ${TALENT_TIER_RULES.totalPointsPerTier} вложенных очков суммарно во всех ветках и ещё ${TALENT_TIER_RULES.pointsPerTier} очков именно в своей ветке. Очки своей ветки входят в общую сумму; свободные очки не учитываются. Требования к уровню нет. Дополнительно могут требоваться конкретные ранги другого таланта. Свободные очки нужно распределить, пока доступны улучшения.`,
       'Переносы и новые требования не отнимают уже приобретённые таланты в старой партии; следующие покупки подчиняются действующим требованиям.',
     ),
     resources: paragraphs(
@@ -133,6 +134,7 @@ export function helpContent(): string {
               `Открывается с уровня ${spider.unlockLevel}. ${type === 'normal' ? 'Шанс — остаток после особых видов.' : `Шанс при открытии ${percent(chance)}${spider.chanceGrowth ? `, +${spider.chanceGrowth.percent} процентный пункт за каждые ${spider.chanceGrowth.levels} уровней после открытия` : ', без роста'}.`} Скорость ${100 + spider.speedPercent}%, урон ${100 + spider.damagePercent}%, прочность ${spider.hits}.`,
               spiderEffect(type),
             ),
+            `<img class="help__spider" src="${escapeHtml(spiderImageUrl(type))}" alt="" width="64" height="64" loading="lazy">`,
           );
         })
         .join(''),
@@ -160,7 +162,7 @@ export function helpContent(): string {
         return entry(
           `${branchNames[talent.branch]} · ${TALENTS[id].name}`,
           paragraphs(
-            `Уровень ${talent.unlocksAtLevel}, тир ${talent.tier}, вложено в ветку ${talent.requiredBranchPoints} очков. Всего рангов: ${talent.maxRanks}.${prerequisite ? ` Требуется «${TALENTS[prerequisite.id].name}», ранг ${prerequisite.rank}.` : ''}`,
+            `Тир ${talent.tier}, вложено всего ${talent.requiredTotalPoints} очков, из них в свою ветку — минимум ${talent.requiredBranchPoints}. Всего рангов: ${talent.maxRanks}.${prerequisite ? ` Требуется «${TALENTS[prerequisite.id].name}», ранг ${prerequisite.rank}.` : ''}`,
             `Ранг 1: ${talentDescription(id, 1, state.stats)}`,
             ...(talent.maxRanks > 1
               ? [`Ранг ${talent.maxRanks}: ${talentDescription(id, talent.maxRanks, state.stats)}`]

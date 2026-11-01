@@ -170,7 +170,7 @@ export class GameSession {
     if (
       this.state.phase !== 'levelUp' ||
       this.state.pendingTalentPoints <= 0 ||
-      !this.talents.upgrade(id, this.state.level)
+      !this.talents.upgrade(id)
     )
       return false;
     this.state.pendingTalentPoints -= 1;
@@ -209,7 +209,7 @@ export class GameSession {
     const state = this.state;
     if (
       state.phase !== 'levelUp' ||
-      (state.pendingTalentPoints > 0 && this.talents.hasAvailableUpgrades(state.level))
+      (state.pendingTalentPoints > 0 && this.talents.hasAvailableUpgrades())
     )
       return false;
     if (state.initialTalentPick) state.initialTalentPick = false;

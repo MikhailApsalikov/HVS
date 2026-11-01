@@ -23,13 +23,13 @@ function arena(level: number, random: RandomSource) {
 describe('spider piercing strike through session ticks', () => {
   it.each([
     [60, 0, false],
-    [61, 0.004999, true],
-    [61, 0.005, false],
-    [62, 0.009999, true],
-    [62, 0.01, false],
-    [100, 0.199999, true],
-    [100, 0.2, false],
-    [260, 0.999999, true],
+    [61, 0.009999, true],
+    [61, 0.01, false],
+    [62, 0.019999, true],
+    [62, 0.02, false],
+    [100, 0.399999, true],
+    [100, 0.4, false],
+    [160, 0.999999, true],
     [300, 0.999999, true],
   ] as const)(
     'level %i with roll %s produces piercing=%s, with no roll before unlock',

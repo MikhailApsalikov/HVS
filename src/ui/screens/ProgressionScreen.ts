@@ -55,7 +55,7 @@ export class LevelUpScreen {
           column.append(tier);
           continue;
         }
-        const { unlocksAtLevel: level, requiredBranchPoints } = tierTalents[0];
+        const { requiredTotalPoints, requiredBranchPoints } = tierTalents[0];
         const row = document.createElement('div');
         row.className = 'talent-tree__tier-row';
         const columns = talentTierColumns(tierTalents.map(({ id }) => id));
@@ -63,10 +63,10 @@ export class LevelUpScreen {
           const definition = TALENTS[talent.id];
           const prerequisite = definition.prerequisite;
           const prerequisiteMet = talents.hasPrerequisite(talent.id);
-          const locked = state.level < level || invested < requiredBranchPoints || !prerequisiteMet;
+          const reason = talents.upgradeBlockReason(talent.id);
+          const locked = reason !== null && reason !== 'maxed';
           const maxed = talent.rank >= talent.maxRanks;
-          const available =
-            talents.canUpgrade(talent.id, state.level) && state.pendingTalentPoints > 0;
+          const available = talents.canUpgrade(talent.id) && state.pendingTalentPoints > 0;
           const button = document.createElement('button');
           button.type = 'button';
           button.dataset.talentId = talent.id;
@@ -83,7 +83,7 @@ export class LevelUpScreen {
           const showTooltip = () =>
             this.tooltip.show(
               button,
-              `<div class="tooltip__title">${definition.name}</div>${talent.rank > 0 ? `<section class="tooltip__rank tooltip__rank--current"><div class="tooltip__rank-label">Изучено · ранг ${talent.rank}</div>${descriptionParagraphs(talentDescription(talent.id, talent.rank, state.stats))}</section>` : ''}${!maxed ? `<section class="tooltip__rank tooltip__rank--next"><div class="tooltip__rank-label">${talent.rank > 0 ? `После улучшения · ранг ${talent.rank + 1}` : 'При изучении'}</div>${descriptionParagraphs(talentDescription(talent.id, talent.rank + 1, state.stats))}</section>` : ''}<div class="tooltip__requirements"><div class="${state.level < level ? 'action-unavailable' : ''}">Требуется уровень ${level}</div><div class="${invested < requiredBranchPoints ? 'action-unavailable' : ''}">Вложено в ветку "${TALENT_BRANCHES[branch]}": ${invested}/${requiredBranchPoints}</div>${prerequisite ? `<div class="${prerequisiteMet ? '' : 'action-unavailable'}">Требуется талант «${TALENTS[prerequisite.id].name}»: ранг ${prerequisite.rank}</div>` : ''}${maxed ? '<div>Максимальный ранг</div>' : ''}</div>`,
+              `<div class="tooltip__title">${definition.name}</div>${talent.rank > 0 ? `<section class="tooltip__rank tooltip__rank--current"><div class="tooltip__rank-label">Изучено · ранг ${talent.rank}</div>${descriptionParagraphs(talentDescription(talent.id, talent.rank, state.stats))}</section>` : ''}${!maxed ? `<section class="tooltip__rank tooltip__rank--next"><div class="tooltip__rank-label">${talent.rank > 0 ? `После улучшения · ранг ${talent.rank + 1}` : 'При изучении'}</div>${descriptionParagraphs(talentDescription(talent.id, talent.rank + 1, state.stats))}</section>` : ''}<div class="tooltip__requirements"><div class="${talents.totalPoints() < requiredTotalPoints ? 'action-unavailable' : ''}">Вложено всего: ${talents.totalPoints()}/${requiredTotalPoints}</div><div class="${invested < requiredBranchPoints ? 'action-unavailable' : ''}">Вложено в ветку "${TALENT_BRANCHES[branch]}": ${invested}/${requiredBranchPoints}</div>${prerequisite ? `<div class="${prerequisiteMet ? '' : 'action-unavailable'}">Требуется талант «${TALENTS[prerequisite.id].name}»: ранг ${prerequisite.rank}</div>` : ''}${maxed ? '<div>Максимальный ранг</div>' : ''}</div>`,
             );
           button.addEventListener('mouseenter', showTooltip);
           button.addEventListener('focus', showTooltip);
@@ -129,7 +129,7 @@ export class LevelUpScreen {
     confirm.type = 'button';
     confirm.dataset.action = 'confirm';
     confirm.textContent = 'Продолжить';
-    confirm.disabled = state.pendingTalentPoints > 0 && talents.hasAvailableUpgrades(state.level);
+    confirm.disabled = state.pendingTalentPoints > 0 && talents.hasAvailableUpgrades();
     if (confirm.disabled) {
       const reason = document.createElement('div');
       reason.className = 'action-unavailable';

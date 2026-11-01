@@ -125,6 +125,33 @@ describe('end-of-game screen through session outcomes', () => {
 });
 
 describe('combat feedback without a browser', () => {
+  it.each(['diseased', 'cursing'] as const)(
+    'shrinks a wounded %s after its first arrow while preserving the species sprite',
+    (type) => {
+      const session = game(55);
+      session.state.character.setModifiers('instantShots', [
+        { stat: 'shootCooldown', kind: 'percent', value: -100 },
+      ]);
+      session.refreshStats();
+      const spider = addSpider(session, type, 0, 0.95);
+      field.render(session.state);
+      const element = lane().children[0];
+      const sprite = element.innerHTML;
+      expect(element.classList.contains('spider--wounded')).toBe(false);
+      expect(session.shootLane(0)).toBe('shot');
+      session.tick(0.001);
+      field.render(session.state);
+      expect(spider.hits).toBe(1);
+      expect(element.classList.contains('spider--wounded')).toBe(true);
+      expect(element.dataset.spiderType).toBe(type);
+      expect(element.innerHTML).toBe(sprite);
+      expect(session.shootLane(0)).toBe('shot');
+      session.tick(0.001);
+      field.render(session.state);
+      expect(element.classList.contains('spider--dying')).toBe(true);
+    },
+  );
+
   it('shows the Lightning Shield timer in the buff panel and absorption on the field', async () => {
     const { PlayerEffectPanel } = await import('../src/ui/components/PlayerEffectPanel.js');
     const sprites = { get: () => '<svg></svg>' } as unknown as SpriteRegistry;

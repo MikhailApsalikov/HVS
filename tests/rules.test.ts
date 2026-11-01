@@ -88,17 +88,14 @@ describe('talent strength and independent sources', () => {
   it.each(TALENT_ORDER)('validates rank and unlock constraints: %s', (id) => {
     const session = new GameSession('normal');
     const talent = session.talents.getTalent(id);
-    expect(session.talents.canUpgrade(id, talent.unlocksAtLevel - 1)).toBe(false);
+    expect(session.talents.canUpgrade(id)).toBe(talent.tier === 1);
     session.talents.loadFromSave(
-      TALENT_ORDER.filter((other) => other !== id && TALENTS[other].branch === talent.branch).map(
-        (id) => ({ id, rank: 999 }),
-      ),
+      TALENT_ORDER.filter((other) => other !== id).map((id) => ({ id, rank: 999 })),
     );
-    session.state.level = Math.max(1, talent.unlocksAtLevel);
     expect(session.upgradeTalent(id)).toBe(true);
     session.talents.loadFromSave([{ id, rank: 99999 }]);
     expect(session.talents.getRank(id)).toBe(talent.maxRanks);
-    expect(session.talents.upgrade(id, 100)).toBe(false);
+    expect(session.talents.upgrade(id)).toBe(false);
     session.talents.loadFromSave([{ id, rank: -1 }]);
     expect(session.talents.getRank(id)).toBe(0);
     expect(

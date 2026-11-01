@@ -94,9 +94,9 @@ export interface AbilityConfig {
   readonly cooldown: number;
 }
 
-export interface TalentLevelConfig {
+export interface TalentConfig {
   readonly maxRanks: number;
-  readonly unlocksAtLevel: number;
+  readonly tier: number;
 }
 
 export interface DifficultyConfig {
@@ -137,5 +137,5 @@ export interface DifficultyConfig {
   readonly spiderChanceBurner: number;
   readonly spiderChanceTank: number;
 
-  readonly talents: Readonly<Record<TalentId, TalentLevelConfig>>;
+  readonly talents: Readonly<Record<TalentId, TalentConfig>>;
 }

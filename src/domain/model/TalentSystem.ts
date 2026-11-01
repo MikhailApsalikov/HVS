@@ -7,7 +7,7 @@ export interface TalentState {
   readonly id: TalentId;
   readonly rank: number;
   readonly maxRanks: number;
-  readonly unlocksAtLevel: number;
+  readonly requiredTotalPoints: number;
   readonly branch: TalentBranch;
   readonly tier: number;
   readonly requiredBranchPoints: number;
@@ -66,13 +66,13 @@ export class TalentSystem {
   }
   getTalent(id: TalentId): TalentState {
     const config = this.config.talents[id];
-    const tier = Math.floor(config.unlocksAtLevel / TALENT_TIER_RULES.levelsPerTier) + 1;
+    const { tier } = config;
     return {
       id,
       rank: this.getRank(id),
       ...config,
       branch: TALENTS[id].branch,
-      tier,
+      requiredTotalPoints: (tier - 1) * TALENT_TIER_RULES.totalPointsPerTier,
       requiredBranchPoints: (tier - 1) * TALENT_TIER_RULES.pointsPerTier,
     };
   }
@@ -82,29 +82,29 @@ export class TalentSystem {
       0,
     );
   }
+  totalPoints(): number {
+    return TALENT_ORDER.reduce((sum, id) => sum + this.getRank(id), 0);
+  }
   hasPrerequisite(id: TalentId): boolean {
     const prerequisite = TALENTS[id].prerequisite;
     return !prerequisite || this.getRank(prerequisite.id) >= prerequisite.rank;
   }
-  upgradeBlockReason(
-    id: TalentId,
-    level: number,
-  ): 'level' | 'branch' | 'prerequisite' | 'maxed' | null {
+  upgradeBlockReason(id: TalentId): 'total' | 'branch' | 'prerequisite' | 'maxed' | null {
     const talent = this.getTalent(id);
-    if (level < talent.unlocksAtLevel) return 'level';
+    if (this.totalPoints() < talent.requiredTotalPoints) return 'total';
     if (this.branchPoints(talent.branch) < talent.requiredBranchPoints) return 'branch';
     if (!this.hasPrerequisite(id)) return 'prerequisite';
     if (talent.rank >= talent.maxRanks) return 'maxed';
     return null;
   }
-  canUpgrade(id: TalentId, level: number): boolean {
-    return Object.hasOwn(TALENTS, id) && this.upgradeBlockReason(id, level) === null;
+  canUpgrade(id: TalentId): boolean {
+    return Object.hasOwn(TALENTS, id) && this.upgradeBlockReason(id) === null;
   }
-  hasAvailableUpgrades(level: number): boolean {
-    return TALENT_ORDER.some((id) => this.canUpgrade(id, level));
+  hasAvailableUpgrades(): boolean {
+    return TALENT_ORDER.some((id) => this.canUpgrade(id));
   }
-  upgrade(id: TalentId, level: number): boolean {
-    if (!this.canUpgrade(id, level)) return false;
+  upgrade(id: TalentId): boolean {
+    if (!this.canUpgrade(id)) return false;
     this.ranks.set(id, this.getRank(id) + 1);
     return true;
   }

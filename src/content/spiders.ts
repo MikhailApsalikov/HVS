@@ -86,7 +86,7 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
     chance: 0.01,
     speedPercent: -40,
     damagePercent: 30,
-    hits: 1,
+    hits: 2,
   },
   cursing: {
     name: 'Проклинающий',
@@ -94,7 +94,7 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
     chance: 0.01,
     speedPercent: -40,
     damagePercent: 30,
-    hits: 1,
+    hits: 2,
   },
   ninja: {
     name: 'Ниндзя',

@@ -39,6 +39,49 @@ function breach(session: GameSession, type: 'diseased' | 'cursing', damage = 100
 }
 
 describe('late spider debuffs through session commands', () => {
+  it.each(['diseased', 'cursing'] as const)(
+    '%s survives one normal arrow without changing species and rewards only the killing arrow',
+    (type) => {
+      const { session } = arena();
+      session.state.character.setModifiers('instantShots', [
+        { stat: 'shootCooldown', kind: 'percent', value: -100 },
+      ]);
+      session.refreshStats();
+      const spider = addSpider(session, type, 0, 0.95, 100);
+      const coins = session.state.coins;
+      expect(spider.hits).toBe(2);
+      expect(session.shootLane(0)).toBe('shot');
+      session.tick(0.001);
+      expect(spider).toMatchObject({ type, hits: 1, dying: false, damage: 100 });
+      expect(session.state.coins).toBe(coins);
+      expect(session.drainEvents().filter(({ type }) => type === 'coinDrop')).toEqual([]);
+      const loaded = restore(parseSave(snapshot(session))!, () => 0.999999);
+      expect(loaded.state.spiders.get(spider.id)).toMatchObject({ type, hits: 1 });
+      expect(loaded.shootLane(0)).toBe('shot');
+      loaded.tick(0.001);
+      expect(loaded.state.spiders.get(spider.id)).toMatchObject({ type, hits: 0, dying: true });
+      loaded.tick(0.3);
+      expect(loaded.state.spiders.has(spider.id)).toBe(false);
+      expect(loaded.drainEvents().filter(({ type }) => type === 'coinDrop')).toHaveLength(1);
+    },
+  );
+
+  it.each(['diseased', 'cursing'] as const)(
+    '%s dies to one critical arrow of power two',
+    (type) => {
+      const { session } = arena(55, [{ id: 'criticalShot', rank: 1 }]);
+      session.state.character.setModifiers('guaranteedCritical', [
+        { stat: 'criticalShotChance', kind: 'flat', value: 1 },
+      ]);
+      session.refreshStats();
+      const spider = addSpider(session, type, 0, 0.95);
+      expect(session.shootLane(0)).toBe('shot');
+      expect([...session.state.arrows.values()][0].power).toBe(2);
+      session.tick(0.001);
+      expect(spider).toMatchObject({ type, hits: 0, dying: true });
+    },
+  );
+
   it.each([55, 56, 75, 119])(
     'applies both timers at current level %i and refreshes without stacking',
     (level) => {

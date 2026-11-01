@@ -38,7 +38,7 @@ describe('ice arrows through session commands', () => {
         tier: 5,
         maxRanks: 5,
         requiredBranchPoints: 28,
-        unlocksAtLevel: 40,
+        requiredTotalPoints: 40,
       });
       const invested = [
         { id: 'improvedIntellect', rank: 5 },
@@ -47,12 +47,13 @@ describe('ice arrows through session commands', () => {
         { id: 'tireless', rank: 5 },
         { id: 'permafrost', rank: 3 },
         { id: 'blizzardMastery', rank: 5 },
+        { id: 'endurance', rank: 7 },
+        { id: 'greed', rank: 5 },
       ] as const;
       session.talents.loadFromSave(invested);
       expect(session.upgradeTalent('iceArrows')).toBe(false);
       expect(session.upgradeTalent('blizzardMastery')).toBe(true);
-      session.state.level = 39;
-      expect(session.upgradeTalent('iceArrows')).toBe(false);
+      session.state.level = 1;
       session.state.level = 40;
       session.talents.loadFromSave([
         ...invested.filter(({ id }) => id !== 'permafrost' && id !== 'blizzardMastery'),

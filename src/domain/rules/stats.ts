@@ -162,7 +162,7 @@ export const STATS = {
   spiderTypeProbability: stat('Вероятность выбора вида паука', 0, probability),
   spawnInterval: stat('Интервал появления, с', 0.02, { ...duration, min: 0.01 }),
   spiderSpeed: stat('Скорость паука, поля/с', 0, speed),
-  permafrostSlow: stat('Замедление: Вечная мерзлота', 0, { ...probability, max: 0.6 }),
+  permafrostSlow: stat('Замедление: Вечная мерзлота', 0, { ...probability, max: 0.4 }),
   globalSpiderSlow: stat('Замедление пауков от предметов', 0, probability),
   'iceArrows.chance': stat('Шанс: Ледяные стрелы', 0, probability),
   'iceArrows.adjacentChance': stat('Шанс соседних линий: Ледяные стрелы', 0, probability),

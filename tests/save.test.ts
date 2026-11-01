@@ -251,9 +251,7 @@ describe('saves and migration', () => {
     expect(loaded.state.pendingTalentPoints).toBe(49);
     expect(loaded.confirmLevelUp()).toBe(false);
     for (let point = 0; point < 49; point++) {
-      const id = TALENT_ORDER.find((talent) =>
-        loaded.talents.canUpgrade(talent, loaded.state.level),
-      );
+      const id = TALENT_ORDER.find((talent) => loaded.talents.canUpgrade(talent));
       expect(id).toBeDefined();
       expect(loaded.upgradeTalent(id!)).toBe(true);
     }
@@ -371,7 +369,7 @@ describe('saves and migration', () => {
     expect(loaded.state.levelTimerMax).toBe(32);
     expect(loaded.state.levelTimer).toBe(16);
     expect(loaded.talents.getRank('rapidFire')).toBe(2);
-    expect(loaded.talents.canUpgrade('rapidFire', 10)).toBe(false);
+    expect(loaded.talents.canUpgrade('rapidFire')).toBe(false);
     expect(loaded.items.toSaveData()).toEqual(['c009']);
     expect(snapshot(restore(parseSave(snapshot(loaded))!))).toEqual(snapshot(loaded));
   });

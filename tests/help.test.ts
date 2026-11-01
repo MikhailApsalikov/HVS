@@ -4,6 +4,7 @@ import { ITEM_CATALOG } from '../src/content/items.js';
 import { TALENTS } from '../src/content/talents.js';
 import { SPIDERS } from '../src/content/spiders.js';
 import { escapeHtml } from '../src/ui/presenters.js';
+import { SPIDER_SPRITE_MAP, spiderImageUrl } from '../src/ui/spiderSprites.js';
 
 describe('first-time player handbook', () => {
   it('renders every reference section with all catalog entries and no unresolved values', () => {
@@ -15,5 +16,12 @@ describe('first-time player handbook', () => {
     expect(help).toContain('250%');
     expect(help).toContain('16%');
     expect(help).toContain('распределите первое очко');
+    for (const type of Object.keys(SPIDER_SPRITE_MAP) as (keyof typeof SPIDER_SPRITE_MAP)[]) {
+      expect(spiderImageUrl(type)).toMatch(/^(?:data:image\/svg\+xml,|\/.*\.svg)/);
+      expect(help).toContain(`src="${escapeHtml(spiderImageUrl(type))}"`);
+    }
+    expect(help.match(/class="help__spider"/g)).toHaveLength(Object.keys(SPIDERS).length);
+    expect(help).toContain('Очки своей ветки входят в общую сумму');
+    expect(help).toContain('Требования к уровню нет');
   });
 });

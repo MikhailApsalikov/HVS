@@ -103,32 +103,32 @@ describe('storm talent balance through session commands', () => {
         { id: 'improvedIntellect', rank: 5 },
         { id: 'hunterArsenal', rank: 5 },
         { id: 'permafrost', rank: 1 },
+        { id: 'endurance', rank: 7 },
+        { id: 'greed', rank: 5 },
       ]);
       expect(session.talents.getTalent('lightningShield')).toMatchObject({
         tier: 4,
         maxRanks: 1,
         requiredBranchPoints: 21,
-        unlocksAtLevel: 30,
+        requiredTotalPoints: 30,
       });
       expect(session.talents.getTalent('magicArmor')).toMatchObject({
         tier: 5,
         maxRanks: 5,
         requiredBranchPoints: 28,
-        unlocksAtLevel: 40,
+        requiredTotalPoints: 40,
       });
-      expect(session.talents.upgradeBlockReason('magicArmor', 60)).toBe('prerequisite');
+      expect(session.talents.upgradeBlockReason('magicArmor')).toBe('prerequisite');
       expect(session.upgradeTalent('magicArmor')).toBe(false);
       session.state.level = 29;
-      expect(session.upgradeTalent('lightningShield')).toBe(false);
-      session.state.level = 30;
+      session.state.level = 1;
       expect(session.upgradeTalent('lightningShield')).toBe(true);
       expect(session.upgradeTalent('lightningShield')).toBe(false);
       session.state.phase = 'playing';
       expect(session.activateAbility('lightningShield')).toBe('activated');
       session.state.phase = 'levelUp';
       session.state.level = 39;
-      expect(session.upgradeTalent('magicArmor')).toBe(false);
-      session.state.level = 40;
+      session.state.level = 1;
       for (let rank = 1; rank <= 5; rank++) expect(session.upgradeTalent('magicArmor')).toBe(true);
       expect(session.upgradeTalent('magicArmor')).toBe(false);
       expect(session.talents.getTalent('improvedArmageddon').tier).toBe(4);

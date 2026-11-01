@@ -97,6 +97,10 @@ describe('defense requirements and compatibility', () => {
       const session = new GameSession(difficulty);
       session.state.pendingTalentPoints = 40;
       session.state.level = 10;
+      session.talents.loadFromSave([
+        { id: 'hunterArsenal', rank: 5 },
+        { id: 'vampirism', rank: 1 },
+      ]);
       for (let rank = 0; rank < 7; rank++) expect(session.upgradeTalent('endurance')).toBe(true);
       const baseArmor = session.state.stats.armor;
       for (let rank = 1; rank <= 4; rank++) {
@@ -107,7 +111,7 @@ describe('defense requirements and compatibility', () => {
       for (let rank = 0; rank < 3; rank++)
         expect(session.upgradeTalent('improvedEndurance')).toBe(true);
       const points = session.state.pendingTalentPoints;
-      expect(session.talents.upgradeBlockReason('spiderArmor', 20)).toBe('prerequisite');
+      expect(session.talents.upgradeBlockReason('spiderArmor')).toBe('prerequisite');
       expect(session.upgradeTalent('spiderArmor')).toBe(false);
       expect(session.state.pendingTalentPoints).toBe(points);
       expect(session.upgradeTalent('warriorArmor')).toBe(true);

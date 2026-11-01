@@ -130,6 +130,8 @@ describe('killing streak through gameplay time', () => {
       { id: 'hunterMastery', rank: 5 },
       { id: 'criticalShot', rank: 5 },
       { id: 'piercingReward', rank: 4 },
+      { id: 'hunterArsenal', rank: 5 },
+      { id: 'greed', rank: 1 },
     ]);
     expect(session.upgradeTalent('killingStreak')).toBe(true);
     session.state.phase = 'playing';
@@ -340,12 +342,14 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         { id: 'improvedAgility', rank: 5 },
         { id: 'killingStreak', rank: 5 },
         { id: 'vampirism', rank: 3 },
+        { id: 'hunterArsenal', rank: 5 },
+        { id: 'greed', rank: 5 },
         { id: prerequisite, rank: 0 },
         { id, rank: currentRank },
       ]);
       for (let rank = 0; rank < maxRanks; rank++) {
         expect(session.talents.getRank(prerequisite)).toBe(rank);
-        expect(session.talents.upgradeBlockReason(id, 40)).toBe('prerequisite');
+        expect(session.talents.upgradeBlockReason(id)).toBe('prerequisite');
         expect(session.upgradeTalent(id)).toBe(false);
         expect(session.state.pendingTalentPoints).toBe(30 - rank);
         expect(session.talents.getRank(id)).toBe(currentRank);
@@ -417,6 +421,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         { id: 'improvedAgility', rank: 5 },
         { id: 'vampirism', rank: 5 },
         { id: 'piercingReward', rank: 7 },
+        { id: 'hunterArsenal', rank: 5 },
       ]);
       expect(session.upgradeTalent('enthusiasm')).toBe(false);
       expect(session.upgradeTalent('volleyMastery')).toBe(true);

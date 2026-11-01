@@ -14,6 +14,7 @@ function arena(): GameSession {
   ]);
   session.refreshStats();
   learn(session, 'hunterArsenal', 5);
+  learn(session, 'greed', 5);
   return session;
 }
 

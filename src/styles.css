@@ -164,6 +164,13 @@ body {
   background: #1e2b43;
 }
 
+.help__spider {
+  display: inline-block;
+  margin-right: 12px;
+  vertical-align: middle;
+  transform: rotate(180deg);
+}
+
 .help__entry summary {
   cursor: pointer;
   color: #f6d598;
@@ -493,6 +500,11 @@ body {
   width: 100%;
   height: 100%;
   transform: rotate(180deg);
+  transition: transform 0.15s ease-out;
+}
+
+.spider--wounded svg {
+  transform: rotate(180deg) scale(0.7);
 }
 
 .spider--slowed {

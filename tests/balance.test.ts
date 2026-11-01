@@ -81,7 +81,9 @@ describe('combat balance through session commands', () => {
         { id: 'improvedEndurance', rank: 5 },
         { id: 'spiderArmor', rank: 10 },
         { id: 'shieldBlock', rank: 7 },
-        { id: 'greed', rank: 3 },
+        { id: 'greed', rank: 5 },
+        { id: 'hunterArsenal', rank: 5 },
+        { id: 'vampirism', rank: 4 },
         { id: 'magicArmor', rank: 2 },
       ]);
       session.refreshStats();

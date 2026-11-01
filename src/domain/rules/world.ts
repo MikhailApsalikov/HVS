@@ -15,6 +15,6 @@ export const WORLD = {
 
 export const PIERCING_STRIKE = {
   unlockLevel: 61,
-  chancePerLevel: 0.005,
+  chancePerLevel: 0.01,
   damageMultiplier: 2.5,
 } as const;

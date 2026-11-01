@@ -137,6 +137,9 @@ describe('shooting progression and scaling', () => {
     (difficulty) => {
       const session = new GameSession(difficulty);
       session.state.pendingTalentPoints = 100;
+      for (let rank = 0; rank < 5; rank++)
+        expect(session.upgradeTalent('hunterArsenal')).toBe(true);
+      for (let rank = 0; rank < 4; rank++) expect(session.upgradeTalent('greed')).toBe(true);
       for (let rank = 0; rank < 5; rank++) expect(session.upgradeTalent('vampirism')).toBe(true);
       expect(session.upgradeTalent('vampirism')).toBe(false);
       expect(session.state.stats.hpPerKill).toBe(28);
@@ -164,8 +167,7 @@ describe('shooting progression and scaling', () => {
         expect(session.talents.getTalent(id).tier).toBe(4);
       expect(session.talents.getTalent('volleyMastery').tier).toBe(2);
       session.state.level = 9;
-      expect(session.upgradeTalent('volleyMastery')).toBe(false);
-      session.state.level = 10;
+      session.state.level = 1;
       expect(session.upgradeTalent('volleyMastery')).toBe(true);
       expect(session.state.stats['volley.lanes']).toBe(5);
     },

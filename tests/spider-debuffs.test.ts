@@ -41,6 +41,9 @@ describe('spider debuffs through session commands', () => {
       { id: 'warriorArmor', rank: 5 },
       { id: 'spiderArmor', rank: 10 },
       { id: 'shieldBlock', rank: 5 },
+      { id: 'hunterArsenal', rank: 5 },
+      { id: 'hunterMastery', rank: 5 },
+      { id: 'vampirism', rank: 5 },
     ]);
     expect(session.upgradeTalent('poisonResistance')).toBe(false);
     session.state.level = 50;

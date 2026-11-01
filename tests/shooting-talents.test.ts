@@ -53,7 +53,9 @@ describe('shooting and magic talent progression', () => {
       buy(session, 'improvedAgility', 1);
       session.state.level = 19;
       expect(session.upgradeTalent('masochism')).toBe(false);
-      session.state.level = 20;
+      buy(session, 'hunterArsenal', 5);
+      buy(session, 'greed', 1);
+      session.state.level = 1;
       buy(session, 'masochism', 5);
       expect(session.talents.getRank('masochism')).toBe(5);
       expect(session.upgradeTalent('masochism')).toBe(false);
@@ -70,11 +72,12 @@ describe('shooting and magic talent progression', () => {
       expect(session.upgradeTalent('hunterMastery')).toBe(false);
       buy(session, 'improvedAgility', 2);
       expect(session.upgradeTalent('criticalShot')).toBe(false);
-      session.state.level = 10;
+      buy(session, 'hunterArsenal', 3);
+      session.state.level = 1;
       buy(session, 'criticalShot', 5);
       expect(session.upgradeTalent('criticalShot')).toBe(false);
       expect(session.state.stats.criticalShotChance).toBe(0.15);
-      expect(session.talents.canUpgrade('piercingReward', 10)).toBe(true);
+      expect(session.talents.canUpgrade('piercingReward')).toBe(true);
       const energyPerKill = session.state.stats.energyPerKill;
       for (let rank = 1; rank <= 7; rank++) {
         buy(session, 'piercingReward', 1);
@@ -101,7 +104,7 @@ describe('shooting and magic talent progression', () => {
     buy(session, 'hunterMastery', 5);
     buy(session, 'improvedAgility', 2);
     buy(session, 'criticalShot', 1);
-    expect(session.talents.canUpgrade('piercingReward', 20)).toBe(true);
+    expect(session.talents.canUpgrade('piercingReward')).toBe(true);
     buy(session, 'criticalShot', 4);
     buy(session, 'piercingReward', 1);
   });
@@ -114,6 +117,7 @@ describe('shooting and magic talent progression', () => {
     expect(session.state.maxEnergy).toBe(400);
     buy(session, 'hunterArsenal', 2);
     expect(session.upgradeTalent('tireless')).toBe(false);
+    buy(session, 'greed', 3);
     session.state.level = 10;
     buy(session, 'tireless', 5);
     expect(session.state.stats.energyRegen).toBe(14.34);

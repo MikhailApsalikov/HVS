@@ -10,7 +10,7 @@ describe('greed and hunter rewards through session commands', () => {
       const session = new GameSession(difficulty, () => 0.5);
       session.state.pendingTalentPoints = 5;
       expect(session.talents.getTalent('greed')).toMatchObject({
-        unlocksAtLevel: 0,
+        requiredTotalPoints: 0,
         requiredBranchPoints: 0,
         maxRanks: 5,
         branch: 'defense',
@@ -48,6 +48,7 @@ describe('greed and hunter rewards through session commands', () => {
     session.state.level = 20;
     session.state.initialTalentPick = false;
     session.state.pendingTalentPoints = 30;
+    session.talents.loadFromSave([{ id: 'hunterArsenal', rank: 1 }]);
     for (const [id, ranks] of [
       ['endurance', 7],
       ['improvedEndurance', 5],
