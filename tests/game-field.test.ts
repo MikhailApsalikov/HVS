@@ -75,6 +75,21 @@ function lane(index = 0): ElementDouble {
 }
 
 describe('end-of-game screen through session outcomes', () => {
+  it.each([
+    ['normal', 'Обычный паук'],
+    ['golden', 'Золотой паук'],
+  ] as const)('names a lethal %s as %s without quoted species', (type, name) => {
+    const session = game(40);
+    session.state.hp = 1;
+    addSpider(session, type, 0, 1, 10000);
+    session.tick(0.001);
+    const result = new ElementDouble();
+    new GameOverScreen(result as unknown as HTMLElement, vi.fn()).render(session.state);
+    expect(result.children[2].textContent).toBe(
+      `Вас убил ${name}, нанеся ${session.state.fatalHit!.damage} урона.`,
+    );
+  });
+
   it('shows a defeat, the lethal spider and its damage even on a record level', () => {
     const session = game(20);
     session.state.record = 20;
@@ -87,7 +102,7 @@ describe('end-of-game screen through session outcomes', () => {
     screen.render(session.state);
     expect(result.children[0].textContent).toBe('ПОРАЖЕНИЕ');
     expect(result.children[2].textContent).toBe(
-      `Вас убил паук «Танк», нанеся ${session.state.fatalHit!.damage} урона.`,
+      `Вас убил Паук-танк, нанеся ${session.state.fatalHit!.damage} урона.`,
     );
     expect(result.children[3].textContent).toBe('Рекорд: 20');
   });

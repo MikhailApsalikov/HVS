@@ -60,6 +60,8 @@ export class GameState {
   healingReductionTimer = 0;
   disorientationTimer = 0;
   stunTimer = 0;
+  diseaseTimer = 0;
+  curseTimer = 0;
   poisonTimer = 0;
   poisonTickTimer = 0;
   poisonDamage: readonly number[] = [];

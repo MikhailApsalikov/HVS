@@ -1,4 +1,16 @@
 export const DEBUFFS = {
+  disease: {
+    name: 'Болезнь',
+    duration: 20,
+    durationPerLevel: 20,
+    energyPenalty: 2,
+  },
+  curse: {
+    name: 'Проклятие',
+    duration: 20,
+    durationPerLevel: 20,
+    failureChance: 0.16,
+  },
   stun: {
     name: 'Оглушение',
     duration: 1,

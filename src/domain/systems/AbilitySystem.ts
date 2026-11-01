@@ -4,19 +4,15 @@ import type { RandomSource } from '../rules/random.js';
 import { pickLanes } from '../rules/random.js';
 import { WORLD } from '../rules/world.js';
 import { ABILITIES, ABILITY_ORDER } from '../../content/abilities.js';
-import { Arrow } from '../model/Arrow.js';
 import { AIMED_FIRE } from '../rules/stats.js';
-import { chargeArrow, createArrow } from './ArrowFactory.js';
+import { createArrow } from './ArrowFactory.js';
 import { clearDebuffs, clearSpiderDebuffs } from './DebuffSystem.js';
 
 type Effect = (state: GameState, random: RandomSource) => void;
 export function fireVolley(state: GameState, random: RandomSource): void {
   for (const lane of pickLanes(random, state.stats['volley.lanes'], WORLD.lanes)) {
-    const arrow = chargeArrow(
-      state,
-      new Arrow(state.newId('arrow'), lane, state.stats.arrowSpeed, true),
-    );
-    state.arrows.set(arrow.id, arrow);
+    const arrow = createArrow(state, random, lane, { fromVolley: true, canCrit: false });
+    if (arrow) state.arrows.set(arrow.id, arrow);
   }
 }
 const EFFECTS: Record<AbilityId, Effect> = {
@@ -87,8 +83,11 @@ export function tickAimedFire(state: GameState, dt: number, random: RandomSource
   for (const wave of pending) {
     if (wave.remaining > 1e-9) continue;
     for (let lane = 0; lane < WORLD.lanes; lane++) {
-      const arrow = createArrow(state, random, lane, true, wave.guaranteedCritical);
-      state.arrows.set(arrow.id, arrow);
+      const arrow = createArrow(state, random, lane, {
+        fromVolley: true,
+        guaranteedCritical: wave.guaranteedCritical,
+      });
+      if (arrow) state.arrows.set(arrow.id, arrow);
     }
   }
 }

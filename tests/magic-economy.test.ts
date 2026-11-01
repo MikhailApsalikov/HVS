@@ -103,14 +103,18 @@ describe('magic costs and item effectiveness through the session API', () => {
     },
   );
 
-  it('requires one Arsenal rank and tier two for Rationality, then caps it at five ranks', () => {
+  it('requires all five Arsenal ranks and tier two for Rationality, then caps it at five ranks', () => {
     const session = new GameSession('normal', () => 0.999999, { level: 9 });
     session.talents.loadFromSave([{ id: 'agility', rank: 7 }]);
     session.refreshStats();
     expect(session.upgradeTalent('rationality')).toBe(false);
     session.state.level = 10;
+    session.state.pendingTalentPoints = 10;
     expect(session.upgradeTalent('rationality')).toBe(false);
-    expect(session.upgradeTalent('hunterArsenal')).toBe(true);
+    for (let rank = 1; rank <= 5; rank++) {
+      expect(session.upgradeTalent('hunterArsenal')).toBe(true);
+      if (rank < 5) expect(session.upgradeTalent('rationality')).toBe(false);
+    }
     expect(session.talents.getTalent('rationality')).toMatchObject({
       branch: 'magic',
       tier: 2,
@@ -118,11 +122,11 @@ describe('magic costs and item effectiveness through the session API', () => {
     });
     for (let rank = 1; rank <= 5; rank++) {
       expect(session.upgradeTalent('rationality')).toBe(true);
-      expect(session.state.stats.itemEffectiveness).toBe(1 + rank * 0.05);
+      expect(session.state.stats.itemEffectiveness).toBe(1 + rank * 0.06);
     }
     expect(session.upgradeTalent('rationality')).toBe(false);
-    expect(TALENTS.rationality.prerequisite).toEqual({ id: 'hunterArsenal', rank: 1 });
-    expect(talentDescription('rationality', 5, session.state.stats)).toContain('25%');
+    expect(TALENTS.rationality.prerequisite).toEqual({ id: 'hunterArsenal', rank: 5 });
+    expect(talentDescription('rationality', 5, session.state.stats)).toContain('30%');
   });
 
   it('gates Economy and Permafrost behind tier six and 35 magic points', () => {
@@ -161,12 +165,12 @@ describe('magic costs and item effectiveness through the session API', () => {
       const baseIntellect = session.state.stats.intellect;
       session.state.phase = 'levelUp';
       for (const id of ['l001', 'l002', 'l028', 'l032']) expect(session.buyItem(id)).toBe(true);
-      const factor = 1 + 0.05 * rank;
+      const factor = 1 + 0.06 * rank;
       expect(session.state.stats.intellect).toBe(
-        baseIntellect + Math.round((830 * (100 + 5 * rank)) / 100),
+        baseIntellect + Math.round((830 * (100 + 6 * rank)) / 100),
       );
       expect(session.state.stats['armageddon.cooldown']).toBe(180 - 30 * factor);
-      expect(session.state.stats['armageddon.duration']).toBe(3 + factor);
+      expect(session.state.stats['armageddon.duration']).toBeCloseTo(3 + factor);
       expect(session.state.stats['fireExplosion.chance']).toBeCloseTo(0.35 + 0.35 * factor);
       expect(session.state.stats['lightningShield.cooldown']).toBe(300 - 30 * factor);
       expect(session.state.stats['lightningShield.absorption']).toBe(
@@ -264,7 +268,7 @@ describe('permanent Recharge growth and save migration', () => {
     const saved = snapshot(session);
     const { rechargeUses: _uses, ...oldState } = saved.state;
     const migrated = parseSave({ ...saved, version: 28, state: oldState })!;
-    expect(migrated.version).toBe(29);
+    expect(migrated.version).toBe(30);
     const loaded = restore(migrated);
     expect(loaded.state.rechargeUses).toBe(0);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(240);

@@ -51,9 +51,9 @@ describe('learning from mistakes through session commands', () => {
     expect(session.state.learningShieldCooldown).toBe(0);
     expect(spiderDebuffs(session)).not.toEqual([]);
     breach(session, 'normal', threshold);
-    expect(session.state.learningShieldTimer).toBeCloseTo(0.15 * rank);
+    expect(session.state.learningShieldTimer).toBeCloseTo(0.4 * rank);
     expect(spiderDebuffs(session)).toEqual([]);
-    session.tick(0.15 * rank);
+    session.tick(0.4 * rank);
     breach(session, 'normal', 10000);
     expect(session.state.hp).toBe(1);
     expect(session.state.fatalShieldTimer).toBe(duration);
@@ -78,7 +78,7 @@ describe('learning from mistakes through session commands', () => {
     expect(session.state.hp).toBe(16);
     expect(session.state.learningShieldCooldown).toBe(0);
     breach(session, 'normal', 10);
-    expect(session.state.learningShieldTimer).toBe(0.75);
+    expect(session.state.learningShieldTimer).toBe(2);
   });
   it.each(['easy', 'normal', 'hard'] as const)(
     'opens five ranks at shooting tier six on %s',
@@ -123,26 +123,26 @@ describe('learning from mistakes through session commands', () => {
       breach(session, 'poisonous');
       expect(session.state.hp).toBe(hp - 10);
       expect(spiderDebuffs(session)).toEqual([]);
-      expect(session.state.learningShieldTimer).toBeCloseTo(0.15 * rank);
-      expect(session.state.learningShieldCooldown).toBe(4);
+      expect(session.state.learningShieldTimer).toBeCloseTo(0.4 * rank);
+      expect(session.state.learningShieldCooldown).toBe(12);
       expect(session.state.isInvulnerable).toBe(true);
       expect(talentDescription('learningFromMistakes', rank, session.state.stats)).toContain(
-        `${Number((0.15 * rank).toFixed(2))} с`,
+        `${Number((0.4 * rank).toFixed(2))} с`,
       );
-      session.tick(0.15 * rank);
+      session.tick(0.4 * rank);
       expect(session.state.learningShieldTimer).toBe(0);
       expect(session.state.isInvulnerable).toBe(false);
     },
   );
 
-  it('absorbs simultaneous breaches and enforces the four-second cooldown without refreshing it', () => {
+  it('absorbs simultaneous breaches and enforces the twelve-second cooldown without refreshing it', () => {
     const session = arena(1, [{ id: 'recharge', rank: 1 }]);
     addSpider(session, 'normal', 0, 1, 10);
     addSpider(session, 'poisonous', 1, 1, 100000);
     const hp = session.state.hp;
     session.tick(0.001);
     expect(session.state.hp).toBe(hp - 10);
-    session.tick(0.15);
+    session.tick(0.4);
     breach(session, 'golden');
     expect(session.state.hp).toBe(hp - 20);
     expect(session.state.learningShieldTimer).toBe(0);
@@ -153,7 +153,7 @@ describe('learning from mistakes through session commands', () => {
     expect(session.state.learningShieldCooldown).toBe(cooldown);
     session.tick(cooldown);
     breach(session, 'fast');
-    expect(session.state.learningShieldTimer).toBe(0.15);
+    expect(session.state.learningShieldTimer).toBe(0.4);
     expect(spiderDebuffs(session)).toEqual([]);
   });
 
@@ -162,7 +162,7 @@ describe('learning from mistakes through session commands', () => {
     (type) => {
       const session = arena(1);
       breach(session);
-      session.tick(0.15);
+      session.tick(0.4);
       expect(session.state.learningShieldCooldown).toBeGreaterThan(0);
       session.state.hp = 10;
       const agility = session.state.stats.agility;
@@ -270,7 +270,7 @@ describe('learning from mistakes saves', () => {
     const loaded = restore(parseSave(saved)!, () => 0.999999);
     expect(snapshot(loaded)).toEqual(saved);
     expect(loaded.state.stats.agility).toBe(session.state.stats.agility);
-    loaded.tick(fatal ? 9.9 : 0.65);
+    loaded.tick(fatal ? 9.9 : 1.9);
     expect(loaded.state.isInvulnerable).toBe(false);
   });
 
@@ -304,9 +304,9 @@ describe('learning from mistakes saves', () => {
 
   it.each([
     { learningShieldTimer: -1 },
-    { learningShieldTimer: 0.76 },
+    { learningShieldTimer: 2.01 },
     { fatalShieldTimer: 10.1 },
-    { learningShieldCooldown: 4.1 },
+    { learningShieldCooldown: 12.1 },
     { exhaustionTimer: 300.1 },
     { fatalShieldTimer: 5, exhaustionTimer: 0 },
     { learningShieldTimer: 0.1, exhaustionTimer: 10 },
@@ -325,8 +325,8 @@ describe('titan armor conditional damage reduction through session commands', ()
     ]);
     const hp = session.state.hp;
     breach(session, 'normal', 1000);
-    expect(hp - session.state.hp).toBe(Math.round(1000 * 0.9 * (1 - 0.02 * rank)));
-    expect(talentDescription('titanArmor', rank, session.state.stats)).toContain(`на ${2 * rank}%`);
+    expect(hp - session.state.hp).toBe(Math.round(1000 * 0.9 * (1 - 0.03 * rank)));
+    expect(talentDescription('titanArmor', rank, session.state.stats)).toContain(`на ${3 * rank}%`);
   });
 
   it.each(['golden', 'fast', 'poisonous', 'ninja'] as const)(
@@ -338,7 +338,7 @@ describe('titan armor conditional damage reduction through session commands', ()
       addSpider(session, 'normal', 1, 1, 100);
       session.tick(0.001);
       expect(spiderDebuffs(session)).toHaveLength(1);
-      expect(session.state.hp).toBe(hp - 80 - 100);
+      expect(session.state.hp).toBe(hp - 70 - 100);
       expect(session.state.rules.value('incomingDamage', 100)).toBe(100);
     },
   );
@@ -351,11 +351,11 @@ describe('titan armor conditional damage reduction through session commands', ()
     breach(session, 'ninja');
     expect(session.state.rules.value('incomingDamage', 100)).toBe(100);
     session.tick(session.state.disorientationTimer);
-    expect(session.state.rules.value('incomingDamage', 100)).toBe(80);
+    expect(session.state.rules.value('incomingDamage', 100)).toBe(70);
     breach(session, 'golden');
     session.state.energy = session.state.maxEnergy;
     expect(session.activateAbility('eagleEye')).toBe('activated');
-    expect(session.state.rules.value('incomingDamage', 100)).toBe(80);
+    expect(session.state.rules.value('incomingDamage', 100)).toBe(70);
   });
 
   it('keeps protection during exhaustion because exhaustion does not come from a spider', () => {
@@ -363,7 +363,7 @@ describe('titan armor conditional damage reduction through session commands', ()
     session.state.hp = 10;
     breach(session, 'poisonous', 100000);
     expect(session.state.exhaustionTimer).toBe(300);
-    expect(session.state.rules.value('incomingDamage', 100)).toBe(80);
+    expect(session.state.rules.value('incomingDamage', 100)).toBe(70);
     expect(spiderDebuffs(session)).toEqual([]);
   });
 });

@@ -3,16 +3,27 @@ import { Arrow } from '../model/Arrow.js';
 import type { RandomSource } from '../rules/random.js';
 import { CRITICAL_SHOT_POWER, IMPROVED_CRITICAL_SHOT_POWER } from '../rules/stats.js';
 
-/** Ability waves use the same critical rolls, without spending archer buff charges. */
+interface ArrowOptions {
+  readonly fromVolley: boolean;
+  readonly guaranteedCritical?: boolean;
+  readonly eagleEyeActive?: boolean;
+  readonly canCrit?: boolean;
+}
+
+/** Curse is rolled once per attempted arrow, before critical rolls and electric charges. */
 export function createArrow(
   state: GameState,
   random: RandomSource,
   lane: number,
-  fromVolley: boolean,
-  guaranteedCritical = false,
-  eagleEyeActive = state.eagleEyeActive,
-): Arrow {
-  const criticalChance = state.rules.criticalShotChance();
+  {
+    fromVolley,
+    guaranteedCritical = false,
+    eagleEyeActive = state.eagleEyeActive,
+    canCrit = true,
+  }: ArrowOptions,
+): Arrow | null {
+  if (state.stats.curseFailureChance > 0 && random() < state.stats.curseFailureChance) return null;
+  const criticalChance = canCrit ? state.rules.criticalShotChance() : 0;
   const critical = guaranteedCritical || (criticalChance > 0 && random() < criticalChance);
   const improvedChance = state.rules.improvedCriticalShotChance(eagleEyeActive);
   const improved = critical && improvedChance > 0 && random() < improvedChance;

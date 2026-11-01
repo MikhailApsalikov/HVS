@@ -511,7 +511,7 @@ describe('version eleven saves', () => {
         talents: [...current.talents, { id: 'volleyMastery', rank: 3 }],
       };
       const parsed = parseSave(old)!;
-      expect(parsed.version).toBe(29);
+      expect(parsed.version).toBe(30);
       const loaded = restore(parsed, () => 0);
       expect(loaded.state.eagleEyeActive).toBe(false);
       expect(loaded.state.getAbility('eagleEye').isReady).toBe(true);

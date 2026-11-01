@@ -6,6 +6,7 @@ import type { SpriteRegistry } from './SpriteRegistry.js';
 import { MainMenuScreen } from './screens/MainMenuScreen.js';
 import { GameScreen } from './screens/GameScreen.js';
 import { GameOverScreen } from './screens/GameOverScreen.js';
+import { HelpScreen } from './screens/HelpScreen.js';
 import { LevelUpScreen, type LevelUpActions } from './screens/ProgressionScreen.js';
 import { FreezeOverlay } from './overlays/FreezeOverlay.js';
 import { ArmageddonOverlay } from './overlays/ArmageddonOverlay.js';
@@ -26,6 +27,7 @@ export class GameApp {
   readonly game: GameScreen;
   private readonly menu: MainMenuScreen;
   private readonly over: GameOverScreen;
+  private readonly help: HelpScreen;
   private readonly progression: LevelUpScreen;
   private readonly freeze: FreezeOverlay;
   private readonly armageddon: ArmageddonOverlay;
@@ -57,7 +59,12 @@ export class GameApp {
           this.show('game');
         }
       },
+      () => {
+        this.help.render();
+        this.show('help');
+      },
     );
+    this.help = new HelpScreen(document.createElement('div'), () => this.showMenu());
     this.game = new GameScreen(document.createElement('div'), sprites);
     this.over = new GameOverScreen(document.createElement('div'), () => {
       actions.menu();
@@ -79,7 +86,12 @@ export class GameApp {
     this.preparation = new PreparationOverlay(effects);
     const wrapper = document.createElement('div');
     wrapper.className = 'app__screens';
-    wrapper.append(this.menu.getContainer(), this.game.getContainer(), this.over.getContainer());
+    wrapper.append(
+      this.menu.getContainer(),
+      this.game.getContainer(),
+      this.over.getContainer(),
+      this.help.getContainer(),
+    );
     this.saveStatus.className = 'save-status';
     this.saveStatus.setAttribute('role', 'status');
     root.className = 'app';

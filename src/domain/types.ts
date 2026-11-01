@@ -76,6 +76,8 @@ export type SpiderType =
   | 'fat'
   | 'fast'
   | 'poisonous'
+  | 'diseased'
+  | 'cursing'
   | 'cleanser'
   | 'ninja'
   | 'burner'

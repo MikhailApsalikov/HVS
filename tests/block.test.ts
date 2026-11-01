@@ -3,6 +3,11 @@ import { GameSession } from '../src/domain/GameSession.js';
 import { parseSave, restore, snapshot } from '../src/domain/save.js';
 import type { TalentId } from '../src/domain/types.js';
 import { addSpider } from './helpers.js';
+import {
+  abilityDescription,
+  attributeDescription,
+  talentDescription,
+} from '../src/ui/presenters.js';
 
 function buy(session: GameSession, id: TalentId, ranks = 1): void {
   for (let rank = 0; rank < ranks; rank++) expect(session.upgradeTalent(id)).toBe(true);
@@ -31,6 +36,39 @@ function defense(random = () => 0.999999): GameSession {
 }
 
 describe('defense talent abilities through session commands', () => {
+  it.each([0, 1, 2, 3, 4, 5])(
+    'improved last hope rank %i adds one percent endurance per rank only to its active block',
+    (rank) => {
+      const session = new GameSession('normal', () => 0.999999, { level: 40 });
+      session.talents.loadFromSave([
+        { id: 'shieldBlock', rank: 7 },
+        { id: 'lastHope', rank: 1 },
+        { id: 'improvedLastHope', rank },
+      ]);
+      session.state.character.setBase('endurance', 883);
+      session.refreshStats();
+      expect(session.state.stats.endurance).toBe(1000);
+      expect(session.state.stats.blockPower).toBe(140);
+      expect(session.state.stats['lastHope.blockPower']).toBe(50 + rank * 10);
+      expect(abilityDescription(session.state, 'lastHope')).toContain(
+        `силу блока на ${50 + rank * 10} единиц`,
+      );
+      expect(attributeDescription(session.state, 'endurance')).not.toContain('undefined');
+      if (rank > 0)
+        expect(talentDescription('improvedLastHope', rank, session.state.stats)).toContain(
+          `${rank}% от выносливости`,
+        );
+      session.state.phase = 'playing';
+      session.state.initialTalentPick = false;
+      session.state.pendingTalentPoints = 0;
+      expect(session.activateAbility('lastHope')).toBe('activated');
+      expect(session.state.stats.blockPower).toBe(190 + rank * 10);
+      expect(snapshot(restore(parseSave(snapshot(session))!))).toEqual(snapshot(session));
+      session.tick(6);
+      expect(session.state.stats.blockPower).toBe(140);
+    },
+  );
+
   it('starts with zero block and never grants talent abilities from level alone', () => {
     const session = new GameSession('normal');
     expect(session.state.stats).toMatchObject({ blockChance: 0, blockPower: 0 });
@@ -394,7 +432,7 @@ describe('defense save compatibility', () => {
       ),
     };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(29);
+    expect(parsed.version).toBe(30);
     const loaded = restore(parsed);
     expect(loaded.state.getAbility('stand').remainingCooldown).toBe(41);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(123);

@@ -1,5 +1,5 @@
 import type { GameState } from '../../domain/model/GameState.js';
-import { SPIDERS } from '../../content/spiders.js';
+import { spiderName } from '../../content/spiders.js';
 import { formatStat } from '../presenters.js';
 
 export class GameOverScreen {
@@ -56,7 +56,7 @@ export class GameOverScreen {
       : `Вы пали на уровне ${level}`;
     this._causeEl.textContent =
       !isVictory && fatalHit
-        ? `Вас убил паук «${SPIDERS[fatalHit.spider].name}», нанеся ${formatStat('incomingDamage', fatalHit.damage)} урона.`
+        ? `Вас убил ${spiderName(fatalHit.spider)}, нанеся ${formatStat('incomingDamage', fatalHit.damage)} урона.`
         : '';
     this._recordEl.textContent = `Рекорд: ${record}`;
   }

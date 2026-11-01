@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitest/config';
+import { gameVersion } from './scripts/version.js';
 
 export default defineConfig({
+  define: { __GAME_VERSION__: JSON.stringify(gameVersion(process.cwd())) },
   test: {
     include: ['tests/**/*.test.ts'],
     coverage: {

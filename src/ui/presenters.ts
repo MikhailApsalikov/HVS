@@ -152,6 +152,7 @@ const ATTRIBUTE_EFFECT_TEXT: Partial<Record<StatId, string>> = {
   coinsPerKill: 'Каждый убитый паук приносит дополнительно {value} монет.',
   coinsPerSec: 'Приносит дополнительно {value} монет каждую секунду.',
   blockPower: 'Увеличивает силу блока на {value} единиц.',
+  'lastHope.blockPower': 'Увеличивает силу «Блока последней надежды» на {value} единиц.',
   hpPerKill: 'Каждое убийство восстанавливает {value} здоровья.',
   dodgeChance: 'Дает {value} вероятности уклониться от урона.',
   'killingStreak.killAdvance':
@@ -217,17 +218,13 @@ function abilityEffectDescription(id: AbilityId, stats: ResolvedStats): string {
   const description = ABILITIES[id].description
     .split('\n')
     .filter((line) =>
-      [...line.matchAll(/\{([\w.]+)\}/g)].every(
-        ([, key]) => key === 'endurancePercent' || stats[key as StatId] !== 0,
-      ),
+      [...line.matchAll(/\{([\w.]+)\}/g)].every(([, key]) => stats[key as StatId] !== 0),
     )
     .join('\n');
   let result = fillDescription(description, (key) =>
-    key === 'endurancePercent'
-      ? formatStat('blockChance', ATTRIBUTE_RULES.endurance.lastHopeBlockPerPoint)
-      : key.endsWith('.duration')
-        ? String(Number(stats[key as StatId].toFixed(STATS[key as StatId].policy.digits)))
-        : formatStat(key as StatId, stats[key as StatId]),
+    key.endsWith('.duration')
+      ? String(Number(stats[key as StatId].toFixed(STATS[key as StatId].policy.digits)))
+      : formatStat(key as StatId, stats[key as StatId]),
   );
   if (id === 'lightningArrows') {
     if (stats['lightningArrows.charges'] > 1)
@@ -360,6 +357,10 @@ function playerEffectDetail(effect: PlayerEffect): string {
       return `Регенерация здоровья и получаемое лечение уменьшены на ${formatStat('healingReceived', 1 - effect.details!.healingReceived!)}.`;
     case 'poison':
       return `Броня уменьшена на ${formatPercent(Math.abs(effect.details!.armorPercent!))}. Вы отравлены и получаете ${Math.round(effect.details!.tickDamage!)} урона раз в ${effect.details!.tickInterval} секунды. Яд не может убить.`;
+    case 'disease':
+      return `Восстановление энергии в секунду, энергия за убийство и за прорыв уменьшены на ${effect.details!.energyPenalty}.`;
+    case 'curse':
+      return `С вероятностью ${formatPercent(effect.details!.failureChance! * 100)} каждая стрела, включая стрелы способностей, не вылетает. Энергия расходуется и перезарядка запускается.`;
     case 'disorientation':
       return `Шанс блока уменьшен на ${formatPercent(effect.details!.blockReductionPercent!)}. Шанс уклонения от ловкости уменьшен на ${formatPercent(effect.details!.agilityDodgeReductionPercent!)}.`;
     case 'stun':

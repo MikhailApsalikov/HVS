@@ -14,6 +14,8 @@ const priority = [
   ['poisonous', 8],
   ['cleanser', 45],
   ['ninja', 35],
+  ['diseased', 55],
+  ['cursing', 55],
 ] as const;
 
 function encounter(level: number, rolls: number[], difficulty: Difficulty = 'normal') {
@@ -37,6 +39,23 @@ function speciesRolls(type: SpiderType, level: number, roll: number) {
 }
 
 describe('spider generation through session ticks', () => {
+  it.each(['diseased', 'cursing'] as const)(
+    'spawns %s at level 55 with 60 percent speed and 130 percent damage',
+    (type) => {
+      const session = encounter(55, speciesRolls(type, 55, 0.009999));
+      session.tick(0.02);
+      expect([...session.state.spiders.values()][0]).toMatchObject({
+        type,
+        speed: 0.14208,
+        damage: 751,
+        hits: 1,
+      });
+      const failure = encounter(55, speciesRolls(type, 55, 0.01));
+      failure.tick(0.02);
+      expect([...failure.state.spiders.values()][0].type).toBe('normal');
+    },
+  );
+
   it.each([
     ['easy', 1, 12],
     ['easy', 25, 106],
@@ -79,7 +98,8 @@ describe('spider generation through session ticks', () => {
           session.tick(0.02);
           expect(session.state.spiders.size).toBe(1);
           const spider = [...session.state.spiders.values()][0];
-          const speciesMultiplier = type === 'fast' ? 3 : type === 'tank' ? 0.6 : 1;
+          const speciesMultiplier =
+            type === 'fast' ? 3 : ['tank', 'diseased', 'cursing'].includes(type) ? 0.6 : 1;
           expect(spider.type).toBe(type);
           expect(spider.speed).toBeCloseTo(speed * speciesMultiplier, 6);
           const before = spider.y;
@@ -128,6 +148,12 @@ describe('spider generation through session ticks', () => {
 
   it.each([
     ['golden', 40, 0.005],
+    ['diseased', 55, 0.01],
+    ['diseased', 56, 0.01],
+    ['diseased', 119, 0.01],
+    ['cursing', 55, 0.01],
+    ['cursing', 56, 0.01],
+    ['cursing', 119, 0.01],
     ['golden', 50, 0.005],
     ['golden', 500, 0.005],
     ['megaFat', 50, 0.01],
@@ -421,7 +447,7 @@ describe('ninja jumps and saved progress', () => {
         spiders: previousSpiders(current).map((spider) => ({ ...spider, hasJumped })),
       };
       const migrated = parseSave(previous)!;
-      expect(migrated.version).toBe(29);
+      expect(migrated.version).toBe(30);
       expect(migrated.state).toEqual(current.state);
       expect(migrated.arrows).toEqual(current.arrows);
       const loaded = restore(migrated, () => 0.999999);

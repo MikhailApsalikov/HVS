@@ -20,6 +20,8 @@ export type PlayerEffectId =
   | 'goldLock'
   | 'healingReduction'
   | 'poison'
+  | 'disease'
+  | 'curse'
   | 'disorientation'
   | 'stun'
   | 'antiAfk';
@@ -39,6 +41,8 @@ export interface PlayerEffectMetadata {
 export interface PlayerEffectDetails {
   readonly hpRegen: number;
   readonly energyRegen: number;
+  readonly energyPenalty: number;
+  readonly failureChance: number;
   readonly absorption: number;
   readonly agility: number;
   readonly blockChance: number;
@@ -237,6 +241,26 @@ const LIFECYCLES: Readonly<Record<PlayerEffectId, EffectLifecycle>> = {
     read: (state) => ({ remaining: state.stunTimer }),
     clear: (state) => {
       state.stunTimer = 0;
+    },
+  },
+  disease: {
+    read: (state) => ({
+      remaining: state.diseaseTimer,
+      details: {
+        energyPenalty: DEBUFFS.disease.energyPenalty * (1 - state.stats.spiderDebuffResistance),
+      },
+    }),
+    clear: (state) => {
+      state.diseaseTimer = 0;
+    },
+  },
+  curse: {
+    read: (state) => ({
+      remaining: state.curseTimer,
+      details: { failureChance: state.stats.curseFailureChance },
+    }),
+    clear: (state) => {
+      state.curseTimer = 0;
     },
   },
   antiAfk: {

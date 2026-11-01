@@ -338,6 +338,8 @@ describe('enemy types and rewards', () => {
         fat: [0.064, 13],
         fast: [0.192, 6],
         poisonous: [0.064, 13],
+        diseased: [0.0384, 16],
+        cursing: [0.0384, 16],
         cleanser: [0.064, 13],
         ninja: [0.064, 13],
         burner: [0.064, 6],

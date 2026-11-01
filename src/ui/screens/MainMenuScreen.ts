@@ -10,6 +10,7 @@ export class MainMenuScreen {
     container: HTMLElement,
     onStartGame: (difficulty: Difficulty) => void,
     onLoadGame: () => void,
+    private readonly onHelp: () => void,
   ) {
     this._container = container;
     this._onStartGame = onStartGame;
@@ -31,6 +32,10 @@ export class MainMenuScreen {
     subtitle.className = 'main-menu__subtitle';
     subtitle.textContent = 'Hunters Versus Spiders';
     this._container.appendChild(subtitle);
+    const version = document.createElement('p');
+    version.className = 'main-menu__version';
+    version.textContent = `Версия ${__GAME_VERSION__}`;
+    this._container.appendChild(version);
 
     const buttons = document.createElement('div');
     buttons.className = 'main-menu__buttons';
@@ -58,6 +63,13 @@ export class MainMenuScreen {
       buttons.appendChild(btn);
     }
 
+    const help = document.createElement('button');
+    help.className = 'main-menu__btn';
+    help.type = 'button';
+    help.textContent = 'Помощь';
+    help.dataset.action = 'help';
+    help.addEventListener('click', this.onHelp);
+    buttons.appendChild(help);
     this._container.appendChild(buttons);
   }
 

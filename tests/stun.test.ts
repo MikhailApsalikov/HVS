@@ -166,8 +166,8 @@ describe('piercing stun through session commands', () => {
     session.tick(0.001);
     const damage = session.drainEvents().filter(({ type }) => type === 'damage');
     expect(damage).toMatchObject([
-      { hp: 400 - blockPower, blockedDamage: blockPower },
-      { hp: 400 },
+      { hp: 250 - blockPower, blockedDamage: blockPower },
+      { hp: 250 },
     ]);
     expect(damage[1]).not.toHaveProperty('blockedDamage');
     expect(session.state.stats.blockChance).toBe(0);
@@ -310,7 +310,7 @@ describe('piercing stun through session commands', () => {
     (fatal) => {
       const { session } = arena(61, [{ id: 'learningFromMistakes', rank: 5 }]);
       if (fatal) session.state.hp = 10;
-      hit(session, 2000);
+      hit(session, 3200);
       expect(session.state.isStunned).toBe(false);
       expect(session.state.isInvulnerable).toBe(true);
       expect(session.state.stats.energyPerKill).toBe(7);
@@ -331,7 +331,7 @@ describe('stun save compatibility', () => {
       state,
     })!;
     expect(parsed).not.toBeNull();
-    expect(parsed.version).toBe(29);
+    expect(parsed.version).toBe(30);
     const loaded = restore(parsed);
     expect(loaded.state.stunTimer).toBe(0);
     expect(loaded.state.eagleEyeShots).toBe(5);

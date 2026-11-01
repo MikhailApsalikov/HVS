@@ -111,6 +111,20 @@ export const PLAYER_EFFECTS = {
     source: 'spider',
     removableByCleanser: false,
   },
+  disease: {
+    name: DEBUFFS.disease.name,
+    sprite: 'DebuffDisease',
+    kind: 'debuff',
+    source: 'spider',
+    removableByCleanser: false,
+  },
+  curse: {
+    name: DEBUFFS.curse.name,
+    sprite: 'DebuffCurse',
+    kind: 'debuff',
+    source: 'spider',
+    removableByCleanser: false,
+  },
   disorientation: {
     name: DEBUFFS.disorientation.name,
     sprite: 'DebuffDisorientation',

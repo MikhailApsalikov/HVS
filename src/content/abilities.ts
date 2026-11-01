@@ -101,7 +101,7 @@ export const ABILITIES: Readonly<Record<AbilityId, AbilityDefinition>> = {
     unlockLevel: 20,
     talent: 'lastHope',
     description:
-      'На {lastHope.duration} секунд повышает вероятность блока на {lastHope.blockChance} и его силу на {endurancePercent} от вашей выносливости.',
+      'На {lastHope.duration} секунд повышает вероятность блока на {lastHope.blockChance}.\nПовышает силу блока на {lastHope.blockPower} единиц за счёт вашей выносливости и улучшений способности.',
     effectStat: 'lastHope.duration',
     effectKind: 'flat',
   },

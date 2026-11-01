@@ -3,6 +3,13 @@ import { SPIDERS } from '../../content/spiders.js';
 import type { GameState } from '../model/GameState.js';
 import { PIERCING_STRIKE } from './world.js';
 
+export function lateSpiderDebuffDuration(id: 'disease' | 'curse', level: number): number {
+  const spider = id === 'disease' ? SPIDERS.diseased : SPIDERS.cursing;
+  return (
+    DEBUFFS[id].duration + DEBUFFS[id].durationPerLevel * Math.max(0, level - spider.unlockLevel)
+  );
+}
+
 export function stunDuration(level: number): number {
   return (
     DEBUFFS.stun.duration +

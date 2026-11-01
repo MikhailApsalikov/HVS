@@ -145,7 +145,11 @@ export class GameSession {
           source: 'ability:lastHope',
           stat: 'blockPower',
           kind: 'flat',
-          value: rules.value('lastHope.blockPower'),
+          value: rules.value(
+            'lastHope.blockPower',
+            undefined,
+            scaling.filter((effect) => effect.stat === 'lastHope.blockPower'),
+          ),
         },
       );
     }
@@ -231,12 +235,16 @@ export class GameSession {
       }
     }
     const eagleEyeActive = state.eagleEyeActive;
-    const arrow = createArrow(state, this.random, lane, false, eagleEyeActive, eagleEyeActive);
+    const arrow = createArrow(state, this.random, lane, {
+      fromVolley: false,
+      guaranteedCritical: eagleEyeActive,
+      eagleEyeActive,
+    });
     if (state.eagleEyeActive) {
       state.eagleEyeShots -= 1;
       if (state.eagleEyeShots === 0) state.eagleEyeTimer = 0;
     }
-    state.arrows.set(arrow.id, arrow);
+    if (arrow) state.arrows.set(arrow.id, arrow);
     return 'shot';
   }
   activateAbility(id: AbilityId): AbilityResult {
@@ -281,6 +289,7 @@ export class GameSession {
     if (state.phase !== 'playing' || dt === 0) return;
     const emit = (event: GameEvent) => this.events.push(event);
     const hpRegeneration = state.stats.hpRegen * dt;
+    const energyRegeneration = state.stats.energyRegen * dt;
     const passiveCoins = state.stats.coinsPerSec * dt;
     if (tickBuffs(state, dt)) this.refreshStats(false);
     if (state.hp <= 0) {
@@ -332,7 +341,7 @@ export class GameSession {
     }
     tickAimedFire(state, dt, this.random);
     state.modifyHp(hpRegeneration);
-    state.modifyEnergy(state.stats.energyRegen * dt + prepRegeneration);
+    state.modifyEnergy(energyRegeneration + prepRegeneration);
     state.coinAccumulator += passiveCoins;
     const whole = Math.floor(state.coinAccumulator);
     state.coins += whole;

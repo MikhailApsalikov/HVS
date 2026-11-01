@@ -308,9 +308,9 @@ describe('Lightning Shield through session commands', () => {
     expect(session.activateAbility('lightningShield')).toBe('activated');
     const hp = session.state.hp;
     const capacity = session.state.lightningShieldAbsorption;
-    expect(breach(session)).toMatchObject({ hp: 0, absorbedDamage: 400, piercing: true });
+    expect(breach(session)).toMatchObject({ hp: 0, absorbedDamage: 250, piercing: true });
     expect(session.state.hp).toBe(hp);
-    expect(session.state.lightningShieldAbsorption).toBe(capacity - 400);
+    expect(session.state.lightningShieldAbsorption).toBe(capacity - 250);
     expect(session.state.isStunned).toBe(true);
     expect(session.state.stats.energyPerBreach).toBe(0);
   });
@@ -664,7 +664,7 @@ describe('storm save compatibility', () => {
       },
     };
     const parsed = parseSave(previous);
-    expect(parsed?.version).toBe(29);
+    expect(parsed?.version).toBe(30);
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('killingStreak')).toBe(5);
     expect(loaded.state.pendingTalentPoints).toBe(saved.state.pendingTalentPoints + 3);

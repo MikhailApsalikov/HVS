@@ -214,7 +214,7 @@ describe('application orchestration', () => {
     killed.startDying();
     killed.dyingTimer = 0;
     const breached = addSpider(session, 'tank', 1, 1, 100);
-    const expectedDamage = session.state.rules.value('incomingDamage', 400);
+    const expectedDamage = session.state.rules.value('incomingDamage', 250);
     const frames = new Frames();
     const saves = new SaveSystem(new MemoryStorage());
     saves.save(session);

@@ -5,7 +5,12 @@ import { clearResistedSpiderDebuffs } from './systems/DebuffSystem.js';
 import type { GameState } from './model/GameState.js';
 import { Spider } from './model/Spider.js';
 import { Arrow } from './model/Arrow.js';
-import { disorientationDuration, poisonDuration, stunDuration } from './rules/debuffs.js';
+import {
+  disorientationDuration,
+  lateSpiderDebuffDuration,
+  poisonDuration,
+  stunDuration,
+} from './rules/debuffs.js';
 import { ABILITY_ORDER } from '../content/abilities.js';
 import {
   ANTI_AFK,
@@ -57,6 +62,8 @@ const STATE_FIELDS = [
   'healingReductionTimer',
   'disorientationTimer',
   'stunTimer',
+  'diseaseTimer',
+  'curseTimer',
   'poisonTimer',
   'poisonTickTimer',
   'poisonDamage',
@@ -122,7 +129,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 29;
+  readonly version: 30;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -140,7 +147,7 @@ export function snapshot(session: GameSession): SaveData {
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   fields.lightningCharges = [...state.lightningCharges];
   return {
-    version: 29,
+    version: 30,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -175,6 +182,8 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   state.healingReductionTimer = data.state.healingReductionTimer;
   state.disorientationTimer = data.state.disorientationTimer;
   state.stunTimer = data.version < 25 ? 0 : data.state.stunTimer;
+  state.diseaseTimer = data.version < 30 ? 0 : data.state.diseaseTimer;
+  state.curseTimer = data.version < 30 ? 0 : data.state.curseTimer;
   state.poisonTimer = data.state.poisonTimer;
   state.poisonTickTimer = data.state.poisonTickTimer;
   state.poisonDamage = [...data.state.poisonDamage];
@@ -196,6 +205,7 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
         key,
         (key === 'rechargeUses' && data.version < 29) ||
         (key === 'stunTimer' && data.version < 25) ||
+        (data.version < 30 && (key === 'diseaseTimer' || key === 'curseTimer')) ||
         (data.version < 28 &&
           [
             'lightningShieldTimer',
@@ -376,12 +386,27 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (
     ![
       3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
-      28, 29,
+      28, 29, 30,
     ].includes(value.version as number) ||
     !object(value.state)
   )
     return null;
   const state = value.state;
+  if ((value.version as number) >= 30) {
+    for (const [id, type] of [
+      ['disease', 'diseased'],
+      ['curse', 'cursing'],
+    ] as const) {
+      const timer = state[`${id}Timer`];
+      if (
+        !number(timer) ||
+        !number(state.level) ||
+        timer > lateSpiderDebuffDuration(id, state.level) ||
+        (state.level < SPIDERS[type].unlockLevel && timer > 0)
+      )
+        return null;
+    }
+  }
   if (
     (value.version as number) >= 29 &&
     (!integer(state.rechargeUses) || !integer(state.level) || state.level > WORLD.maxLevel)
@@ -804,6 +829,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (value.version === 26) return snapshot(restore(value as unknown as SaveData));
   if (value.version === 27) return snapshot(restore(value as unknown as SaveData));
   if (value.version === 28) return snapshot(restore(value as unknown as SaveData));
+  if (value.version === 29) return snapshot(restore(value as unknown as SaveData));
   return value as unknown as SaveData;
 }
 

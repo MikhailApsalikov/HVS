@@ -292,7 +292,7 @@ describe('ice arrow save compatibility', () => {
       spiders: data.spiders.map(({ rootTimer: _timer, ...spider }) => spider),
     };
     const parsed = parseSave(previous);
-    expect(parsed?.version).toBe(29);
+    expect(parsed?.version).toBe(30);
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('iceArrows')).toBe(0);
     expect(loaded.state.lightningCharges).toEqual(data.state.lightningCharges);

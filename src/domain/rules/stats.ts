@@ -8,14 +8,14 @@ const speed = { digits: 6, min: 0 } as const;
 const probability = { digits: 6, min: 0, max: 1 } as const;
 export const BEST_DEFENSE_COOLDOWN = 3;
 export const LEARNING_FROM_MISTAKES = {
-  shieldDurationPerRank: 0.15,
-  shieldCooldown: 4,
+  shieldDurationPerRank: 0.4,
+  shieldCooldown: 12,
   fatalShieldDurations: [1, 2, 4, 7, 10],
   damageThresholds: [0.1, 0.08, 0.07, 0.06, 0.05],
   exhaustionDuration: 300,
   exhaustionAgilityPercent: 15,
 } as const;
-export const TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK = 2;
+export const TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK = 3;
 export const CRITICAL_SHOT_POWER = 2;
 export const IMPROVED_CRITICAL_SHOT_POWER = 3;
 export function learningFatalShieldDuration(rank: number): number {
@@ -151,6 +151,7 @@ export const STATS = {
   coinsPerKill: stat('Монеты за убийство', 0, integer),
   energyPerKill: stat('Энергия за убийство', 0, integer),
   energyPerBreach: stat('Энергия за прорыв', 0, integer),
+  curseFailureChance: stat('Шанс срыва выстрела', 0, probability),
   jackpotChance: stat('Шанс тройной награды', 0, probability),
   goldenJackpotChance: stat('Шанс тройной награды за золотого паука', 0, probability),
   breachRewardFraction: stat('Доля награды за дошедшего паука', 0, probability),

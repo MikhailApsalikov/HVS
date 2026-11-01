@@ -2,6 +2,7 @@ import type { SpiderType, DifficultyConfig } from '../domain/types.js';
 
 interface SpiderDefinition {
   readonly name: string;
+  readonly fullName?: string;
   readonly unlockLevel: number;
   readonly chance?: number;
   readonly chanceKey?: keyof Pick<
@@ -71,6 +72,7 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
   },
   cleanser: {
     name: 'Очиститель',
+    fullName: 'Паук-очиститель',
     unlockLevel: 45,
     chance: 0.01,
     speedPercent: 0,
@@ -78,8 +80,25 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
     hits: 1,
     clearsBuffs: true,
   },
+  diseased: {
+    name: 'Болезнетворный',
+    unlockLevel: 55,
+    chance: 0.01,
+    speedPercent: -40,
+    damagePercent: 30,
+    hits: 1,
+  },
+  cursing: {
+    name: 'Проклинающий',
+    unlockLevel: 55,
+    chance: 0.01,
+    speedPercent: -40,
+    damagePercent: 30,
+    hits: 1,
+  },
   ninja: {
     name: 'Ниндзя',
+    fullName: 'Паук-ниндзя',
     unlockLevel: 35,
     chanceKey: 'spiderChanceNinja',
     chanceGrowth: { levels: 35, percent: 1 },
@@ -90,6 +109,7 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
   },
   burner: {
     name: 'Поджигатель',
+    fullName: 'Паук-поджигатель',
     unlockLevel: 5,
     chanceKey: 'spiderChanceBurner',
     chanceGrowth: { levels: 20, percent: 1 },
@@ -100,6 +120,7 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
   },
   tank: {
     name: 'Танк',
+    fullName: 'Паук-танк',
     unlockLevel: 15,
     chanceKey: 'spiderChanceTank',
     chanceGrowth: { levels: 15, percent: 1 },
@@ -108,6 +129,9 @@ export const SPIDERS: Readonly<Record<SpiderType, SpiderDefinition>> = {
     hits: 1,
   },
 };
+export function spiderName(type: SpiderType): string {
+  return SPIDERS[type].fullName ?? `${SPIDERS[type].name} паук`;
+}
 export const SPECIAL_SPIDER_ORDER: readonly SpiderType[] = [
   'golden',
   'tank',
@@ -118,4 +142,6 @@ export const SPECIAL_SPIDER_ORDER: readonly SpiderType[] = [
   'poisonous',
   'cleanser',
   'ninja',
+  'diseased',
+  'cursing',
 ];

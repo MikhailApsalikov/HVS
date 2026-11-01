@@ -39,34 +39,34 @@ describe('spider piercing strike through session ticks', () => {
       const spider = addSpider(session, 'normal', 0, 1, 100);
       const before = session.state.hp;
       session.tick(0.001);
-      expect(session.state.hp).toBe(before - (piercing ? 400 : 100));
+      expect(session.state.hp).toBe(before - (piercing ? 250 : 100));
       expect(random).toHaveBeenCalledTimes(level < 61 ? 0 : 1);
       expect(session.drainEvents()).toEqual([
         {
           type: 'damage',
           spiderId: spider.id,
-          hp: piercing ? 400 : 100,
+          hp: piercing ? 250 : 100,
           energy: 0,
-          ...(piercing ? { piercing: true, rawDamageMultiplier: 4 } : {}),
+          ...(piercing ? { piercing: true, rawDamageMultiplier: 2.5 } : {}),
         },
       ]);
     },
   );
 
-  it('multiplies the tank attack by four, for forty times ordinary raw damage', () => {
+  it('multiplies the tank attack by 2.5, for twenty-five times ordinary raw damage', () => {
     const session = arena(61, () => 0);
     const tank = addSpider(session, 'tank', 0, 1, 1000);
     const before = session.state.hp;
     session.tick(0.001);
-    expect(session.state.hp).toBe(before - 4000);
+    expect(session.state.hp).toBe(before - 2500);
     expect(session.drainEvents()).toEqual([
       {
         type: 'damage',
         spiderId: tank.id,
-        hp: 4000,
+        hp: 2500,
         energy: 0,
         piercing: true,
-        rawDamageMultiplier: 40,
+        rawDamageMultiplier: 25,
       },
     ]);
   });
@@ -92,8 +92,8 @@ describe('spider piercing strike through session ticks', () => {
       ]);
       session.refreshStats();
       const spider = addSpider(session, 'normal', 0, 1, 100);
-      const incoming = session.state.rules.value('incomingDamage', 400);
-      const hp = session.state.rules.value('incomingDamage', 400, [
+      const incoming = session.state.rules.value('incomingDamage', 250);
+      const hp = session.state.rules.value('incomingDamage', 250, [
         { source: 'block', kind: 'flat', value: -blockPower },
       ]);
       const before = session.state.hp;
@@ -108,7 +108,7 @@ describe('spider piercing strike through session ticks', () => {
           energy: 0,
           blockedDamage: incoming - hp,
           piercing: true,
-          rawDamageMultiplier: 4,
+          rawDamageMultiplier: 2.5,
         },
         { type: 'absorb' },
       ]);
@@ -135,7 +135,7 @@ describe('spider piercing strike through session ticks', () => {
         energy: 0,
         dodged: true,
         piercing: true,
-        rawDamageMultiplier: 2,
+        rawDamageMultiplier: 1.25,
       },
     ]);
   });

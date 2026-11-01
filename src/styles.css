@@ -68,6 +68,131 @@ body {
   margin: 0;
 }
 
+.main-menu__version {
+  margin: -1rem 0 0;
+  color: #9fb1c9;
+  font:
+    0.9rem 'Segoe UI',
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.main-menu-screen {
+  padding: 2rem 1rem;
+  justify-content: safe center;
+  overflow-y: auto;
+}
+
+.help-screen {
+  flex-direction: column;
+  background: #172136;
+}
+
+.help__header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #475368;
+}
+
+.help__header h1 {
+  margin: 0;
+  font:
+    1.75rem Georgia,
+    serif;
+}
+
+.help__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.help__nav {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 0.85rem;
+  width: 15rem;
+  padding: 2rem;
+}
+
+.help__nav a {
+  color: #e9c88b;
+  text-underline-offset: 0.2em;
+}
+
+.help__article {
+  width: min(100%, 60rem);
+  min-width: 0;
+  padding: 0 2rem 3rem;
+  line-height: 1.65;
+  user-select: text;
+}
+
+.help__article * {
+  user-select: text;
+}
+
+.help__section {
+  padding-top: 1rem;
+  scroll-margin-top: 1rem;
+}
+
+.help__section h2 {
+  color: #f6d598;
+  font-family: Georgia, serif;
+}
+
+.help__article .tooltip__effect {
+  margin: 0.8rem 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+.help__entry {
+  margin: 0.75rem 0;
+  padding: 0.8rem 1rem;
+  border: 1px solid #475368;
+  border-radius: 0.4rem;
+  background: #1e2b43;
+}
+
+.help__entry summary {
+  cursor: pointer;
+  color: #f6d598;
+}
+
+@media (max-width: 700px) {
+  .main-menu__title {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  .help__header {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .help__body {
+    display: block;
+  }
+  .help__nav {
+    position: static;
+    width: auto;
+    padding: 1rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .help__article {
+    padding: 0 1rem 2rem;
+  }
+}
+
 .main-menu__buttons {
   display: flex;
   flex-direction: column;

@@ -380,8 +380,8 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     column: 1,
     name: 'Рациональность',
     sprite: 'TalentRationality',
-    prerequisite: { id: 'hunterArsenal', rank: 1 },
-    effects: [percent('itemEffectiveness', 5)],
+    prerequisite: { id: 'hunterArsenal', rank: 5 },
+    effects: [percent('itemEffectiveness', 6)],
     description: 'Увеличивает эффективность всех бонусов предметов на {itemEffectiveness}.',
   },
   economy: {
@@ -472,8 +472,14 @@ export const TALENTS: Readonly<Record<TalentId, TalentDefinition>> = {
     prerequisite: { id: 'lastHope', rank: 1 },
     column: 2,
     effects: [flat('lastHope.cooldown', -5), flat('lastHope.cost', -4)],
+    scaling: {
+      attribute: 'endurance',
+      step: 1,
+      mode: 'continuous',
+      effect: flat('lastHope.blockPower', 0.01),
+    },
     description:
-      '«Блок последней надежды» перезаряжается на {lastHope.cooldown} с быстрее и расходует на {lastHope.cost} энергии меньше.',
+      '«Блок последней надежды» перезаряжается на {lastHope.cooldown} с быстрее и расходует на {lastHope.cost} энергии меньше.\nДополнительно увеличивает силу блока этой способности на {scaling.percent}% от выносливости.',
   },
   bestDefense: {
     name: 'Лучшая защита - это нападение',
