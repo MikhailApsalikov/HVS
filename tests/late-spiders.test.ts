@@ -333,7 +333,7 @@ describe('late spider saves and descriptions', () => {
     void [diseaseTimer, curseTimer];
     const previous = { ...saved, version: 29, state };
     const parsed = parseSave(previous)!;
-    expect(parsed.version).toBe(30);
+    expect(parsed.version).toBe(31);
     expect(snapshot(restore(parsed))).toEqual(saved);
     expect(snapshot(restore(parseSave(parsed)!))).toEqual(saved);
   });

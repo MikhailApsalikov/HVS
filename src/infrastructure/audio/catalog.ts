@@ -25,6 +25,9 @@ export enum MusicTrack {
   MAIN_MENU = 'mainMenu',
   GAMEPLAY = 'gameplay',
   TALENT_SCREEN = 'talentScreen',
+  HELP = 'help',
+  FREEZE = 'freeze',
+  CRITICAL_HEALTH = 'criticalHealth',
 }
 
 export const SOUND_FILES: Record<SoundEffect, string> = {
@@ -54,4 +57,7 @@ export const MUSIC_FILES: Record<MusicTrack, string> = {
   [MusicTrack.MAIN_MENU]: '1.mp3',
   [MusicTrack.GAMEPLAY]: '24 Jungle1.wav',
   [MusicTrack.TALENT_SCREEN]: 'WoW on Relax.mp3',
+  [MusicTrack.HELP]: '2.mp3',
+  [MusicTrack.FREEZE]: 'bg36.mp3',
+  [MusicTrack.CRITICAL_HEALTH]: 'game_sboss.wav',
 };

@@ -586,7 +586,7 @@ describe('debuff save compatibility', () => {
       };
       const parsed = parseSave(previous)!;
       expect(parsed).not.toBeNull();
-      expect(parsed.version).toBe(30);
+      expect(parsed.version).toBe(31);
       expect(parsed.state).toEqual({ ...previous.state, poisonTimer: expectedTimer });
       const loaded = restore(parsed, () => 0.999999);
       expect(loaded.state.stats['poison.tickDamage']).toBe(180);
@@ -615,14 +615,23 @@ describe('debuff save compatibility', () => {
       poisonTimer,
       poisonTickTimer,
       poisonDamage,
+      criticalHealthReached,
       ...state
     } = current.state;
-    void [goldLockTimer, healingReductionTimer, poisonTimer, poisonTickTimer, poisonDamage];
+    void [
+      goldLockTimer,
+      healingReductionTimer,
+      poisonTimer,
+      poisonTickTimer,
+      poisonDamage,
+      criticalHealthReached,
+    ];
     const previous = { ...current, abilities: current.abilities.slice(0, 12), version: 17, state };
     const migrated = parseSave(previous)!;
-    expect(migrated).toEqual(current);
+    const expected = { ...current, state: { ...current.state, criticalHealthReached: true } };
+    expect(migrated).toEqual(expected);
     const loaded = restore(migrated);
-    expect(snapshot(loaded)).toEqual(current);
+    expect(snapshot(loaded)).toEqual(expected);
     expect(activeDebuffs(loaded.state)).toEqual([]);
     expect(loaded.state.getAbility('heal').remainingCooldown).toBe(6);
     expect(loaded.state.stats['heal.cooldown']).toBe(11);

@@ -22,7 +22,11 @@ import {
   nextLearningBoundary,
   tickLearningFromMistakes,
 } from './systems/LearningFromMistakesSystem.js';
-import { RECHARGE_COOLDOWN_PER_USE, TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK } from './rules/stats.js';
+import {
+  CRITICAL_HEALTH,
+  RECHARGE_COOLDOWN_PER_USE,
+  TITAN_ARMOR_DAMAGE_REDUCTION_PER_RANK,
+} from './rules/stats.js';
 import { WORLD } from './rules/world.js';
 import { buffModifiers, nextBuffBoundary, tickBuffs } from './systems/BuffSystem.js';
 import {
@@ -217,6 +221,7 @@ export class GameSession {
     this.refreshStats();
     state.record = Math.max(state.record, state.level);
     state.levelTimer = state.levelTimerMax = state.rules.levelDuration(state.level);
+    state.criticalHealthReached = state.hp < state.maxHp * CRITICAL_HEALTH.startingFraction;
     state.phase = state.isVictory ? 'gameOver' : 'playing';
     return true;
   }

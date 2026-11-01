@@ -271,7 +271,7 @@ describe('permanent Recharge growth and save migration', () => {
     const saved = snapshot(session);
     const { rechargeUses: _uses, ...oldState } = saved.state;
     const migrated = parseSave({ ...saved, version: 28, state: oldState })!;
-    expect(migrated.version).toBe(30);
+    expect(migrated.version).toBe(31);
     const loaded = restore(migrated);
     expect(loaded.state.rechargeUses).toBe(0);
     expect(loaded.state.getAbility('recharge').remainingCooldown).toBe(240);

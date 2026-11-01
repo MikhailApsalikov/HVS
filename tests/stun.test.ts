@@ -331,7 +331,7 @@ describe('stun save compatibility', () => {
       state,
     })!;
     expect(parsed).not.toBeNull();
-    expect(parsed.version).toBe(30);
+    expect(parsed.version).toBe(31);
     const loaded = restore(parsed);
     expect(loaded.state.stunTimer).toBe(0);
     expect(loaded.state.eagleEyeShots).toBe(5);

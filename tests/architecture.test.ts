@@ -6,7 +6,7 @@ import { RETIRED_ITEM_REFUNDS } from '../src/content/retiredItems.js';
 import { generateItemSvg } from '../src/ui/ItemSpriteGenerator.js';
 import { normalConfig } from '../src/content/normal.js';
 import { SPIDER_DAMAGE } from '../src/domain/rules/stats.js';
-import { SOUND_FILES, MUSIC_FILES } from '../src/infrastructure/audio/catalog.js';
+import { SOUND_FILES, MUSIC_FILES, MusicTrack } from '../src/infrastructure/audio/catalog.js';
 
 function files(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
@@ -171,7 +171,12 @@ describe('legacy feature inventory captured before rewrite', () => {
   });
   it('retains sound and music catalogs with their assets', () => {
     expect(SOUND_FILES).toEqual(baseline.sounds);
-    expect(MUSIC_FILES).toEqual(baseline.music);
+    expect(MUSIC_FILES).toEqual({
+      ...baseline.music,
+      [MusicTrack.HELP]: '2.mp3',
+      [MusicTrack.FREEZE]: 'bg36.mp3',
+      [MusicTrack.CRITICAL_HEALTH]: 'game_sboss.wav',
+    });
     const assets = files('src/sprites').map((file) => path.basename(file));
     for (const filename of [...Object.values(SOUND_FILES), ...Object.values(MUSIC_FILES)])
       expect(assets).toContain(filename);

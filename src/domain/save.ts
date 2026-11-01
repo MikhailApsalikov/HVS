@@ -27,6 +27,7 @@ import {
   ICE_ARROWS,
   LIGHTNING_SHIELD,
   MASOCHISM,
+  CRITICAL_HEALTH,
 } from './rules/stats.js';
 import { TALENTS } from '../content/talents.js';
 import { SPIDERS } from '../content/spiders.js';
@@ -48,6 +49,7 @@ const STATE_FIELDS = [
   'levelTimer',
   'levelTimerMax',
   'freezeActive',
+  'criticalHealthReached',
   'invulnerableTimer',
   'lightningShieldTimer',
   'lightningShieldAbsorption',
@@ -129,7 +131,7 @@ interface SavedCooldown {
   readonly remainingCooldown: number;
 }
 export interface SaveData {
-  readonly version: 30;
+  readonly version: 31;
   readonly difficulty: Difficulty;
   readonly state: SavedState;
   readonly talents: readonly { id: TalentId; rank: number }[];
@@ -147,7 +149,7 @@ export function snapshot(session: GameSession): SaveData {
   const fields = Object.fromEntries(STATE_FIELDS.map((key) => [key, state[key]])) as SavedState;
   fields.lightningCharges = [...state.lightningCharges];
   return {
-    version: 30,
+    version: 31,
     difficulty: state.difficulty,
     state: fields,
     talents: session.talents.toSaveData(),
@@ -249,6 +251,11 @@ export function restore(data: SaveData, random?: RandomSource): GameSession {
   state.pendingTalentPoints += talentRefund;
   state.modifyHp(0);
   state.modifyEnergy(0);
+  if (data.version < 31)
+    state.criticalHealthReached =
+      (state.phase === 'playing' || state.phase === 'paused') &&
+      state.hp > 0 &&
+      state.hp <= state.maxHp * CRITICAL_HEALTH.triggerFraction;
   for (const entry of data.spiders) {
     const spider = new Spider(
       entry.id,
@@ -386,12 +393,14 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (
     ![
       3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
-      28, 29, 30,
+      28, 29, 30, 31,
     ].includes(value.version as number) ||
     !object(value.state)
   )
     return null;
   const state = value.state;
+  if ((value.version as number) >= 31 && typeof state.criticalHealthReached !== 'boolean')
+    return null;
   if ((value.version as number) >= 30) {
     for (const [id, type] of [
       ['disease', 'diseased'],
@@ -830,6 +839,7 @@ function parseSaveUnchecked(value: unknown): SaveData | null {
   if (value.version === 27) return snapshot(restore(value as unknown as SaveData));
   if (value.version === 28) return snapshot(restore(value as unknown as SaveData));
   if (value.version === 29) return snapshot(restore(value as unknown as SaveData));
+  if (value.version === 30) return snapshot(restore(value as unknown as SaveData));
   return value as unknown as SaveData;
 }
 

@@ -508,7 +508,7 @@ describe('shooting rebalance, tooltips and save compatibility', () => {
         },
       };
       const parsed = parseSave(previous)!;
-      expect(parsed.version).toBe(30);
+      expect(parsed.version).toBe(31);
       const session = restore(parsed, () => 0.999999);
       expect(session.state.killingStreakStacks).toBe(2);
       expect(session.state.killingStreakProgress).toBe((35 - 5 * Math.min(rank, 5)) / 2);

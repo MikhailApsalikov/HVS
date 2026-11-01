@@ -3,6 +3,7 @@ import type { GameRules } from '../rules/GameRules.js';
 import type { ResolvedStats } from '../rules/stats.js';
 import {
   ANTI_AFK,
+  CRITICAL_HEALTH,
   KILLING_STREAK,
   masochismHealthPerEnergy,
   masochismMinHpFraction,
@@ -45,6 +46,7 @@ export class GameState {
   record: number;
   initialTalentPick = true;
   freezeActive = false;
+  criticalHealthReached = false;
   invulnerableTimer = 0;
   lightningShieldTimer = 0;
   lightningShieldAbsorption = 0;
@@ -255,6 +257,13 @@ export class GameState {
   }
   modifyHp(delta: number): void {
     this.hp = clamp(this.hp + delta, 0, this.maxHp);
+    if (
+      this.phase === 'playing' &&
+      delta < 0 &&
+      this.hp > 0 &&
+      this.hp <= this.maxHp * CRITICAL_HEALTH.triggerFraction
+    )
+      this.criticalHealthReached = true;
   }
   modifyEnergy(delta: number): void {
     this.energy = clamp(this.energy + delta, 0, this.maxEnergy);

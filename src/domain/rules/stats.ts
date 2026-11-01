@@ -40,6 +40,7 @@ export const LIGHTNING_SHIELD = {
   procEnergyCost: 20,
 } as const;
 export const RECHARGE_COOLDOWN_PER_USE = 60;
+export const CRITICAL_HEALTH = { triggerFraction: 0.2, startingFraction: 0.1 } as const;
 export const MASOCHISM = {
   healthPerEnergy: [10, 9, 8, 7, 6],
   minHpFraction: [0.9, 0.8, 0.7, 0.6, 0.5],

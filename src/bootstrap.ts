@@ -1,6 +1,7 @@
 import { GameApp } from './ui/GameApp.js';
 import { SpriteRegistry } from './ui/SpriteRegistry.js';
 import { GameEngine } from './application/GameEngine.js';
+import { musicForState } from './application/music.js';
 import { AudioManager } from './infrastructure/audio/AudioManager.js';
 import { SoundEffect, MusicTrack } from './infrastructure/audio/catalog.js';
 import { SaveSystem, type StoragePort } from './infrastructure/storage/SaveSystem.js';
@@ -38,9 +39,15 @@ export function bootstrap(root: HTMLElement): () => void {
     load: () => engine.loadGame(),
     hasSave: () => saves.hasSave(),
     menu: () => audio.playMusic(MusicTrack.MAIN_MENU),
+    help: () => audio.playMusic(MusicTrack.HELP),
   });
   const engine = new GameEngine(
-    (state) => app.render(state, saves.lastError),
+    (state) => {
+      app.render(state, saves.lastError);
+      const music = musicForState(state);
+      if (music === null) audio.stopMusic();
+      else audio.playMusic(music);
+    },
     saves,
     undefined,
     parseNewGameOptions(window.location.search),
@@ -83,19 +90,17 @@ export function bootstrap(root: HTMLElement): () => void {
   root.addEventListener('click', clicks);
   engine.setPhaseChangeCallback((phase, state) => {
     if (phase === 'gameOver') {
-      audio.stopMusic();
       audio.playSfx(SoundEffect.GAME_OVER);
       app.showGameOver(state);
     } else if (phase === 'levelUp') {
       audio.playSfx(SoundEffect.LEVEL_COMPLETE);
-      audio.playMusic(MusicTrack.TALENT_SCREEN);
       app.showLevelUp(state, engine.getTalentSystem()!, engine.getItemSystem()!, {
         upgrade: (id) => engine.upgradeTalent(id),
         buy: (id) => engine.buyItem(id),
         sell: (index) => engine.sellItem(index),
         confirm: () => engine.confirmLevelUp(),
       });
-    } else if (phase === 'playing') audio.playMusic(MusicTrack.GAMEPLAY);
+    }
   });
   const field = app.game.getGameField();
   engine.setMagicEffectCallback((event) => field.showMagicEffect(event));
@@ -117,7 +122,6 @@ export function bootstrap(root: HTMLElement): () => void {
   });
   const persist = () => engine.persist();
   window.addEventListener('pagehide', persist);
-  audio.playMusic(MusicTrack.MAIN_MENU);
   return () => {
     engine.persist();
     engine.stopLoop();

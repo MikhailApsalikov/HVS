@@ -439,7 +439,7 @@ describe('magic persistence', () => {
       ),
     };
     const parsed = parseSave(previous);
-    expect(parsed?.version).toBe(30);
+    expect(parsed?.version).toBe(31);
     const loaded = restore(parsed!);
     expect(loaded.state.lightningCharges).toEqual(Array(9).fill(0));
     expect(loaded.state.chainLightning).toEqual([]);

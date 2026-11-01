@@ -664,7 +664,7 @@ describe('storm save compatibility', () => {
       },
     };
     const parsed = parseSave(previous);
-    expect(parsed?.version).toBe(30);
+    expect(parsed?.version).toBe(31);
     const loaded = restore(parsed!, () => 0.999999);
     expect(loaded.talents.getRank('killingStreak')).toBe(5);
     expect(loaded.state.pendingTalentPoints).toBe(saved.state.pendingTalentPoints + 3);

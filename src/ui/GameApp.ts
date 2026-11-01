@@ -21,6 +21,7 @@ export interface MenuActions {
   load(): boolean;
   hasSave(): boolean;
   menu(): void;
+  help(): void;
 }
 
 export class GameApp {
@@ -60,6 +61,7 @@ export class GameApp {
         }
       },
       () => {
+        actions.help();
         this.help.render();
         this.show('help');
       },
@@ -67,7 +69,6 @@ export class GameApp {
     this.help = new HelpScreen(document.createElement('div'), () => this.showMenu());
     this.game = new GameScreen(document.createElement('div'), sprites);
     this.over = new GameOverScreen(document.createElement('div'), () => {
-      actions.menu();
       this.showMenu();
     });
     this.progression = new LevelUpScreen(document.createElement('div'), sprites);
@@ -103,6 +104,7 @@ export class GameApp {
       element.classList.toggle('screen--active', element.dataset.screen === screen);
   }
   showMenu(): void {
+    this.actions.menu();
     this.menu.render(this.actions.hasSave());
     this.progression.hide();
     this.show('main-menu');
