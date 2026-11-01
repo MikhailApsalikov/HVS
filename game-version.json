@@ -4,6 +4,14 @@
     {
       "id": "automatic-version-flags",
       "type": "none"
+    },
+    {
+      "id": "music-update-f57fba4",
+      "type": "cosmetic"
+    },
+    {
+      "id": "enforce-version-flags",
+      "type": "none"
     }
   ]
 }

@@ -20,10 +20,7 @@ function validChangeId(value: unknown): value is string {
   return typeof value === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
 }
 
-function versionChanges(directory: string): { generation: 3; changes: VersionChange[] } {
-  const release: unknown = JSON.parse(
-    readFileSync(resolve(directory, 'game-version.json'), 'utf8'),
-  );
+function parseVersionChanges(release: unknown): { generation: 3; changes: VersionChange[] } {
   const invalid = () =>
     new Error(
       'Invalid game-version.json: expected generation 3 and unique change IDs with balance, cosmetic or none flags; numeric X/Y are generated automatically.',
@@ -52,6 +49,64 @@ function versionChanges(directory: string): { generation: 3; changes: VersionCha
   return { generation: 3, changes };
 }
 
+function versionChanges(directory: string) {
+  return parseVersionChanges(
+    JSON.parse(readFileSync(resolve(directory, 'game-version.json'), 'utf8')),
+  );
+}
+
+function git(directory: string, ...args: string[]): string {
+  return execFileSync('git', args, {
+    cwd: directory,
+    encoding: 'utf8',
+    windowsHide: true,
+    stdio: 'pipe',
+  });
+}
+
+/** Fail the required checks when AI forgets to classify game changes. */
+export function checkVersionFlags(directory: string): void {
+  const current = versionChanges(directory).changes;
+  const committedChanges = (ref: string | undefined): VersionChange[] => {
+    if (!ref || !git(directory, 'ls-tree', '--name-only', ref, '--', 'game-version.json').trim())
+      return [];
+    return parseVersionChanges(JSON.parse(git(directory, 'show', `${ref}:game-version.json`)))
+      .changes;
+  };
+  const head = committedChanges('HEAD');
+  const preserveRecordedFlags = (previous: VersionChange[]) => {
+    for (const recorded of previous) {
+      if (!current.some((change) => change.id === recorded.id && change.type === recorded.type))
+        throw new Error(`Recorded version flag ${recorded.id} must not be removed or changed.`);
+    }
+  };
+  preserveRecordedFlags(head);
+  const requireGameFlag = (paths: string, previous: VersionChange[]) => {
+    const gameChanged = paths
+      .split('\0')
+      .some(
+        (path) => path.startsWith('src/') || path.startsWith('public/') || path === 'index.html',
+      );
+    if (!gameChanged) return;
+    const previousIds = new Set(previous.map((change) => change.id));
+    if (!current.some((change) => change.type !== 'none' && !previousIds.has(change.id)))
+      throw new Error(
+        'Game changes are missing a new AI version flag. Run pnpm version:flag <balance|cosmetic> <unique-change-id> before pnpm check.',
+      );
+  };
+  const workingPaths =
+    git(directory, 'diff', '--name-only', '-z', 'HEAD') +
+    git(directory, 'ls-files', '--others', '--exclude-standard', '-z');
+  requireGameFlag(workingPaths, head);
+  const parent = git(directory, 'rev-list', '--parents', '-n', '1', 'HEAD').trim().split(' ')[1];
+  const committedPaths = parent
+    ? git(directory, 'diff', '--name-only', '-z', parent, 'HEAD')
+    : git(directory, 'ls-tree', '-r', '--name-only', '-z', 'HEAD');
+  const previous = committedChanges(parent);
+  preserveRecordedFlags(previous);
+  requireGameFlag(committedPaths, previous);
+}
+
 /** AI records a flag per task, never a numeric version. Repeating a task ID is idempotent. */
 export function markVersionChange(directory: string, type: string, id: string): void {
   if (!isChangeType(type) || !validChangeId(id))
@@ -76,11 +131,9 @@ export function markVersionChange(directory: string, type: string, id: string): 
 /** Flags supply X/Y; Git supplies Z independently of AI, commit authors and hooks. */
 export function gameVersion(directory: string): string {
   const release = versionChanges(directory);
-  const git = (args: string[]) =>
-    execFileSync('git', args, { cwd: directory, encoding: 'utf8', windowsHide: true }).trim();
-  if (git(['rev-parse', '--is-shallow-repository']) === 'true')
+  if (git(directory, 'rev-parse', '--is-shallow-repository').trim() === 'true')
     throw new Error('Game build number needs full Git history. Run git fetch --unshallow.');
-  const build = git(['rev-list', '--count', 'HEAD']);
+  const build = git(directory, 'rev-list', '--count', 'HEAD').trim();
   if (!/^\d+$/.test(build)) throw new Error('Invalid Git commit count.');
   const balance = release.changes.filter((change) => change.type === 'balance').length;
   const cosmetic = release.changes.filter((change) => change.type === 'cosmetic').length;

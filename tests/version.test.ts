@@ -1,9 +1,9 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { gameVersion, markVersionChange } from '../scripts/version.js';
+import { checkVersionFlags, gameVersion, markVersionChange } from '../scripts/version.js';
 
 const directories: string[] = [];
 function manifestDirectory() {
@@ -53,8 +53,105 @@ function flagCommand(directory: string, ...args: string[]) {
   });
 }
 
+function changeGame(directory: string, contents = 'export const music = "new-track";\n') {
+  mkdirSync(join(directory, 'src'), { recursive: true });
+  writeFileSync(join(directory, 'src', 'music.ts'), contents);
+}
+
 // Real Git/Node process startup on Windows is slower under coverage than in isolated runs.
 describe('game version from AI flags and Git', { timeout: 20_000 }, () => {
+  it('rejects untracked and staged game changes until AI adds a meaningful flag', () => {
+    const { directory, git } = repository();
+    changeGame(directory);
+    expect(() => checkVersionFlags(directory)).toThrow('missing a new AI version flag');
+    git('add', 'src/music.ts');
+    markVersionChange(directory, 'none', 'technical-task');
+    expect(() => checkVersionFlags(directory)).toThrow('missing a new AI version flag');
+    markVersionChange(directory, 'cosmetic', 'new-music');
+    expect(() => checkVersionFlags(directory)).not.toThrow();
+    expect(gameVersion(directory)).toBe('3.0.1.1');
+  });
+  it('accepts a committed cosmetic flag and a fresh balance flag for the next game edit', () => {
+    const { directory, git } = repository();
+    changeGame(directory);
+    markVersionChange(directory, 'cosmetic', 'new-music');
+    git('add', 'src/music.ts', 'game-version.json');
+    git('commit', '--quiet', '-m', 'Music updated with an AI flag');
+    expect(() => checkVersionFlags(directory)).not.toThrow();
+    changeGame(directory, 'export const startingHp = 200;\n');
+    expect(() => checkVersionFlags(directory)).toThrow('missing a new AI version flag');
+    markVersionChange(directory, 'balance', 'increase-starting-health');
+    expect(() => checkVersionFlags(directory)).not.toThrow();
+    expect(gameVersion(directory)).toBe('3.1.1.2');
+  });
+  it('detects the omitted music flag after commit and accepts one retrospective flag', () => {
+    const { directory, git } = repository();
+    changeGame(directory);
+    git('add', 'src/music.ts');
+    git('commit', '--quiet', '-m', 'Music updated without a flag');
+    expect(git('status', '--porcelain').trim()).toBe('');
+    expect(gameVersion(directory)).toBe('3.0.0.2');
+    expect(() => checkVersionFlags(directory)).toThrow('missing a new AI version flag');
+    markVersionChange(directory, 'none', 'check-tooling');
+    expect(() => checkVersionFlags(directory)).toThrow('missing a new AI version flag');
+    markVersionChange(directory, 'cosmetic', 'recover-music-flag');
+    expect(() => checkVersionFlags(directory)).not.toThrow();
+    markVersionChange(directory, 'cosmetic', 'recover-music-flag');
+    expect(gameVersion(directory)).toBe('3.0.1.2');
+  });
+  it('allows documentation and ordinary commits to increase only Z', () => {
+    const { directory, git } = repository();
+    writeFileSync(join(directory, 'README.md'), 'Documentation only.\n');
+    expect(() => checkVersionFlags(directory)).not.toThrow();
+    git('add', 'README.md');
+    git('commit', '--quiet', '-m', 'Documentation');
+    expect(() => checkVersionFlags(directory)).not.toThrow();
+    expect(gameVersion(directory)).toBe('3.0.0.2');
+  });
+  it.each(['public/music.ogg', 'index.html'])(
+    'requires an AI flag for game assets and entry HTML: %s',
+    (path) => {
+      const { directory } = repository();
+      mkdirSync(join(directory, 'public'), { recursive: true });
+      writeFileSync(join(directory, path), 'changed');
+      expect(() => checkVersionFlags(directory)).toThrow('missing a new AI version flag');
+      markVersionChange(directory, 'cosmetic', 'update-game-assets');
+      expect(() => checkVersionFlags(directory)).not.toThrow();
+    },
+  );
+  it.each([{ changes: [] }, { changes: [{ id: 'original-music', type: 'balance' }] }])(
+    'rejects rewritten flags before and after commit: $changes',
+    ({ changes }) => {
+      const { directory, git } = repository();
+      markVersionChange(directory, 'cosmetic', 'original-music');
+      git('add', 'game-version.json');
+      git('commit', '--quiet', '-m', 'Record original music flag');
+      writeFileSync(
+        join(directory, 'game-version.json'),
+        JSON.stringify({ generation: 3, changes }),
+      );
+      expect(() => checkVersionFlags(directory)).toThrow('must not be removed or changed');
+      git('add', 'game-version.json');
+      git('commit', '--quiet', '-m', 'Rewrite a recorded flag');
+      expect(() => checkVersionFlags(directory)).toThrow('must not be removed or changed');
+    },
+  );
+  it('makes the version-check command fail for an unclassified game commit', () => {
+    const { directory, git } = repository();
+    changeGame(directory);
+    git('add', 'src/music.ts');
+    git('commit', '--quiet', '-m', 'Forgotten music flag');
+    const check = () =>
+      execFileSync(process.execPath, [resolve('scripts/check-version.mjs')], {
+        cwd: directory,
+        encoding: 'utf8',
+        windowsHide: true,
+        stdio: 'pipe',
+      });
+    expect(check).toThrow('missing a new AI version flag');
+    markVersionChange(directory, 'cosmetic', 'correct-music-version');
+    expect(check()).toContain('AI version flags match game changes');
+  });
   it('generates independent X/Y counters from flags without editing numeric versions', () => {
     const { directory } = repository();
     expect(gameVersion(directory)).toBe('3.0.0.1');

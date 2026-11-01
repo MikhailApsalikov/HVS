@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 
 const checks = [
+  ['AI version flags', 'scripts/check-version.mjs'],
   ['TypeScript', 'node_modules/typescript/bin/tsc', '--noEmit'],
   ['Formatting', 'node_modules/prettier/bin/prettier.cjs', '--check', '.'],
   ['Game rules, regressions and coverage', 'node_modules/vitest/vitest.mjs', 'run', '--coverage'],
